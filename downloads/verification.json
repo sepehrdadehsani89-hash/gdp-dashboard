@@ -1,0 +1,39 @@
+{
+  "unit_tests": {
+    "passed": 76,
+    "failed": 0,
+    "skipped": 0
+  },
+  "android_ui_tests": {
+    "passed": 5,
+    "failed": 0,
+    "skipped": 0,
+    "runner": "AndroidJUnitRunner",
+    "api": 29,
+    "abi": "x86_64",
+    "software_emulator": true
+  },
+  "android_native_tests": {
+    "passed": 2,
+    "failed": 0,
+    "skipped": 0,
+    "checks": [
+      "OCR of actual rendered image",
+      "non-silent neural synthesis for English, Spanish, Persian"
+    ],
+    "voice_models": "preloaded from SHA256-verified official archives; download-client behavior not established"
+  },
+  "lint": {
+    "errors": 0,
+    "warnings": 16
+  },
+  "physical_redmi9_tests": "not executed",
+  "unverified": [
+    "physical microphone and wake recognition",
+    "speaker audibility and pronunciation quality",
+    "battery, thermals and latency",
+    "Vosk and Qwen model download/inference on phone",
+    "live news/weather on phone",
+    "account-backed cloud API calls"
+  ]
+}

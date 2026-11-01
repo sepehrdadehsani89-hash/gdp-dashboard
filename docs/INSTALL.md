@@ -112,3 +112,7 @@ A Redmi 9 still running Android 10 may not offer this pairing flow. Use USB or d
 - **Download fails:** check connectivity, storage, and service availability. Integrity failures must be retried from the official source, never bypassed.
 
 For phone testing, keep installation/UI evidence separate from microphone, voice quality, background, inference-speed, and battery results.
+
+## Redmi / MIUI background settings
+
+After explicitly starting listening, MIUI may limit it. Where available, open Settings → Apps → Manage apps → Jarvis → Battery saver and select No restrictions. Some MIUI versions also expose an Autostart permission under app permissions. Labels vary. These settings do not make this build start the microphone at boot or survive force-stop: reopen Jarvis and tap Start listening when necessary. Keep the listening notification enabled.

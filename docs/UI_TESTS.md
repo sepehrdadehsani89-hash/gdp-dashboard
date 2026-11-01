@@ -23,3 +23,7 @@ adb shell rm /sdcard/jarvis-fa.png
 ```
 
 Record device/API, selected language, screenshot path, and observed issues in verification evidence. Do not label these scenarios passed until the instrumentation runner actually completes and reports the result.
+
+## Recorded execution
+
+Final API29 x86_64 software-emulator UI run: five executed, five passed, zero failures/skips. NativeEngineTest separately passed actual OCR and three-language non-silent speech synthesis with verified voice models preloaded in the isolated test app. The neural voice test explicitly skips when those optional models are absent; a skip does not validate synthesis. No physical-phone/audio-playback/battery claim is made.

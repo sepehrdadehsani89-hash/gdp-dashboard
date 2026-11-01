@@ -2,7 +2,7 @@
 
 Jarvis reads files and photos that the user explicitly selects through Android's Storage Access Framework. It does not scan the phone's storage or entire photo library.
 
-Text documents are limited to 1 MiB and decoded as UTF-8 or BOM-marked UTF-16. PDFs are limited to 20 MiB and the first eight pages; a longer PDF is labeled as partial. Photo text is read locally with Tesseract. The selected image is bounded to 20 MiB, downsampled to at most 1600 pixels per edge, and corrected for EXIF orientation. Extracted output is bounded to 24,000 UTF-16 characters.
+Up to three attachments are processed per question. Text documents are limited to 1 MiB and decoded as UTF-8 or BOM-marked UTF-16. PDFs are limited to 20 MiB and the first eight pages; a longer PDF is labeled as partial. Photo text is read locally with Tesseract. The selected image is bounded to 20 MiB, downsampled to at most 1600 pixels per edge, and corrected for EXIF orientation. Extracted output is bounded to 24,000 UTF-16 characters.
 
 Photo reading extracts printed text. It does not identify people, objects, or scenes, and OCR can make mistakes. Check important details against the source image. Images without legible text report that limitation. Locked PDFs are refused; scanned PDFs need a separately selected screenshot for OCR.
 

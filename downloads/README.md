@@ -2,7 +2,7 @@
 
 Development preview 0.1.0 · Android 10+ · ARM64 · intended first device: Redmi 9.
 
-After the APK upload completes, the direct download is:
+Direct Android download:
 
 [Download Jarvis APK](https://raw.githubusercontent.com/sepehrdadehsani89-hash/gdp-dashboard/jarvis-android-download/downloads/Jarvis-0.1.0-arm64.apk)
 
