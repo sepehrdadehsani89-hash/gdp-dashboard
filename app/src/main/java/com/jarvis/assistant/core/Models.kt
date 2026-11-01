@@ -28,6 +28,8 @@ data class AssistantSettings(
     val speakReplies: Boolean = true,
     val allowNetworkSpeech: Boolean = false,
     val useCloudVoice: Boolean = false,
+    val shareSavedMemories: Boolean = false,
+    val allowLockedChat: Boolean = false,
     val onboardingComplete: Boolean = false,
 )
 data class PendingAction(
@@ -43,7 +45,10 @@ data class AssistantReply(
     val action: PendingAction? = null,
     // Default deny: private tool/file content must not leak via an optional speech provider.
     val allowCloudSpeech: Boolean = false,
+    val speechHandled: Boolean = false,
 )
+
+data class ConnectionCheck(val model: String, val sample: String, val elapsedMs: Long)
 
 fun AppLanguage.choose(en: String, es: String, fa: String): String = when (this) {
     AppLanguage.EN -> en

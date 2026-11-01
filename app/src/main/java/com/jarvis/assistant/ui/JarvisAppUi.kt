@@ -8,6 +8,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -86,6 +87,7 @@ import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -101,6 +103,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import android.graphics.BitmapFactory
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -125,10 +129,14 @@ import com.jarvis.assistant.core.AssistantSettings
 import com.jarvis.assistant.core.ChatMessage
 import com.jarvis.assistant.core.MessageRole
 import com.jarvis.assistant.core.choose
+import com.jarvis.assistant.core.ConnectionCheck
 import com.jarvis.assistant.data.ProviderException
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.withTimeout
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -209,6 +217,7 @@ private fun MainShell(state: JarvisUiState, actions: JarvisUiActions) {
 private fun Home(state: JarvisUiState, actions: JarvisUiActions, onOpenSettings: () -> Unit) {
     val l = state.settings.language
     var input by rememberSaveable { mutableStateOf("") }
+    var previewScreen by remember { mutableStateOf(false) }
     val keyboard = LocalSoftwareKeyboardController.current
     val focus = LocalFocusManager.current
     val sendInput = {
@@ -236,6 +245,11 @@ private fun Home(state: JarvisUiState, actions: JarvisUiActions, onOpenSettings:
                 Text(l.label, Modifier.padding(horizontal = 13.dp, vertical = 8.dp), color = Muted, style = MaterialTheme.typography.labelMedium)
             }
             IconButton(onClick = actions.onStop) { Icon(Icons.Rounded.Stop, l.choose("Stop everything", "Detener todo", "توقف همه‌چیز"), tint = Warm) }
+        }
+        if (state.screenReady) Row(Modifier.fillMaxWidth().padding(horizontal = 24.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(l.choose("Screen snapshot ready · expires in 2 min", "Captura lista · caduca en 2 min", "تصویر صفحه آماده است · اعتبار ۲ دقیقه"), modifier = Modifier.weight(1f), color = Mint, style = MaterialTheme.typography.bodySmall)
+            TextButton(onClick = { previewScreen = true }) { Text(l.choose("View", "Ver", "دیدن")) }
+            TextButton(onClick = actions.onClearScreen) { Text(l.choose("Clear screen", "Borrar captura", "پاک کردن تصویر")) }
         }
         LazyColumn(state = scroll, modifier = Modifier.weight(1f), contentPadding = PaddingValues(horizontal = 24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             item {
@@ -305,6 +319,14 @@ private fun Home(state: JarvisUiState, actions: JarvisUiActions, onOpenSettings:
                 }
             }
         }
+    }
+    if (previewScreen && state.screenImage != null) {
+        val bytes = state.screenImage
+        val bitmap = remember(bytes) { BitmapFactory.decodeByteArray(bytes, 0, bytes.size) }
+        DisposableEffect(bitmap) { onDispose { bitmap?.recycle() } }
+        AlertDialog(onDismissRequest = { previewScreen = false }, title = { Text(l.choose("Captured screen", "Pantalla capturada", "تصویر گرفته‌شده")) },
+            text = { if (bitmap != null) Image(bitmap.asImageBitmap(), l.choose("Your captured screen", "Tu captura", "تصویر صفحهٔ شما"), Modifier.fillMaxWidth().height(320.dp)) },
+            confirmButton = { TextButton(onClick = { previewScreen = false }) { Text(l.choose("Close", "Cerrar", "بستن")) } })
     }
 }
 
@@ -511,11 +533,16 @@ private fun SettingsScreen(state: JarvisUiState, actions: JarvisUiActions) {
     var connectionStatus by remember { mutableStateOf("") }
     var availableModels by remember { mutableStateOf(emptyList<String>()) }
     var connectionGeneration by remember { mutableIntStateOf(0) }
+    var connectionDialog by remember { mutableStateOf<String?>(null) }
+    var verifiedConnection by remember { mutableStateOf<ConnectionCheck?>(null) }
+    var connectionElapsed by remember { mutableIntStateOf(0) }
     fun clearConnectionCheck(clearModels: Boolean = true) {
         connectionGeneration++
         connectionJob?.cancel()
         checking = false
         connectionStatus = ""
+        connectionDialog = null
+        verifiedConnection = null
         if (clearModels) availableModels = emptyList()
     }
     fun checkConnection(listModels: Boolean) {
@@ -527,22 +554,30 @@ private fun SettingsScreen(state: JarvisUiState, actions: JarvisUiActions) {
         connectionJob = connectionScope.launch {
             try {
                 if (listModels) {
-                    availableModels = actions.onListGeminiModels(enteredKey)
+                    availableModels = withTimeout(15_000) { actions.onListGeminiModels(enteredKey) }
                     connectionStatus = l.choose("Choose a model below, then test the connection. Live-only models use a different API and are not listed.", "Elige un modelo y prueba la conexión. Los modelos solo Live usan otra API y no aparecen aquí.", "از فهرست مدلی انتخاب و اتصال را آزمایش کنید. مدل‌های مخصوص Live از API دیگری استفاده می‌کنند و اینجا فهرست نمی‌شوند.")
                 } else {
-                    val model = actions.onTestProvider(selected, enteredKey)
-                    connectionStatus = l.choose("Connection verified: $model. Save settings to use it.", "Conexión verificada: $model. Guarda los ajustes para usarlo.", "اتصال تأیید شد: $model. برای استفاده، تنظیمات را ذخیره کنید.")
+                    val result = withTimeout(16_000) { actions.onTestProvider(selected, enteredKey) }
+                    verifiedConnection = result
+                    connectionStatus = "${result.model} · ${result.elapsedMs / 1000.0}s\n${result.sample}"
+                    connectionDialog = connectionStatus
+                    actions.onPlayConnectionTest(result.sample)
                 }
+            } catch (_: TimeoutCancellationException) {
+                connectionDialog = l.choose("The request timed out. Nothing was verified. Check your connection, quota and model; try a listed Flash or Flash-Lite text model.", "La solicitud agotó el tiempo. No se verificó la conexión. Revisa internet, cuota y modelo; prueba Flash o Flash-Lite.", "مهلت درخواست تمام شد. اتصال تأیید نشده است. اینترنت، سهمیه و مدل را بررسی کنید؛ Flash یا Flash-Lite را امتحان کنید.")
+                connectionStatus = connectionDialog.orEmpty()
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (error: Exception) {
                 connectionStatus = if (error is ProviderException) error.message.orEmpty() else l.choose("Check the API key and model ID, then try again.", "Revisa la clave API y el ID del modelo e inténtalo otra vez.", "کلید API و شناسهٔ مدل را بررسی و دوباره امتحان کنید.")
+                connectionDialog = connectionStatus
             } finally {
                 if (generation == connectionGeneration) checking = false
             }
         }
     }
     LaunchedEffect(state.settings.provider, state.settings.model, state.settings.language) { clearConnectionCheck() }
+    LaunchedEffect(checking) { connectionElapsed = 0; while (checking) { delay(1000); connectionElapsed++ } }
     LazyColumn(contentPadding = PaddingValues(24.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
         item { PageTitle(l.choose("Made to feel like yours.", "Hecho a tu manera.", "همان‌طور که شما می‌خواهید."), l.choose("SETTINGS", "AJUSTES", "تنظیمات")) }
         item { SectionCard {
@@ -599,9 +634,15 @@ private fun SettingsScreen(state: JarvisUiState, actions: JarvisUiActions) {
             TextButton(onClick = { actions.onOpenPermission("voices") }) { Text(l.choose("System voice settings", "Ajustes de voz del sistema", "تنظیمات صدای گوشی")) }
         } }
         item { SectionCard {
+            Text(l.choose("Memory & locked-phone replies", "Memoria y respuestas con bloqueo", "حافظه و پاسخ هنگام قفل"), style = MaterialTheme.typography.titleMedium)
+            ToggleRow(l.choose("Use saved memories with cloud AI", "Usar recuerdos con la IA en la nube", "استفاده از یادداشت‌ها در هوش مصنوعی ابری"), l.choose("Sends up to 20 facts you explicitly saved with your questions. Phone tools and screenshots never enter general conversation history. Off by default.", "Envía hasta 20 hechos guardados explícitamente con tus preguntas. Herramientas y capturas no entran al historial general. Desactivado por defecto.", "حداکثر ۲۰ موردی که صریحاً ذخیره کرده‌اید همراه پرسش ارسال می‌شود. داده‌های ابزار گوشی و تصویر صفحه وارد سابقهٔ عمومی نمی‌شوند. پیش‌فرض خاموش است."), draft.shareSavedMemories) { draft = draft.copy(shareSavedMemories = it); saved = false }
+            ToggleRow(l.choose("General chat while locked", "Conversar con el teléfono bloqueado", "گفت‌وگوی عمومی هنگام قفل"), l.choose("Allows general answers aloud after your wake phrase while the screen is off or locked. Anyone nearby may ask. Private data and phone actions still require unlock. The phone must be powered on.", "Permite respuestas generales tras la frase de activación con pantalla apagada o bloqueo. Cualquiera cerca puede preguntar. Datos privados y acciones requieren desbloqueo. El teléfono debe estar encendido.", "پس از عبارت فعال‌سازی، هنگام خاموش بودن صفحه یا قفل، پاسخ عمومی بلند پخش می‌شود. افراد نزدیک هم می‌توانند بپرسند. اطلاعات خصوصی و فرمان‌های گوشی همچنان به باز کردن قفل نیاز دارند. گوشی باید روشن باشد."), draft.allowLockedChat) { draft = draft.copy(allowLockedChat = it); saved = false }
+        } }
+        item { SectionCard {
             Text(l.choose("Hands-free, on your terms", "Manos libres, tú decides", "بدون لمس، با اختیار شما"), style = MaterialTheme.typography.titleMedium)
             Text(l.choose("Download a local Vosk model for the selected language. Wake detection stays on this phone; a persistent microphone notification remains visible. Android may pause listening.", "Descarga un modelo Vosk local para el idioma elegido. La activación se detecta en el teléfono y se muestra una notificación del micrófono. Android puede pausar la escucha.", "مدل محلی Vosk را برای زبان انتخابی دانلود کنید. تشخیص عبارت فعال‌سازی روی گوشی انجام می‌شود و اعلان میکروفن نمایش داده می‌شود. اندروید ممکن است شنیدن را متوقف کند."), color = Muted, style = MaterialTheme.typography.bodySmall)
             Text("“${l.wakePhrase}”", color = Mint, style = MaterialTheme.typography.titleLarge)
+            Text(l.choose("Active listening keeps the CPU awake and uses battery with the screen off. Android or MIUI can still stop it. After reboot or Force stop, open Jarvis and start listening again.", "La escucha activa mantiene la CPU despierta y consume batería con pantalla apagada. Android o MIUI pueden detenerla. Tras reiniciar o forzar detención, abre Jarvis e inicia la escucha.", "شنیدن فعال، پردازنده را بیدار نگه می‌دارد و هنگام خاموش بودن صفحه باتری مصرف می‌کند. اندروید یا MIUI ممکن است آن را متوقف کند. پس از راه‌اندازی مجدد یا توقف اجباری، جارویس را باز و شنیدن را شروع کنید."), color = Muted, style = MaterialTheme.typography.bodySmall)
             if (state.wakeStatus.isNotBlank()) Text(state.wakeStatus, color = Warm, style = MaterialTheme.typography.bodyMedium)
             state.modelProgress?.let { progress -> LinearProgressIndicator(progress = { progress.coerceIn(0f, 1f) }, modifier = Modifier.fillMaxWidth()) }
             OutlinedButton(onClick = actions.onDownloadWake, enabled = state.modelProgress == null, modifier = Modifier.fillMaxWidth()) { Text(l.choose("Download language model · ~40–55 MB", "Descargar modelo · ~40–55 MB", "دانلود مدل زبان · حدود ۴۰ تا ۵۵ مگابایت")) }
@@ -638,6 +679,17 @@ private fun SettingsScreen(state: JarvisUiState, actions: JarvisUiActions) {
         } }
         item { Spacer(Modifier.height(12.dp)) }
     }
+    if (checking) AlertDialog(onDismissRequest = {}, title = { Text(l.choose("Checking provider…", "Comprobando proveedor…", "در حال بررسی سرویس…")) },
+        text = { Column(verticalArrangement = Arrangement.spacedBy(12.dp)) { LinearProgressIndicator(Modifier.fillMaxWidth()); Text(l.choose("${connectionElapsed}s · up to 15 seconds. Waiting for an actual API response.", "${connectionElapsed}s · hasta 15 segundos. Esperando una respuesta real de la API.", "${connectionElapsed} ثانیه · حداکثر ۱۵ ثانیه. در انتظار پاسخ واقعی API.")) } },
+        confirmButton = { TextButton(onClick = { clearConnectionCheck(); connectionStatus = l.choose("Check cancelled.", "Prueba cancelada.", "بررسی لغو شد.") }) { Text(l.choose("Cancel check", "Cancelar prueba", "لغو بررسی")) } })
+    connectionDialog?.let { message -> AlertDialog(onDismissRequest = { connectionDialog = null },
+        title = { Text(if (verifiedConnection != null) l.choose("Connection verified", "Conexión verificada", "اتصال تأیید شد") else l.choose("Connection not verified", "Conexión no verificada", "اتصال تأیید نشد")) },
+        text = { Text(message) },
+        confirmButton = { TextButton(onClick = {
+            if (verifiedConnection != null) { actions.onSaveSettings(draft.copy(name = draft.name.trim(), model = verifiedConnection!!.model), key.trim()); key = ""; saved = true }
+            connectionDialog = null
+        }) { Text(if (verifiedConnection != null) l.choose("Connect & save", "Conectar y guardar", "اتصال و ذخیره") else l.choose("OK", "Aceptar", "باشه")) } },
+        dismissButton = { if (verifiedConnection != null) TextButton(onClick = { connectionDialog = null }) { Text(l.choose("Close", "Cerrar", "بستن")) } }) }
     if (showWipe) AlertDialog(onDismissRequest = { showWipe = false },
         title = { Text(l.choose("Erase Jarvis data?", "¿Borrar los datos de Jarvis?", "داده‌های جارویس حذف شوند؟")) },
         text = { Text(l.choose("This removes saved conversations, memories, settings, and provider keys. It cannot be undone.", "Se borrarán conversaciones, recuerdos, ajustes y claves. No se puede deshacer.", "گفت‌وگوها، یادداشت‌ها، تنظیمات و کلیدهای سرویس حذف می‌شوند. این کار برگشت‌پذیر نیست.")) },

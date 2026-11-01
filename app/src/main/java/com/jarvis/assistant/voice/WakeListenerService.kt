@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
+import android.content.Context
 import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
 import android.media.AudioFormat
@@ -16,6 +17,9 @@ import android.os.IBinder
 import android.os.SystemClock
 import android.os.VibrationEffect
 import android.os.Vibrator
+import android.os.PowerManager
+import android.os.Handler
+import android.os.Looper
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.jarvis.assistant.core.AppLanguage
@@ -35,6 +39,13 @@ class WakeListenerService : Service() {
     private var worker: Thread? = null
     private var language = AppLanguage.EN
     private var awakeUntil = 0L
+    private var cpuLock: PowerManager.WakeLock? = null
+    private val main = Handler(Looper.getMainLooper())
+    private val renewCpu = object : Runnable {
+        override fun run() {
+            if (running) { cpuLock?.acquire(10 * 60_000L); main.postDelayed(this, 5 * 60_000L) }
+        }
+    }
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -48,21 +59,28 @@ class WakeListenerService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             ACTION_STOP -> {
+                disableRecovery(this)
                 sendBroadcast(Intent(ACTION_STOP).setPackage(packageName))
                 stopSelf(); return START_NOT_STICKY
             }
             ACTION_PAUSE -> {
                 synchronized(audioLock) { paused = true; runCatching { recorder?.stop() } }
                 publish(language.choose("Wake listening paused", "Activación en pausa", "بیدارباش مکث شده است"), false)
-                return START_NOT_STICKY
+                return if (running) START_STICKY else START_NOT_STICKY
             }
             ACTION_RESUME -> {
-                if (running) { paused = false; awakeUntil = 0; publish(listeningText(), true) }
-                return START_NOT_STICKY
+                if (running) {
+                    paused = false
+                    awakeUntil = if (intent.getBooleanExtra("follow_up", false)) SystemClock.elapsedRealtime() + 12_000 else 0
+                    publish(if (awakeUntil > 0) language.choose("Listening for your screen question", "Escucho tu pregunta sobre la pantalla", "در انتظار پرسش شما دربارهٔ صفحه") else listeningText(), true)
+                }
+                return if (running) START_STICKY else START_NOT_STICKY
             }
         }
-        if (running) return START_NOT_STICKY
-        language = AppLanguage.fromCode(intent?.getStringExtra(EXTRA_LANGUAGE).orEmpty())
+        if (running) return START_STICKY
+        val recovery = getSharedPreferences("wake_session", MODE_PRIVATE)
+        if (intent == null && !recovery.getBoolean("enabled", false)) { stopSelf(); return START_NOT_STICKY }
+        language = AppLanguage.fromCode(intent?.getStringExtra(EXTRA_LANGUAGE) ?: recovery.getString("language", "en").orEmpty())
         val modelDirectory = WakeModelManager(this).modelPath(language)
         val text = language.choose("Preparing offline listening…", "Preparando activación local…", "در حال آماده‌سازی بیدارباش آفلاین…")
         try {
@@ -78,6 +96,9 @@ class WakeListenerService : Service() {
             stopSelf(); return START_NOT_STICKY
         }
         running = true; paused = false
+        recovery.edit().putBoolean("enabled", true).putString("language", language.code).apply()
+        cpuLock = getSystemService(PowerManager::class.java).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Jarvis:WakeListening").apply { setReferenceCounted(false) }
+        renewCpu.run()
         worker = Thread({
             try {
                 Model(modelDirectory.absolutePath).use { model ->
@@ -128,7 +149,7 @@ class WakeListenerService : Service() {
                 }
             }
         }, "JarvisWakeListener").also { it.start() }
-        return START_NOT_STICKY
+        return START_STICKY
     }
 
     private fun handleTranscript(text: String, final: Boolean) {
@@ -177,6 +198,8 @@ class WakeListenerService : Service() {
     }
 
     override fun onDestroy() {
+        main.removeCallbacks(renewCpu)
+        cpuLock?.let { if (it.isHeld) it.release() }; cpuLock = null
         synchronized(audioLock) { running = false; paused = true; awakeUntil = 0; runCatching { recorder?.stop() } }
         worker?.interrupt(); worker = null
         mutableState.value = WakeState(status = language.choose("Wake listening is off", "Activación desactivada", "بیدارباش خاموش است"), language = language)
@@ -201,5 +224,6 @@ class WakeListenerService : Service() {
         private val mutableState = MutableStateFlow(WakeState())
         val state: StateFlow<WakeState> = mutableState
         fun suppressFor(milliseconds: Long) { suppressionUntil = SystemClock.elapsedRealtime() + milliseconds.coerceAtLeast(0) }
+        fun disableRecovery(context: Context) { context.getSharedPreferences("wake_session", MODE_PRIVATE).edit().putBoolean("enabled", false).apply() }
     }
 }

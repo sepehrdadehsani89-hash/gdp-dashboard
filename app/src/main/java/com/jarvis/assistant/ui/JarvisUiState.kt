@@ -6,6 +6,7 @@ import com.jarvis.assistant.core.AssistantSettings
 import com.jarvis.assistant.core.ChatMessage
 import com.jarvis.assistant.core.MemoryItem
 import com.jarvis.assistant.core.PendingAction
+import com.jarvis.assistant.core.ConnectionCheck
 
 data class JarvisUiState(
     val settings: AssistantSettings = AssistantSettings(),
@@ -24,6 +25,9 @@ data class JarvisUiState(
     val brainProgress: Float? = null,
     val voiceStatus: String = "",
     val voiceProgress: Float? = null,
+    val screenReady: Boolean = false,
+    val screenBytes: Int = 0,
+    val screenImage: ByteArray? = null,
 )
 
 data class JarvisUiActions(
@@ -33,9 +37,11 @@ data class JarvisUiActions(
     val onLanguage: (AppLanguage) -> Unit = {},
     val onSaveSettings: (AssistantSettings, String) -> Unit = { _, _ -> },
     val onListGeminiModels: suspend (String) -> List<String> = { emptyList() },
-    val onTestProvider: suspend (AssistantSettings, String) -> String = { _, _ -> "" },
+    val onTestProvider: suspend (AssistantSettings, String) -> ConnectionCheck = { _, _ -> throw IllegalStateException("No provider connection") },
+    val onPlayConnectionTest: (String) -> Unit = {},
     val onRememberDelete: (Long) -> Unit = {},
     val onClearConversation: () -> Unit = {},
+    val onClearScreen: () -> Unit = {},
     val onWipe: () -> Unit = {},
     val onStartWake: () -> Unit = {},
     val onStopWake: () -> Unit = {},

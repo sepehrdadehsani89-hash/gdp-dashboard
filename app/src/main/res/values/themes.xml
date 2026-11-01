@@ -8,4 +8,9 @@
         <item name="android:colorAccent">#55E0D1</item>
         <item name="android:windowBackground">#080F19</item>
     </style>
+    <style name="Theme.Jarvis.Capture" parent="Theme.Jarvis">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowDisablePreview">true</item>
+    </style>
 </resources>

@@ -1,8 +1,10 @@
 # Set up Jarvis on your Redmi 9
 
-Android preview 0.1.2 · Android 10 or newer · ARM64.
+Android preview 0.1.3 · Android 10 or newer · ARM64.
 
-[Download the Android APK, about 98 MB](https://raw.githubusercontent.com/sepehrdadehsani89-hash/gdp-dashboard/0a88689626d61d337e90df97ce20e70f05441a83/downloads/Jarvis-0.1.2-arm64.apk)
+**For the new connection test, faster speech, screenshot follow-ups, memory and optional locked chat, follow [this version’s setup](0.1.3_PHONE_FIXES.md).**
+
+[Download the Android APK, about 98 MB](https://raw.githubusercontent.com/sepehrdadehsani89-hash/gdp-dashboard/jarvis-android-download/downloads/Jarvis-0.1.3-arm64.apk)
 
 [Open the download QR code](../downloads/Jarvis-QR.png)
 
@@ -12,7 +14,7 @@ You can complete this setup entirely on your phone. No computer, USB debugging, 
 
 **Known block:** If Play Protect shows “App blocked to protect your device,” stop installation and follow the [official review steps and APK packet](PLAY_PROTECT_REVIEW.md). Allowing a browser to install unknown apps is a separate Android setting and does not clear a Play Protect verdict. No feature has been removed from this full build.
 
-Open the APK link on your **Redmi 9**, or scan the QR from your computer's screen with the phone camera. If the chat browser does not download it, copy the link into Chrome. Save the file, then open **Downloads → Jarvis-0.1.2-arm64.apk**.
+Open the APK link on your **Redmi 9**, or scan the QR from your computer's screen with the phone camera. If the chat browser does not download it, copy the link into Chrome. Save the file, then open **Downloads → Jarvis-0.1.3-arm64.apk**.
 
 If Android asks, open **Settings → Allow from this source** for the browser/file manager you used, return, and tap **Install → Open**. You can revoke that installation permission afterward. The QR starts a download; Android still requires you to approve installation.
 
@@ -76,7 +78,7 @@ After the microphone and voice checks work, open Settings and tap **Start listen
 | Spanish | Hola Jarvis |
 | Persian | سلام جارویس |
 
-Say the phrase, then your command. **Keep the phone unlocked for commands in this preview. Only one listening language is active at a time.** To switch, choose another language in Settings, download its packs if missing, and tap Start listening again.
+Say the phrase, then your command. **Private data/actions require unlock. General chat while locked is a separate disabled-by-default setting. Only one listening language is active at a time.** To switch, choose another language in Settings, download its packs if missing, and tap Start listening again.
 
 If the phone locked or listening became paused, unlock it, tap **Pause**, then **Start listening** again.
 

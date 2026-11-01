@@ -1,28 +1,35 @@
-# Verification evidence
+# Jarvis 0.1.3 verification
 
-Results refer to this source build, not to the user's physical Redmi 9. See downloads/build-info.json for the phone APK hash and SDK/ABI details.
+Results describe the built source and API29 x86_64 software emulator, not the owner's physical Redmi 9. Exact phone APK identity is in [build-info.json](../downloads/build-info.json); [verification.json](../downloads/verification.json) lists individual Android cases.
 
-| Check | Result / evidence |
+| Check | Final result |
 | --- | --- |
-| ARM64 debug APK assembly | Passed: Gradle assembleDebug; signed APK preserved under downloads |
-| JVM unit tests | 83 passed, 0 failures/errors/skips; app/build/test-results/testDebugUnitTest |
-| Android lint | Passed with zero errors; warnings retained and reviewed in app/build/reports/lint-results-debug.html |
-| APK signing | APK Signature Scheme v2 verification passed using Android apksigner |
-| Phone ABI and SDK | ZIP inspected: arm64-v8a only; min29 / target35 |
-| Local LLM JNI | Native ARM64 and x86_64 compilation passed; Qwen weights were unavailable under environment policy, so local LLM inference on a phone remains unverified |
-| OCR native SDK | Built from official source for ARM64/x86_64; 16 KiB ELF alignment checked; language assets hashed; actual Android OCR read rendered HELLO JARVIS pixels |
-| Neural speech models | Official English/Spanish/Persian archives hashed; real synthesis passed on Linux and Android x86_64 for all three languages with non-silent output |
-| Android emulator | 0.1.2: two Gemini settings scenarios passed on API29 x86_64, zero failures/skips. 0.1.1 historical baseline: six UI/privacy scenarios passed; unchanged native checks were not repeated |
-| Live news/weather/model download | Environment destination policy blocks the runtime hosts; parser fixtures and URL policy tested, live operation on the phone unverified |
-| Cloud provider requests | Protocol/SSE tests passed; no real API keys provided, so account-backed calls unverified |
-| Hardware-dependent behavior | Actual Redmi microphone, audible voice quality, wake accuracy, Bluetooth, background persistence, battery and speed remain unverified |
+| ARM64 APK assembly | Passed; Android 10+ / target35 / arm64-v8a only |
+| JVM tests | 95 passed, zero failures/errors/skips |
+| Android UI/runtime tests | 10 passed: three provider-dialog cases, six existing UI/privacy flows, one real screen-capture flow |
+| Native Android OCR | Passed on actual rendered pixels |
+| Native three-language neural voice rerun | Skipped: downloaded models absent from the runner's fresh installation. Historical 0.1.1 synthesis passed for English/Spanish/Persian; not a new 0.1.3 pass |
+| Android total | 12 cases: 11 passed, zero failures/errors, one skipped |
+| Android lint | Zero errors; 17 warnings retained, not suppressed |
+| APK signature | Android apksigner v2 verification passed; same development certificate as 0.1.1/0.1.2 |
+| Sensitive capabilities | Actual APK manifest retains contacts, calendar, coarse location, Accessibility and Notification Listener services |
+| Live Google account | Not tested: no real API key or authenticated Gemini access available in this workspace |
+| Physical Redmi 9 | Microphone, audible quality, wake accuracy, latency, battery and background endurance remain phone checks |
 
-Lint warnings include Android storage-space guidance, the deliberate phone-only default ABI, synchronous credential commits whose result is checked, version-catalog guidance, license-text concatenation, and unused permissive crypto-library TLS helper classes from PDFBox's transitive Bouncy Castle dependency. The app's OkHttp clients use default certificate validation; no trust-all manager is installed. Warnings were not suppressed to imply a cleaner result.
+## What the new checks establish
 
-Instrumented checks exercise real UI/runtime/Room and native inference. Native OCR and all-three-language neural synthesis passed on API29 x86_64. Voice models were preloaded from verified archives for native tests; that does not establish Android download-client behavior or speaker audibility. Initial UI runs exposed a duplicate selector and reply visibility/keyboard issue; those were corrected and the affected cases passed. The final complete UI-only run passed all six scenarios with zero failures or skips. Native OCR and all-three-language synthesis passed separately; there was no need to repeat the unchanged native inference after the keyboard fix. The public downloads/verification.json records the final outcomes. A successful emulator run does not validate physical microphone or Redmi performance.
+The provider test makes a small non-streamed request and displays its actual sample, model and elapsed time. Fixtures verify paths/headers, empty-response rejection, known error classification without secret echo, and cancellation after the 15-second test deadline. Another test cancels ordinary AI generation if no answer text begins within 12 seconds. Virtual deadlines verify control flow, not Google's real response speed.
 
-Version0.1.1 adds a real Android regression proving private-memory speech stays on-device even with optional cloud voice enabled. All tool replies deny cloud speech by default; only general AI conversation without private attachment/memory context can opt into it.
+A throttled local HTTP response proves the first text callback arrives before the stream ends and cancellation closes the pending request. A sentence-buffer check verifies text can be queued for speech before the complete answer exists. Direct UTF-8 SSE decoding covers Persian, Spanish and CR/LF boundaries. The mock server throttles request bodies too, so its fixture keeps the request below one period; an earlier fixture delayed the request itself and was corrected.
 
-Version 0.1.2 adds Gemini model discovery (only models advertising `generateContent`), explicit connection testing, and bounded known-code error classification. Seven new JVM checks include real HTTP requests against a local mock server, exact API paths/headers, Live-only filtering, sample-only test data, failure reporting and credential non-disclosure. No real Google key was available; live account access, regional eligibility and generation quota must be checked on the phone. The package, certificate and requested phone capabilities are preserved.
+The screenshot test enables Accessibility on the dedicated emulator after the runner installs the app, accepts Jarvis's disclosure and Android's actual MediaProjection dialog, obtains one real JPEG, decodes it, checks pixels with OCR, verifies the consent dialog is absent, and clears the retained image. It never uploads the image. An initial test enabled access before the runner's reinstall; moving that step afterward fixed test setup. Production APK code cannot grant Accessibility or capture consent silently.
 
-The 0.1.2 Android checks use explicit local UI fixtures, not a live Google account. They verify compatible-model selection → test → save, and a failed test that never displays a success claim. Both passed on the existing API29 x86_64 emulator. An initial test could not find the lazy list's off-screen Save button; the test now scrolls the containing list before clicking it.
+Memory checks cover bounded complete general turns, durable explicit-memory UI behavior, screenshot expiry/zeroing, multilingual capture/follow-up phrases, locked-request guards, omission of saved identity from locked general requests, and private-memory speech staying on-device with cloud speech enabled. Phone-tool, screenshot and attachment turns are excluded from general cloud history.
+
+## Limits
+
+Gemini endpoints and sample parsing have protocol/HTTP fixture coverage; account quota, geographic eligibility and actual Google answers still require the phone's Test connection and a screen question. No successful Google connection, immediate spoken response, or Play Protect approval is claimed from an emulator run.
+
+Screen-off support uses a visible user-started microphone foreground service and a bounded, renewed partial CPU wake lock. Locked general chat is a separate disabled-by-default option without identity/private context. Android/MIUI can stop listening; reboot and force-stop require reopening the app. A powered-off device cannot run Jarvis. Background endurance is not physically validated.
+
+Lint warnings include deliberate ARM64 phone-only packaging, storage guidance, checked synchronous credential commits, version-catalog suggestions, an obsolete API29 guard, license text concatenation, and unused Bouncy Castle TLS helpers from PDFBox's dependency. App HTTP clients retain platform TLS validation; no trust-all manager is configured.

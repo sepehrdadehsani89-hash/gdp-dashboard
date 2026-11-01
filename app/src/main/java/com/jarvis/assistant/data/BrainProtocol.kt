@@ -6,8 +6,11 @@ import com.jarvis.assistant.core.MessageRole
 import com.jarvis.assistant.core.choose
 import java.io.Reader
 import java.time.LocalDate
+import java.util.Base64
 import org.json.JSONArray
 import org.json.JSONObject
+import okio.Buffer
+import okio.BufferedSource
 
 /** Pure provider protocol code, separated from credentials and Android lifecycle. */
 object BrainProtocol {
@@ -22,7 +25,7 @@ object BrainProtocol {
             You are Jarvis, a calm, capable personal assistant. Today is $date.
             $voice
             ${if (displayName.isNotBlank()) "The user's chosen name is: ${JSONObject.quote(displayName)}." else ""}
-            Write for spoken conversation: concise natural sentences, usually under 120 words.
+            Write for spoken conversation: start with the answer, usually under 80 words. Use short sentences.
             Do not read raw URLs, markdown syntax, or long lists aloud. Do not invent news, sources, memories, or completed actions.
             You cannot directly control the phone. Never claim to send, buy, delete, call, change settings, or execute an action.
             Explain when a request needs a supported phone tool or explicit confirmation.
@@ -52,6 +55,7 @@ object BrainProtocol {
         userText: String,
         context: String,
         history: List<ChatMessage>,
+        screenshot: ByteArray? = null,
     ): String {
         val recent = history.filter { it.role != MessageRole.STATUS }.takeLast(16).toMutableList()
         // Root may already have persisted the current utterance. Avoid sending it twice.
@@ -72,14 +76,23 @@ object BrainProtocol {
                         put(JSONObject().put("role", if (message.role == MessageRole.USER) "user" else "model")
                             .put("parts", JSONArray().put(JSONObject().put("text", message.text.take(6000)))))
                     }
-                    put(JSONObject().put("role", "user").put("parts", JSONArray().put(JSONObject().put("text", prompt))))
+                    put(JSONObject().put("role", "user").put("parts", JSONArray().apply {
+                        put(JSONObject().put("text", prompt))
+                        if (screenshot != null) {
+                            require(screenshot.size <= 1_500_000) { "Screenshot exceeds the request limit" }
+                            put(JSONObject().put("inlineData", JSONObject().put("mimeType", "image/jpeg").put("data", Base64.getEncoder().encodeToString(screenshot))))
+                        }
+                    }))
                 })
-                put("generationConfig", JSONObject().put("maxOutputTokens", 2048).put("temperature", 0.5))
+                put("generationConfig", JSONObject().put("maxOutputTokens", 768).put("temperature", 0.5).apply {
+                    // Only this known Flash family supports disabling its thinking budget.
+                    if (model == "gemini-2.5-flash" || model.startsWith("gemini-2.5-flash-")) put("thinkingConfig", JSONObject().put("thinkingBudget", 0))
+                })
             }.toString()
             "openai", "anthropic" -> JSONObject().apply {
                 put("model", model)
                 put("stream", true)
-                put("max_tokens", 2048)
+                put("max_tokens", 768)
                 if (provider == "anthropic") put("system", system)
                 put("messages", JSONArray().apply {
                     if (provider == "openai") put(JSONObject().put("role", "system").put("content", system))
@@ -111,6 +124,16 @@ object BrainProtocol {
         }
     }
 
+    fun completionText(provider: String, data: String): String {
+        val root = JSONObject(data)
+        return when (provider) {
+            "gemini" -> textDelta(provider, data)
+            "openai" -> textValue(root.optJSONArray("choices")?.optJSONObject(0)?.optJSONObject("message"), "content")
+            "anthropic" -> root.optJSONArray("content")?.let { parts -> (0 until parts.length()).joinToString("") { textValue(parts.optJSONObject(it), "text") } }.orEmpty()
+            else -> ""
+        }.trim()
+    }
+
     // Android's org.json can coerce JSON null/objects to strings; only actual text is speech.
     private fun textValue(value: JSONObject?, key: String): String = value?.opt(key) as? String ?: ""
 
@@ -129,7 +152,7 @@ object BrainProtocol {
             if ((0 until methods.length()).none { methods.optString(it) == "generateContent" }) return@mapNotNull null
             val name = (item.opt("name") as? String)?.removePrefix("models/") ?: return@mapNotNull null
             name.takeIf { it.length <= 100 && it.matches(Regex("gemini-[A-Za-z0-9._:-]+")) }
-        }.distinct().sorted()
+        }.distinct().sortedWith(compareBy<String> { when { "flash-lite" in it -> 0; "flash" in it -> 1; else -> 2 } }.thenBy { it })
     }
 
     fun providerHttpError(status: Int, provider: String, body: String, language: AppLanguage): String {
@@ -182,6 +205,23 @@ class SseDecoder(private val onData: (String) -> Unit) {
             data.clear()
             onData(item)
         }
+    }
+
+    /** Read available UTF-8 bytes directly: no Reader layer may wait for more characters. */
+    fun consumeUtf8(source: BufferedSource, isActive: () -> Boolean = { true }) {
+        val current = Buffer()
+        var total = 0
+        var previousWasCr = false
+        while (isActive() && !source.exhausted()) {
+            val next = source.readByte().toInt() and 0xff
+            require(++total <= 4_000_000) { "Provider stream exceeded the safety limit" }
+            when (next) {
+                13 -> { line(current.readUtf8()); previousWasCr = true }
+                10 -> { if (!previousWasCr) line(current.readUtf8()); previousWasCr = false }
+                else -> { previousWasCr = false; require(current.size < 1_000_000) { "Provider line exceeded the safety limit" }; current.writeByte(next) }
+            }
+        }
+        if (isActive()) { if (current.size > 0) line(current.readUtf8()); flush() }
     }
 
     /** Bound lines while reading, before an untrusted readLine() can allocate an enormous string. */

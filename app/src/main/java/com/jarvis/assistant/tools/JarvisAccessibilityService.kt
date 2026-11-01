@@ -21,7 +21,7 @@ class JarvisAccessibilityService : AccessibilityService() {
         private var current = WeakReference<JarvisAccessibilityService>(null)
         val connected: Boolean get() = current.get() != null
 
-        fun snapshot(context: Context): ScreenReadResult {
+        fun snapshot(context: Context, forCapture: Boolean = false): ScreenReadResult {
             if (context.getSystemService(KeyguardManager::class.java).isDeviceLocked) return ScreenReadResult(null, ScreenFailure.LOCKED)
             val service = current.get() ?: return ScreenReadResult(null, ScreenFailure.PERMISSION)
             val root = service.rootInActiveWindow ?: return ScreenReadResult(null, ScreenFailure.UNAVAILABLE)
@@ -33,7 +33,7 @@ class JarvisAccessibilityService : AccessibilityService() {
             fun visit(node: AccessibilityNodeInfo?, depth: Int) {
                 if (node == null || depth > 25 || nodes++ > 250 || lines.size >= 70) return
                 if (node.isPassword) {
-                    if (node.isFocused || node.isAccessibilityFocused) sensitiveFocusedField = true
+                    if (forCapture || node.isFocused || node.isAccessibilityFocused) sensitiveFocusedField = true
                     return
                 }
                 if (!node.isVisibleToUser) return
@@ -44,7 +44,7 @@ class JarvisAccessibilityService : AccessibilityService() {
             }
             visit(root, 0)
             if (sensitiveFocusedField) return ScreenReadResult(null, ScreenFailure.PROTECTED)
-            if (lines.isEmpty()) return ScreenReadResult(null, ScreenFailure.UNAVAILABLE)
+            if (lines.isEmpty()) return ScreenReadResult(null, ScreenFailure.UNAVAILABLE, packageName)
             return ScreenReadResult(lines.joinToString("\n").take(7_000), null, packageName)
         }
 

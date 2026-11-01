@@ -8,11 +8,11 @@ This is a development build for personal testing. It provides a real Android app
 
 ## Download for Android
 
-[**Download Jarvis 0.1.2 APK — about 98 MB**](https://raw.githubusercontent.com/sepehrdadehsani89-hash/gdp-dashboard/0a88689626d61d337e90df97ce20e70f05441a83/downloads/Jarvis-0.1.2-arm64.apk) · [Checksums and build details](downloads/build-info.json) · [Verification](docs/VERIFICATION.md)
+[**Download Jarvis 0.1.3 APK — about 98 MB**](https://raw.githubusercontent.com/sepehrdadehsani89-hash/gdp-dashboard/jarvis-android-download/downloads/Jarvis-0.1.3-arm64.apk) · [Checksums and build details](downloads/build-info.json) · [Verification](docs/VERIFICATION.md)
 
 <img src="downloads/screenshots/home.png" width="220" alt="Real Android emulator: Jarvis home"> <img src="downloads/screenshots/persian-home.png" width="220" alt="Real Android emulator: Persian RTL home">
 
-[Gemini connection setup](docs/GEMINI_SETUP.md) · [Phone-only setup tutorial](docs/PHONE_SETUP.md) · [Download QR code](downloads/Jarvis-QR.png)
+[New phone setup: speed, screen analysis, memory and screen-off use](docs/0.1.3_PHONE_FIXES.md) · [Gemini connection setup](docs/GEMINI_SETUP.md) · [Phone-only setup tutorial](docs/PHONE_SETUP.md) · [Download QR code](downloads/Jarvis-QR.png)
 
 ## Start on your phone
 
@@ -33,15 +33,15 @@ No USB connection or computer is needed to install a supplied APK. Building from
 | English, Spanish, Persian speech | Selected-language offline Vosk model; an installed offline system voice or downloaded neural voice. Language selection is explicit. |
 | Wake phrases | **Hey Jarvis**, **Hola Jarvis**, **سلام جارویس**, matched in the selected listening language. Recognition accuracy depends on the voice/model/device. |
 | News and YouTube | Internet-backed news with source links; YouTube search/navigation uses supported app intents. Source availability can change. |
-| Memory | Explicit facts you ask Jarvis to remember, stored on the phone and removable in the Memory screen. |
+| Memory | Durable explicit facts plus four recent general turns in RAM. Sharing saved facts with cloud AI is a separate, disabled-by-default choice. |
 | Apps and device context | Supported app launching, phone utilities, and optional contacts/calendar/location access. Sensitive mutations use an approval step or a system-owned draft. |
-| Files, photos, and current screen | User-selected documents/photos and optional accessibility context, subject to the app's supported parsers and privacy limits. Android sandboxes remain in force. |
+| Files, photos, and current screen | Selected documents and photo OCR; explicit one-shot screenshot capture with follow-up Gemini visual questions. Android consent, secure-window protections and private-app sandboxes remain in force. |
 | Notifications | Optional Android notification-listener access; read access is a separate user decision. |
 | Stop everything | Stops app-owned listening/speech/generation and cancels pending work. It cannot undo an action already completed in another app. |
 
 Jarvis cannot silently access every app's private database, all photos, or every file. File and photo access uses user selection, and Android requires separate approval for sensitive permissions and special access. Banking/payment/password-manager automation is blocked. No root or permission bypass is used.
 
-This preview requires the phone to be unlocked for commands. Wake listening is best effort. Android, force-stop, battery settings, and the phone manufacturer may stop it. This build does not start microphone capture automatically at boot. Reopen Jarvis and explicitly resume when necessary.
+Private data and phone actions require unlock. Optional General chat while locked allows public answers without saved identity, history, facts or attachments; nearby people can ask and hear them. Wake listening is best effort. Android, force-stop, battery settings, and the phone manufacturer may stop it. This build does not start microphone capture automatically at boot. Reopen Jarvis and explicitly resume when necessary.
 
 ## No API key required
 
@@ -49,7 +49,7 @@ The default provider is local. A local language model, downloaded to private app
 
 The Qwen 0.5B model is intentionally small for constrained devices. A Redmi 9 may need substantial time to generate a reply and can run out of memory when other apps are active. This is not equivalent to a large cloud model. Persian and Spanish quality must be evaluated on the device. See [local model details](docs/LOCAL_MODEL.md).
 
-Optional OpenAI, Anthropic, and Gemini adapters are available for users who choose cloud processing and enter their own key privately in Settings. Keys are not bundled. In Settings, **Find Gemini models** lists compatible text models and **Test connection** checks a short sample request before saving. Live-only Gemini models require a different API. See [Gemini setup and troubleshooting](docs/GEMINI_SETUP.md). A ChatGPT subscription does not automatically provide an API key or API credit. Choosing a cloud provider sends the relevant conversation context to that provider.
+Optional OpenAI, Anthropic, and Gemini adapters are available for users who choose cloud processing and enter their own key privately in Settings. Keys are not bundled. In Settings, **Find Gemini models** lists compatible text models and **Test connection** checks a short non-streamed sample with a 15-second deadline and visible actual result; Connect & save persists a verified selection. Live-only Gemini models require a different API. See [Gemini setup and troubleshooting](docs/GEMINI_SETUP.md). A ChatGPT subscription does not automatically provide an API key or API credit. Choosing a cloud provider sends the relevant conversation context to that provider.
 
 ## Build from source
 

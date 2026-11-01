@@ -58,8 +58,10 @@ class MainActivity : ComponentActivity() {
                 onSaveSettings = runtime::saveSettings,
                 onListGeminiModels = runtime::listGeminiModels,
                 onTestProvider = runtime::testProvider,
+                onPlayConnectionTest = runtime::playConnectionSample,
                 onRememberDelete = runtime::deleteMemory,
                 onClearConversation = runtime::clearConversation,
+                onClearScreen = runtime::clearScreenContext,
                 onWipe = runtime::wipe,
                 onStartWake = {
                     if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) microphone.launch(Manifest.permission.RECORD_AUDIO)

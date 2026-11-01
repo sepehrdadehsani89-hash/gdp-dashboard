@@ -145,6 +145,8 @@ class JarvisStore(context: Context) {
             .putBoolean("speakReplies", safe.speakReplies)
             .putBoolean("allowNetworkSpeech", safe.allowNetworkSpeech)
             .putBoolean("useCloudVoice", safe.useCloudVoice)
+            .putBoolean("shareSavedMemories", safe.shareSavedMemories)
+            .putBoolean("allowLockedChat", safe.allowLockedChat)
             .putBoolean("onboardingComplete", safe.onboardingComplete)
             .apply()
         mutableSettings.value = safe
@@ -218,6 +220,8 @@ class JarvisStore(context: Context) {
             speakReplies = preferences.getBoolean("speakReplies", defaults.speakReplies),
             allowNetworkSpeech = preferences.getBoolean("allowNetworkSpeech", defaults.allowNetworkSpeech),
             useCloudVoice = preferences.getBoolean("useCloudVoice", defaults.useCloudVoice),
+            shareSavedMemories = preferences.getBoolean("shareSavedMemories", defaults.shareSavedMemories),
+            allowLockedChat = preferences.getBoolean("allowLockedChat", defaults.allowLockedChat),
             onboardingComplete = preferences.getBoolean("onboardingComplete", defaults.onboardingComplete),
         )
     }

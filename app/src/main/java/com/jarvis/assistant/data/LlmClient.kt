@@ -2,14 +2,21 @@ package com.jarvis.assistant.data
 
 import com.jarvis.assistant.core.AppLanguage
 import com.jarvis.assistant.core.AssistantSettings
+import com.jarvis.assistant.core.ConnectionCheck
 import com.jarvis.assistant.core.ChatMessage
 import com.jarvis.assistant.core.choose
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.MediaType.Companion.toMediaType
@@ -33,13 +40,15 @@ class LlmClient internal constructor(
         context: String,
         history: List<ChatMessage>,
         onChunk: (String) -> Unit,
+        screenshot: ByteArray? = null,
+        includeIdentity: Boolean = true,
     ): String {
         val settings = currentSettings()
         val provider = settings.provider
         val key = savedKey(provider)
         if (key.isBlank()) throw MissingApiKeyException(language)
         val model = BrainProtocol.model(provider, settings.model)
-        val body = BrainProtocol.requestBody(provider, model, BrainProtocol.systemPrompt(language, settings.name), userText, context, history)
+        val body = BrainProtocol.requestBody(provider, model, BrainProtocol.systemPrompt(language, if (includeIdentity) settings.name else ""), userText, context, history, screenshot)
         return stream(http.newCall(request(provider, model, key, body)), provider, language, onChunk)
     }
 
@@ -56,12 +65,22 @@ class LlmClient internal constructor(
     }
 
     /** Explicit Settings test: a canned prompt, with no history, files, memories or phone data. */
-    suspend fun testConnection(settings: AssistantSettings, enteredKey: String): String {
+    suspend fun testConnection(settings: AssistantSettings, enteredKey: String): ConnectionCheck = try { withTimeout(15_000) {
+        val started = System.nanoTime()
         val key = connectionKey(settings.provider, enteredKey, settings.language)
         val model = BrainProtocol.model(settings.provider, settings.model)
-        val body = BrainProtocol.requestBody(settings.provider, model, "Reply briefly to this connection test.", "Say hello.", "", emptyList())
-        stream(http.newCall(request(settings.provider, model, key, body)), settings.provider, settings.language) {}
-        return model
+        val body = JSONObject(BrainProtocol.requestBody(settings.provider, model, "Reply with a single short greeting.", "Say hello.", "", emptyList())).apply {
+            if (settings.provider == "gemini") getJSONObject("generationConfig").put("maxOutputTokens", 128)
+            else { put("stream", false); put("max_tokens", 64) }
+        }.toString()
+        val builder = request(settings.provider, model, key, body).newBuilder().header("Accept", "application/json")
+        if (settings.provider == "gemini") builder.url("https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent")
+        val response = json(http.newCall(builder.build()), settings.language, settings.provider)
+        val sample = BrainProtocol.completionText(settings.provider, response).take(240)
+        if (sample.isBlank()) throw ProviderException(settings.language.choose("Google or the selected provider returned no answer. The connection is not verified; try another text model.", "El proveedor no devolvió una respuesta. La conexión no está verificada; prueba otro modelo de texto.", "سرویس پاسخی نداد. اتصال تأیید نشده است؛ مدل متنی دیگری را امتحان کنید."))
+        ConnectionCheck(model, sample, (System.nanoTime() - started) / 1_000_000)
+    } } catch (_: TimeoutCancellationException) {
+        throw ProviderException(settings.language.choose("Connection test timed out after 15 seconds. No connection was verified. Check your internet, API quota and model; a Flash or Flash-Lite text model is usually faster.", "La prueba agotó 15 segundos. No se verificó la conexión. Revisa internet, cuota y modelo; Flash o Flash-Lite suele ser más rápido.", "آزمایش پس از ۱۵ ثانیه پایان یافت و اتصال تأیید نشد. اینترنت، سهمیه و مدل را بررسی کنید؛ مدل متنی Flash یا Flash-Lite معمولاً سریع‌تر است."))
     }
 
     suspend fun availableGeminiModels(enteredKey: String, language: AppLanguage): List<String> {
@@ -80,7 +99,7 @@ class LlmClient internal constructor(
         return BrainProtocol.validateApiKey(key)
     }
 
-    private suspend fun json(call: Call, language: AppLanguage): String = suspendCancellableCoroutine { continuation ->
+    private suspend fun json(call: Call, language: AppLanguage, provider: String = "gemini"): String = suspendCancellableCoroutine { continuation ->
         continuation.invokeOnCancellation { call.cancel() }
         call.enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
@@ -89,7 +108,7 @@ class LlmClient internal constructor(
             override fun onResponse(call: Call, response: Response) {
                 try {
                     response.use {
-                        if (!it.isSuccessful) throw ProviderException(BrainProtocol.providerHttpError(it.code, "gemini", it.peekBody(32_768).string(), language))
+                        if (!it.isSuccessful) throw ProviderException(BrainProtocol.providerHttpError(it.code, provider, it.peekBody(32_768).string(), language))
                         val content = it.body ?: throw ProviderException("Google returned no model list.")
                         val source = content.source()
                         if (source.request(1_000_001)) throw ProviderException("The model list exceeded the length limit.")
@@ -125,12 +144,15 @@ class LlmClient internal constructor(
         return bytes(http.newCall(request), language)
     }
 
-    private suspend fun stream(call: Call, provider: String, language: AppLanguage, onChunk: (String) -> Unit): String =
-        suspendCancellableCoroutine { continuation ->
+    private suspend fun stream(call: Call, provider: String, language: AppLanguage, onChunk: (String) -> Unit): String = coroutineScope {
+        val receivedText = AtomicBoolean(false)
+        val firstTextTimedOut = AtomicBoolean(false)
+        val deadline = launch { delay(12_000); if (!receivedText.get()) { firstTextTimedOut.set(true); call.cancel() } }
+        try { suspendCancellableCoroutine { continuation ->
             continuation.invokeOnCancellation { call.cancel() }
             call.enqueue(object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
-                    if (continuation.isActive) continuation.resumeWithException(ProviderException(language.choose("I couldn't reach the AI provider. Check your connection and try again.", "No pude conectar con el proveedor. Revisa tu conexión e inténtalo otra vez.", "نتوانستم به هوش مصنوعی وصل شوم. اینترنت را بررسی کن و دوباره امتحان کن.")))
+                    if (continuation.isActive) continuation.resumeWithException(if (firstTextTimedOut.get()) firstTextError(language) else ProviderException(language.choose("I couldn't reach the AI provider. Check your connection and try again.", "No pude conectar con el proveedor. Revisa tu conexión e inténtalo otra vez.", "نتوانستم به هوش مصنوعی وصل شوم. اینترنت را بررسی کن و دوباره امتحان کن.")))
                 }
                 override fun onResponse(call: Call, response: Response) {
                     try {
@@ -141,25 +163,27 @@ class LlmClient internal constructor(
                             val decoder = SseDecoder { event ->
                                 val delta = BrainProtocol.textDelta(provider, event)
                                 if (delta.isNotEmpty()) {
+                                    receivedText.set(true)
                                     if (text.length + delta.length > 64_000) throw ProviderException("The AI response exceeded the length limit.")
                                     text.append(delta)
                                     if (continuation.isActive) onChunk(delta)
                                 }
                             }
-                            content.charStream().buffered().use { reader ->
-                                decoder.consume(reader) { continuation.isActive }
-                            }
+                            decoder.consumeUtf8(content.source()) { continuation.isActive }
                             val answer = text.toString().trim()
                             if (answer.isBlank()) throw ProviderException("The AI provider did not return a spoken answer. Try a different question or model.")
                             if (continuation.isActive) continuation.resume(answer)
                         }
                     } catch (error: Exception) {
-                        val safe = if (error is ProviderException) error else ProviderException(language.choose("The AI provider response could not be read. Please try again.", "No pude leer la respuesta del proveedor. Inténtalo otra vez.", "پاسخ هوش مصنوعی قابل خواندن نبود. دوباره امتحان کن."))
+                        val safe = if (firstTextTimedOut.get()) firstTextError(language) else if (error is ProviderException) error else ProviderException(language.choose("The AI provider response could not be read. Please try again.", "No pude leer la respuesta del proveedor. Inténtalo otra vez.", "پاسخ هوش مصنوعی قابل خواندن نبود. دوباره امتحان کن."))
                         if (continuation.isActive) continuation.resumeWithException(safe)
                     }
                 }
             })
-        }
+        } } finally { deadline.cancel() }
+    }
+
+    private fun firstTextError(language: AppLanguage) = ProviderException(language.choose("The AI did not start an answer within 12 seconds. Check your connection and quota, or choose a listed Flash/Flash-Lite text model in Settings.", "La IA no empezó a responder en 12 segundos. Revisa conexión y cuota, o elige Flash/Flash-Lite en Ajustes.", "هوش مصنوعی در ۱۲ ثانیه شروع به پاسخ نکرد. اینترنت و سهمیه را بررسی کنید یا مدل متنی Flash/Flash-Lite را در تنظیمات انتخاب کنید."))
 
     private suspend fun bytes(call: Call, language: AppLanguage): ByteArray = suspendCancellableCoroutine { continuation ->
         continuation.invokeOnCancellation { call.cancel() }
@@ -197,9 +221,9 @@ class LlmClient internal constructor(
     companion object {
         private val JSON = "application/json; charset=utf-8".toMediaType()
         private fun defaultHttp() = OkHttpClient.Builder()
-            .connectTimeout(15, TimeUnit.SECONDS)
-            .readTimeout(45, TimeUnit.SECONDS)
-            .callTimeout(90, TimeUnit.SECONDS)
+            .connectTimeout(8, TimeUnit.SECONDS)
+            .readTimeout(15, TimeUnit.SECONDS)
+            .callTimeout(40, TimeUnit.SECONDS)
             .followRedirects(false)
             .followSslRedirects(false)
             .build()

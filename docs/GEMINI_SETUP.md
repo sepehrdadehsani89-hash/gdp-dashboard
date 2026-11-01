@@ -1,14 +1,14 @@
 # Connect Gemini on your phone
 
-Jarvis 0.1.2 adds model discovery and a connection test. A saved key alone does not mean Google accepted it or that the selected model can answer.
+Jarvis 0.1.3 adds a short connection check with a visible result and 15-second deadline. A saved key alone does not mean Google accepted it or that the selected model can answer.
 
-1. Install the 0.1.2 APK as an update to Jarvis. Keep the existing app installed so Android can preserve its settings, memories and downloaded models. The package and signing certificate are unchanged.
+1. Install the 0.1.3 APK as an update to Jarvis. Keep the existing app installed so Android can preserve its settings, memories and downloaded models. The package and signing certificate are unchanged.
 2. Open Jarvis → Settings → Intelligence, your way → Gemini.
 3. Enter a Gemini API key created in [Google AI Studio](https://aistudio.google.com/apikey), or leave the field blank to keep the Gemini key already stored on the phone. Do not send your key in chat or screenshots.
 4. Tap **Find Gemini models**. This asks Google's API for model identifiers that support `generateContent`. It does not send your conversations or phone data. The API may return a paginated catalog; this version requests up to 1,000 models from its first page. Listing a model does not guarantee generation quota or regional availability.
 5. Select an exact identifier from the list. Jarvis uses Gemini's text-generation API, then reads its response with the selected voice. A Live-only model uses a different API and cannot be selected from this compatible-model list. Do not guess identifiers such as `gemini-3.8-live`.
-6. Tap **Test connection**. This sends one short sample prompt, without your conversations, memories, files, screen contents or notifications. Provider quota or charges may apply.
-7. After **Connection verified**, scroll down and tap **Save settings**. Return to Assistant and type **Hello** before testing voice commands.
+6. Tap **Test connection**. A checking dialog shows elapsed time and a Cancel check button. The API request has a 15-second deadline. This sends one short sample prompt, without your conversations, memories, files, screen contents or notifications. Provider quota or charges may apply.
+7. The result dialog must show **Connection verified**, the exact model, elapsed time and an actual sample reply. Tap **Connect & save** there. A failure is shown as **Connection not verified**; a stored key alone is not success. Return to Assistant and type **Hello** before testing voice commands. Prefer a listed Flash-Lite or Flash text model for lower latency; Pro/thinking models can be slower. Keep optional OpenAI cloud voice off for faster on-device speech.
 
 ## If the test fails
 
