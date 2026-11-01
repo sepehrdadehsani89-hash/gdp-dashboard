@@ -1,0 +1,605 @@
+package com.jarvis.assistant.ui
+
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowForward
+import androidx.compose.material.icons.automirrored.rounded.Send
+import androidx.compose.material.icons.automirrored.rounded.OpenInNew
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.AttachFile
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.DeleteOutline
+import androidx.compose.material.icons.rounded.Forum
+import androidx.compose.material.icons.rounded.GraphicEq
+import androidx.compose.material.icons.rounded.Headphones
+import androidx.compose.material.icons.rounded.Image
+import androidx.compose.material.icons.rounded.Lock
+import androidx.compose.material.icons.rounded.Memory
+import androidx.compose.material.icons.rounded.Mic
+import androidx.compose.material.icons.rounded.MoreHoriz
+import androidx.compose.material.icons.rounded.NotificationsNone
+import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.rounded.Shield
+import androidx.compose.material.icons.rounded.Stop
+import androidx.compose.material.icons.rounded.Visibility
+import androidx.compose.material.icons.rounded.VisibilityOff
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.Typography
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.jarvis.assistant.core.AppLanguage
+import com.jarvis.assistant.core.AssistantPhase
+import com.jarvis.assistant.core.AssistantSettings
+import com.jarvis.assistant.core.ChatMessage
+import com.jarvis.assistant.core.MessageRole
+import com.jarvis.assistant.core.choose
+import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.sin
+
+private val Ink = Color(0xFF07111F)
+private val Panel = Color(0xFF102033)
+private val PanelLight = Color(0xFF14283D)
+private val Mint = Color(0xFF7CE7CF)
+private val Muted = Color(0xFF91A7BB)
+private val Lavender = Color(0xFFB7B5F5)
+private val Warm = Color(0xFFF0C8A9)
+private val Line = Color(0xFF263A50)
+
+@Composable
+fun JarvisAppUi(state: JarvisUiState, actions: JarvisUiActions) {
+    val language = state.settings.language
+    CompositionLocalProvider(LocalLayoutDirection provides if (language == AppLanguage.FA) LayoutDirection.Rtl else LayoutDirection.Ltr) {
+        MaterialTheme(
+            colorScheme = darkColorScheme(
+                primary = Mint, onPrimary = Ink, secondary = Lavender, background = Ink,
+                surface = Panel, onSurface = Color(0xFFF2F5FA), onSurfaceVariant = Muted,
+                surfaceVariant = PanelLight, outline = Line, error = Color(0xFFFFB4B4),
+            ),
+            typography = Typography(),
+        ) {
+            Surface(color = Ink, modifier = Modifier.fillMaxSize()) {
+                if (!state.settings.onboardingComplete) Onboarding(state, actions)
+                else MainShell(state, actions)
+                state.pendingAction?.let { action ->
+                    AlertDialog(
+                        onDismissRequest = actions.onCancelAction,
+                        icon = { Icon(Icons.Rounded.Shield, contentDescription = null, tint = Mint) },
+                        title = { Text(language.choose("Your approval", "Tu autorización", "تأیید شما")) },
+                        text = { Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Text(action.description)
+                            Text(language.choose("Review the details. Approval is for this action only.", "Revisa los detalles. La autorización es solo para esta acción.", "جزئیات را بررسی کنید. این تأیید فقط برای همین کار است."), color = Muted)
+                        } },
+                        confirmButton = { Button(onClick = { actions.onConfirmAction(action.id) }) { Text(language.choose("Confirm", "Confirmar", "تأیید")) } },
+                        dismissButton = { TextButton(onClick = actions.onCancelAction) { Text(language.choose("Cancel", "Cancelar", "لغو")) } },
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun MainShell(state: JarvisUiState, actions: JarvisUiActions) {
+    var tab by rememberSaveable { mutableIntStateOf(0) }
+    val l = state.settings.language
+    val labels = listOf(l.choose("Assistant", "Asistente", "دستیار"), l.choose("Memory", "Memoria", "حافظه"), l.choose("Settings", "Ajustes", "تنظیمات"))
+    val icons = listOf(Icons.Rounded.Forum, Icons.Rounded.Memory, Icons.Rounded.Settings)
+    Scaffold(
+        containerColor = Ink,
+        bottomBar = {
+            NavigationBar(containerColor = Ink, tonalElevation = 0.dp) {
+                labels.forEachIndexed { index, label ->
+                    NavigationBarItem(selected = tab == index, onClick = { tab = index },
+                        icon = { Icon(icons[index], contentDescription = null) }, label = { Text(label) })
+                }
+            }
+        },
+    ) { padding ->
+        Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.TopCenter) {
+            Box(Modifier.widthIn(max = 820.dp).fillMaxSize()) {
+                when (tab) {
+                    0 -> Home(state, actions) { tab = 2 }
+                    1 -> MemoryScreen(state, actions)
+                    else -> SettingsScreen(state, actions)
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun Home(state: JarvisUiState, actions: JarvisUiActions, onOpenSettings: () -> Unit) {
+    val l = state.settings.language
+    var input by rememberSaveable { mutableStateOf("") }
+    val keyboard = LocalSoftwareKeyboardController.current
+    val focus = LocalFocusManager.current
+    val sendInput = {
+        if (input.isNotBlank()) {
+            val question = input.trim()
+            input = ""
+            keyboard?.hide()
+            focus.clearFocus()
+            actions.onSend(question)
+        }
+    }
+    val scroll = rememberLazyListState()
+    val busy = state.phase in setOf(AssistantPhase.LISTENING, AssistantPhase.THINKING, AssistantPhase.SPEAKING)
+    LaunchedEffect(state.messages.size, state.phase, state.transcript.isNotBlank()) {
+        if (state.messages.isNotEmpty()) {
+            val target = state.messages.size + if (state.transcript.isNotBlank() && busy) 1 else 0
+            scroll.animateScrollToItem(target)
+        }
+    }
+    Column(Modifier.fillMaxSize().imePadding()) {
+        Row(Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 18.dp), verticalAlignment = Alignment.CenterVertically) {
+            BrandMark()
+            Spacer(Modifier.weight(1f))
+            Surface(shape = CircleShape, color = PanelLight) {
+                Text(l.label, Modifier.padding(horizontal = 13.dp, vertical = 8.dp), color = Muted, style = MaterialTheme.typography.labelMedium)
+            }
+            IconButton(onClick = actions.onStop) { Icon(Icons.Rounded.Stop, l.choose("Stop everything", "Detener todo", "توقف همه‌چیز"), tint = Warm) }
+        }
+        LazyColumn(state = scroll, modifier = Modifier.weight(1f), contentPadding = PaddingValues(horizontal = 24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            item {
+                Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                    AssistantOrb(state.phase, l, Modifier.size(180.dp))
+                    Text(phaseText(state.phase, l), color = Mint, style = MaterialTheme.typography.labelLarge, letterSpacing = 1.sp)
+                    Spacer(Modifier.height(15.dp))
+                    val greeting = if (state.settings.name.isBlank()) l.choose("At your service.", "A tu servicio.", "در خدمت شما هستم.")
+                    else l.choose("Hello, ${state.settings.name}.", "Hola, ${state.settings.name}.", "سلام ${state.settings.name}.")
+                    Text(greeting, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Light, textAlign = TextAlign.Center)
+                    Spacer(Modifier.height(8.dp))
+                    Text(l.choose("A little less effort. A little more possibility.", "Menos esfuerzo. Más posibilidades.", "کمی آسان‌تر. با فرصت‌های بیشتر."), color = Muted, textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyMedium)
+                    Spacer(Modifier.height(24.dp))
+                }
+            }
+            if (state.messages.isEmpty()) item {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(l.choose("TRY A LITTLE MAGIC", "PRUEBA ALGO NUEVO", "از اینجا شروع کنید"), color = Muted, style = MaterialTheme.typography.labelSmall, letterSpacing = 1.5.sp)
+                    Suggestion(l.choose("Set up your voice", "Configura tu voz", "صدای خود را آماده کنید"), l.choose("Download speech models and test the voice", "Descarga modelos y prueba la voz", "مدل گفتار را دانلود و صدا را آزمایش کنید"), Icons.Rounded.Headphones, onOpenSettings)
+                    Suggestion(l.choose("Yesterday’s headlines", "Las noticias de ayer", "خبرهای دیروز"), l.choose("Catch up with the world", "Ponte al día", "از جهان باخبر شوید"), Icons.Rounded.NotificationsNone) {
+                        actions.onSend(l.choose("Give me yesterday's news", "Dame las noticias de ayer", "خبرهای دیروز را بگو"))
+                    }
+                    Suggestion(l.choose("Open YouTube", "Abrir YouTube", "یوتیوب را باز کن"), l.choose("Find something worth watching", "Encuentra algo para ver", "چیزی برای تماشا پیدا کنید"), Icons.Rounded.GraphicEq) {
+                        actions.onSend(l.choose("Open YouTube", "Abre YouTube", "یوتیوب را باز کن"))
+                    }
+                    Suggestion(l.choose("Remember something", "Recordar algo", "چیزی را به خاطر بسپار"), l.choose("Your notes, close at hand", "Tus notas, siempre a mano", "یادداشت‌های شما، همیشه در دسترس"), Icons.Rounded.Memory) {
+                        input = l.choose("Remember that ", "Recuerda que ", "یادت بماند که ")
+                    }
+                }
+            }
+            items(state.messages, key = { it.id }) { message -> MessageCard(message, l, actions) }
+            if (state.transcript.isNotBlank()) item {
+                Text(state.transcript, modifier = Modifier.fillMaxWidth().padding(12.dp), color = Mint, style = MaterialTheme.typography.bodyLarge)
+            }
+            state.error?.takeIf { it.isNotBlank() }?.let { error -> item {
+                Surface(shape = RoundedCornerShape(18.dp), color = Color(0xFF351F2C)) {
+                    Text(error, modifier = Modifier.padding(16.dp), color = MaterialTheme.colorScheme.error)
+                }
+            } }
+            if (state.attachedFiles.isNotEmpty()) item {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    state.attachedFiles.forEach { name -> AssistChip(onClick = {}, label = { Text(name, maxLines = 1, overflow = TextOverflow.Ellipsis) }, leadingIcon = { Icon(Icons.Rounded.AttachFile, null, Modifier.size(16.dp)) }) }
+                    AssistChip(onClick = actions.onClearAttachments, label = { Text(l.choose("Clear", "Quitar", "حذف")) }, leadingIcon = { Icon(Icons.Rounded.Close, null, Modifier.size(16.dp)) })
+                }
+            }
+            item { Spacer(Modifier.height(8.dp)) }
+        }
+        Column(Modifier.fillMaxWidth().background(Ink).padding(horizontal = 18.dp, vertical = 8.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                IconButton(onClick = actions.onPickFiles) { Icon(Icons.Rounded.AttachFile, l.choose("Choose a document", "Elegir un archivo", "انتخاب فایل"), tint = Muted) }
+                IconButton(onClick = actions.onPickPhotos) { Icon(Icons.Rounded.Image, l.choose("Choose a photo", "Elegir una foto", "انتخاب عکس"), tint = Muted) }
+                Spacer(Modifier.weight(1f))
+                Text(l.choose("YOUR CONTROL. ALWAYS.", "SIEMPRE BAJO TU CONTROL.", "همیشه در اختیار شما"), color = Muted, style = MaterialTheme.typography.labelSmall)
+            }
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                OutlinedTextField(value = input, onValueChange = { input = it },
+                    modifier = Modifier.weight(1f), shape = RoundedCornerShape(24.dp),
+                    placeholder = { Text(l.choose("Ask Jarvis…", "Pregúntale a Jarvis…", "از جارویس بپرسید…")) },
+                    maxLines = 4, keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
+                    keyboardActions = KeyboardActions(onSend = { sendInput() }),
+                    trailingIcon = { if (input.isNotBlank()) IconButton(onClick = sendInput) { Icon(Icons.AutoMirrored.Rounded.Send, l.choose("Send", "Enviar", "ارسال"), tint = Mint) } },
+                )
+                Button(onClick = if (busy) actions.onStop else actions.onMic,
+                    shape = CircleShape, contentPadding = PaddingValues(0.dp), modifier = Modifier.size(60.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = if (busy) Warm else Mint)) {
+                    Icon(if (busy) Icons.Rounded.Stop else Icons.Rounded.Mic, l.choose(if (busy) "Stop" else "Speak", if (busy) "Detener" else "Hablar", if (busy) "توقف" else "صحبت کنید"), Modifier.size(25.dp))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun BrandMark() {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        Box(Modifier.size(29.dp).border(1.dp, Mint.copy(alpha = .6f), RoundedCornerShape(9.dp)), contentAlignment = Alignment.Center) {
+            Icon(Icons.Rounded.GraphicEq, null, Modifier.size(18.dp), tint = Mint)
+        }
+        Text("JARVIS", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold, letterSpacing = 4.sp)
+    }
+}
+
+@Composable
+private fun AssistantOrb(phase: AssistantPhase, language: AppLanguage, modifier: Modifier = Modifier) {
+    val transition = rememberInfiniteTransition(label = "orb")
+    val rotation by transition.animateFloat(0f, 360f, infiniteRepeatable(tween(18000, easing = LinearEasing)), label = "rotation")
+    val breath by transition.animateFloat(.86f, 1f, infiniteRepeatable(tween(1800), RepeatMode.Reverse), label = "breath")
+    val tint by animateColorAsState(if (phase == AssistantPhase.ERROR) Warm else if (phase == AssistantPhase.THINKING) Lavender else Mint, label = "orb color")
+    Canvas(modifier.semantics { contentDescription = phaseText(phase, language) }) {
+        val center = Offset(size.width / 2, size.height / 2)
+        val radius = size.minDimension * .34f
+        drawCircle(Brush.radialGradient(listOf(tint.copy(alpha = .12f * breath), tint.copy(alpha = .015f), Color.Transparent), center, radius * 1.5f), radius * 1.5f, center)
+        drawCircle(tint.copy(alpha = .11f), radius * 1.2f, center, style = Stroke(1.dp.toPx()))
+        drawCircle(tint.copy(alpha = .24f), radius, center, style = Stroke(1.dp.toPx()))
+        drawCircle(Brush.radialGradient(listOf(PanelLight, Ink), center, radius * .9f), radius * .89f, center)
+        for (index in 0..2) {
+            val angle = rotation + index * 120f
+            drawArc(tint.copy(alpha = .8f), angle, 55f, false,
+                topLeft = Offset(center.x - radius, center.y - radius), size = Size(radius * 2, radius * 2), style = Stroke(2.dp.toPx(), cap = StrokeCap.Round))
+        }
+        val active = phase in setOf(AssistantPhase.LISTENING, AssistantPhase.SPEAKING)
+        for (index in -4..4) {
+            val height = if (active) (10 + 28 * kotlin.math.abs(sin(rotation / 18 + index))).dp.toPx() * breath else (7 + 19 * cos(index * .35)).dp.toPx()
+            val x = center.x + index * 7.dp.toPx()
+            drawLine(tint.copy(alpha = if (index % 2 == 0) .95f else .5f), Offset(x, center.y - height / 2), Offset(x, center.y + height / 2), 2.5.dp.toPx(), StrokeCap.Round)
+        }
+    }
+}
+
+private fun phaseText(phase: AssistantPhase, l: AppLanguage): String = when (phase) {
+    AssistantPhase.READY -> l.choose("READY WHEN YOU ARE", "LISTO PARA TI", "آماده‌ام")
+    AssistantPhase.LISTENING -> l.choose("LISTENING", "ESCUCHANDO", "گوش می‌دهم")
+    AssistantPhase.THINKING -> l.choose("THINKING", "PENSANDO", "در حال فکر کردن")
+    AssistantPhase.SPEAKING -> l.choose("SPEAKING", "HABLANDO", "در حال پاسخ دادن")
+    AssistantPhase.PAUSED -> l.choose("PAUSED", "EN PAUSA", "متوقف شده")
+    AssistantPhase.ERROR -> l.choose("NEEDS YOUR ATTENTION", "REQUIERE TU ATENCIÓN", "به توجه شما نیاز دارم")
+}
+
+@Composable
+private fun Suggestion(title: String, subtitle: String, icon: ImageVector, onClick: () -> Unit) {
+    Card(onClick = onClick, shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = Panel)) {
+        Row(Modifier.fillMaxWidth().padding(18.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(15.dp)) {
+            Icon(icon, null, Modifier.size(23.dp), tint = Mint)
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                Text(title, fontWeight = FontWeight.Medium)
+                Text(subtitle, color = Muted, style = MaterialTheme.typography.bodySmall)
+            }
+            Icon(Icons.AutoMirrored.Rounded.ArrowForward, null, Modifier.size(18.dp), tint = Muted)
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun MessageCard(message: ChatMessage, l: AppLanguage, actions: JarvisUiActions) {
+    val fromUser = message.role == MessageRole.USER
+    Column(Modifier.fillMaxWidth(), horizontalAlignment = if (fromUser) Alignment.End else Alignment.Start) {
+        Text(if (fromUser) l.choose("YOU", "TÚ", "شما") else "JARVIS", color = if (fromUser) Muted else Mint, modifier = Modifier.padding(horizontal = 4.dp, vertical = 7.dp), style = MaterialTheme.typography.labelSmall, letterSpacing = 1.2.sp)
+        Surface(shape = RoundedCornerShape(20.dp), color = if (fromUser) PanelLight else Panel, modifier = Modifier.widthIn(max = 640.dp)) {
+            Column(Modifier.padding(17.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text(message.text, style = MaterialTheme.typography.bodyLarge, lineHeight = 25.sp)
+                if (message.sources.isNotEmpty()) {
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        message.sources.forEach { source ->
+                            AssistChip(onClick = { actions.onOpenSource(source.url) },
+                                label = { Text(source.title, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.widthIn(max = 220.dp)) },
+                                trailingIcon = { Icon(Icons.AutoMirrored.Rounded.OpenInNew, l.choose("Open source", "Abrir fuente", "باز کردن منبع"), Modifier.size(14.dp)) })
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun MemoryScreen(state: JarvisUiState, actions: JarvisUiActions) {
+    val l = state.settings.language
+    var deleteId by remember { mutableStateOf<Long?>(null) }
+    LazyColumn(contentPadding = PaddingValues(24.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+        item { PageTitle(l.choose("A place for what matters.", "Lo importante, contigo.", "جایی برای چیزهای مهم."), l.choose("MEMORY", "MEMORIA", "حافظه")) }
+        item { Text(l.choose("Say “remember that…” to save a note. Your memories stay on this phone. You can remove them whenever you like.", "Di “recuerda que…” para guardar una nota. Tus recuerdos se guardan en este teléfono y puedes borrarlos cuando quieras.", "برای ذخیرهٔ یادداشت بگویید «یادت بماند که…». یادداشت‌ها روی همین گوشی می‌مانند و هر زمان بخواهید می‌توانید حذفشان کنید."), color = Muted, lineHeight = 23.sp) }
+        if (state.memories.isEmpty()) item {
+            SectionCard { Icon(Icons.Rounded.Memory, null, Modifier.size(32.dp), tint = Mint); Text(l.choose("Room for your first thought.", "Un lugar para tu primera idea.", "منتظر اولین یادداشت شما هستم."), style = MaterialTheme.typography.titleMedium); Text(l.choose("Nothing is saved here without your request.", "Nada se guarda sin que tú lo pidas.", "بدون درخواست شما چیزی ذخیره نمی‌شود."), color = Muted) }
+        }
+        items(state.memories, key = { it.id }) { memory ->
+            SectionCard {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(memory.text, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+                    IconButton(onClick = { deleteId = memory.id }) { Icon(Icons.Rounded.DeleteOutline, l.choose("Delete memory", "Borrar recuerdo", "حذف یادداشت"), tint = Muted) }
+                }
+            }
+        }
+    }
+    deleteId?.let { id ->
+        AlertDialog(onDismissRequest = { deleteId = null },
+            title = { Text(l.choose("Delete this memory?", "¿Borrar este recuerdo?", "این یادداشت حذف شود؟")) },
+            text = { Text(state.memories.firstOrNull { it.id == id }?.text.orEmpty()) },
+            confirmButton = { TextButton(onClick = { actions.onRememberDelete(id); deleteId = null }) { Text(l.choose("Delete", "Borrar", "حذف")) } },
+            dismissButton = { TextButton(onClick = { deleteId = null }) { Text(l.choose("Cancel", "Cancelar", "لغو")) } })
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun Onboarding(state: JarvisUiState, actions: JarvisUiActions) {
+    val l = state.settings.language
+    var name by rememberSaveable { mutableStateOf(state.settings.name) }
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
+        Column(Modifier.widthIn(max = 640.dp).fillMaxSize().verticalScroll(rememberScrollState()).padding(28.dp), verticalArrangement = Arrangement.spacedBy(22.dp)) {
+            BrandMark()
+            AssistantOrb(AssistantPhase.READY, l, Modifier.size(150.dp).align(Alignment.CenterHorizontally))
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text(l.choose("Meet your\nquiet advantage.", "Tu nueva\nventaja personal.", "دستیار شما،\nهمیشه در کنارتان."), style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Light, lineHeight = 42.sp)
+                Text(l.choose("A voice for your questions. A home for your thoughts. Built around your control.", "Una voz para tus preguntas. Un lugar para tus ideas. Tú tienes el control.", "صدایی برای پرسش‌هایتان، جایی برای یادداشت‌هایتان؛ با اختیار کامل شما."), color = Muted, lineHeight = 24.sp)
+            }
+            SectionCard {
+                Text(l.choose("Make yourself at home", "Hazlo tuyo", "از همین‌جا شروع کنیم"), style = MaterialTheme.typography.titleMedium)
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) { AppLanguage.entries.forEach { lang -> FilterChip(selected = lang == l, onClick = { actions.onLanguage(lang) }, label = { Text(lang.label) }) } }
+                OutlinedTextField(name, { name = it }, label = { Text(l.choose("Your name (optional)", "Tu nombre (opcional)", "نام شما (اختیاری)")) }, singleLine = true, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(15.dp))
+            }
+            SectionCard {
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Rounded.Mic, null, tint = Mint)
+                    Text(l.choose("Start with your voice", "Empieza con tu voz", "با صدای خود شروع کنید"), style = MaterialTheme.typography.titleMedium)
+                }
+                Text(l.choose("Microphone access lets Jarvis hear a request when you tap the mic. Offline recognition also needs the speech model below. Background listening is optional.", "El micrófono permite escuchar cuando lo tocas. El reconocimiento local también requiere el modelo de abajo. Escuchar en segundo plano es opcional.", "دسترسی به میکروفن برای شنیدن درخواست پس از لمس دکمه است. تشخیص گفتار آفلاین به مدل زیر هم نیاز دارد. شنیدن در پس‌زمینه اختیاری است."), color = Muted)
+                OutlinedButton(onClick = { actions.onOpenPermission("microphone") }) { Icon(if (state.hasMicrophone) Icons.Rounded.Check else Icons.Rounded.Mic, null, Modifier.size(18.dp)); Spacer(Modifier.width(8.dp)); Text(l.choose(if (state.hasMicrophone) "Microphone ready" else "Allow microphone", if (state.hasMicrophone) "Micrófono listo" else "Permitir micrófono", if (state.hasMicrophone) "میکروفن آماده است" else "اجازهٔ میکروفن")) }
+            }
+            SectionCard {
+                Text(l.choose("Prepare offline speech", "Prepara la voz local", "آماده‌سازی گفتار آفلاین"), style = MaterialTheme.typography.titleMedium)
+                Text(l.choose("Use Wi-Fi to download a speech model for this language, about 40–55 MB. Then test the voice; if the phone has no suitable voice, download the optional offline voice. You can also do this later in Settings and start with typing now.", "Con Wi-Fi, descarga el modelo del idioma (40–55 MB). Después prueba la voz; si falta una adecuada, descarga la voz local opcional. También puedes hacerlo luego en Ajustes y empezar escribiendo.", "با وای‌فای، مدل گفتار این زبان را با حجم حدود ۴۰ تا ۵۵ مگابایت دانلود کنید. سپس صدا را آزمایش کنید؛ اگر گوشی صدای مناسب ندارد، صدای آفلاین اختیاری را دانلود کنید. می‌توانید فعلاً تایپ کنید و بعداً از تنظیمات این کار را انجام دهید."), color = Muted, style = MaterialTheme.typography.bodySmall)
+                if (state.wakeStatus.isNotBlank()) Text(state.wakeStatus, color = Warm)
+                state.modelProgress?.let { LinearProgressIndicator(progress = { it.coerceIn(0f, 1f) }, modifier = Modifier.fillMaxWidth()) }
+                OutlinedButton(onClick = actions.onDownloadWake, enabled = state.modelProgress == null, modifier = Modifier.fillMaxWidth()) { Text(l.choose("Download ${l.label} speech model", "Descargar modelo: ${l.label}", "دانلود مدل گفتار ${l.label}")) }
+                if (state.voiceStatus.isNotBlank()) Text(state.voiceStatus, color = Warm)
+                state.voiceProgress?.let { LinearProgressIndicator(progress = { it.coerceIn(0f, 1f) }, modifier = Modifier.fillMaxWidth()) }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedButton(onClick = actions.onVoiceCheck, modifier = Modifier.weight(1f)) { Text(l.choose("Test voice", "Probar voz", "آزمایش صدا")) }
+                    OutlinedButton(onClick = actions.onDownloadVoice, enabled = state.voiceProgress == null, modifier = Modifier.weight(1f)) { Text(l.choose("Get offline voice", "Descargar voz", "دانلود صدا")) }
+                }
+            }
+            state.error?.takeIf { it.isNotBlank() }?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Icon(Icons.Rounded.Lock, null, Modifier.size(18.dp), tint = Muted)
+                Text(l.choose("Start without an API key: news, app shortcuts, and memories are ready. An optional on-device model adds private conversations after a download. You choose which files and photos to share.", "Empieza sin clave API: noticias, atajos y recuerdos están listos. Un modelo opcional añade conversaciones locales tras descargarlo. Tú eliges qué archivos y fotos compartir.", "بدون کلید API شروع کنید: خبرها، میان‌بر برنامه‌ها و یادداشت‌ها آماده‌اند. با دانلود مدل اختیاری روی گوشی، گفت‌وگوی خصوصی هم اضافه می‌شود. انتخاب فایل و عکس با شماست."), color = Muted, style = MaterialTheme.typography.bodySmall)
+            }
+            Button(onClick = { actions.onSaveSettings(state.settings.copy(name = name.trim(), onboardingComplete = true), "") }, modifier = Modifier.fillMaxWidth().height(56.dp), shape = RoundedCornerShape(18.dp)) {
+                Text(l.choose("Meet Jarvis", "Conocer a Jarvis", "شروع با جارویس"), fontWeight = FontWeight.SemiBold)
+                Spacer(Modifier.width(12.dp)); Icon(Icons.AutoMirrored.Rounded.ArrowForward, null)
+            }
+            Spacer(Modifier.height(8.dp))
+        }
+    }
+}
+
+@Composable
+private fun PageTitle(title: String, eyebrow: String) {
+    Column(Modifier.padding(top = 10.dp, bottom = 12.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
+        Text(eyebrow, color = Mint, style = MaterialTheme.typography.labelSmall, letterSpacing = 2.sp)
+        Text(title, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Light)
+    }
+}
+
+@Composable
+private fun SectionCard(content: @Composable ColumnScope.() -> Unit) {
+    Surface(color = Panel, shape = RoundedCornerShape(22.dp), modifier = Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(13.dp), content = content)
+    }
+}
+
+@Composable
+private fun ToggleRow(title: String, subtitle: String, checked: Boolean, onChecked: (Boolean) -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) { Text(title); Text(subtitle, color = Muted, style = MaterialTheme.typography.bodySmall) }
+        Switch(checked, onChecked)
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun SettingsScreen(state: JarvisUiState, actions: JarvisUiActions) {
+    val l = state.settings.language
+    var draft by remember(state.settings) { mutableStateOf(state.settings) }
+    var key by remember { mutableStateOf("") }
+    var showKey by rememberSaveable { mutableStateOf(false) }
+    var showWipe by rememberSaveable { mutableStateOf(false) }
+    var showClearConversation by rememberSaveable { mutableStateOf(false) }
+    var saved by remember { mutableStateOf(false) }
+    LazyColumn(contentPadding = PaddingValues(24.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
+        item { PageTitle(l.choose("Made to feel like yours.", "Hecho a tu manera.", "همان‌طور که شما می‌خواهید."), l.choose("SETTINGS", "AJUSTES", "تنظیمات")) }
+        item { SectionCard {
+            Text(l.choose("Identity & language", "Identidad e idioma", "نام و زبان"), style = MaterialTheme.typography.titleMedium)
+            OutlinedTextField(draft.name, { draft = draft.copy(name = it); saved = false }, modifier = Modifier.fillMaxWidth(), singleLine = true, label = { Text(l.choose("Your name", "Tu nombre", "نام شما")) }, shape = RoundedCornerShape(14.dp))
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) { AppLanguage.entries.forEach { lang -> FilterChip(selected = lang == l, onClick = { actions.onLanguage(lang) }, label = { Text(lang.label) }) } }
+            Text(l.choose("Your selected language controls voice recognition, replies, and the interface.", "El idioma elegido se usa para el reconocimiento, las respuestas y la interfaz.", "زبان انتخابی برای تشخیص گفتار، پاسخ‌ها و رابط برنامه استفاده می‌شود."), color = Muted, style = MaterialTheme.typography.bodySmall)
+        } }
+        item { SectionCard {
+            Text(l.choose("Intelligence, your way", "Inteligencia a tu manera", "هوش مصنوعی، به انتخاب شما"), style = MaterialTheme.typography.titleMedium)
+            Text(l.choose("Use a small on-device model without an API key, or optionally connect your own cloud provider. News, app shortcuts, and memory work without either.", "Usa un modelo local sin clave API o conecta tu proveedor en la nube. Noticias, atajos y memoria funcionan sin ambos.", "از مدل کوچک روی گوشی و بدون کلید API استفاده کنید، یا در صورت تمایل سرویس آنلاین خود را وصل کنید. خبرها، میان‌برها و یادداشت‌ها به هیچ‌کدام نیاز ندارند."), color = Muted, style = MaterialTheme.typography.bodySmall)
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf("local" to l.choose("On-device · no key", "Local · sin clave", "روی گوشی · بدون کلید"), "gemini" to "Gemini", "openai" to "OpenAI", "anthropic" to "Claude").forEach { (id, title) -> FilterChip(selected = draft.provider == id, onClick = {
+                    draft = draft.copy(provider = id, model = when(id) { "gemini" -> "gemini-2.5-flash"; "openai" -> "gpt-4o-mini"; "anthropic" -> "claude-sonnet-4-20250514"; else -> "qwen2.5-0.5b" }); key = ""; saved = false
+                }, label = { Text(title) }) }
+            }
+            if (draft.provider == "local") {
+                Text(l.choose("The optional model is roughly 400 MB; use Wi-Fi. On a Redmi 9, answers can be slow and Persian quality is limited. It is a small local model, not a cloud-level assistant.", "El modelo opcional ocupa unos 400 MB; usa Wi-Fi. En un Redmi 9 puede ser lento y el persa es limitado. Es un modelo local pequeño, con capacidades limitadas.", "مدل اختیاری حدود ۴۰۰ مگابایت است؛ از وای‌فای استفاده کنید. روی ردمی ۹ پاسخ‌ها ممکن است کند باشند و کیفیت فارسی محدود است. این یک مدل کوچک روی گوشی است و توانایی سرویس‌های بزرگ آنلاین را ندارد."), color = Muted, style = MaterialTheme.typography.bodySmall)
+                if (state.brainStatus.isNotBlank()) Text(state.brainStatus, color = Warm)
+                state.brainProgress?.let { LinearProgressIndicator(progress = { it.coerceIn(0f, 1f) }, modifier = Modifier.fillMaxWidth()) }
+                OutlinedButton(onClick = actions.onDownloadBrain, enabled = state.brainProgress == null, modifier = Modifier.fillMaxWidth()) { Text(l.choose("Download on-device model", "Descargar modelo local", "دانلود مدل روی گوشی")) }
+            } else {
+            OutlinedTextField(draft.model, { draft = draft.copy(model = it); saved = false }, modifier = Modifier.fillMaxWidth(), singleLine = true, label = { Text(l.choose("Model ID", "ID del modelo", "شناسهٔ مدل")) }, shape = RoundedCornerShape(14.dp))
+            OutlinedTextField(key, { key = it; saved = false }, modifier = Modifier.fillMaxWidth(), singleLine = true,
+                label = { Text(l.choose("API key", "Clave API", "کلید API")) },
+                placeholder = { Text(l.choose("Leave blank to keep the saved key", "Vacío conserva la clave guardada", "برای حفظ کلید قبلی خالی بگذارید")) },
+                visualTransformation = if (showKey) VisualTransformation.None else PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                trailingIcon = { IconButton(onClick = { showKey = !showKey }) { Icon(if (showKey) Icons.Rounded.VisibilityOff else Icons.Rounded.Visibility, l.choose("Toggle key visibility", "Mostrar u ocultar clave", "نمایش یا پنهان کردن کلید")) } }, shape = RoundedCornerShape(14.dp))
+            Text(if (state.hasApiKey) l.choose("A key is saved for the active provider.", "Hay una clave para el proveedor activo.", "کلید سرویس فعال ذخیره شده است.") else l.choose("No key saved for the active provider. News and shortcuts still work.", "Sin clave para el proveedor activo. Noticias y atajos siguen disponibles.", "کلیدی برای سرویس فعال ذخیره نشده است. خبرها و میان‌برها همچنان کار می‌کنند."), color = if (state.hasApiKey) Mint else Warm, style = MaterialTheme.typography.bodySmall)
+            }
+        } }
+        item { SectionCard {
+            Text(l.choose("A voice that feels natural", "Una voz natural", "صدایی طبیعی"), style = MaterialTheme.typography.titleMedium)
+            ToggleRow(l.choose("Speak replies", "Leer respuestas", "خواندن پاسخ‌ها"), l.choose("Read answers aloud when a voice is available.", "Leer en voz alta si hay una voz disponible.", "در صورت وجود صدای مناسب، پاسخ‌ها بلند خوانده می‌شوند."), draft.speakReplies) { draft = draft.copy(speakReplies = it); saved = false }
+            ToggleRow(l.choose("Allow network speech", "Permitir voz en línea", "اجازهٔ پردازش گفتار آنلاین"), l.choose("If on-device recognition is unavailable, allow the phone's speech provider to process your command online after you tap the mic.", "Si no hay reconocimiento local, permite que el servicio del teléfono procese la solicitud en línea al tocar el micrófono.", "اگر تشخیص گفتار روی گوشی موجود نباشد، سرویس گفتار گوشی می‌تواند پس از لمس میکروفن، درخواست را آنلاین پردازش کند."), draft.allowNetworkSpeech) { draft = draft.copy(allowNetworkSpeech = it); saved = false }
+            ToggleRow(l.choose("OpenAI cloud voice", "Voz de OpenAI", "صدای آنلاین OpenAI"), l.choose("Optional. Requires an OpenAI key and sends reply text for speech. Useful when the phone has no Persian voice.", "Opcional. Requiere clave OpenAI y envía el texto para generar voz. Útil si el teléfono no tiene voz persa.", "اختیاری است. به کلید OpenAI نیاز دارد و متن پاسخ را برای تولید صدا می‌فرستد. برای گوشی بدون صدای فارسی کاربرد دارد."), draft.useCloudVoice) { draft = draft.copy(useCloudVoice = it); saved = false }
+            Text(l.choose("No system voice? Download an offline voice for this language, roughly 60–70 MB. It works without an API key after installation.", "¿Falta una voz del sistema? Descarga una voz local para este idioma, de unos 60–70 MB. Funciona sin clave API tras instalarla.", "صدای مناسب روی گوشی ندارید؟ صدای آفلاین این زبان را با حجم حدود ۶۰ تا ۷۰ مگابایت دانلود کنید. پس از نصب به کلید API نیاز ندارد."), color = Muted, style = MaterialTheme.typography.bodySmall)
+            if (state.voiceStatus.isNotBlank()) Text(state.voiceStatus, color = Warm)
+            state.voiceProgress?.let { LinearProgressIndicator(progress = { it.coerceIn(0f, 1f) }, modifier = Modifier.fillMaxWidth()) }
+            OutlinedButton(onClick = actions.onDownloadVoice, enabled = state.voiceProgress == null, modifier = Modifier.fillMaxWidth()) { Text(l.choose("Download offline ${l.label} voice", "Descargar voz local: ${l.label}", "دانلود صدای آفلاین ${l.label}")) }
+            OutlinedButton(onClick = actions.onVoiceCheck) { Icon(Icons.Rounded.Headphones, null, Modifier.size(18.dp)); Spacer(Modifier.width(8.dp)); Text(l.choose("Check this language's voice", "Probar la voz de este idioma", "آزمایش صدای این زبان")) }
+            TextButton(onClick = { actions.onOpenPermission("voices") }) { Text(l.choose("System voice settings", "Ajustes de voz del sistema", "تنظیمات صدای گوشی")) }
+        } }
+        item { SectionCard {
+            Text(l.choose("Hands-free, on your terms", "Manos libres, tú decides", "بدون لمس، با اختیار شما"), style = MaterialTheme.typography.titleMedium)
+            Text(l.choose("Download a local Vosk model for the selected language. Wake detection stays on this phone; a persistent microphone notification remains visible. Android may pause listening.", "Descarga un modelo Vosk local para el idioma elegido. La activación se detecta en el teléfono y se muestra una notificación del micrófono. Android puede pausar la escucha.", "مدل محلی Vosk را برای زبان انتخابی دانلود کنید. تشخیص عبارت فعال‌سازی روی گوشی انجام می‌شود و اعلان میکروفن نمایش داده می‌شود. اندروید ممکن است شنیدن را متوقف کند."), color = Muted, style = MaterialTheme.typography.bodySmall)
+            Text("“${l.wakePhrase}”", color = Mint, style = MaterialTheme.typography.titleLarge)
+            if (state.wakeStatus.isNotBlank()) Text(state.wakeStatus, color = Warm, style = MaterialTheme.typography.bodyMedium)
+            state.modelProgress?.let { progress -> LinearProgressIndicator(progress = { progress.coerceIn(0f, 1f) }, modifier = Modifier.fillMaxWidth()) }
+            OutlinedButton(onClick = actions.onDownloadWake, enabled = state.modelProgress == null, modifier = Modifier.fillMaxWidth()) { Text(l.choose("Download language model · ~40–55 MB", "Descargar modelo · ~40–55 MB", "دانلود مدل زبان · حدود ۴۰ تا ۵۵ مگابایت")) }
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                Button(onClick = actions.onStartWake, modifier = Modifier.weight(1f)) { Text(l.choose("Start listening", "Escuchar", "شروع شنیدن")) }
+                OutlinedButton(onClick = actions.onStopWake, modifier = Modifier.weight(1f)) { Text(l.choose("Pause", "Pausar", "توقف")) }
+            }
+        } }
+        item { SectionCard {
+            Text(l.choose("Connections you choose", "Conexiones que tú eliges", "دسترسی‌های انتخابی شما"), style = MaterialTheme.typography.titleMedium)
+            Text(l.choose("Each feature asks for its own access. Jarvis cannot silently access every app, photo, or file. You can revoke access in Android Settings.", "Cada función pide su acceso. Jarvis no puede acceder en secreto a todas tus aplicaciones, fotos o archivos. Puedes revocar los permisos en Ajustes de Android.", "هر قابلیت دسترسی جداگانه می‌خواهد. جارویس نمی‌تواند پنهانی به همهٔ برنامه‌ها، عکس‌ها یا فایل‌ها دسترسی داشته باشد. دسترسی‌ها از تنظیمات اندروید قابل لغو هستند."), color = Muted, style = MaterialTheme.typography.bodySmall)
+            PermissionButton(l.choose("Microphone", "Micrófono", "میکروفن"), "microphone", actions)
+            PermissionButton(l.choose("Screen reading · Accessibility", "Lectura de pantalla · Accesibilidad", "خواندن صفحه · دسترس‌پذیری"), "accessibility", actions)
+            PermissionButton(l.choose("Listening notifications", "Avisos de escucha", "اعلان وضعیت شنیدن"), "notifications", actions)
+            PermissionButton(l.choose("Read notification summaries", "Leer resúmenes de notificaciones", "خواندن خلاصهٔ اعلان‌ها"), "notification_access", actions)
+            PermissionButton(l.choose("Battery & background settings", "Batería y segundo plano", "باتری و پس‌زمینه"), "battery", actions)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(onClick = actions.onPickFiles, modifier = Modifier.weight(1f)) { Text(l.choose("Choose files", "Archivos", "انتخاب فایل")) }
+                OutlinedButton(onClick = actions.onPickPhotos, modifier = Modifier.weight(1f)) { Text(l.choose("Choose photos", "Fotos", "انتخاب عکس")) }
+            }
+        } }
+        item {
+            Button(onClick = { actions.onSaveSettings(draft.copy(name = draft.name.trim(), model = draft.model.trim()), key.trim()); key = ""; saved = true }, modifier = Modifier.fillMaxWidth().height(54.dp), shape = RoundedCornerShape(17.dp)) {
+                Icon(if (saved) Icons.Rounded.Check else Icons.Rounded.Check, null, Modifier.size(18.dp)); Spacer(Modifier.width(8.dp)); Text(if (saved) l.choose("Saved", "Guardado", "ذخیره شد") else l.choose("Save settings", "Guardar ajustes", "ذخیرهٔ تنظیمات"))
+            }
+        }
+        item { SectionCard {
+            Text(l.choose("Your data, your decision", "Tus datos, tu decisión", "داده‌های شما، تصمیم شما"), style = MaterialTheme.typography.titleMedium)
+            Text(l.choose("Conversation and memories are stored on this phone. The on-device model keeps inference local; news still needs the internet. Choosing a cloud provider shares conversation context with that provider. Stop everything closes active listening and cancels pending work.", "Las conversaciones y recuerdos se guardan en este teléfono. El modelo local procesa aquí; las noticias necesitan internet. Elegir la nube comparte el contexto con el proveedor. Detener todo cierra la escucha y cancela tareas.", "گفت‌وگوها و یادداشت‌ها روی این گوشی ذخیره می‌شوند. مدل روی گوشی، پردازش را محلی انجام می‌دهد؛ خبرها همچنان اینترنت می‌خواهند. با انتخاب سرویس آنلاین، متن مرتبط گفت‌وگو به همان سرویس فرستاده می‌شود. توقف همه‌چیز، شنیدن و کارهای در انتظار را متوقف می‌کند."), color = Muted, style = MaterialTheme.typography.bodySmall)
+            TextButton(onClick = { showClearConversation = true }) { Text(l.choose("Clear conversation", "Borrar conversación", "پاک کردن گفت‌وگو")) }
+            TextButton(onClick = { showWipe = true }) { Text(l.choose("Erase Jarvis data & keys", "Borrar datos y claves de Jarvis", "حذف داده‌ها و کلیدهای جارویس"), color = MaterialTheme.colorScheme.error) }
+            TextButton(onClick = { actions.onOpenPermission("licenses") }) { Text(l.choose("Open-source licenses", "Licencias de código abierto", "مجوزهای متن‌باز")) }
+            Text("JARVIS 0.1 · ANDROID", color = Muted, style = MaterialTheme.typography.labelSmall, letterSpacing = 1.5.sp)
+        } }
+        item { Spacer(Modifier.height(12.dp)) }
+    }
+    if (showWipe) AlertDialog(onDismissRequest = { showWipe = false },
+        title = { Text(l.choose("Erase Jarvis data?", "¿Borrar los datos de Jarvis?", "داده‌های جارویس حذف شوند؟")) },
+        text = { Text(l.choose("This removes saved conversations, memories, settings, and provider keys. It cannot be undone.", "Se borrarán conversaciones, recuerdos, ajustes y claves. No se puede deshacer.", "گفت‌وگوها، یادداشت‌ها، تنظیمات و کلیدهای سرویس حذف می‌شوند. این کار برگشت‌پذیر نیست.")) },
+        confirmButton = { TextButton(onClick = { showWipe = false; actions.onWipe() }) { Text(l.choose("Erase", "Borrar", "حذف"), color = MaterialTheme.colorScheme.error) } },
+        dismissButton = { TextButton(onClick = { showWipe = false }) { Text(l.choose("Cancel", "Cancelar", "لغو")) } })
+    if (showClearConversation) AlertDialog(onDismissRequest = { showClearConversation = false },
+        title = { Text(l.choose("Clear this conversation?", "¿Borrar esta conversación?", "این گفت‌وگو پاک شود؟")) },
+        text = { Text(l.choose("Saved memories and provider keys stay. Conversation messages will be deleted.", "Se conservarán los recuerdos y claves. Se borrarán los mensajes de la conversación.", "یادداشت‌ها و کلیدهای سرویس حفظ می‌شوند. پیام‌های گفت‌وگو حذف خواهند شد.")) },
+        confirmButton = { TextButton(onClick = { showClearConversation = false; actions.onClearConversation() }) { Text(l.choose("Clear", "Borrar", "پاک کردن")) } },
+        dismissButton = { TextButton(onClick = { showClearConversation = false }) { Text(l.choose("Cancel", "Cancelar", "لغو")) } })
+}
+
+@Composable
+private fun PermissionButton(title: String, key: String, actions: JarvisUiActions) {
+    OutlinedButton(onClick = { actions.onOpenPermission(key) }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(13.dp)) {
+        Text(title, modifier = Modifier.weight(1f), textAlign = TextAlign.Start)
+        Icon(Icons.AutoMirrored.Rounded.OpenInNew, null, Modifier.size(16.dp))
+    }
+}

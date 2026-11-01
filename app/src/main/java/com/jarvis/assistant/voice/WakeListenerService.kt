@@ -1,0 +1,205 @@
+package com.jarvis.assistant.voice
+
+import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.app.Service
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.content.pm.ServiceInfo
+import android.media.AudioFormat
+import android.media.AudioRecord
+import android.media.MediaRecorder
+import android.os.Build
+import android.os.IBinder
+import android.os.SystemClock
+import android.os.VibrationEffect
+import android.os.Vibrator
+import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
+import com.jarvis.assistant.core.AppLanguage
+import com.jarvis.assistant.core.choose
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import org.json.JSONObject
+import org.vosk.Model
+import org.vosk.Recognizer
+
+/** User-enabled local recognition. Never started from boot, alarms, or a watchdog. */
+class WakeListenerService : Service() {
+    @Volatile private var running = false
+    @Volatile private var paused = false
+    @Volatile private var recorder: AudioRecord? = null
+    private val audioLock = Any()
+    private var worker: Thread? = null
+    private var language = AppLanguage.EN
+    private var awakeUntil = 0L
+
+    override fun onBind(intent: Intent?): IBinder? = null
+
+    override fun onCreate() {
+        super.onCreate()
+        getSystemService(NotificationManager::class.java).createNotificationChannel(
+            NotificationChannel(CHANNEL, "Jarvis microphone", NotificationManager.IMPORTANCE_LOW).apply { description = "Visible status for user-enabled offline listening" },
+        )
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        when (intent?.action) {
+            ACTION_STOP -> {
+                sendBroadcast(Intent(ACTION_STOP).setPackage(packageName))
+                stopSelf(); return START_NOT_STICKY
+            }
+            ACTION_PAUSE -> {
+                synchronized(audioLock) { paused = true; runCatching { recorder?.stop() } }
+                publish(language.choose("Wake listening paused", "Activación en pausa", "بیدارباش مکث شده است"), false)
+                return START_NOT_STICKY
+            }
+            ACTION_RESUME -> {
+                if (running) { paused = false; awakeUntil = 0; publish(listeningText(), true) }
+                return START_NOT_STICKY
+            }
+        }
+        if (running) return START_NOT_STICKY
+        language = AppLanguage.fromCode(intent?.getStringExtra(EXTRA_LANGUAGE).orEmpty())
+        val modelDirectory = WakeModelManager(this).modelPath(language)
+        val text = language.choose("Preparing offline listening…", "Preparando activación local…", "در حال آماده‌سازی بیدارباش آفلاین…")
+        try {
+            val notification = notification(text)
+            if (Build.VERSION.SDK_INT >= 30) startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE)
+            else startForeground(NOTIFICATION_ID, notification)
+        } catch (_: Exception) {
+            publish(language.choose("Android did not allow microphone listening. Open Jarvis and try again.", "Android no permitió escuchar. Abre Jarvis e inténtalo de nuevo.", "اندروید اجازهٔ گوش‌دادن نداد. جارویس را باز کنید و دوباره تلاش کنید."), false, updateNotification = false)
+            stopSelf(); return START_NOT_STICKY
+        }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED || modelDirectory == null) {
+            publish(language.choose("Microphone permission and an offline model are required.", "Se necesitan permiso del micrófono y un modelo local.", "اجازهٔ میکروفن و مدل آفلاین لازم است."), false)
+            stopSelf(); return START_NOT_STICKY
+        }
+        running = true; paused = false
+        worker = Thread({
+            try {
+                Model(modelDirectory.absolutePath).use { model ->
+                    while (running) {
+                        if (paused) { Thread.sleep(100); continue }
+                        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) throw SecurityException("Microphone permission was revoked.")
+                        val minimum = AudioRecord.getMinBufferSize(16000, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT)
+                        check(minimum > 0) { "16 kHz microphone capture is not supported." }
+                        val audio = AudioRecord(MediaRecorder.AudioSource.VOICE_RECOGNITION, 16000, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, maxOf(minimum * 2, 8192))
+                        recorder = audio
+                        check(audio.state == AudioRecord.STATE_INITIALIZED) { "Microphone is unavailable." }
+                        try {
+                            Recognizer(model, 16000f).use { recognizer ->
+                                val started = synchronized(audioLock) {
+                                    if (running && !paused) { audio.startRecording(); true } else false
+                                }
+                                if (!started) return@use
+                                publish(listeningText(), true)
+                                val bytes = ByteArray(4096)
+                                var suppressed = false
+                                while (running && !paused) {
+                                    val count = audio.read(bytes, 0, bytes.size)
+                                    if (paused || !running) break
+                                    check(count >= 0) { "Microphone capture was interrupted." }
+                                    if (count == 0) continue
+                                    if (SystemClock.elapsedRealtime() < suppressionUntil) {
+                                        if (!suppressed) { recognizer.reset(); suppressed = true }
+                                        continue
+                                    }
+                                    if (suppressed) { recognizer.reset(); suppressed = false }
+                                    if (awakeUntil > 0 && SystemClock.elapsedRealtime() > awakeUntil) {
+                                        awakeUntil = 0; recognizer.reset(); publish(listeningText(), true)
+                                    }
+                                    val final = recognizer.acceptWaveForm(bytes, count)
+                                    val text = JSONObject(if (final) recognizer.result else recognizer.partialResult).optString(if (final) "text" else "partial")
+                                    handleTranscript(text, final)
+                                }
+                            }
+                        } finally { runCatching { audio.stop() }; audio.release(); recorder = null }
+                    }
+                }
+            } catch (_: InterruptedException) {
+                // Deliberate local shutdown.
+            } catch (_: Throwable) {
+                if (running) {
+                    publish(language.choose("Offline listening stopped. Check the microphone/model and open Jarvis to retry.", "La escucha local se detuvo. Revisa el micrófono o modelo y abre Jarvis.", "گوش‌دادن آفلاین متوقف شد. میکروفن یا مدل را بررسی و جارویس را باز کنید."), false)
+                    stopSelf()
+                }
+            }
+        }, "JarvisWakeListener").also { it.start() }
+        return START_NOT_STICKY
+    }
+
+    private fun handleTranscript(text: String, final: Boolean) {
+        if (text.isBlank()) return
+        val afterWake = WakePhraseMatcher.extractCommand(text, language)
+        if (afterWake != null) {
+            if (awakeUntil == 0L) {
+                awakeUntil = SystemClock.elapsedRealtime() + 12_000
+                publish(language.choose("I'm listening to your command", "Escucho tu petición", "دستور شما را می‌شنوم"), true, awaitingCommand = true)
+                @Suppress("DEPRECATION")
+                getSystemService(Vibrator::class.java)?.vibrate(VibrationEffect.createOneShot(45, VibrationEffect.DEFAULT_AMPLITUDE))
+            }
+            if (final && afterWake.isNotBlank()) deliver(afterWake)
+        } else if (final && awakeUntil > SystemClock.elapsedRealtime()) {
+            deliver(text)
+        }
+    }
+
+    private fun deliver(command: String) {
+        awakeUntil = 0; paused = true
+        publish(language.choose("Processing your command · microphone paused", "Procesando tu petición · micrófono en pausa", "در حال پردازش دستور · میکروفن مکث شده"), false)
+        sendBroadcast(Intent(ACTION_COMMAND).setPackage(packageName).putExtra(EXTRA_TEXT, command).putExtra(EXTRA_LANGUAGE, language.code))
+    }
+
+    private fun listeningText() = language.choose("Listening for “${language.wakePhrase}” · on-device", "Escuchando “${language.wakePhrase}” · local", "در انتظار «${language.wakePhrase}» · روی دستگاه")
+
+    private fun publish(text: String, active: Boolean, updateNotification: Boolean = true, awaitingCommand: Boolean = false) {
+        mutableState.value = WakeState(running = running, listening = active, status = text, language = language, awaitingCommand = awaitingCommand)
+        sendBroadcast(Intent(ACTION_STATUS).setPackage(packageName).putExtra(EXTRA_STATUS, text).putExtra(EXTRA_LANGUAGE, language.code))
+        if (updateNotification) getSystemService(NotificationManager::class.java).notify(NOTIFICATION_ID, notification(text))
+    }
+
+    private fun notification(text: String): android.app.Notification {
+        val launch = packageManager.getLaunchIntentForPackage(packageName)?.apply { flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP }
+        val open = launch?.let { PendingIntent.getActivity(this, 0, it, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE) }
+        val stop = PendingIntent.getService(this, 1, Intent(this, WakeListenerService::class.java).setAction(ACTION_STOP), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+        return NotificationCompat.Builder(this, CHANNEL)
+            .setSmallIcon(android.R.drawable.ic_btn_speak_now)
+            .setContentTitle("Jarvis")
+            .setContentText(text)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(text))
+            .setContentIntent(open)
+            .setOngoing(true).setSilent(true)
+            .addAction(android.R.drawable.ic_media_pause, language.choose("Stop everything", "Detener todo", "توقف همه‌چیز"), stop)
+            .build()
+    }
+
+    override fun onDestroy() {
+        synchronized(audioLock) { running = false; paused = true; awakeUntil = 0; runCatching { recorder?.stop() } }
+        worker?.interrupt(); worker = null
+        mutableState.value = WakeState(status = language.choose("Wake listening is off", "Activación desactivada", "بیدارباش خاموش است"), language = language)
+        stopForeground(STOP_FOREGROUND_REMOVE)
+        super.onDestroy()
+    }
+
+    data class WakeState(val running: Boolean = false, val listening: Boolean = false, val status: String = "", val language: AppLanguage = AppLanguage.EN, val awaitingCommand: Boolean = false)
+    companion object {
+        const val ACTION_START = "com.jarvis.assistant.WAKE_START"
+        const val ACTION_STOP = "com.jarvis.assistant.WAKE_STOP"
+        const val ACTION_PAUSE = "com.jarvis.assistant.WAKE_PAUSE"
+        const val ACTION_RESUME = "com.jarvis.assistant.WAKE_RESUME"
+        const val ACTION_COMMAND = "com.jarvis.assistant.WAKE_COMMAND"
+        const val ACTION_STATUS = "com.jarvis.assistant.WAKE_STATUS"
+        const val EXTRA_TEXT = "text"
+        const val EXTRA_LANGUAGE = "language"
+        const val EXTRA_STATUS = "status"
+        private const val CHANNEL = "jarvis_wake"
+        private const val NOTIFICATION_ID = 3101
+        @Volatile private var suppressionUntil = 0L
+        private val mutableState = MutableStateFlow(WakeState())
+        val state: StateFlow<WakeState> = mutableState
+        fun suppressFor(milliseconds: Long) { suppressionUntil = SystemClock.elapsedRealtime() + milliseconds.coerceAtLeast(0) }
+    }
+}

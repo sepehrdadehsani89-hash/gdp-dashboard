@@ -1,0 +1,13 @@
+.gradle/
+**/build/
+local.properties
+*.jks
+*.keystore
+*.hprof
+.idea/
+**/.cxx/
+**/.kotlin/
+**/build.log
+**/local.properties
+vendor/ocr/Tesseract4Android/gradle.properties.local
+downloads/*.apk

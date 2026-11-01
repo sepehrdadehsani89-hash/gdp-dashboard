@@ -1,0 +1,5 @@
+llama.cpp
+https://github.com/ggml-org/llama.cpp
+Tag: b5046
+Commit: 74d4f5b041ad837153b0e90fc864b8290e01d8d5
+License: MIT (see llama.cpp/LICENSE)

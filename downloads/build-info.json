@@ -1,0 +1,19 @@
+{
+  "version": "0.1.0",
+  "package": "com.jarvis.assistant",
+  "minSdk": 29,
+  "targetSdk": 35,
+  "abis": [
+    "arm64-v8a"
+  ],
+  "apk": "Jarvis-0.1.0-arm64.apk",
+  "bytes": 98073216,
+  "sha256": "fe22322615ab4aab072b65e07a27a1c4ff1ca9e49155bca3b514d66a8fda2c0e",
+  "signing": "development debug certificate",
+  "unit_tests": {
+    "passed": 75,
+    "failed": 0,
+    "skipped": 0
+  },
+  "lint": "0 errors; warnings retained"
+}

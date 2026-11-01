@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Jarvis</string>
+    <string name="accessibility_description">Read screen text only when you ask Jarvis. Password fields and protected apps are excluded. Optional access; no automatic taps or messages.</string>
+</resources>

@@ -1,0 +1,57 @@
+diff --git a/build.gradle b/build.gradle
+index 8bfa6f1..258c34a 100644
+--- a/build.gradle
++++ b/build.gradle
+@@ -7,7 +7,7 @@ buildscript {
+         
+     }
+     dependencies {
+-        classpath 'com.android.tools.build:gradle:8.7.2'
++        classpath 'com.android.tools.build:gradle:8.7.3'
+         
+         // NOTE: Do not place your application dependencies here; they belong
+         // in the individual module build.gradle files
+@@ -19,7 +19,6 @@ allprojects {
+         mavenLocal()
+         google()
+         mavenCentral()
+-        maven { url 'https://jitpack.io' }
+     }
+ }
+ 
+diff --git a/tesseract4android/build.gradle b/tesseract4android/build.gradle
+index 5e940da..33367c9 100644
+--- a/tesseract4android/build.gradle
++++ b/tesseract4android/build.gradle
+@@ -5,12 +5,12 @@ plugins {
+ 
+ android {
+ 	namespace 'cz.adaptech.tesseract4android'
+-	compileSdk 34
+-	ndkVersion "27.2.12479018"
++	compileSdk 35
++	ndkVersion "26.3.11579264"
+ 
+ 	defaultConfig {
+ 		minSdk 21
+-		targetSdk 34
++		targetSdk 35
+ 
+ 		testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+ 		externalNativeBuild {
+@@ -21,13 +21,13 @@ android {
+ 
+ 				// Support 16 KB page sizes with NDK r27
+ 				// This can be removed with NDK r28, which supports it by default.
+-				arguments "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"
++				arguments "-DCMAKE_JOB_POOLS=compile_pool=4", "-DCMAKE_JOB_POOL_COMPILE=compile_pool", "-DANDROID_STL=c++_static", "-DCMAKE_SHARED_LINKER_FLAGS=-Wl,-z,max-page-size=16384", "-DCMAKE_EXE_LINKER_FLAGS=-Wl,-z,max-page-size=16384"
+ 			}
+ 		}
+ 		ndk {
+ 			// Specify the ABI configurations that Gradle should build and package.
+ 			// By default it compiles all available ABIs.
+-			//abiFilters 'x86', 'x86_64', 'armeabi-v7a', 'arm64-v8a'
++			abiFilters 'arm64-v8a', 'x86_64'
+ 		}
+ 	}
+ 	externalNativeBuild {
