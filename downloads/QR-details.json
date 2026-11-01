@@ -1,0 +1,10 @@
+{
+  "url": "https://raw.githubusercontent.com/sepehrdadehsani89-hash/gdp-dashboard/ed1fdf2f2a53a480565d288d05cd644657bce1e1/downloads/Jarvis-0.1.1-arm64.apk",
+  "apk_version": "0.1.1",
+  "apk_sha256": "c64c5a5ef6f888c4f057e6af601854960dd67abeb06d7d605546a502580d92b1",
+  "qr_modules": 49,
+  "quiet_zone_modules": 4,
+  "generator": "qrcode8.2",
+  "public_apk_checksum_verified": true,
+  "independent_decode": "Passed: zxing-cpp2.3.0, URL exactly matches verified APK"
+}
