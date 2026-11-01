@@ -1,7 +1,7 @@
 {
   "package": "com.jarvis.assistant",
-  "version": "0.1.2",
-  "apk_sha256": "2e62a1b24d85fc4c1bb909a1f8fa64d24037427f0149dd585640d462c7488bbc",
+  "version": "0.1.3",
+  "apk_sha256": "d765299b3d538909016a048eabdf29bbd05ea8c38679c48ce671d10c18f78d9f",
   "certificate_sha256": "4a53a95a949af1d6a094a6e05794c74a1562158adf346eacbe76f02c4951e265",
   "sensitive_permissions_preserved": [
     "android.permission.READ_CONTACTS",
@@ -11,6 +11,10 @@
   "services": [
     {
       "name": "com.jarvis.assistant.voice.WakeListenerService",
+      "permission": null
+    },
+    {
+      "name": "com.jarvis.assistant.screen.ScreenCaptureService",
       "permission": null
     },
     {
@@ -30,6 +34,10 @@
       "permission": null
     }
   ],
-  "play_protect_status": "Owner reports previous version installed; 0.1.2 verdict unverified; no claim of Google approval",
-  "reduced_build_published": false
+  "play_protect_status": "Not verified or claimed Google-approved; same signing identity retained",
+  "reduced_build_published": false,
+  "new_permissions": [
+    "android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION",
+    "android.permission.WAKE_LOCK"
+  ]
 }

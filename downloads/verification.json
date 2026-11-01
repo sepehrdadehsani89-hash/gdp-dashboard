@@ -1,54 +1,94 @@
 {
+  "version": "0.1.3",
   "unit_tests": {
-    "passed": 83,
-    "failed": 0,
+    "tests": 95,
+    "failures": 0,
+    "errors": 0,
     "skipped": 0
   },
-  "android_native_tests": {
-    "passed": 2,
+  "android_tests": {
+    "total": 12,
+    "passed": 11,
     "failed": 0,
-    "skipped": 0,
-    "checks": [
-      "OCR of actual rendered image",
-      "non-silent neural synthesis for English, Spanish, Persian"
-    ],
-    "voice_models": "preloaded from SHA256-verified official archives; download-client behavior not established",
-    "version": "0.1.1; unchanged native components; not repeated for 0.1.2"
+    "skipped": 1,
+    "api": 29,
+    "abi": "x86_64",
+    "software_emulator": true,
+    "cases": [
+      {
+        "class": "com.jarvis.assistant.GeminiSettingsTest",
+        "name": "stalledCheckCanBeCancelledWithoutClaimingSuccess",
+        "result": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.GeminiSettingsTest",
+        "name": "compatibleModelCanBeSelectedTestedAndSaved",
+        "result": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.GeminiSettingsTest",
+        "name": "failedTestIsShownWithoutClaimingConnectionSuccess",
+        "result": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.JarvisFlowTest",
+        "name": "privateMemorySpeechStaysOnDeviceWhenCloudVoiceIsEnabled",
+        "result": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.JarvisFlowTest",
+        "name": "firstLaunchCanFinishWithoutAKeyOrOptionalPermission",
+        "result": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.JarvisFlowTest",
+        "name": "youtubeProposalWaitsForApprovalAndCanBeCancelled",
+        "result": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.JarvisFlowTest",
+        "name": "explicitMemoryRequestIsPersistedAndVisible",
+        "result": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.JarvisFlowTest",
+        "name": "typedTimeQuestionUsesTheActualKeylessTool",
+        "result": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.JarvisFlowTest",
+        "name": "persianSelectionLocalizesHomeAndMemoryNavigation",
+        "result": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.NativeEngineTest",
+        "name": "bundledEnglishOcrReadsActualRenderedPixels",
+        "result": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.NativeEngineTest",
+        "name": "installedNeuralVoicesGenerateNonSilentAudioInAllThreeLanguages",
+        "result": "skipped"
+      },
+      {
+        "class": "com.jarvis.assistant.ScreenCaptureFlowTest",
+        "name": "realAndroidProjectionCapturesOneReadableFrameAndClearRemovesIt",
+        "result": "passed"
+      }
+    ]
   },
   "lint": {
     "errors": 0,
-    "warnings": 16
+    "warnings": 17
   },
-  "physical_redmi9_tests": "not executed",
+  "live_gemini_account_verified": false,
+  "physical_redmi9_validated": false,
   "unverified": [
-    "physical microphone and wake recognition",
-    "speaker audibility and pronunciation quality",
-    "battery, thermals and latency",
-    "Vosk and Qwen model download/inference on phone",
-    "live news/weather on phone",
-    "account-backed cloud API calls"
+    "account-backed Gemini text and image generation",
+    "physical microphone/wake recognition",
+    "speaker audibility and Redmi response latency",
+    "MIUI screen-off endurance and system service recovery",
+    "current three-language neural-voice rerun: skipped because downloaded models absent from fresh emulator installation"
   ],
-  "private_speech_routing_regression": "Passed with cloud voice enabled and no API key: memory reply stayed on-device",
-  "previous_android_ui_tests": {
-    "passed": 6,
-    "failed": 0,
-    "skipped": 0,
-    "runner": "AndroidJUnitRunner",
-    "api": 29,
-    "abi": "x86_64",
-    "software_emulator": true,
-    "version": "0.1.1"
-  },
-  "gemini_account_backed_calls": "Not executed; the user must run Test connection with their key on the phone",
-  "android_ui_tests": {
-    "passed": 2,
-    "failed": 0,
-    "skipped": 0,
-    "version": "0.1.2",
-    "class": "GeminiSettingsTest",
-    "api": 29,
-    "abi": "x86_64",
-    "software_emulator": true,
-    "live_google_account": false
-  }
+  "historical_neural_voice_evidence": "0.1.1 report: actual English, Spanish and Persian synthesis passed; not treated as a new 0.1.3 pass"
 }

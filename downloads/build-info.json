@@ -1,47 +1,50 @@
 {
-  "version": "0.1.2",
-  "source_commit": "f863c65b6a240a8c271a045a4d28b9d0b357e19b",
+  "version": "0.1.3",
+  "source_commit": "f7d29aab8b585f05364c0f41f3f603701f270f96",
   "package": "com.jarvis.assistant",
   "minSdk": 29,
   "targetSdk": 35,
   "abis": [
     "arm64-v8a"
   ],
-  "apk": "Jarvis-0.1.2-arm64.apk",
-  "bytes": 97581312,
-  "sha256": "2e62a1b24d85fc4c1bb909a1f8fa64d24037427f0149dd585640d462c7488bbc",
+  "apk": "Jarvis-0.1.3-arm64.apk",
+  "bytes": 97711170,
+  "sha256": "d765299b3d538909016a048eabdf29bbd05ea8c38679c48ce671d10c18f78d9f",
   "signing": "development debug certificate; v2 signature verified",
   "unit_tests": {
-    "tests": 83,
+    "tests": 95,
     "failures": 0,
     "errors": 0,
     "skipped": 0
   },
   "android_ui_tests": {
-    "passed": 2,
+    "passed": 10,
     "failed": 0,
     "skipped": 0,
-    "class": "GeminiSettingsTest",
     "api": 29,
     "abi": "x86_64",
-    "live_google_account": false
+    "software_emulator": true,
+    "real_screenshot_consent_and_pixel_check": true
   },
   "android_native_checks": {
-    "version": "0.1.1 historical baseline; unchanged native code not repeated",
-    "passed": 2,
+    "version": "0.1.3",
+    "passed": 1,
     "failed": 0,
-    "skipped": 0
+    "skipped": 1,
+    "passed_check": "actual rendered-pixel OCR",
+    "skipped_check": "three-language neural synthesis: downloaded models absent in fresh emulator installation"
   },
   "lint": {
     "errors": 0,
-    "warnings": 16
+    "warnings": 17
   },
   "physical_redmi9_validation": false,
   "play_protect": {
-    "status": "Owner reports previous version installed; update verdict unverified; not claimed Google-approved",
+    "status": "Not verified or claimed Google-approved",
     "all_requested_capabilities_preserved": true,
-    "apk_unchanged": false,
+    "same_signing_certificate": true,
     "reduced_access_apk_published": false
   },
-  "gemini_live_connection_verified": false
+  "gemini_live_connection_verified": false,
+  "phone_setup": "docs/0.1.3_PHONE_FIXES.md"
 }
