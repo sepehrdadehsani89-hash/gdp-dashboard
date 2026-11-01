@@ -156,9 +156,9 @@ class SpeechController(context: Context) {
         if (!ttsReady) return language.choose(if (ttsFailed) "Voice engine unavailable" else "Voice engine initializing", "Inicializando motor de voz", "موتور گفتار در حال آماده‌شدن است")
         val voice = systemVoice(language)
         return if (voice != null) "${voice.name} · ${language.choose("on-device", "local", "روی دستگاه")}" else language.choose(
-            "No offline ${language.label} voice installed. Install one in Android text-to-speech settings or configure cloud voice.",
-            "No hay una voz local de ${language.label}. Instala una en los ajustes de voz de Android o configura voz en la nube.",
-            "صدای آفلاین ${language.label} نصب نیست. از تنظیمات تبدیل متن به گفتار اندروید صدا نصب کنید یا صدای ابری را تنظیم کنید.",
+            "No offline ${language.label} voice installed. Download this language's offline voice in Jarvis Settings or install a system voice.",
+            "No hay una voz local de ${language.label}. Descárgala en Ajustes de Jarvis o instala una voz del sistema.",
+            "صدای آفلاین ${language.label} نصب نیست. صدای آفلاین این زبان را از تنظیمات جارویس دانلود کنید یا صدای گوشی را نصب کنید.",
         )
     }
 

@@ -37,7 +37,13 @@ data class PendingAction(
     val payload: String,
     val createdAt: Long = System.currentTimeMillis(),
 )
-data class AssistantReply(val text: String, val sources: List<SourceLink> = emptyList(), val action: PendingAction? = null)
+data class AssistantReply(
+    val text: String,
+    val sources: List<SourceLink> = emptyList(),
+    val action: PendingAction? = null,
+    // Default deny: private tool/file content must not leak via an optional speech provider.
+    val allowCloudSpeech: Boolean = false,
+)
 
 fun AppLanguage.choose(en: String, es: String, fa: String): String = when (this) {
     AppLanguage.EN -> en

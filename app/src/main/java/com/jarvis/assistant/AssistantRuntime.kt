@@ -48,6 +48,9 @@ class AssistantRuntime(private val context: Context) {
     val store = JarvisStore(context)
     private val mutableState = MutableStateFlow(JarvisUiState())
     val state = mutableState.asStateFlow()
+    /** Safe routing diagnostic: provider ID only, never speech text or credentials. */
+    @Volatile var lastSpeechDestination: String = "none"
+        private set
     private val errors = CoroutineExceptionHandler { _, _ ->
         fail(language().choose("Something interrupted that request. Please try again.", "La solicitud se interrumpió. Inténtalo otra vez.", "درخواست متوقف شد. لطفاً دوباره تلاش کنید."))
     }
@@ -209,21 +212,23 @@ class AssistantRuntime(private val context: Context) {
             // Private memory is usable on-device; no automatic sharing with a cloud provider.
             val memory = store.memories.value.take(12).joinToString("\n") { it.text }.take(4000)
             val localPrompt = LocalContextBudget.build(text, selectedText, memory)
-            AssistantReply(brain.answer(localPrompt, lang, emptyList(), onChunk))
+            AssistantReply(brain.answer(localPrompt, lang, emptyList(), onChunk), allowCloudSpeech = selectedText.isBlank() && memory.isBlank())
         } else {
             // No automatic transfer of prior screen/notification/contact outputs or saved memories.
-            AssistantReply(llm.answer(text, lang, selectedText.take(24_000), emptyList(), onChunk))
+            AssistantReply(llm.answer(text, lang, selectedText.take(24_000), emptyList(), onChunk), allowCloudSpeech = selectedText.isBlank())
         }
     }
 
     private suspend fun deliver(reply: AssistantReply, lang: AppLanguage, voiced: Boolean, generation: Long) {
         store.addMessage(ChatMessage(role = MessageRole.ASSISTANT, text = reply.text, sources = reply.sources))
         mutableState.update { it.copy(transcript = "", pendingAction = reply.action, phase = AssistantPhase.READY) }
-        if (voiced || store.settings.value.speakReplies) speak(reply.text, lang, generation) else resumeWake()
+        if (voiced || store.settings.value.speakReplies) speak(reply.text, lang, generation, reply.allowCloudSpeech) else resumeWake()
     }
 
-    private fun speak(text: String, lang: AppLanguage, generation: Long = sessionGeneration) {
+    private fun speak(text: String, lang: AppLanguage, generation: Long = sessionGeneration, allowCloudSpeech: Boolean = true) {
         if (locked()) { fail(unlockMessage()); return }
+        val useCloudVoice = store.settings.value.useCloudVoice && allowCloudSpeech
+        lastSpeechDestination = if (useCloudVoice) "openai" else "on-device"
         mutableState.update { it.copy(phase = AssistantPhase.SPEAKING) }
         val done = {
             if (generation == sessionGeneration) {
@@ -232,7 +237,7 @@ class AssistantRuntime(private val context: Context) {
             }
         }
         val error: (String) -> Unit = { message -> if (generation == sessionGeneration) { fail(message); resumeWake() } }
-        if (store.settings.value.useCloudVoice) {
+        if (useCloudVoice) {
             cloudVoiceJob = scope.launch {
                 try {
                     val audio = llm.synthesizeSpeech(text.take(3500), lang)
@@ -368,6 +373,7 @@ class AssistantRuntime(private val context: Context) {
 
     private fun cancelSession() {
         ++sessionGeneration
+        lastSpeechDestination = "none"
         session?.cancel(); session = null
         cloudVoiceJob?.cancel(); cloudVoiceJob = null
         runCatching { brain.cancel() }

@@ -125,6 +125,26 @@ class JarvisFlowTest {
         assertEquals(AppLanguage.FA, runtime.state.value.settings.language)
     }
 
+    @Test fun privateMemorySpeechStaysOnDeviceWhenCloudVoiceIsEnabled() {
+        seedReady()
+        val note = "Synthetic private test note, never for a speech provider."
+        runBlocking(Dispatchers.IO) { runtime.store.remember(note) }
+        compose.runOnUiThread {
+            runtime.store.updateSettings(runtime.store.settings.value.copy(speakReplies = true, useCloudVoice = true))
+        }
+        compose.waitUntil(timeoutMillis = 15_000) {
+            runtime.store.memories.value.any { it.text == note } && runtime.state.value.settings.useCloudVoice
+        }
+        assertTrue(runtime.store.getApiKey("openai").isBlank())
+        send("What do you remember?")
+        compose.waitUntil(timeoutMillis = 20_000) {
+            runtime.state.value.messages.any { it.role == MessageRole.ASSISTANT && it.text.contains(note) } &&
+                runtime.lastSpeechDestination != "none"
+        }
+        assertEquals("on-device", runtime.lastSpeechDestination)
+        assertFalse(runtime.state.value.error.orEmpty().contains("Cloud voice"))
+    }
+
     private fun seedReady(language: AppLanguage = AppLanguage.EN) {
         compose.runOnUiThread {
             runtime.store.updateSettings(AssistantSettings(
