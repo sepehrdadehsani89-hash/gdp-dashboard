@@ -10,7 +10,7 @@ You can complete this setup entirely on your phone. No computer, USB debugging, 
 
 ## 1. Download and install
 
-Open the APK link on your **Redmi 9**, or scan the QR from your computer's screen with the phone camera. Save the file, then open **Downloads → Jarvis-0.1.1-arm64.apk**.
+Open the APK link on your **Redmi 9**, or scan the QR from your computer's screen with the phone camera. If the chat browser does not download it, copy the link into Chrome. Save the file, then open **Downloads → Jarvis-0.1.1-arm64.apk**.
 
 If Android asks, open **Settings → Allow from this source** for the browser/file manager you used, return, and tap **Install → Open**. You can revoke that installation permission afterward. The QR starts a download; Android still requires you to approve installation.
 
@@ -72,7 +72,9 @@ After the microphone and voice checks work, open Settings and tap **Start listen
 | Spanish | Hola Jarvis |
 | Persian | سلام جارویس |
 
-Say the phrase, then your command. **Only one listening language is active at a time.** To switch, choose another language in Settings, download its packs if missing, and tap Start listening again.
+Say the phrase, then your command. **Keep the phone unlocked for commands in this preview. Only one listening language is active at a time.** To switch, choose another language in Settings, download its packs if missing, and tap Start listening again.
+
+If the phone locked or listening became paused, unlock it, tap **Pause**, then **Start listening** again.
 
 Wake capture pauses while Jarvis processes or speaks. This preview does not provide voice interruption during an answer; use the Stop button or notification's **Stop everything** action.
 

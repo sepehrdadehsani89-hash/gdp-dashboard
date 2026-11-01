@@ -39,7 +39,7 @@ No USB connection or computer is needed to install a supplied APK. Building from
 
 Jarvis cannot silently access every app's private database, all photos, or every file. File and photo access uses user selection, and Android requires separate approval for sensitive permissions and special access. Banking/payment/password-manager automation is blocked. No root or permission bypass is used.
 
-Wake listening is best effort. Android, force-stop, battery settings, and the phone manufacturer may stop it. This build does not start microphone capture automatically at boot. Reopen Jarvis and explicitly resume when necessary.
+This preview requires the phone to be unlocked for commands. Wake listening is best effort. Android, force-stop, battery settings, and the phone manufacturer may stop it. This build does not start microphone capture automatically at boot. Reopen Jarvis and explicitly resume when necessary.
 
 ## No API key required
 

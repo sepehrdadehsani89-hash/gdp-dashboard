@@ -13,3 +13,5 @@
 The protected-app baseline and sensitive-text heuristics reduce exposure; they are not a claim to identify every secret or every banking package. Accessibility text does not reliably expose every app's secure-window state. There is no screenshot capture or payment/password automation in this preview.
 
 Private phone/tool outputs and answers using selected files or saved memories never use optional cloud speech. Only general AI chat without those private sources may opt into the user-enabled cloud-voice route. Voice Check can send its public greeting when the user explicitly enables cloud voice.
+
+This preview requires an unlocked phone to execute commands. It does not provide lock-screen assistant behavior.
