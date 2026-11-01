@@ -1,28 +1,33 @@
 {
-  "version": "0.1.1",
-  "source_commit": "cb26dfc6a3b11a44cdd7129e092d384de311316c",
+  "version": "0.1.2",
+  "source_commit": "f863c65b6a240a8c271a045a4d28b9d0b357e19b",
   "package": "com.jarvis.assistant",
   "minSdk": 29,
   "targetSdk": 35,
   "abis": [
     "arm64-v8a"
   ],
-  "apk": "Jarvis-0.1.1-arm64.apk",
-  "bytes": 97534348,
-  "sha256": "c64c5a5ef6f888c4f057e6af601854960dd67abeb06d7d605546a502580d92b1",
+  "apk": "Jarvis-0.1.2-arm64.apk",
+  "bytes": 97581312,
+  "sha256": "2e62a1b24d85fc4c1bb909a1f8fa64d24037427f0149dd585640d462c7488bbc",
   "signing": "development debug certificate; v2 signature verified",
   "unit_tests": {
-    "tests": 76,
+    "tests": 83,
     "failures": 0,
     "errors": 0,
     "skipped": 0
   },
   "android_ui_tests": {
-    "passed": 6,
+    "passed": 2,
     "failed": 0,
-    "skipped": 0
+    "skipped": 0,
+    "class": "GeminiSettingsTest",
+    "api": 29,
+    "abi": "x86_64",
+    "live_google_account": false
   },
   "android_native_checks": {
+    "version": "0.1.1 historical baseline; unchanged native code not repeated",
     "passed": 2,
     "failed": 0,
     "skipped": 0
@@ -33,9 +38,10 @@
   },
   "physical_redmi9_validation": false,
   "play_protect": {
-    "status": "User reported full-feature APK blocked; not cleared by Google",
+    "status": "Owner reports previous version installed; update verdict unverified; not claimed Google-approved",
     "all_requested_capabilities_preserved": true,
-    "apk_unchanged": true,
+    "apk_unchanged": false,
     "reduced_access_apk_published": false
-  }
+  },
+  "gemini_live_connection_verified": false
 }

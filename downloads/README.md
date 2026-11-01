@@ -1,10 +1,10 @@
 # Jarvis for your Android phone
 
-Development preview 0.1.1 · Android 10+ · ARM64 · intended first device: Redmi 9.
+Development preview 0.1.2 · Android 10+ · ARM64 · intended first device: Redmi 9.
 
 Direct Android download:
 
-[Download Jarvis APK](https://raw.githubusercontent.com/sepehrdadehsani89-hash/gdp-dashboard/ed1fdf2f2a53a480565d288d05cd644657bce1e1/downloads/Jarvis-0.1.1-arm64.apk)
+[Download Jarvis APK](https://raw.githubusercontent.com/sepehrdadehsani89-hash/gdp-dashboard/jarvis-android-download/downloads/Jarvis-0.1.2-arm64.apk)
 
 1. Open the link on Android and download the APK. Android asks you to approve installation; it cannot be installed silently.
 2. Open Jarvis and choose English, Español, or فارسی. No API key is required.
@@ -16,6 +16,6 @@ You decide which permissions to grant. Files/photos are selected explicitly; And
 
 SHA-256 and build details: [SHA256SUMS](SHA256SUMS), [build-info.json](build-info.json). Source and licensing accompany this download in the same branch. See [verification](../docs/VERIFICATION.md) for tested versus unverified capabilities.
 
-[Step-by-step phone setup](../docs/PHONE_SETUP.md)
+[Gemini model selection and connection test](../docs/GEMINI_SETUP.md) · [Step-by-step phone setup](../docs/PHONE_SETUP.md)
 
 ![Scan on your Android phone](Jarvis-QR.png)

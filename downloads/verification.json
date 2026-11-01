@@ -1,17 +1,8 @@
 {
   "unit_tests": {
-    "passed": 76,
+    "passed": 83,
     "failed": 0,
     "skipped": 0
-  },
-  "android_ui_tests": {
-    "passed": 6,
-    "failed": 0,
-    "skipped": 0,
-    "runner": "AndroidJUnitRunner",
-    "api": 29,
-    "abi": "x86_64",
-    "software_emulator": true
   },
   "android_native_tests": {
     "passed": 2,
@@ -21,7 +12,8 @@
       "OCR of actual rendered image",
       "non-silent neural synthesis for English, Spanish, Persian"
     ],
-    "voice_models": "preloaded from SHA256-verified official archives; download-client behavior not established"
+    "voice_models": "preloaded from SHA256-verified official archives; download-client behavior not established",
+    "version": "0.1.1; unchanged native components; not repeated for 0.1.2"
   },
   "lint": {
     "errors": 0,
@@ -36,5 +28,27 @@
     "live news/weather on phone",
     "account-backed cloud API calls"
   ],
-  "private_speech_routing_regression": "Passed with cloud voice enabled and no API key: memory reply stayed on-device"
+  "private_speech_routing_regression": "Passed with cloud voice enabled and no API key: memory reply stayed on-device",
+  "previous_android_ui_tests": {
+    "passed": 6,
+    "failed": 0,
+    "skipped": 0,
+    "runner": "AndroidJUnitRunner",
+    "api": 29,
+    "abi": "x86_64",
+    "software_emulator": true,
+    "version": "0.1.1"
+  },
+  "gemini_account_backed_calls": "Not executed; the user must run Test connection with their key on the phone",
+  "android_ui_tests": {
+    "passed": 2,
+    "failed": 0,
+    "skipped": 0,
+    "version": "0.1.2",
+    "class": "GeminiSettingsTest",
+    "api": 29,
+    "abi": "x86_64",
+    "software_emulator": true,
+    "live_google_account": false
+  }
 }
