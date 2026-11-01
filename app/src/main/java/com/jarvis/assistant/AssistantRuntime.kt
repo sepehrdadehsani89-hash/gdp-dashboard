@@ -22,6 +22,7 @@ import com.jarvis.assistant.core.PhoneContext
 import com.jarvis.assistant.core.choose
 import com.jarvis.assistant.data.JarvisStore
 import com.jarvis.assistant.data.LlmClient
+import com.jarvis.assistant.data.ProviderException
 import com.jarvis.assistant.local.LocalBrain
 import com.jarvis.assistant.tools.DeviceTools
 import com.jarvis.assistant.ui.JarvisUiState
@@ -41,6 +42,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
 
 /** Process-scoped session owner: no hidden microphone start, no LLM-authorized actions. */
@@ -68,6 +70,7 @@ class AssistantRuntime(private val context: Context) {
     private var wakeDownload: Job? = null
     private var brainDownload: Job? = null
     private var voiceDownload: Job? = null
+    private var providerCheck: Job? = null
     private var initialized = false
     @Volatile private var sessionGeneration = 0L
     private var lastReplyLanguage = AppLanguage.EN
@@ -125,6 +128,22 @@ class AssistantRuntime(private val context: Context) {
         stopWake()
         store.updateSettings(store.settings.value.copy(language = value))
         refreshCapabilities()
+    }
+
+    suspend fun listGeminiModels(key: String): List<String> {
+        if (locked()) throw ProviderException(unlockMessage())
+        val job = currentCoroutineContext()[Job]
+        providerCheck = job
+        return try { llm.availableGeminiModels(key, language()) }
+        finally { if (providerCheck === job) providerCheck = null }
+    }
+
+    suspend fun testProvider(settings: AssistantSettings, key: String): String {
+        if (locked()) throw ProviderException(unlockMessage())
+        val job = currentCoroutineContext()[Job]
+        providerCheck = job
+        return try { llm.testConnection(settings, key) }
+        finally { if (providerCheck === job) providerCheck = null }
     }
 
     fun listen() {
@@ -365,6 +384,7 @@ class AssistantRuntime(private val context: Context) {
     }
 
     fun stopEverything() {
+        providerCheck?.cancel()
         cancelSession()
         wakeDownload?.cancel(); brainDownload?.cancel(); voiceDownload?.cancel()
         stopWake()

@@ -41,6 +41,36 @@ class BrainProtocolTest {
         assertEquals("claude-sonnet-4-20250514", BrainProtocol.model("anthropic", "gemini-2.5-flash"))
     }
 
+    @Test fun geminiAcceptsCopiedModelResourceNamesButRejectsPathsAndOverlongNames() {
+        assertEquals("gemini-test", BrainProtocol.model("gemini", " models/gemini-test "))
+        listOf("models/../gemini-test", "models/gemini-test?key=secret", "gemini-" + "a".repeat(100)).forEach { model ->
+            assertTrue(runCatching { BrainProtocol.model("gemini", model) }.isFailure)
+        }
+    }
+
+    @Test fun modelCatalogExcludesLiveOnlyEmbeddingAndMalformedNames() {
+        val body = """{"models":[
+            {"name":"models/gemini-text-test","supportedGenerationMethods":["generateContent","countTokens"]},
+            {"name":"models/gemini-live-test","supportedGenerationMethods":["bidiGenerateContent"]},
+            {"name":"models/gemini-embed-test","supportedGenerationMethods":["embedContent"]},
+            {"name":"models/gemini-bad?key=secret","supportedGenerationMethods":["generateContent"]},
+            {"name":"models/gemini-text-test","supportedGenerationMethods":["generateContent"]}
+        ]}"""
+        assertEquals(listOf("gemini-text-test"), BrainProtocol.geminiModels(body))
+    }
+
+    @Test fun geminiErrorsDistinguishMissingModelsBadKeysAndAccountRequirementsWithoutEchoingSecrets() {
+        val missing = BrainProtocol.providerHttpError(404, "gemini", """{"error":{"status":"NOT_FOUND","message":"private key = secret-123"}}""", AppLanguage.EN)
+        assertTrue(missing.contains("Find Gemini models"))
+        assertTrue(missing.contains("HTTP 404; NOT_FOUND"))
+        assertFalse(missing.contains("secret-123"))
+        val invalid = BrainProtocol.providerHttpError(400, "gemini", """{"error":{"status":"INVALID_ARGUMENT","details":[{"reason":"API_KEY_INVALID"}]}}""", AppLanguage.EN)
+        assertTrue(invalid.contains("Google rejected the API key"))
+        assertTrue(BrainProtocol.providerHttpError(400, "gemini", """{"error":{"status":"FAILED_PRECONDITION"}}""", AppLanguage.EN).contains("supported regions"))
+        assertFalse(BrainProtocol.providerHttpError(400, "gemini", """{"error":{"status":"secret-123"}}""", AppLanguage.FA).contains("secret-123"))
+        assertTrue(BrainProtocol.providerHttpError(400, "gemini", "not json", AppLanguage.ES).contains("HTTP 400"))
+    }
+
     @Test fun requestDoesNotDuplicateAlreadyPersistedCurrentUtterance() {
         val request = JSONObject(BrainProtocol.requestBody(
             "openai", "gpt-4o-mini", "system", "Hello", "", listOf(ChatMessage(role = MessageRole.USER, text = "Hello")),

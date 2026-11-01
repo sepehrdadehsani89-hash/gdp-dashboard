@@ -34,7 +34,8 @@ object BrainProtocol {
     }
 
     fun model(provider: String, selected: String): String {
-        val safe = selected.trim().take(100)
+        val safe = selected.trim().removePrefix(if (provider == "gemini") "models/" else "")
+        require(safe.length <= 100) { "Invalid model name" }
         require(safe.isEmpty() || safe.matches(Regex("[A-Za-z0-9._:-]+"))) { "Invalid model name" }
         return when (provider) {
             "openai" -> safe.takeIf { it.startsWith("gpt-") || it.startsWith("o1") || it.startsWith("o3") || it.startsWith("o4") } ?: "gpt-4o-mini"
@@ -117,6 +118,39 @@ object BrainProtocol {
         val key = value.trim()
         require(key.isNotEmpty() && key.length <= 4096 && key.all { it.code in 33..126 }) { "The API key must contain only visible ASCII characters without spaces." }
         return key
+    }
+
+    /** Only model identifiers and known error codes may reach the UI, never remote error text. */
+    fun geminiModels(body: String): List<String> {
+        val models = JSONObject(body).optJSONArray("models") ?: return emptyList()
+        return (0 until models.length()).mapNotNull { index ->
+            val item = models.optJSONObject(index) ?: return@mapNotNull null
+            val methods = item.optJSONArray("supportedGenerationMethods") ?: return@mapNotNull null
+            if ((0 until methods.length()).none { methods.optString(it) == "generateContent" }) return@mapNotNull null
+            val name = (item.opt("name") as? String)?.removePrefix("models/") ?: return@mapNotNull null
+            name.takeIf { it.length <= 100 && it.matches(Regex("gemini-[A-Za-z0-9._:-]+")) }
+        }.distinct().sorted()
+    }
+
+    fun providerHttpError(status: Int, provider: String, body: String, language: AppLanguage): String {
+        if (provider != "gemini") return safeHttpError(status, language)
+        val error = runCatching { JSONObject(body).optJSONObject("error") }.getOrNull()
+        val code = error?.optString("status").orEmpty()
+        val details = error?.optJSONArray("details")
+        val reasons = if (details == null) emptyList() else (0 until details.length()).mapNotNull {
+            details.optJSONObject(it)?.optString("reason")
+        }
+        val message = when {
+            "API_KEY_INVALID" in reasons -> language.choose("Google rejected the API key. Create a Gemini API key in Google AI Studio and save it in Settings.", "Google rechazó la clave. Crea una clave de Gemini en Google AI Studio y guárdala en Ajustes.", "گوگل کلید API را نپذیرفت. در Google AI Studio کلید Gemini بسازید و در تنظیمات ذخیره کنید.")
+            reasons.any { it in setOf("API_KEY_SERVICE_BLOCKED", "API_KEY_HTTP_REFERRER_BLOCKED", "API_KEY_IP_ADDRESS_BLOCKED", "API_KEY_ANDROID_APP_BLOCKED") } -> language.choose("This key's restrictions block Jarvis. Check its allowed API and application restrictions in Google Cloud.", "Las restricciones de la clave bloquean Jarvis. Revisa la API permitida y las restricciones de aplicación en Google Cloud.", "محدودیت‌های این کلید مانع اتصال جارویس است. API مجاز و محدودیت برنامه را در Google Cloud بررسی کنید.")
+            "SERVICE_DISABLED" in reasons -> language.choose("The Gemini API is disabled for this key's project. Check the project in Google AI Studio or Google Cloud.", "La API de Gemini está desactivada en este proyecto. Revísalo en Google AI Studio o Google Cloud.", "API مربوط به Gemini برای پروژهٔ این کلید غیرفعال است. پروژه را در Google AI Studio یا Google Cloud بررسی کنید.")
+            code == "FAILED_PRECONDITION" -> language.choose("Google requires an account or project change. Check Gemini API billing and supported regions in Google AI Studio.", "Google requiere un cambio en la cuenta o el proyecto. Revisa la facturación y las regiones admitidas en Google AI Studio.", "گوگل به تغییر در حساب یا پروژه نیاز دارد. صورت‌حساب و مناطق پشتیبانی‌شدهٔ Gemini API را در Google AI Studio بررسی کنید.")
+            status == 404 -> language.choose("Google could not find this model for this request. In Settings, use Find Gemini models, select one, and test it.", "Google no encontró este modelo para la solicitud. En Ajustes, busca modelos Gemini, elige uno y pruébalo.", "گوگل این مدل را برای درخواست پیدا نکرد. در تنظیمات، مدل‌های Gemini را پیدا کنید، یکی را انتخاب و آزمایش کنید.")
+            status == 400 -> language.choose("Google rejected the request. Check the Gemini API key, select a listed model in Settings, then test the connection.", "Google rechazó la solicitud. Revisa la clave, elige un modelo de la lista en Ajustes y prueba la conexión.", "گوگل درخواست را نپذیرفت. کلید Gemini را بررسی کنید، در تنظیمات مدلی از فهرست انتخاب و اتصال را آزمایش کنید.")
+            else -> safeHttpError(status, language)
+        }
+        val knownCodes = setOf("INVALID_ARGUMENT", "NOT_FOUND", "FAILED_PRECONDITION", "PERMISSION_DENIED", "UNAUTHENTICATED", "RESOURCE_EXHAUSTED", "UNAVAILABLE", "INTERNAL")
+        return "$message (HTTP $status${if (code in knownCodes) "; $code" else ""})"
     }
 
     fun safeHttpError(status: Int, language: AppLanguage = AppLanguage.EN): String = when (status) {

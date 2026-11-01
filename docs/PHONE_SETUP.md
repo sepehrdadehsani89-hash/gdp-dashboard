@@ -1,8 +1,8 @@
 # Set up Jarvis on your Redmi 9
 
-Android preview 0.1.1 · Android 10 or newer · ARM64.
+Android preview 0.1.2 · Android 10 or newer · ARM64.
 
-[Download the Android APK, about 98 MB](https://raw.githubusercontent.com/sepehrdadehsani89-hash/gdp-dashboard/ed1fdf2f2a53a480565d288d05cd644657bce1e1/downloads/Jarvis-0.1.1-arm64.apk)
+[Download the Android APK, about 98 MB](https://raw.githubusercontent.com/sepehrdadehsani89-hash/gdp-dashboard/jarvis-android-download/downloads/Jarvis-0.1.2-arm64.apk)
 
 [Open the download QR code](../downloads/Jarvis-QR.png)
 
@@ -12,7 +12,7 @@ You can complete this setup entirely on your phone. No computer, USB debugging, 
 
 **Known block:** If Play Protect shows “App blocked to protect your device,” stop installation and follow the [official review steps and APK packet](PLAY_PROTECT_REVIEW.md). Allowing a browser to install unknown apps is a separate Android setting and does not clear a Play Protect verdict. No feature has been removed from this full build.
 
-Open the APK link on your **Redmi 9**, or scan the QR from your computer's screen with the phone camera. If the chat browser does not download it, copy the link into Chrome. Save the file, then open **Downloads → Jarvis-0.1.1-arm64.apk**.
+Open the APK link on your **Redmi 9**, or scan the QR from your computer's screen with the phone camera. If the chat browser does not download it, copy the link into Chrome. Save the file, then open **Downloads → Jarvis-0.1.2-arm64.apk**.
 
 If Android asks, open **Settings → Allow from this source** for the browser/file manager you used, return, and tap **Install → Open**. You can revoke that installation permission afterward. The QR starts a download; Android still requires you to approve installation.
 
@@ -63,6 +63,8 @@ Open **Settings / Ajustes / تنظیمات**. Keep the provider set to **On-devi
 The download is about **400 MB**, so use Wi-Fi and leave Jarvis open until it finishes. Tap **Save settings / Guardar ajustes / ذخیرهٔ تنظیمات** after changing options.
 
 The local brain adds general questions and answers. News, time, supported app shortcuts, and explicit memories already work without it. The model is small: responses can be slow on a Redmi 9, and Persian answer quality is limited. Close other apps if memory is tight. You do not need to enter a cloud API key for this route.
+
+For Gemini instead, use the [phone connection guide](GEMINI_SETUP.md): select Gemini, find a supported text model, test the connection, then save. A stored key is not a verified connection. Live-only models use a different API.
 
 ## 7. Enable the wake phrase
 

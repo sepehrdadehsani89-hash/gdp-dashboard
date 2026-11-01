@@ -32,6 +32,8 @@ data class JarvisUiActions(
     val onStop: () -> Unit = {},
     val onLanguage: (AppLanguage) -> Unit = {},
     val onSaveSettings: (AssistantSettings, String) -> Unit = { _, _ -> },
+    val onListGeminiModels: suspend (String) -> List<String> = { emptyList() },
+    val onTestProvider: suspend (AssistantSettings, String) -> String = { _, _ -> "" },
     val onRememberDelete: (Long) -> Unit = {},
     val onClearConversation: () -> Unit = {},
     val onWipe: () -> Unit = {},

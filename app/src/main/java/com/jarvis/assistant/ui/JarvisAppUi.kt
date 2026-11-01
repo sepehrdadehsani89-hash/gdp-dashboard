@@ -91,6 +91,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -124,6 +125,10 @@ import com.jarvis.assistant.core.AssistantSettings
 import com.jarvis.assistant.core.ChatMessage
 import com.jarvis.assistant.core.MessageRole
 import com.jarvis.assistant.core.choose
+import com.jarvis.assistant.data.ProviderException
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -500,6 +505,44 @@ private fun SettingsScreen(state: JarvisUiState, actions: JarvisUiActions) {
     var showWipe by rememberSaveable { mutableStateOf(false) }
     var showClearConversation by rememberSaveable { mutableStateOf(false) }
     var saved by remember { mutableStateOf(false) }
+    val connectionScope = rememberCoroutineScope()
+    var connectionJob by remember { mutableStateOf<Job?>(null) }
+    var checking by remember { mutableStateOf(false) }
+    var connectionStatus by remember { mutableStateOf("") }
+    var availableModels by remember { mutableStateOf(emptyList<String>()) }
+    var connectionGeneration by remember { mutableIntStateOf(0) }
+    fun clearConnectionCheck(clearModels: Boolean = true) {
+        connectionGeneration++
+        connectionJob?.cancel()
+        checking = false
+        connectionStatus = ""
+        if (clearModels) availableModels = emptyList()
+    }
+    fun checkConnection(listModels: Boolean) {
+        clearConnectionCheck(clearModels = listModels)
+        val selected = draft
+        val enteredKey = key
+        val generation = connectionGeneration
+        checking = true
+        connectionJob = connectionScope.launch {
+            try {
+                if (listModels) {
+                    availableModels = actions.onListGeminiModels(enteredKey)
+                    connectionStatus = l.choose("Choose a model below, then test the connection. Live-only models use a different API and are not listed.", "Elige un modelo y prueba la conexión. Los modelos solo Live usan otra API y no aparecen aquí.", "از فهرست مدلی انتخاب و اتصال را آزمایش کنید. مدل‌های مخصوص Live از API دیگری استفاده می‌کنند و اینجا فهرست نمی‌شوند.")
+                } else {
+                    val model = actions.onTestProvider(selected, enteredKey)
+                    connectionStatus = l.choose("Connection verified: $model. Save settings to use it.", "Conexión verificada: $model. Guarda los ajustes para usarlo.", "اتصال تأیید شد: $model. برای استفاده، تنظیمات را ذخیره کنید.")
+                }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                connectionStatus = if (error is ProviderException) error.message.orEmpty() else l.choose("Check the API key and model ID, then try again.", "Revisa la clave API y el ID del modelo e inténtalo otra vez.", "کلید API و شناسهٔ مدل را بررسی و دوباره امتحان کنید.")
+            } finally {
+                if (generation == connectionGeneration) checking = false
+            }
+        }
+    }
+    LaunchedEffect(state.settings.provider, state.settings.model, state.settings.language) { clearConnectionCheck() }
     LazyColumn(contentPadding = PaddingValues(24.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
         item { PageTitle(l.choose("Made to feel like yours.", "Hecho a tu manera.", "همان‌طور که شما می‌خواهید."), l.choose("SETTINGS", "AJUSTES", "تنظیمات")) }
         item { SectionCard {
@@ -513,6 +556,7 @@ private fun SettingsScreen(state: JarvisUiState, actions: JarvisUiActions) {
             Text(l.choose("Use a small on-device model without an API key, or optionally connect your own cloud provider. News, app shortcuts, and memory work without either.", "Usa un modelo local sin clave API o conecta tu proveedor en la nube. Noticias, atajos y memoria funcionan sin ambos.", "از مدل کوچک روی گوشی و بدون کلید API استفاده کنید، یا در صورت تمایل سرویس آنلاین خود را وصل کنید. خبرها، میان‌برها و یادداشت‌ها به هیچ‌کدام نیاز ندارند."), color = Muted, style = MaterialTheme.typography.bodySmall)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 listOf("local" to l.choose("On-device · no key", "Local · sin clave", "روی گوشی · بدون کلید"), "gemini" to "Gemini", "openai" to "OpenAI", "anthropic" to "Claude").forEach { (id, title) -> FilterChip(selected = draft.provider == id, onClick = {
+                    clearConnectionCheck()
                     draft = draft.copy(provider = id, model = when(id) { "gemini" -> "gemini-2.5-flash"; "openai" -> "gpt-4o-mini"; "anthropic" -> "claude-sonnet-4-20250514"; else -> "qwen2.5-0.5b" }); key = ""; saved = false
                 }, label = { Text(title) }) }
             }
@@ -522,14 +566,24 @@ private fun SettingsScreen(state: JarvisUiState, actions: JarvisUiActions) {
                 state.brainProgress?.let { LinearProgressIndicator(progress = { it.coerceIn(0f, 1f) }, modifier = Modifier.fillMaxWidth()) }
                 OutlinedButton(onClick = actions.onDownloadBrain, enabled = state.brainProgress == null, modifier = Modifier.fillMaxWidth()) { Text(l.choose("Download on-device model", "Descargar modelo local", "دانلود مدل روی گوشی")) }
             } else {
-            OutlinedTextField(draft.model, { draft = draft.copy(model = it); saved = false }, modifier = Modifier.fillMaxWidth(), singleLine = true, label = { Text(l.choose("Model ID", "ID del modelo", "شناسهٔ مدل")) }, shape = RoundedCornerShape(14.dp))
-            OutlinedTextField(key, { key = it; saved = false }, modifier = Modifier.fillMaxWidth(), singleLine = true,
+            OutlinedTextField(draft.model, { clearConnectionCheck(false); draft = draft.copy(model = it); saved = false }, modifier = Modifier.fillMaxWidth(), singleLine = true, label = { Text(l.choose("Model ID", "ID del modelo", "شناسهٔ مدل")) }, shape = RoundedCornerShape(14.dp))
+            OutlinedTextField(key, { clearConnectionCheck(); key = it; saved = false }, modifier = Modifier.fillMaxWidth(), singleLine = true,
                 label = { Text(l.choose("API key", "Clave API", "کلید API")) },
                 placeholder = { Text(l.choose("Leave blank to keep the saved key", "Vacío conserva la clave guardada", "برای حفظ کلید قبلی خالی بگذارید")) },
                 visualTransformation = if (showKey) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 trailingIcon = { IconButton(onClick = { showKey = !showKey }) { Icon(if (showKey) Icons.Rounded.VisibilityOff else Icons.Rounded.Visibility, l.choose("Toggle key visibility", "Mostrar u ocultar clave", "نمایش یا پنهان کردن کلید")) } }, shape = RoundedCornerShape(14.dp))
-            Text(if (state.hasApiKey) l.choose("A key is saved for the active provider.", "Hay una clave para el proveedor activo.", "کلید سرویس فعال ذخیره شده است.") else l.choose("No key saved for the active provider. News and shortcuts still work.", "Sin clave para el proveedor activo. Noticias y atajos siguen disponibles.", "کلیدی برای سرویس فعال ذخیره نشده است. خبرها و میان‌برها همچنان کار می‌کنند."), color = if (state.hasApiKey) Mint else Warm, style = MaterialTheme.typography.bodySmall)
+            Text(if (draft.provider == state.settings.provider && state.hasApiKey) l.choose("A key is saved for this provider. Saving a key does not verify the connection.", "Hay una clave guardada. Guardarla no verifica la conexión.", "کلید این سرویس ذخیره شده است. ذخیرهٔ کلید به معنی تأیید اتصال نیست.") else l.choose("Enter a key for this provider, or leave blank to use its previously saved key.", "Introduce una clave o deja el campo vacío para usar la guardada para este proveedor.", "کلید این سرویس را وارد کنید یا برای استفاده از کلید قبلی آن، خالی بگذارید."), color = Muted, style = MaterialTheme.typography.bodySmall)
+            if (draft.provider == "gemini") {
+                OutlinedButton(onClick = { checkConnection(true) }, enabled = !checking, modifier = Modifier.fillMaxWidth()) { Text(l.choose("Find Gemini models", "Buscar modelos Gemini", "پیدا کردن مدل‌های Gemini")) }
+                if (availableModels.isNotEmpty()) FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    availableModels.forEach { model -> FilterChip(selected = draft.model == model, onClick = { clearConnectionCheck(false); draft = draft.copy(model = model); saved = false }, label = { Text(model) }) }
+                }
+            }
+            OutlinedButton(onClick = { checkConnection(false) }, enabled = !checking, modifier = Modifier.fillMaxWidth()) { Text(l.choose("Test connection", "Probar conexión", "آزمایش اتصال")) }
+            Text(l.choose("The test sends only a short sample prompt, without your conversations or phone data. Provider quota or charges may apply. Save settings after a successful test.", "La prueba envía solo un mensaje breve, sin conversaciones ni datos del teléfono. Puede consumir cuota o tener coste. Guarda los ajustes después.", "آزمایش فقط یک پیام نمونهٔ کوتاه می‌فرستد، بدون گفت‌وگوها یا داده‌های گوشی. ممکن است سهمیه یا هزینهٔ سرویس مصرف شود. پس از موفقیت، تنظیمات را ذخیره کنید."), color = Muted, style = MaterialTheme.typography.bodySmall)
+            if (checking) LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+            if (connectionStatus.isNotBlank()) Text(connectionStatus, color = Warm)
             }
         } }
         item { SectionCard {
@@ -570,7 +624,7 @@ private fun SettingsScreen(state: JarvisUiState, actions: JarvisUiActions) {
             }
         } }
         item {
-            Button(onClick = { actions.onSaveSettings(draft.copy(name = draft.name.trim(), model = draft.model.trim()), key.trim()); key = ""; saved = true }, modifier = Modifier.fillMaxWidth().height(54.dp), shape = RoundedCornerShape(17.dp)) {
+            Button(onClick = { actions.onSaveSettings(draft.copy(name = draft.name.trim(), model = draft.model.trim()), key.trim()); key = ""; saved = true }, enabled = !checking, modifier = Modifier.fillMaxWidth().height(54.dp), shape = RoundedCornerShape(17.dp)) {
                 Icon(if (saved) Icons.Rounded.Check else Icons.Rounded.Check, null, Modifier.size(18.dp)); Spacer(Modifier.width(8.dp)); Text(if (saved) l.choose("Saved", "Guardado", "ذخیره شد") else l.choose("Save settings", "Guardar ajustes", "ذخیرهٔ تنظیمات"))
             }
         }

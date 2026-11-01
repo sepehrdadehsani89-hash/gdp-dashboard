@@ -1,6 +1,6 @@
 # Jarvis for Android
 
-**Installation status:** Google Play Protect blocked the full-feature preview on the owner's Redmi9. All capabilities are preserved as requested; Google has not cleared this APK. Keep Play Protect enabled and use the [prepared official review packet](docs/PLAY_PROTECT_REVIEW.md).
+**Installation status:** The owner now reports Jarvis installed on the Redmi 9. An earlier preview was blocked by Play Protect; this is not evidence of Google approval. All requested capabilities remain available. If Android blocks an update, keep Play Protect enabled and follow the [official review guidance](docs/PLAY_PROTECT_REVIEW.md).
 
 A native, dark-first voice assistant for English, Spanish, and Persian. Built for Android 10 or newer, with an ARM64 build suitable for testing on a Redmi 9.
 
@@ -8,11 +8,11 @@ This is a development build for personal testing. It provides a real Android app
 
 ## Download for Android
 
-[**Download Jarvis 0.1.1 APK — about 98 MB**](https://raw.githubusercontent.com/sepehrdadehsani89-hash/gdp-dashboard/ed1fdf2f2a53a480565d288d05cd644657bce1e1/downloads/Jarvis-0.1.1-arm64.apk) · [Checksums and build details](downloads/build-info.json) · [Verification](docs/VERIFICATION.md)
+[**Download Jarvis 0.1.2 APK — about 98 MB**](https://raw.githubusercontent.com/sepehrdadehsani89-hash/gdp-dashboard/jarvis-android-download/downloads/Jarvis-0.1.2-arm64.apk) · [Checksums and build details](downloads/build-info.json) · [Verification](docs/VERIFICATION.md)
 
 <img src="downloads/screenshots/home.png" width="220" alt="Real Android emulator: Jarvis home"> <img src="downloads/screenshots/persian-home.png" width="220" alt="Real Android emulator: Persian RTL home">
 
-[Phone-only setup tutorial](docs/PHONE_SETUP.md) · [Download QR code](downloads/Jarvis-QR.png)
+[Gemini connection setup](docs/GEMINI_SETUP.md) · [Phone-only setup tutorial](docs/PHONE_SETUP.md) · [Download QR code](downloads/Jarvis-QR.png)
 
 ## Start on your phone
 
@@ -49,7 +49,7 @@ The default provider is local. A local language model, downloaded to private app
 
 The Qwen 0.5B model is intentionally small for constrained devices. A Redmi 9 may need substantial time to generate a reply and can run out of memory when other apps are active. This is not equivalent to a large cloud model. Persian and Spanish quality must be evaluated on the device. See [local model details](docs/LOCAL_MODEL.md).
 
-Optional OpenAI, Anthropic, and Gemini adapters are available for users who choose cloud processing and enter their own key privately in Settings. Keys are not bundled. A ChatGPT subscription does not automatically provide an API key or API credit. Choosing a cloud provider sends the relevant conversation context to that provider.
+Optional OpenAI, Anthropic, and Gemini adapters are available for users who choose cloud processing and enter their own key privately in Settings. Keys are not bundled. In Settings, **Find Gemini models** lists compatible text models and **Test connection** checks a short sample request before saving. Live-only Gemini models require a different API. See [Gemini setup and troubleshooting](docs/GEMINI_SETUP.md). A ChatGPT subscription does not automatically provide an API key or API credit. Choosing a cloud provider sends the relevant conversation context to that provider.
 
 ## Build from source
 

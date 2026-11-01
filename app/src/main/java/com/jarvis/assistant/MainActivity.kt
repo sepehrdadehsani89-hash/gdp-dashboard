@@ -56,6 +56,8 @@ class MainActivity : ComponentActivity() {
                 onStop = runtime::stopEverything,
                 onLanguage = runtime::setLanguage,
                 onSaveSettings = runtime::saveSettings,
+                onListGeminiModels = runtime::listGeminiModels,
+                onTestProvider = runtime::testProvider,
                 onRememberDelete = runtime::deleteMemory,
                 onClearConversation = runtime::clearConversation,
                 onWipe = runtime::wipe,

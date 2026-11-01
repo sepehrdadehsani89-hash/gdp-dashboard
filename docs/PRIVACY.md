@@ -15,3 +15,7 @@ The protected-app baseline and sensitive-text heuristics reduce exposure; they a
 Private phone/tool outputs and answers using selected files or saved memories never use optional cloud speech. Only general AI chat without those private sources may opt into the user-enabled cloud-voice route. Voice Check can send its public greeting when the user explicitly enables cloud voice.
 
 This preview requires an unlocked phone to execute commands. It does not provide lock-screen assistant behavior.
+
+## Provider connection checks
+
+In Settings, Find Gemini models sends the entered or saved Gemini key to Google in the API-key header and requests its model catalog. Test connection sends only a short sample prompt through the selected provider API. It excludes conversation history, saved memories, files, screen contents and notifications. These explicit tests may consume provider quota or incur charges. No key is sent to the source-code repository or included in an app download. Jarvis shows fixed explanations and known status codes rather than raw remote error bodies.
