@@ -231,12 +231,7 @@ class DeviceTools(private val context: Context, private val store: JarvisStore) 
         } finally { handle.dispose() }
     }
 
-    private fun topic(text: String): String {
-        val normalized = ToolPolicy.normalize(text)
-        val marker = listOf(" about ", " sobre ", " acerca de ", " درباره ", " در مورد ").firstOrNull(normalized::contains)
-        if (marker != null) return normalized.substringAfter(marker).take(150)
-        return normalized.replace(Regex("\\b(hey|jarvis|give|me|the|what|are|is|latest|today|yesterday|news|headlines|please|show|tell|dame|las|los|noticias|ayer|hoy|últimas|ultimas|titulares|por|favor|hola)\\b|سلام|جارویس|اخبار|خبرهای|خبر ها|خبرها|دیروز|امروز|لطفا|بهم بده|به من بگو|بگو|چیست|جدیدترین|آخرین"), " ").replace(Regex("\\s+"), " ").trim().take(150)
-    }
+    private fun topic(text: String): String = LocalIntentParser.newsTopic(text)
 
     private fun isMemoryRequest(t: String) = listOf("what do you remember", "my memories", "qué recuerdas", "que recuerdas", "mis recuerdos", "چی یادت", "چه چیزهایی یادت", "حافظه من").any(t::contains)
     private fun isHome(t: String) = t in setOf("go home", "home screen", "pantalla de inicio", "ir al inicio", "صفحه اصلی", "برو خانه")

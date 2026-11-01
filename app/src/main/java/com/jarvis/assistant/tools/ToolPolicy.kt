@@ -55,6 +55,17 @@ data class DateWindow(val date: LocalDate, val start: Instant, val endExclusive:
 }
 
 object LocalIntentParser {
+    fun newsTopic(text: String): String {
+        val normalized = ToolPolicy.normalize(text)
+            .replace("yesterday's", "yesterday").replace("yesterday’s", "yesterday")
+            .replace("today's", "today").replace("today’s", "today")
+        val marker = listOf(" about ", " sobre ", " acerca de ", " درباره ", " در مورد ").firstOrNull(normalized::contains)
+        if (marker != null) return normalized.substringAfter(marker).trim(' ', '?', '!', '.', '؟', '،').take(150)
+        return normalized
+            .replace(Regex("\\b(hey|jarvis|give|me|the|what|are|is|latest|today|yesterday|news|headlines|please|show|tell|dame|las|los|noticias|ayer|hoy|últimas|ultimas|titulares|por|favor|hola|de)\\b"), " ")
+            .replace(Regex("(?<![\\p{L}\\p{N}])(?:سلام|جارویس|اخبار|خبرهای|خبر ها|خبرها|دیروز|امروز|لطفا|بهم بده|به من بگو|بگو|چیست|جدیدترین|آخرین|را)(?![\\p{L}\\p{N}])"), " ")
+            .replace(Regex("\\s+"), " ").trim(' ', '?', '!', '.', '؟', '،').take(150)
+    }
     private val newsWords = Regex("\\b(news|headlines|noticias|titulares)\\b|اخبار|خبرها|خبر های|خبرهای")
     fun isNews(text: String): Boolean = newsWords.containsMatchIn(ToolPolicy.normalize(text))
     fun isYesterday(text: String): Boolean = Regex("\\byesterday\\b|\\bayer\\b|دیروز").containsMatchIn(ToolPolicy.normalize(text))

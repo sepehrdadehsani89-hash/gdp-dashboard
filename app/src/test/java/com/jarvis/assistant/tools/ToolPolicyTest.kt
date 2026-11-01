@@ -8,6 +8,13 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class ToolPolicyTest {
+    @Test fun headlineCommandsDoNotTurnPossessivesOrParticlesIntoSearchTopics() {
+        assertEquals("", LocalIntentParser.newsTopic("Give me yesterday's news"))
+        assertEquals("", LocalIntentParser.newsTopic("Dame las noticias de ayer"))
+        assertEquals("", LocalIntentParser.newsTopic("خبرهای دیروز را بگو"))
+        assertEquals("mars", LocalIntentParser.newsTopic("Give me yesterday’s news about Mars"))
+        assertEquals("ایران", LocalIntentParser.newsTopic("اخبار ایران"))
+    }
     @Test fun memoryPrefixPreservesOriginalContentWithExtraSpacesAndPersianUiPhrase() {
         assertEquals("My flight is Friday", LocalIntentParser.rememberedText("Remember   that   My flight is Friday"))
         assertEquals("فردا می‌روم تهران", LocalIntentParser.rememberedText("یادت بماند که فردا می‌روم تهران"))
