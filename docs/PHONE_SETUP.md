@@ -2,7 +2,7 @@
 
 Android preview 0.1.2 · Android 10 or newer · ARM64.
 
-[Download the Android APK, about 98 MB](https://raw.githubusercontent.com/sepehrdadehsani89-hash/gdp-dashboard/jarvis-android-download/downloads/Jarvis-0.1.2-arm64.apk)
+[Download the Android APK, about 98 MB](https://raw.githubusercontent.com/sepehrdadehsani89-hash/gdp-dashboard/0a88689626d61d337e90df97ce20e70f05441a83/downloads/Jarvis-0.1.2-arm64.apk)
 
 [Open the download QR code](../downloads/Jarvis-QR.png)
 

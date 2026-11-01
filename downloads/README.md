@@ -4,7 +4,7 @@ Development preview 0.1.2 · Android 10+ · ARM64 · intended first device: Redm
 
 Direct Android download:
 
-[Download Jarvis APK](https://raw.githubusercontent.com/sepehrdadehsani89-hash/gdp-dashboard/jarvis-android-download/downloads/Jarvis-0.1.2-arm64.apk)
+[Download Jarvis APK](https://raw.githubusercontent.com/sepehrdadehsani89-hash/gdp-dashboard/0a88689626d61d337e90df97ce20e70f05441a83/downloads/Jarvis-0.1.2-arm64.apk)
 
 1. Open the link on Android and download the APK. Android asks you to approve installation; it cannot be installed silently.
 2. Open Jarvis and choose English, Español, or فارسی. No API key is required.
