@@ -14,25 +14,24 @@ import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
 
-class LiveFixtureActivity : Activity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            addView(Button(this@LiveFixtureActivity).apply { text = "Search"; setOnClickListener { text = "Clicked" } })
-            addView(EditText(this@LiveFixtureActivity).apply { hint = "Draft"; setText("Original draft"); requestFocus() })
-            addView(Button(this@LiveFixtureActivity).apply { text = "Send" })
-        })
-    }
-}
-
 @RunWith(AndroidJUnit4::class)
 class LiveControlFlowTest {
+    @get:org.junit.Rule val compose = androidx.compose.ui.test.junit4.createAndroidComposeRule<MainActivity>()
     @Test fun currentTargetTapDraftAndStaleTargetGuard() {
         val i = InstrumentationRegistry.getInstrumentation()
-        i.getUiAutomation(android.app.UiAutomation.FLAG_DONT_SUPPRESS_ACCESSIBILITY_SERVICES).executeShellCommand("settings put secure enabled_accessibility_services com.jarvis.next/com.jarvis.assistant.tools.JarvisAccessibilityService").close()
-        i.getUiAutomation(android.app.UiAutomation.FLAG_DONT_SUPPRESS_ACCESSIBILITY_SERVICES).executeShellCommand("settings put secure accessibility_enabled 1").close()
-        i.targetContext.startActivity(Intent(i.targetContext, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        compose.activityRule.scenario.onActivity { (it.application as JarvisApplication).runtime.stopEverything() }
+        compose.waitForIdle()
+        val automation = i.getUiAutomation(android.app.UiAutomation.FLAG_DONT_SUPPRESS_ACCESSIBILITY_SERVICES)
+        automation.adoptShellPermissionIdentity(android.Manifest.permission.WRITE_SECURE_SETTINGS)
+        try {
+            android.provider.Settings.Secure.putString(i.targetContext.contentResolver, android.provider.Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES, "")
+            Thread.sleep(500)
+            android.provider.Settings.Secure.putString(i.targetContext.contentResolver, android.provider.Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES, "com.jarvis.next/com.jarvis.assistant.tools.JarvisAccessibilityService")
+            android.provider.Settings.Secure.putInt(i.targetContext.contentResolver, android.provider.Settings.Secure.ACCESSIBILITY_ENABLED, 1)
+        } finally { automation.dropShellPermissionIdentity() }
+        val connectionDeadline = System.currentTimeMillis() + 30_000
+        while (!JarvisAccessibilityService.connected && System.currentTimeMillis() < connectionDeadline) Thread.sleep(100)
+        assertTrue("Accessibility must be connected before live requests", JarvisAccessibilityService.connected)
         Thread.sleep(500)
         val runtime = (i.targetContext.applicationContext as JarvisApplication).runtime
         i.runOnMainSync { runtime.submit("open Jarvis Next Test Controls") }
@@ -42,14 +41,17 @@ class LiveControlFlowTest {
         assertNull(runtime.state.value.pendingAction)
         val deadline = System.currentTimeMillis() + 20_000
         while (System.currentTimeMillis() < deadline && !JarvisAccessibilityService.snapshot(i.targetContext).text.orEmpty().contains("Search")) Thread.sleep(200)
-        assertTrue(JarvisAccessibilityService.connected)
+        assertTrue("Target screen: " + JarvisAccessibilityService.snapshot(i.targetContext), JarvisAccessibilityService.snapshot(i.targetContext).text.orEmpty().contains("Search"))
         val tap = JarvisAccessibilityService.prepareLive(i.targetContext, LiveRequest.Tap("Search"))
         assertTrue(JarvisAccessibilityService.executeLive(i.targetContext, tap))
-        Thread.sleep(300)
+        val clickedDeadline = System.currentTimeMillis() + 10_000
+        while (System.currentTimeMillis() < clickedDeadline && !JarvisAccessibilityService.snapshot(i.targetContext).text.orEmpty().contains("Clicked")) Thread.sleep(100)
+        assertTrue(JarvisAccessibilityService.snapshot(i.targetContext).text.orEmpty().contains("Clicked"))
         assertTrue(runCatching { JarvisAccessibilityService.executeLive(i.targetContext, tap) }.isFailure)
         val edit = JarvisAccessibilityService.prepareLive(i.targetContext, LiveRequest.Edit("Hello Sofia"))
         assertTrue(JarvisAccessibilityService.executeLive(i.targetContext, edit))
-        Thread.sleep(300)
+        val editedDeadline = System.currentTimeMillis() + 10_000
+        while (System.currentTimeMillis() < editedDeadline && !JarvisAccessibilityService.snapshot(i.targetContext).text.orEmpty().contains("Hello Sofia")) Thread.sleep(100)
         assertTrue(JarvisAccessibilityService.snapshot(i.targetContext).text.orEmpty().contains("Hello Sofia"))
         assertTrue(runCatching { JarvisAccessibilityService.prepareLive(i.targetContext, LiveRequest.Tap("Send")) }.isFailure)
     }
