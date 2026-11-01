@@ -6,7 +6,7 @@ This is a development build for personal testing. It provides a real Android app
 
 ## Download for Android
 
-[**Download Jarvis 0.1.0 APK — about 98 MB**](https://raw.githubusercontent.com/sepehrdadehsani89-hash/gdp-dashboard/jarvis-android-download/downloads/Jarvis-0.1.0-arm64.apk) · [Checksums and build details](downloads/build-info.json) · [Verification](docs/VERIFICATION.md)
+[**Download Jarvis 0.1.1 APK — about 98 MB**](https://raw.githubusercontent.com/sepehrdadehsani89-hash/gdp-dashboard/jarvis-android-download/downloads/Jarvis-0.1.1-arm64.apk) · [Checksums and build details](downloads/build-info.json) · [Verification](docs/VERIFICATION.md)
 
 <img src="downloads/screenshots/home.png" width="220" alt="Real Android emulator: Jarvis home"> <img src="downloads/screenshots/persian-home.png" width="220" alt="Real Android emulator: Persian RTL home">
 

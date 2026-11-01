@@ -1,25 +1,35 @@
 {
-  "version": "0.1.0",
-  "source_commit": "41f4feb009e09bb256bfdfe071ec5cd540efce36",
+  "version": "0.1.1",
+  "source_commit": "cb26dfc6a3b11a44cdd7129e092d384de311316c",
   "package": "com.jarvis.assistant",
   "minSdk": 29,
   "targetSdk": 35,
   "abis": [
     "arm64-v8a"
   ],
-  "apk": "Jarvis-0.1.0-arm64.apk",
-  "bytes": 97532968,
-  "sha256": "26a0d31deb7923fcbbb9b96a0f3af0d6c9a326285743426f1ead99a817fcfda4",
-  "signing": "development debug certificate",
+  "apk": "Jarvis-0.1.1-arm64.apk",
+  "bytes": 97534348,
+  "sha256": "c64c5a5ef6f888c4f057e6af601854960dd67abeb06d7d605546a502580d92b1",
+  "signing": "development debug certificate; v2 signature verified",
   "unit_tests": {
     "tests": 76,
     "failures": 0,
     "errors": 0,
     "skipped": 0
   },
+  "android_ui_tests": {
+    "passed": 6,
+    "failed": 0,
+    "skipped": 0
+  },
+  "android_native_checks": {
+    "passed": 2,
+    "failed": 0,
+    "skipped": 0
+  },
   "lint": {
     "errors": 0,
     "warnings": 16
   },
-  "android_test_device": "API29 x86_64 software emulator; no physical Redmi9 validation"
+  "physical_redmi9_validation": false
 }

@@ -28,3 +28,5 @@ One session generation guards asynchronous responses. New input cancels the prev
 Wake listening uses local speech recognition and prefix matching in one selected language. It is not a measured low-power keyword classifier and is paused during responses; echo-resistant voice barge-in is not implemented. No boot microphone restart, overlay, arbitrary-app tapping, screenshot vision, automatic private-file scanning, or silently granted permission is claimed.
 
 The default phone artifact is ARM64/API29+, with a separate x86_64 build used for emulator checks. Physical Redmi microphone recognition, pronunciation quality, background endurance, memory/thermal survival, and latency remain device tests. The release is an early development preview, not a production/store readiness claim.
+
+Speech destinations are authorized separately from language-model destinations. AssistantReply denies cloud speech by default. The runtime can allow the user-enabled cloud voice only for general AI responses without private attachment/memory context; model-generated text cannot change that flag.

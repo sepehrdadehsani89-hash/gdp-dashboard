@@ -27,3 +27,5 @@ Record device/API, selected language, screenshot path, and observed issues in ve
 ## Recorded execution
 
 Final API29 x86_64 software-emulator UI run: five executed, five passed, zero failures/skips. NativeEngineTest separately passed actual OCR and three-language non-silent speech synthesis with verified voice models preloaded in the isolated test app. The neural voice test explicitly skips when those optional models are absent; a skip does not validate synthesis. No physical-phone/audio-playback/battery claim is made.
+
+Version0.1.1 final UI/privacy suite: six tests passed, zero failures/skips. The added test drives an actual saved-memory query with cloud voice enabled and verifies the runtime selected on-device speech without an API key. Native OCR and three-language synthesis checks are unchanged and remain separately passed.

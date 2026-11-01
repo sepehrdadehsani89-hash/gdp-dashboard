@@ -5,7 +5,7 @@
     "skipped": 0
   },
   "android_ui_tests": {
-    "passed": 5,
+    "passed": 6,
     "failed": 0,
     "skipped": 0,
     "runner": "AndroidJUnitRunner",
@@ -35,5 +35,6 @@
     "Vosk and Qwen model download/inference on phone",
     "live news/weather on phone",
     "account-backed cloud API calls"
-  ]
+  ],
+  "private_speech_routing_regression": "Passed with cloud voice enabled and no API key: memory reply stayed on-device"
 }
