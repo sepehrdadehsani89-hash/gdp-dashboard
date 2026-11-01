@@ -10,6 +10,8 @@ You can complete this setup entirely on your phone. No computer, USB debugging, 
 
 ## 1. Download and install
 
+**Known block:** If Play Protect shows “App blocked to protect your device,” stop installation and follow the [official review steps and APK packet](PLAY_PROTECT_REVIEW.md). Allowing a browser to install unknown apps is a separate Android setting and does not clear a Play Protect verdict. No feature has been removed from this full build.
+
 Open the APK link on your **Redmi 9**, or scan the QR from your computer's screen with the phone camera. If the chat browser does not download it, copy the link into Chrome. Save the file, then open **Downloads → Jarvis-0.1.1-arm64.apk**.
 
 If Android asks, open **Settings → Allow from this source** for the browser/file manager you used, return, and tap **Install → Open**. You can revoke that installation permission afterward. The QR starts a download; Android still requires you to approve installation.

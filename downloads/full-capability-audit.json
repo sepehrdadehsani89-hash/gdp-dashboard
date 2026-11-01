@@ -1,0 +1,35 @@
+{
+  "package": "com.jarvis.assistant",
+  "version": "0.1.1",
+  "apk_sha256": "c64c5a5ef6f888c4f057e6af601854960dd67abeb06d7d605546a502580d92b1",
+  "certificate_sha256": "4a53a95a949af1d6a094a6e05794c74a1562158adf346eacbe76f02c4951e265",
+  "sensitive_permissions_preserved": [
+    "android.permission.READ_CONTACTS",
+    "android.permission.READ_CALENDAR",
+    "android.permission.ACCESS_COARSE_LOCATION"
+  ],
+  "services": [
+    {
+      "name": "com.jarvis.assistant.voice.WakeListenerService",
+      "permission": null
+    },
+    {
+      "name": "com.jarvis.assistant.tools.JarvisAccessibilityService",
+      "permission": "android.permission.BIND_ACCESSIBILITY_SERVICE"
+    },
+    {
+      "name": "com.jarvis.assistant.tools.JarvisNotificationService",
+      "permission": "android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
+    },
+    {
+      "name": "com.jarvis.assistant.PanicTileService",
+      "permission": "android.permission.BIND_QUICK_SETTINGS_TILE"
+    },
+    {
+      "name": "androidx.room.MultiInstanceInvalidationService",
+      "permission": null
+    }
+  ],
+  "play_protect_status": "User reported installation blocked; not cleared or approved",
+  "reduced_build_published": false
+}

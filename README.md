@@ -1,5 +1,7 @@
 # Jarvis for Android
 
+**Installation status:** Google Play Protect blocked the full-feature preview on the owner's Redmi9. All capabilities are preserved as requested; Google has not cleared this APK. Keep Play Protect enabled and use the [prepared official review packet](docs/PLAY_PROTECT_REVIEW.md).
+
 A native, dark-first voice assistant for English, Spanish, and Persian. Built for Android 10 or newer, with an ARM64 build suitable for testing on a Redmi 9.
 
 This is a development build for personal testing. It provides a real Android app and real native speech/inference integrations; device performance, microphone recognition, and background reliability still need testing on the phone. See the delivered verification report for executed checks.

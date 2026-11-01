@@ -31,5 +31,11 @@
     "errors": 0,
     "warnings": 16
   },
-  "physical_redmi9_validation": false
+  "physical_redmi9_validation": false,
+  "play_protect": {
+    "status": "User reported full-feature APK blocked; not cleared by Google",
+    "all_requested_capabilities_preserved": true,
+    "apk_unchanged": true,
+    "reduced_access_apk_published": false
+  }
 }
