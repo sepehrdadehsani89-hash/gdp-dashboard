@@ -4,7 +4,7 @@ Android preview 0.1.3 · Android 10 or newer · ARM64.
 
 **For the new connection test, faster speech, screenshot follow-ups, memory and optional locked chat, follow [this version’s setup](0.1.3_PHONE_FIXES.md).**
 
-[Download the Android APK, about 98 MB](https://raw.githubusercontent.com/sepehrdadehsani89-hash/gdp-dashboard/jarvis-android-download/downloads/Jarvis-0.1.3-arm64.apk)
+[Download the Android APK, about 98 MB](https://raw.githubusercontent.com/sepehrdadehsani89-hash/gdp-dashboard/cbb981303aa0e15c005384cd0b321e697c10fbe7/downloads/Jarvis-0.1.3-arm64.apk)
 
 [Open the download QR code](../downloads/Jarvis-QR.png)
 
