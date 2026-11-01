@@ -209,12 +209,12 @@ class WakeListenerService : Service() {
 
     data class WakeState(val running: Boolean = false, val listening: Boolean = false, val status: String = "", val language: AppLanguage = AppLanguage.EN, val awaitingCommand: Boolean = false)
     companion object {
-        const val ACTION_START = "com.jarvis.assistant.WAKE_START"
-        const val ACTION_STOP = "com.jarvis.assistant.WAKE_STOP"
-        const val ACTION_PAUSE = "com.jarvis.assistant.WAKE_PAUSE"
-        const val ACTION_RESUME = "com.jarvis.assistant.WAKE_RESUME"
-        const val ACTION_COMMAND = "com.jarvis.assistant.WAKE_COMMAND"
-        const val ACTION_STATUS = "com.jarvis.assistant.WAKE_STATUS"
+        const val ACTION_START = "com.jarvis.next.WAKE_START"
+        const val ACTION_STOP = "com.jarvis.next.WAKE_STOP"
+        const val ACTION_PAUSE = "com.jarvis.next.WAKE_PAUSE"
+        const val ACTION_RESUME = "com.jarvis.next.WAKE_RESUME"
+        const val ACTION_COMMAND = "com.jarvis.next.WAKE_COMMAND"
+        const val ACTION_STATUS = "com.jarvis.next.WAKE_STATUS"
         const val EXTRA_TEXT = "text"
         const val EXTRA_LANGUAGE = "language"
         const val EXTRA_STATUS = "status"

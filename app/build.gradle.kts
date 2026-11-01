@@ -11,11 +11,11 @@ android {
     buildToolsVersion = "35.0.0"
     ndkVersion = "26.3.11579264"
     defaultConfig {
-        applicationId = "com.jarvis.assistant"
+        applicationId = "com.jarvis.next"
         minSdk = 29
         targetSdk = 35
-        versionCode = 4
-        versionName = "0.1.3"
+        versionCode = 1
+        versionName = "0.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
         ndk { abiFilters += providers.gradleProperty("jarvisAbis").getOrElse("arm64-v8a").split(",") }
@@ -32,9 +32,24 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions { jvmTarget = "17" }
+    signingConfigs {
+        create("next") {
+            val privateDir = providers.environmentVariable("JARVIS_NEXT_SIGNING_DIR").orNull
+            if (privateDir != null) {
+                storeFile = file("$privateDir/jarvis-next.p12")
+                storePassword = file("$privateDir/store-password").readText().trim()
+                keyAlias = "jarvis-next"
+                keyPassword = storePassword
+                storeType = "PKCS12"
+            }
+        }
+    }
     buildTypes {
         release {
-            isMinifyEnabled = true
+            signingConfig = signingConfigs.getByName("next")
+            // JNI libraries use named Kotlin/Java fields and callbacks. Preserve their ABI.
+            // This signed release is intentionally unminified, like the proven development build.
+            isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
@@ -48,6 +63,7 @@ android {
 }
 
 dependencies {
+    implementation("androidx.documentfile:documentfile:1.0.1")
     implementation(libs.androidx.core)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.lifecycle)
@@ -80,3 +96,12 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test:runner:1.6.2")
 }
+
+val checkNextSigning by tasks.registering {
+    doLast {
+        val privateDir = providers.environmentVariable("JARVIS_NEXT_SIGNING_DIR").orNull
+            ?: error("Set JARVIS_NEXT_SIGNING_DIR to the private signing directory. Never generate a replacement key for an existing Jarvis Next installation.")
+        check(file("$privateDir/jarvis-next.p12").isFile && file("$privateDir/store-password").isFile) { "Original Jarvis Next signing files are missing." }
+    }
+}
+tasks.matching { it.name == "preReleaseBuild" }.configureEach { dependsOn(checkNextSigning) }

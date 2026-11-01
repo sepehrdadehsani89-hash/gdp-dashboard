@@ -47,7 +47,7 @@ fi
 
 printf 'Installing on authorized device: %s\n' "$serial"
 "$adb_bin" -s "$serial" install -r "$apk_path"
-"$adb_bin" -s "$serial" shell am start -n com.jarvis.assistant/.MainActivity
+"$adb_bin" -s "$serial" shell am start -n com.jarvis.next/com.jarvis.assistant.MainActivity
 printf '%s\n' 'Jarvis is open. Approve only the permissions you want inside onboarding/Settings.' \
     'To use offline speech, download the selected language model in Jarvis Settings.' \
     'Test the voice, then explicitly enable wake listening while the app is visible.'

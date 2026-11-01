@@ -27,7 +27,7 @@ try {
     Write-Host "Installing on authorized device: $Serial"
     & $adbBin -s $Serial install -r $Apk
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-    & $adbBin -s $Serial shell am start -n com.jarvis.assistant/.MainActivity
+    & $adbBin -s $Serial shell am start -n com.jarvis.next/com.jarvis.assistant.MainActivity
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
     Write-Host 'Jarvis is open. Choose permissions and model downloads in onboarding/Settings.'
     Write-Host 'No permissions or special access were granted automatically.'

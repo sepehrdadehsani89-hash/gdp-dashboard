@@ -37,7 +37,7 @@
             </intent-filter>
         </activity>
         <service android:name=".voice.WakeListenerService" android:exported="false" android:foregroundServiceType="microphone" />
-        <activity android:name=".screen.ScreenCaptureActivity" android:exported="false" android:excludeFromRecents="true" android:taskAffinity="com.jarvis.assistant.screen" android:theme="@style/Theme.Jarvis.Capture" />
+        <activity android:name=".screen.ScreenCaptureActivity" android:exported="false" android:excludeFromRecents="true" android:taskAffinity="${applicationId}.screen" android:theme="@style/Theme.Jarvis.Capture" />
         <service android:name=".screen.ScreenCaptureService" android:exported="false" android:foregroundServiceType="mediaProjection" />
         <service android:name=".tools.JarvisAccessibilityService" android:exported="true" android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
             <intent-filter><action android:name="android.accessibilityservice.AccessibilityService" /></intent-filter>

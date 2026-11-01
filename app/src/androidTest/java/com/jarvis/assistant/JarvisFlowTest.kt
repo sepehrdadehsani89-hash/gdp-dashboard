@@ -61,7 +61,7 @@ class JarvisFlowTest {
 
     @Test fun firstLaunchCanFinishWithoutAKeyOrOptionalPermission() {
         compose.onNodeWithText("Meet your\nquiet advantage.").assertIsDisplayed()
-        compose.onNodeWithText("Meet Jarvis").performScrollTo().performClick()
+        compose.onNodeWithText("Meet Jarvis Next").performScrollTo().performClick()
         compose.waitUntil(timeoutMillis = 15_000) { runtime.state.value.settings.onboardingComplete }
         compose.onNodeWithText("At your service.").assertIsDisplayed()
         assertEquals("local", runtime.state.value.settings.provider)
@@ -143,6 +143,18 @@ class JarvisFlowTest {
         }
         assertEquals("on-device", runtime.lastSpeechDestination)
         assertFalse(runtime.state.value.error.orEmpty().contains("Cloud voice"))
+    }
+
+    @Test fun explicitLocalChoiceKeepsQuotaSeparateAndDisablesCloudVoice() {
+        seedReady()
+        compose.runOnUiThread { runtime.store.updateSettings(runtime.store.settings.value.copy(provider = "gemini", model = "gemini-fixture", useCloudVoice = true)) }
+        compose.waitUntil(15_000) { runtime.state.value.settings.provider == "gemini" }
+        compose.onNodeWithText("Use free on-device AI").performScrollTo().performClick()
+        compose.waitUntil(15_000) { runtime.state.value.settings.provider == "local" }
+        assertFalse(runtime.state.value.settings.useCloudVoice)
+        assertEquals("qwen2.5-0.5b", runtime.state.value.settings.model)
+        assertTrue(runtime.state.value.messages.isEmpty())
+        assertTrue(runtime.state.value.brainProgress == null)
     }
 
     private fun seedReady(language: AppLanguage = AppLanguage.EN) {

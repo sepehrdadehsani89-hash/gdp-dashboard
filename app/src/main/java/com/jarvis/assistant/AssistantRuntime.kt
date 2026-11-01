@@ -489,7 +489,35 @@ class AssistantRuntime(private val context: Context) {
         speak(language().choose("Hello, I'm Jarvis. Your voice is ready.", "Hola, soy Jarvis. Tu voz está lista.", "سلام، من جارویس هستم. صدای شما آماده است."), language())
     }
 
+    fun useLocal() {
+        if (locked()) { fail(unlockMessage()); return }
+        cancelSession()
+        conversation.clear()
+        clearScreenContext()
+        store.updateSettings(store.settings.value.copy(provider = "local", model = "qwen2.5-0.5b", useCloudVoice = false))
+        refreshCapabilities()
+        mutableState.update { it.copy(error = if (brain.modelReady()) "On-device AI selected. Send your question again." else "On-device AI selected. Open Settings and download the optional model (~400 MB); no API key or paid account is needed.") }
+    }
+
+    fun sharePhotos() {
+        if (locked()) { fail(unlockMessage()); return }
+        try {
+        val photos = selectedUris.filter { context.contentResolver.getType(it)?.startsWith("image/") == true }
+        if (photos.isEmpty()) { fail("Choose photos first."); return }
+        // System chooser and recipient app own the final recipient and Send action.
+        val intent = Intent(Intent.ACTION_SEND_MULTIPLE).setType("image/*")
+            .putParcelableArrayListExtra(Intent.EXTRA_STREAM, ArrayList(photos))
+            .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        intent.clipData = android.content.ClipData.newUri(context.contentResolver, "Selected photo", photos.first()).apply {
+            photos.drop(1).forEach { addItem(android.content.ClipData.Item(it)) }
+        }
+        runCatching { context.startActivity(Intent.createChooser(intent, "Share selected photos — choose WhatsApp or another app").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+            .onFailure { fail("No photo-sharing app is available.") }
+        } catch (_: SecurityException) { fail("Photo access was revoked. Choose the photos again.") }
+    }
+
     fun addAttachments(uris: List<Uri>) {
+        if (locked()) { fail(unlockMessage()); return }
         selectedUris.clear(); selectedUris.addAll(uris.take(3))
         mutableState.update { it.copy(attachedFiles = selectedUris.map { uri -> attachments.displayName(uri) }, error = null) }
     }
@@ -505,6 +533,7 @@ class AssistantRuntime(private val context: Context) {
         scope.launch {
             cancelledJobs.forEach { it.join() }
             brain.release()
+            com.jarvis.assistant.core.ConnectedFolders(context).disconnect()
             store.clearAll()
             withContext(Dispatchers.IO) {
                 listOf("wake-models", "voice-models", "local-brain", "ocr").forEach { File(context.filesDir, it).deleteRecursively() }

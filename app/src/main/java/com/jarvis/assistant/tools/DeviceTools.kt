@@ -35,6 +35,21 @@ class DeviceTools(private val context: Context, private val store: JarvisStore) 
         .callTimeout(25, TimeUnit.SECONDS).followRedirects(false).build()
 
     suspend fun route(text: String, language: AppLanguage): AssistantReply? {
+        WhatsAppDraft.parse(text)?.let { draft ->
+            if (locked()) return AssistantReply(unlockMessage(language))
+            return proposal("Open WhatsApp draft for +${draft.number}: ${draft.text}\nReview the recipient and send manually in WhatsApp.",
+                "open_url", "https://wa.me/${draft.number}?text=${encode(draft.text)}")
+        }
+        LiveControlPolicy.parse(text)?.let { request ->
+            if (locked()) return AssistantReply(unlockMessage(language))
+            return try {
+                val payload = withContext(Dispatchers.Main) { JarvisAccessibilityService.prepareLive(context, request) }
+                proposal(when (request) {
+                    is LiveRequest.Tap -> "Tap “${request.label}” on the current screen? Confirm by voice while that screen stays open."
+                    is LiveRequest.Edit -> "Replace the focused draft with: ${request.text}\nThis does not send it. Confirm by voice while that screen stays open."
+                }, "live_control", payload)
+            } catch (error: Exception) { AssistantReply(error.message ?: "Live control unavailable.") }
+        }
         val normalized = ToolPolicy.normalize(text)
         val remembered = LocalIntentParser.rememberedText(text)
         if (remembered != null) {
@@ -92,6 +107,10 @@ class DeviceTools(private val context: Context, private val store: JarvisStore) 
         val youtube = LocalIntentParser.youtubeQuery(text)
         if (youtube != null) {
             if (locked()) return AssistantReply(unlockMessage(language))
+            if (youtube.isBlank() && context.packageManager.getLaunchIntentForPackage("com.google.android.youtube") != null) {
+                return try { withLaunch("com.google.android.youtube"); AssistantReply("Opened YouTube.") }
+                catch (_: Exception) { AssistantReply("Android could not open YouTube.") }
+            }
             val url = if (youtube.isBlank()) "https://www.youtube.com" else "https://www.youtube.com/results?search_query=${encode(youtube)}"
             return proposal(language.choose(if (youtube.isBlank()) "Open YouTube?" else "Search YouTube for “$youtube”?", if (youtube.isBlank()) "¿Abrir YouTube?" else "¿Buscar «$youtube» en YouTube?", if (youtube.isBlank()) "یوتیوب باز شود؟" else "«$youtube» را در یوتیوب جستجو کنم؟"), "open_url", url)
         }
@@ -113,6 +132,7 @@ class DeviceTools(private val context: Context, private val store: JarvisStore) 
         if (locked()) return@withContext unlockMessage(language)
         try {
             when (action.kind) {
+                "live_control" -> check(JarvisAccessibilityService.executeLive(context, action.payload)) { "The control did not accept the action." }
                 "open_url" -> {
                     check(ToolPolicy.allowedWebUrl(action.payload))
                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(action.payload)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -170,7 +190,15 @@ class DeviceTools(private val context: Context, private val store: JarvisStore) 
         if (matches.size > 1) return AssistantReply(language.choose("Which app? ", "¿Qué aplicación? ", "کدام برنامه؟ ") + matches.take(5).joinToString { it.second })
         val (packageName, label) = matches.single()
         if (ToolPolicy.protectedPackage(packageName)) return AssistantReply(language.choose("I don't operate protected banking, payment, password, or security apps. Please open it yourself.", "No manejo aplicaciones protegidas de banca, pagos, contraseñas o seguridad. Ábrela tú.", "من برنامه‌های محافظت‌شده بانکی، پرداخت، رمز عبور یا امنیتی را کنترل نمی‌کنم. لطفاً خودتان آن را باز کنید."))
-        return proposal(language.choose("Open $label?", "¿Abrir $label?", "$label باز شود؟"), "open_app", packageName)
+        return try {
+            withLaunch(packageName)
+            AssistantReply("Opened $label.")
+        } catch (_: Exception) { AssistantReply("Android could not open $label.") }
+    }
+
+    private fun withLaunch(packageName: String) {
+        val intent = context.packageManager.getLaunchIntentForPackage(packageName) ?: error("App unavailable")
+        context.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
     }
 
     private fun screen(language: AppLanguage): AssistantReply {

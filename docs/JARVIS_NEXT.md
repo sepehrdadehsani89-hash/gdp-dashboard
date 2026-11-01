@@ -1,0 +1,49 @@
+# Jarvis Next 0.1.0
+
+A separate app based on published Jarvis commit `994ee8ace41e604fb51d1da31687bd2186c18333`. The unfinished Jarvis 0.1.4 source and old key were unavailable. This is a fresh implementation, not that recovered work.
+
+Android application ID: `com.jarvis.next`. The Kotlin/JNI namespace stays `com.jarvis.assistant` for native compatibility. App data, keys, permissions, notification access, accessibility access and downloads are separate. Keep the original Jarvis installed. No migration or old-app uninstall is required. Give special permissions to **Jarvis Next** only if desired; avoid running both wake listeners simultaneously.
+
+A new package/signing identity does not establish Play Protect approval and does not reset or fix Google HTTP 429 account/rate quotas. Keep Play Protect enabled.
+
+## Live controls and drafts
+
+Unlock the phone. In Settings enable optional Screen access for Jarvis Next. Download offline speech and explicitly start wake listening if using voice while another app is visible. Supported explicit commands:
+
+- `open WhatsApp` (or another unambiguous installed launcher label): opens directly, without AI or a second approval. Protected financial/security apps remain excluded.
+- `tap Search`: proposes a tap on exactly one visible clickable control with that exact label. Confirm by voice while the same screen stays visible. Changed/stale targets fail. Password fields and protected apps are excluded.
+- `type Hello Sofia` / `replace draft with Hello Sofia`: proposes replacing the currently focused editable draft; does not append or send. Confirm by voice on the same screen. Focus the field yourself first.
+- `whatsapp draft +593991234567: Hello Sofia`: approval opens a WhatsApp/web handoff for the given international phone number. Verify the recipient and send manually in WhatsApp. It never silently sends.
+
+The visible approval dialog can approve actions inside Jarvis Next, but switching away from the target screen invalidates external live controls. Use voice confirmation for those. Stop everything cancels pending approvals. Custom controls, ambiguous labels, non-accessible canvases and some app UIs are unsupported. Sending, payment, deletion and permission controls must be operated manually. Screen automation is limited by Android and the other app; no universal WhatsApp support is claimed.
+
+## Photos and connected folders
+
+Choose a photo with the image button to read its text using on-device OCR. Use **Share selected photos…** to open Android's chooser, select WhatsApp or another recipient app, then choose the recipient and send there yourself. Only the selected images receive temporary read grants.
+
+Choose **Folders → Connect folder (read only)** and use Android's folder picker. Jarvis Next retains a read grant across restarts. **Browse connected folder** navigates subfolders (first 100 entries per directory); select a file to attach it for the next question. It never crawls the entire folder or automatically uploads it. Unsupported/encrypted formats remain unsupported; attachment size/type limits still apply. Choosing cloud AI sends the selected readable excerpt to that provider as disclosed by the existing attachment workflow. Choose local AI to keep inference on-device. Disconnect releases the retained read grant and clears attachments. Android permission revocation and unavailable providers show a recoverable error. No write/delete capability is requested.
+
+## Free on-device AI
+
+Tap **Use free on-device AI** on Home, then download the optional Qwen model in Settings (~400 MB, Wi-Fi recommended). This explicitly switches to the local provider and disables cloud speech. No API key or paid subscription is needed. Ask the failed question again after download. This is a separate inference path, not a Gemini quota workaround. It can be slow on Redmi 9; quality, RAM and language limitations still apply. Live news needs Internet; model download needs Internet initially. Local inference cannot visually interpret images; photo OCR extracts text.
+
+## Signing and private backup
+
+The new key lives outside this public checkout, under `/workspace/private/jarvis-next/` with a 0700 directory and 0600 files. `jarvis-next.p12` is encrypted PKCS12; `store-password` is the private generated password. No credentials are included in Git or the APK.
+
+Before relying on this installation for future updates, download BOTH files through the private workspace file interface and store them in an encrypted password manager or encrypted offline backup. Do not send them through a public issue, repository, or APK download page. The cloud filesystem alone is not a durable backup: a canceled/deleted environment can lose it. Keep the password separate from the keystore when transferring it. The public certificate fingerprint can verify restored keys; it cannot recreate a private key.
+
+To restore: create a private directory outside your checkout, copy those two files there, restrict directory permissions to 0700 and files to 0600, then set `JARVIS_NEXT_SIGNING_DIR` to that directory. Never generate a different key for an update to an existing Jarvis Next installation. Do not reuse or overwrite the original Jarvis key.
+
+Build with JDK 17/21, the pinned toolchain in COMPATIBILITY.md, and:
+
+```sh
+export JARVIS_NEXT_SIGNING_DIR=/path/to/private/jarvis-next
+./gradlew :app:testDebugUnitTest :app:lintDebug :app:lintRelease :app:assembleRelease
+```
+
+Verify the resulting release APK with `apksigner verify --verbose --print-certs`, check `com.jarvis.next`, version and ARM64-only native libraries, and compare the certificate with the public build metadata before publishing. Install future signed Jarvis Next updates over Jarvis Next using Android's normal update flow; the old Jarvis is independent.
+
+For an additional encrypted backup, run `bash scripts/backup-next-signing.sh /private/path/jarvis-next-signing.tar.enc` in a private terminal with `JARVIS_NEXT_SIGNING_DIR` set. OpenSSL asks for a new backup-encryption password; keep it in a password manager. The helper refuses repository destinations and existing outputs. Restore in a private directory with `openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -in /private/path/jarvis-next-signing.tar.enc | tar -xzf -`, then verify the restored key's public fingerprint. Do not put either backup/password into public Git.
+
+The signed release deliberately retains Java/Kotlin names (no R8 shrinking) because the bundled JNI speech/OCR libraries depend on named fields and callbacks. Native release libraries are still built and packaged for ARM64; Android debuggable remains false. Optional desktop JNA AWT and PDF JPEG2000 rendering are not app features. PDFs use text-layer extraction only.

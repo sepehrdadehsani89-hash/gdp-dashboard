@@ -141,7 +141,11 @@ class BrainProtocolTest {
 
     @Test fun safeHttpErrorsDoNotContainRemoteResponseBodiesOrCredentials() {
         assertTrue(BrainProtocol.safeHttpError(401).contains("key"))
-        assertTrue(BrainProtocol.safeHttpError(429).contains("limit"))
+        val quotaError = BrainProtocol.safeHttpError(429)
+        assertTrue(quotaError.contains("HTTP 429"))
+        assertTrue(quotaError.contains("quota"))
+        assertTrue(quotaError.contains("on-device AI"))
+        assertTrue(quotaError.contains("does not reset"))
         assertTrue(BrainProtocol.safeHttpError(500).contains("temporarily unavailable"))
     }
 

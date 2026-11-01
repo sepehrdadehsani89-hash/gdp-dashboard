@@ -1,4 +1,4 @@
 <resources>
-    <string name="app_name">جارویس</string>
-    <string name="accessibility_description">متن صفحه فقط وقتی خوانده می‌شود که از جارویس بخواهید. گذرواژه‌ها و برنامه‌های محافظت‌شده کنار گذاشته می‌شوند. این دسترسی اختیاری است و لمس یا ارسال پیام خودکار انجام نمی‌شود.</string>
+    <string name="app_name">Jarvis Next</string>
+    <string name="accessibility_description">Optional live screen access for Jarvis Next. Reads text, taps a named control or edits a focused draft only on your explicit request. Passwords and protected apps are excluded. Sending and destructive controls must be operated manually.</string>
 </resources>

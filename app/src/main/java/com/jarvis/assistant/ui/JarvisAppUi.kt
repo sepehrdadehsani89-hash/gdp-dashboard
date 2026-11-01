@@ -289,6 +289,13 @@ private fun Home(state: JarvisUiState, actions: JarvisUiActions, onOpenSettings:
                     Text(error, modifier = Modifier.padding(16.dp), color = MaterialTheme.colorScheme.error)
                 }
             } }
+            item {
+                Text("Jarvis Next · separate installation", color = Mint, style = MaterialTheme.typography.labelSmall)
+                Text("Live controls: enable Screen access, start wake listening, then say open [app], tap [exact label], or type [draft]. Confirm taps/drafts by voice on the same screen. Send actions stay manual.", color = Muted, style = MaterialTheme.typography.bodySmall)
+                TextButton(onClick = actions.onUseLocal) { Text("Use free on-device AI") }
+                Text("Local inference needs a one-time ~400 MB model download in Settings. It does not reset Google quota.", color = Muted, style = MaterialTheme.typography.bodySmall)
+                if (state.attachedFiles.isNotEmpty()) TextButton(onClick = actions.onSharePhotos) { Text("Share selected photos…") }
+            }
             if (state.attachedFiles.isNotEmpty()) item {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     state.attachedFiles.forEach { name -> AssistChip(onClick = {}, label = { Text(name, maxLines = 1, overflow = TextOverflow.Ellipsis) }, leadingIcon = { Icon(Icons.Rounded.AttachFile, null, Modifier.size(16.dp)) }) }
@@ -299,6 +306,7 @@ private fun Home(state: JarvisUiState, actions: JarvisUiActions, onOpenSettings:
         }
         Column(Modifier.fillMaxWidth().background(Ink).padding(horizontal = 18.dp, vertical = 8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                TextButton(onClick = actions.onFolders) { Text("Folders") }
                 IconButton(onClick = actions.onPickFiles) { Icon(Icons.Rounded.AttachFile, l.choose("Choose a document", "Elegir un archivo", "انتخاب فایل"), tint = Muted) }
                 IconButton(onClick = actions.onPickPhotos) { Icon(Icons.Rounded.Image, l.choose("Choose a photo", "Elegir una foto", "انتخاب عکس"), tint = Muted) }
                 Spacer(Modifier.weight(1f))
@@ -307,7 +315,7 @@ private fun Home(state: JarvisUiState, actions: JarvisUiActions, onOpenSettings:
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 OutlinedTextField(value = input, onValueChange = { input = it },
                     modifier = Modifier.weight(1f), shape = RoundedCornerShape(24.dp),
-                    placeholder = { Text(l.choose("Ask Jarvis…", "Pregúntale a Jarvis…", "از جارویس بپرسید…")) },
+                    placeholder = { Text(l.choose("Ask Jarvis Next…", "Pregúntale a Jarvis…", "از جارویس بپرسید…")) },
                     maxLines = 4, keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
                     keyboardActions = KeyboardActions(onSend = { sendInput() }),
                     trailingIcon = { if (input.isNotBlank()) IconButton(onClick = sendInput) { Icon(Icons.AutoMirrored.Rounded.Send, l.choose("Send", "Enviar", "ارسال"), tint = Mint) } },
@@ -336,7 +344,7 @@ private fun BrandMark() {
         Box(Modifier.size(29.dp).border(1.dp, Mint.copy(alpha = .6f), RoundedCornerShape(9.dp)), contentAlignment = Alignment.Center) {
             Icon(Icons.Rounded.GraphicEq, null, Modifier.size(18.dp), tint = Mint)
         }
-        Text("JARVIS", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold, letterSpacing = 4.sp)
+        Text("JARVIS NEXT", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold, letterSpacing = 4.sp)
     }
 }
 
@@ -395,7 +403,7 @@ private fun Suggestion(title: String, subtitle: String, icon: ImageVector, onCli
 private fun MessageCard(message: ChatMessage, l: AppLanguage, actions: JarvisUiActions) {
     val fromUser = message.role == MessageRole.USER
     Column(Modifier.fillMaxWidth(), horizontalAlignment = if (fromUser) Alignment.End else Alignment.Start) {
-        Text(if (fromUser) l.choose("YOU", "TÚ", "شما") else "JARVIS", color = if (fromUser) Muted else Mint, modifier = Modifier.padding(horizontal = 4.dp, vertical = 7.dp), style = MaterialTheme.typography.labelSmall, letterSpacing = 1.2.sp)
+        Text(if (fromUser) l.choose("YOU", "TÚ", "شما") else "JARVIS NEXT", color = if (fromUser) Muted else Mint, modifier = Modifier.padding(horizontal = 4.dp, vertical = 7.dp), style = MaterialTheme.typography.labelSmall, letterSpacing = 1.2.sp)
         Surface(shape = RoundedCornerShape(20.dp), color = if (fromUser) PanelLight else Panel, modifier = Modifier.widthIn(max = 640.dp)) {
             Column(Modifier.padding(17.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text(message.text, style = MaterialTheme.typography.bodyLarge, lineHeight = 25.sp)
@@ -486,7 +494,7 @@ private fun Onboarding(state: JarvisUiState, actions: JarvisUiActions) {
                 Text(l.choose("Start without an API key: news, app shortcuts, and memories are ready. An optional on-device model adds private conversations after a download. You choose which files and photos to share.", "Empieza sin clave API: noticias, atajos y recuerdos están listos. Un modelo opcional añade conversaciones locales tras descargarlo. Tú eliges qué archivos y fotos compartir.", "بدون کلید API شروع کنید: خبرها، میان‌بر برنامه‌ها و یادداشت‌ها آماده‌اند. با دانلود مدل اختیاری روی گوشی، گفت‌وگوی خصوصی هم اضافه می‌شود. انتخاب فایل و عکس با شماست."), color = Muted, style = MaterialTheme.typography.bodySmall)
             }
             Button(onClick = { actions.onSaveSettings(state.settings.copy(name = name.trim(), onboardingComplete = true), "") }, modifier = Modifier.fillMaxWidth().height(56.dp), shape = RoundedCornerShape(18.dp)) {
-                Text(l.choose("Meet Jarvis", "Conocer a Jarvis", "شروع با جارویس"), fontWeight = FontWeight.SemiBold)
+                Text(l.choose("Meet Jarvis Next", "Conocer a Jarvis", "شروع با جارویس"), fontWeight = FontWeight.SemiBold)
                 Spacer(Modifier.width(12.dp)); Icon(Icons.AutoMirrored.Rounded.ArrowForward, null)
             }
             Spacer(Modifier.height(8.dp))
@@ -675,7 +683,7 @@ private fun SettingsScreen(state: JarvisUiState, actions: JarvisUiActions) {
             TextButton(onClick = { showClearConversation = true }) { Text(l.choose("Clear conversation", "Borrar conversación", "پاک کردن گفت‌وگو")) }
             TextButton(onClick = { showWipe = true }) { Text(l.choose("Erase Jarvis data & keys", "Borrar datos y claves de Jarvis", "حذف داده‌ها و کلیدهای جارویس"), color = MaterialTheme.colorScheme.error) }
             TextButton(onClick = { actions.onOpenPermission("licenses") }) { Text(l.choose("Open-source licenses", "Licencias de código abierto", "مجوزهای متن‌باز")) }
-            Text("JARVIS 0.1 · ANDROID", color = Muted, style = MaterialTheme.typography.labelSmall, letterSpacing = 1.5.sp)
+            Text("JARVIS NEXT 0.1.0 · SEPARATE APP", color = Muted, style = MaterialTheme.typography.labelSmall, letterSpacing = 1.5.sp)
         } }
         item { Spacer(Modifier.height(12.dp)) }
     }

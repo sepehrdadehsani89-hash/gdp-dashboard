@@ -11,3 +11,8 @@ local.properties
 **/local.properties
 vendor/ocr/Tesseract4Android/gradle.properties.local
 downloads/*.apk
+
+# Jarvis Next signing material must remain private, outside this checkout.
+*.p12
+*.jks
+*.keystore

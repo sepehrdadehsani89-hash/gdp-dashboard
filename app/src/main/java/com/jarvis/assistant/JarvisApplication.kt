@@ -15,7 +15,7 @@ class JarvisApplication : Application() {
 
 class PanicTileService : TileService() {
     override fun onStartListening() {
-        qsTile?.apply { label = "Jarvis • Stop"; state = Tile.STATE_ACTIVE; updateTile() }
+        qsTile?.apply { label = "Jarvis Next • Stop"; state = Tile.STATE_ACTIVE; updateTile() }
     }
     override fun onClick() {
         (application as JarvisApplication).runtime.stopEverything()

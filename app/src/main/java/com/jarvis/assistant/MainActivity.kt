@@ -21,6 +21,12 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.getValue
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import com.jarvis.assistant.core.ConnectedFolders
+import androidx.documentfile.provider.DocumentFile
 import com.jarvis.assistant.ui.JarvisAppUi
 import com.jarvis.assistant.ui.JarvisUiActions
 import com.jarvis.assistant.core.choose
@@ -37,6 +43,45 @@ class MainActivity : ComponentActivity() {
     private val documents = registerForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
         uris.forEach { uri -> runCatching { contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION) } }
         runtime.addAttachments(uris)
+    }
+
+    private val folders by lazy { ConnectedFolders(this) }
+    private val folderPicker = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
+        if (uri != null) runCatching { folders.connect(uri); browseFolder(folders.openRoot(), emptyList()) }
+            .onFailure { folderError(it) }
+    }
+
+    private fun folderError(error: Throwable) {
+        AlertDialog.Builder(this).setTitle("Connected folder").setMessage(error.message ?: "Folder unavailable")
+            .setPositiveButton("Close", null).show()
+    }
+
+    private fun folderMenu() {
+        val choices = if (folders.root == null) arrayOf("Connect folder (read only)") else arrayOf("Browse connected folder", "Connect another folder", "Disconnect folder")
+        AlertDialog.Builder(this).setTitle("Connected folder").setItems(choices) { _, index ->
+            when (choices[index]) {
+                "Browse connected folder" -> runCatching { browseFolder(folders.openRoot(), emptyList()) }.onFailure(::folderError)
+                "Disconnect folder" -> { folders.disconnect(); runtime.clearAttachments() }
+                else -> folderPicker.launch(null)
+            }
+        }.setNegativeButton("Close", null).show()
+    }
+
+    private fun browseFolder(directory: DocumentFile, parents: List<DocumentFile>) {
+        lifecycleScope.launch {
+            runCatching { withContext(Dispatchers.IO) { folders.children(directory) } }.onSuccess { children ->
+                val labels = children.map { (if (it.isDirectory) "[Folder] " else "") + it.name.orEmpty() }.toTypedArray()
+                AlertDialog.Builder(this@MainActivity).setTitle(directory.name ?: "Folder (first 100 entries)")
+                    .setItems(labels) { _, index ->
+                        val child = children[index]
+                        if (child.isDirectory) browseFolder(child, parents + directory)
+                        else runtime.addAttachments(listOf(child.uri))
+                    }
+                    .setNeutralButton(if (parents.isEmpty()) "Close" else "Up") { _, _ ->
+                        if (parents.isNotEmpty()) browseFolder(parents.last(), parents.dropLast(1))
+                    }.show()
+            }.onFailure(::folderError)
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -72,6 +117,9 @@ class MainActivity : ComponentActivity() {
                 onDownloadBrain = runtime::downloadBrain,
                 onDownloadVoice = runtime::downloadVoice,
                 onVoiceCheck = runtime::voiceCheck,
+                onFolders = ::folderMenu,
+                onSharePhotos = runtime::sharePhotos,
+                onUseLocal = runtime::useLocal,
                 onPickFiles = { documents.launch(arrayOf("text/*", "application/pdf", "application/json")) },
                 onPickPhotos = { documents.launch(arrayOf("image/*")) },
                 onClearAttachments = runtime::clearAttachments,
