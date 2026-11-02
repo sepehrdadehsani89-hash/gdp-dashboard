@@ -84,6 +84,12 @@ class NeuralFlowTest {
             assertFalse(WakeListenerService.state.value.running)
         }
     }
+    @Test fun privateBriefingPreviewNeverUsesConfiguredCloudVoice(){
+        compose.runOnUiThread{runtime.store.updateSettings(runtime.store.settings.value.copy(useCloudVoice=true,allowLockedChat=true));runtime.speakPrivatePreview("Private briefing fixture. This stays on the device.")}
+        assertEquals("on-device",runtime.lastSpeechDestination)
+        assertFalse(WakeListenerService.state.value.running)
+        compose.runOnUiThread{runtime.stopEverything()}
+    }
     @Test fun nativeRuntimeRejectsCorruptWeightsAndReleasesItsHandle(){
         val file=File(context.cacheDir,"invalid-neural-${UUID.randomUUID()}.gguf").apply{writeText("This is a deliberately corrupt GGUF fixture, not model weights.")}
         val brain=LocalBrain(context)

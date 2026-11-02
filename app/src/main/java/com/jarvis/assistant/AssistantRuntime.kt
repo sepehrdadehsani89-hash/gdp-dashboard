@@ -293,6 +293,11 @@ class AssistantRuntime(private val context: Context) {
         finally { if (providerCheck === job) providerCheck = null; resumeWake() }
     }
 
+    fun speakPrivatePreview(text:String){
+        if(locked())return
+        cancelSession();pauseWake();privateTurn=true
+        speak(text.take(600),language(),allowCloudSpeech=false)
+    }
     fun playConnectionSample(sample: String) {
         if (locked()) return
         pauseWake(); privateTurn = false

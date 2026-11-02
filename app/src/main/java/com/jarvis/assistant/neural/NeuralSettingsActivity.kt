@@ -152,7 +152,7 @@ class NeuralSettingsActivity:ComponentActivity(){
                 Row{OutlinedButton(onClick={android.app.TimePickerDialog(this@NeuralSettingsActivity,{_,h,_->save(settings.copy(quietStart=h))},settings.quietStart,0,true).show()}){Text("Quiet from ${settings.quietStart}:00")};OutlinedButton(onClick={android.app.TimePickerDialog(this@NeuralSettingsActivity,{_,h,_->save(settings.copy(quietEnd=h))},settings.quietEnd,0,true).show()}){Text("to ${settings.quietEnd}:00")}}
                 Button(enabled=!busy,onClick={runOperation{briefing=runtime.briefing.compose().text;status="Briefing prepared from available source results."}}){Text(tr("Prepare briefing now"))}
                 Text(briefing)
-                OutlinedButton(enabled=!busy && briefing.isNotBlank(),onClick={runtime.playConnectionSample(briefing)}){Text(tr("Read first part aloud · on device"))}
+                OutlinedButton(enabled=!busy && briefing.isNotBlank(),onClick={runtime.speakPrivatePreview(briefing)}){Text(tr("Read first part aloud · on device"))}
                 Text(tr("Action audit · last 30 events"),style=MaterialTheme.typography.titleLarge)
                 Text(tr("Identifiers, status and time only. No request text, private document content or credentials are logged."))
                 audit.forEach{Text(it,style=MaterialTheme.typography.bodySmall)}
