@@ -6,6 +6,10 @@ Jarvis Next adds explicit live tap/draft controls, direct installed-app opening,
 
 A new app identity does not establish Play Protect approval or fix Google's HTTP 429 quota. Keep Play Protect enabled. Local AI is a separate provider with an optional ~400 MB model download, no API key, and small-model performance/quality limits.
 
+[**Download Jarvis Next 0.1.0 — signed ARM64 APK (~78 MB)**](https://raw.githubusercontent.com/sepehrdadehsani89-hash/gdp-dashboard/jarvis-next/downloads/Jarvis-Next-0.1.0-arm64.apk)
+
+[Build identity and checksum](downloads/jarvis-next-build-info.json) · [Verification](docs/JARVIS_NEXT_VERIFICATION.md) · [Public signing certificate](downloads/jarvis-next-signing-certificate.pem)
+
 ## Phone workflow
 
 1. Install the signed ARM64 Jarvis Next APK after reviewing the build verification. Open **Jarvis Next**, not the original Jarvis.

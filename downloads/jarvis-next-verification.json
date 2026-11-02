@@ -1,0 +1,102 @@
+{
+  "android": [
+    {
+      "class": "com.jarvis.assistant.ConnectedFolderFlowTest",
+      "test": "persistedReadGrantBrowseReadReconnectAndRevoke",
+      "status": "passed"
+    },
+    {
+      "class": "com.jarvis.assistant.ConnectedFolderFlowTest",
+      "test": "rejectsNonTreeUris",
+      "status": "passed"
+    },
+    {
+      "class": "com.jarvis.assistant.JarvisFlowTest",
+      "test": "explicitLocalChoiceKeepsQuotaSeparateAndDisablesCloudVoice",
+      "status": "passed"
+    },
+    {
+      "class": "com.jarvis.assistant.JarvisFlowTest",
+      "test": "privateMemorySpeechStaysOnDeviceWhenCloudVoiceIsEnabled",
+      "status": "passed"
+    },
+    {
+      "class": "com.jarvis.assistant.JarvisFlowTest",
+      "test": "firstLaunchCanFinishWithoutAKeyOrOptionalPermission",
+      "status": "passed"
+    },
+    {
+      "class": "com.jarvis.assistant.JarvisFlowTest",
+      "test": "youtubeProposalWaitsForApprovalAndCanBeCancelled",
+      "status": "passed"
+    },
+    {
+      "class": "com.jarvis.assistant.JarvisFlowTest",
+      "test": "explicitMemoryRequestIsPersistedAndVisible",
+      "status": "passed"
+    },
+    {
+      "class": "com.jarvis.assistant.JarvisFlowTest",
+      "test": "typedTimeQuestionUsesTheActualKeylessTool",
+      "status": "passed"
+    },
+    {
+      "class": "com.jarvis.assistant.JarvisFlowTest",
+      "test": "persianSelectionLocalizesHomeAndMemoryNavigation",
+      "status": "passed"
+    },
+    {
+      "class": "com.jarvis.assistant.GeminiSettingsTest",
+      "test": "stalledCheckCanBeCancelledWithoutClaimingSuccess",
+      "status": "passed"
+    },
+    {
+      "class": "com.jarvis.assistant.GeminiSettingsTest",
+      "test": "compatibleModelCanBeSelectedTestedAndSaved",
+      "status": "passed"
+    },
+    {
+      "class": "com.jarvis.assistant.GeminiSettingsTest",
+      "test": "failedTestIsShownWithoutClaimingConnectionSuccess",
+      "status": "passed"
+    },
+    {
+      "class": "com.jarvis.assistant.NativeEngineTest",
+      "test": "bundledEnglishOcrReadsActualRenderedPixels",
+      "status": "passed"
+    },
+    {
+      "class": "com.jarvis.assistant.NativeEngineTest",
+      "test": "installedNeuralVoicesGenerateNonSilentAudioInAllThreeLanguages",
+      "status": "skipped"
+    },
+    {
+      "class": "com.jarvis.assistant.ScreenCaptureFlowTest",
+      "test": "realAndroidProjectionCapturesOneReadableFrameAndClearRemovesIt",
+      "status": "passed"
+    },
+    {
+      "class": "com.jarvis.assistant.LiveControlFlowTest",
+      "test": "currentTargetTapDraftAndStaleTargetGuard",
+      "status": "passed"
+    }
+  ],
+  "unit": {
+    "tests": 98,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "lint": {
+    "debug": {
+      "error": 0,
+      "fatal": 0,
+      "warning": 20
+    },
+    "release": {
+      "error": 0,
+      "fatal": 0,
+      "warning": 20
+    }
+  }
+}
