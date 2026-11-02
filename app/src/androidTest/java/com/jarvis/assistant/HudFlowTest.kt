@@ -100,7 +100,7 @@ class HudFlowTest {
         compose.onNodeWithText("Settings",useUnmergedTree=true).performClick()
         compose.onNodeWithText("Reduced motion").assertExists()
         compose.onNodeWithText("Assistant",useUnmergedTree=true).performClick()
-        compose.onNodeWithText("J A R V I S").assertExists()
+        compose.onNodeWithText("Ask Jarvis…").assertIsDisplayed()
     }
     @Test fun codexCancelNeverExecutesProtectedAction(){
         var executions=0
