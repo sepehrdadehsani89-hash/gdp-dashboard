@@ -78,5 +78,8 @@ class ScreenCaptureFlowTest {
         }
         Assert.fail("System button not found: $label")
     }
-    @After fun stop() { if (::runtime.isInitialized) compose.runOnUiThread { runtime.stopEverything() } }
+    @After fun stop() {
+        if (::runtime.isInitialized) compose.runOnUiThread { runtime.stopEverything() }
+        releaseTestScreenAccess()
+    }
 }

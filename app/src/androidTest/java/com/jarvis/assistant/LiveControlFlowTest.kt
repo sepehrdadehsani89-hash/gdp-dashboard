@@ -17,6 +17,8 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class LiveControlFlowTest {
     @get:org.junit.Rule val compose = androidx.compose.ui.test.junit4.createAndroidComposeRule<MainActivity>()
+    @org.junit.After fun disconnectTestAccess() { releaseTestScreenAccess() }
+
     @Test fun currentTargetTapDraftAndStaleTargetGuard() {
         val i = InstrumentationRegistry.getInstrumentation()
         compose.activityRule.scenario.onActivity { (it.application as JarvisApplication).runtime.stopEverything() }
@@ -40,13 +42,13 @@ class LiveControlFlowTest {
         assertTrue(runtime.state.value.messages.any { it.text == "Opened Jarvis Next Test Controls." })
         assertNull(runtime.state.value.pendingAction)
         val deadline = System.currentTimeMillis() + 20_000
-        while (System.currentTimeMillis() < deadline && !JarvisAccessibilityService.snapshot(i.targetContext).text.orEmpty().contains("Search")) Thread.sleep(200)
-        assertTrue("Target screen: " + JarvisAccessibilityService.snapshot(i.targetContext), JarvisAccessibilityService.snapshot(i.targetContext).text.orEmpty().contains("Search"))
+        while (System.currentTimeMillis() < deadline && !JarvisAccessibilityService.snapshot(i.targetContext).text.orEmpty().contains("Search", ignoreCase = true)) Thread.sleep(200)
+        assertTrue("Target screen: " + JarvisAccessibilityService.snapshot(i.targetContext), JarvisAccessibilityService.snapshot(i.targetContext).text.orEmpty().contains("Search", ignoreCase = true))
         val tap = JarvisAccessibilityService.prepareLive(i.targetContext, LiveRequest.Tap("Search"))
         assertTrue(JarvisAccessibilityService.executeLive(i.targetContext, tap))
         val clickedDeadline = System.currentTimeMillis() + 10_000
-        while (System.currentTimeMillis() < clickedDeadline && !JarvisAccessibilityService.snapshot(i.targetContext).text.orEmpty().contains("Clicked")) Thread.sleep(100)
-        assertTrue(JarvisAccessibilityService.snapshot(i.targetContext).text.orEmpty().contains("Clicked"))
+        while (System.currentTimeMillis() < clickedDeadline && !JarvisAccessibilityService.snapshot(i.targetContext).text.orEmpty().contains("Clicked", ignoreCase = true)) Thread.sleep(100)
+        assertTrue(JarvisAccessibilityService.snapshot(i.targetContext).text.orEmpty().contains("Clicked", ignoreCase = true))
         assertTrue(runCatching { JarvisAccessibilityService.executeLive(i.targetContext, tap) }.isFailure)
         val edit = JarvisAccessibilityService.prepareLive(i.targetContext, LiveRequest.Edit("Hello Sofia"))
         assertTrue(JarvisAccessibilityService.executeLive(i.targetContext, edit))

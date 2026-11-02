@@ -18,7 +18,7 @@ class JarvisAccessibilityService : AccessibilityService() {
     }
 
     companion object {
-        private var current = WeakReference<JarvisAccessibilityService>(null)
+        @Volatile private var current = WeakReference<JarvisAccessibilityService>(null)
         val connected: Boolean get() = current.get() != null
 
         fun snapshot(context: Context, forCapture: Boolean = false): ScreenReadResult {
