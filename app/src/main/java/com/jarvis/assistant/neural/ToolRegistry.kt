@@ -57,6 +57,9 @@ object ToolRegistry {
         "news"->request.arguments["topic"].isNullOrBlank() || AppMatching.normalize(input).contains(AppMatching.normalize(request.arguments.getValue("topic")))
         else->true
     }
+    fun aggregateWeatherAdvice(input:String,plan:List<ToolRequest>):Boolean =
+        plan.isNotEmpty() && plan.all{it.id=="weather"} && Regex("umbrella|paraguas|چتر",RegexOption.IGNORE_CASE).containsMatchIn(input) &&
+            plan.mapNotNull{it.arguments["city"]?.takeIf(String::isNotBlank)?.let(AppMatching::normalize)}.distinct().size<=1 && plan.map{it.arguments["day"] ?: "0"}.distinct().size<=1
     fun directPlan(input:String):List<ToolRequest>? {
         val clauses=input.split(Regex("(?:,? +then +| +después +| +despues +| +سپس +)",RegexOption.IGNORE_CASE))
         if(clauses.size !in 2..3)return null

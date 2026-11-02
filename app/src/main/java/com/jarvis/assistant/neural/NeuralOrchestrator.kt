@@ -20,12 +20,12 @@ class NeuralOrchestrator(private val context:Context,private val hud:HudReposito
         if(researchUrl!=null)return research.read(researchUrl,lang)
         val alias=Regex("^(?:jarvis[, ]+)?remember that when I say (.{2,80}?),? I mean (.{2,80})[.!]?$",RegexOption.IGNORE_CASE).matchEntire(text.trim())
         if(alias!=null)return tools.requestAlias(alias.groupValues[1],alias.groupValues[2].trimEnd('.','!'),lang)
-        ToolRegistry.directPlan(text)?.let{return executePlan(text,it,lang)}
+        ToolRegistry.directPlan(text)?.let{if(!ToolRegistry.aggregateWeatherAdvice(text,it))return executePlan(text,it,lang)}
         if(text.startsWith("plan:",true)){
             val input=text.substringAfter(':').trim()
             return try{executePlan(input,proposedPlan(input,lang),lang)}catch(e:CancellationException){throw e}catch(_:Exception){AssistantReply(lang.choose("I couldn't validate a safe local plan. Try a direct request; no proposed action was executed.","No pude validar un plan seguro. Prueba una petición directa.","طرح محلی امن تأیید نشد؛ یک درخواست مستقیم بدهید. اقدامی اجرا نشد."))}
         }
-        val t=AppMatching.normalize(text)
+        val t=AppMatching.normalize(text).removePrefix("jarvis ").removePrefix("جارویس ")
         if(t in setOf("daily briefing","my briefing","what should i know about today","resumen del dia","گزارش روزانه","امروز چه خبر"))return briefing.compose()
         val task=Regex("^(?:add task|remember task|agrega tarea|کار اضافه کن)[: ]+(.+)$",RegexOption.IGNORE_CASE).matchEntire(text.trim())
         if(task!=null){withContext(Dispatchers.IO){index.addTask(task.groupValues[1])};return AssistantReply(lang.choose("Task saved in Neural Core. It is not a scheduled reminder.","Tarea guardada en Neural Core. No es una alarma.","کار در هستهٔ عصبی ذخیره شد؛ یادآور زمان‌بندی‌شده نیست."))}
@@ -67,7 +67,7 @@ class NeuralOrchestrator(private val context:Context,private val hud:HudReposito
             val result=withTimeout(definition.timeoutMs){when(step.id){
                 "time"->tools.route("what time is it",lang)!!
                 "battery"->tools.route("battery",lang)!!
-                "weather"->{val (city,day)=ToolRegistry.weatherArguments(step,input,hud.state.value.settings.weatherCity);forecast.reply(city,day,lang)}
+                "weather"->{val (city,day)=ToolRegistry.weatherArguments(step,input,hud.state.value.settings.weatherCity);forecast.reply(city,day,lang,Regex("umbrella|paraguas|چتر",RegexOption.IGNORE_CASE).containsMatchIn(input))}
                 "news"->tools.news("news about ${step.arguments["topic"].orEmpty()}",lang)
                 "calendar"->PhoneContext(context).route("my calendar today",lang)!!
                 "open_app"->{val target=step.arguments["name"] ?: error("Explicit app target required");tools.requestApp(target,lang,alwaysConfirm=true)}

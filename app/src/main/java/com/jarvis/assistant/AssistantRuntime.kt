@@ -325,8 +325,9 @@ class AssistantRuntime(private val context: Context) {
         if (Regex("^(?:please )?(?:change|open)(?: your)? (?:security|privacy) settings[.!]?$",RegexOption.IGNORE_CASE).matches(text) || text.lowercase() in listOf("cambiar ajustes de seguridad", "تغییر تنظیمات امنیتی")) {
             protect("Open security settings") { context.startActivity(Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP).putExtra("open_settings",true)) }; return
         }
-        if(text.startsWith("no, i meant ",true) || text.startsWith("نه منظورم ")){
-            val corrected=text.substringAfter("meant ",text.substringAfter("منظورم ")).trim().trimEnd('.');submit("open $corrected",voiced);return
+        val correction=com.jarvis.assistant.neural.AppMatching.correctionTarget(text)
+        if(correction!=null && (state.value.pendingAction?.kind=="open_app" || com.jarvis.assistant.neural.AppMatching.commandTarget(state.value.messages.lastOrNull{it.role==MessageRole.USER}?.text.orEmpty())!=null)){
+            submit("open $correction",voiced);return
         }
         if (LanguageRules.isStop(text)) { stopEverything(); return }
         val isLocked = locked()
