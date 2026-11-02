@@ -1,0 +1,341 @@
+{
+  "app": "Jarvis",
+  "version": "2.0.0",
+  "version_code": 2,
+  "application_id": "com.jarvis.next",
+  "separate_from_original_jarvis": true,
+  "updates_jarvis_next": true,
+  "source_commit": "4c89d10007047703f3c25f82ee215df99af3025a",
+  "apk": "Jarvis-2.0.0-arm64.apk",
+  "bytes": 78271819,
+  "sha256": "cc0951f90ceaeb0dbb009afe40e00cd41b28d4bac903e7425d0b34d48abadf65",
+  "signing_certificate_sha256": "56188545a9204a61153d5bfcb7c6fe230d0b024d0f2b457256da2827523b6719",
+  "abi": "arm64-v8a",
+  "min_sdk": 29,
+  "target_sdk": 35,
+  "debuggable": false,
+  "minified": false,
+  "apk_v2_signature_verified": true,
+  "zip_alignment_verified": true,
+  "signing_backup_restore_verified": true,
+  "unit_tests": {
+    "tests": 117,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "android_tests": {
+    "passed": 22,
+    "skipped": 1,
+    "failed": 0,
+    "device": "API 29 x86_64 software emulator, 480x800",
+    "method": "23-case full sweep plus focused navigation assertion recheck; application runtime source unchanged",
+    "sweep_cases": [
+      {
+        "class": "com.jarvis.assistant.ConnectedFolderFlowTest",
+        "test": "persistedReadGrantBrowseReadReconnectAndRevoke",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.ConnectedFolderFlowTest",
+        "test": "rejectsNonTreeUris",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.GeminiSettingsTest",
+        "test": "stalledCheckCanBeCancelledWithoutClaimingSuccess",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.GeminiSettingsTest",
+        "test": "compatibleModelCanBeSelectedTestedAndSaved",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.GeminiSettingsTest",
+        "test": "failedTestIsShownWithoutClaimingConnectionSuccess",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.HudFlowTest",
+        "test": "codexCancelNeverExecutesProtectedAction",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.HudFlowTest",
+        "test": "navigationSearchExplicitMemorySaveAndCategoryPersist",
+        "code": -2,
+        "status": "failed"
+      },
+      {
+        "class": "com.jarvis.assistant.HudFlowTest",
+        "test": "batteryAndWeatherPermissionDenialDoNotCreateMeasurements",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.HudFlowTest",
+        "test": "rtlAndHudPreferencesSurviveActivityRecreation",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.HudFlowTest",
+        "test": "batteryEventsChargingFullAndForegroundReentryUseSystemValues",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.HudFlowTest",
+        "test": "startupBatteryIsRealAndHudCanRenderOnSmallScreen",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.HudFlowTest",
+        "test": "overlappingVisibleActivitiesRetainTelemetryUntilLastOwnerStops",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.JarvisFlowTest",
+        "test": "explicitLocalChoiceKeepsQuotaSeparateAndDisablesCloudVoice",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.JarvisFlowTest",
+        "test": "privateMemorySpeechStaysOnDeviceWhenCloudVoiceIsEnabled",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.JarvisFlowTest",
+        "test": "firstLaunchCanFinishWithoutAKeyOrOptionalPermission",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.JarvisFlowTest",
+        "test": "youtubeProposalWaitsForApprovalAndCanBeCancelled",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.JarvisFlowTest",
+        "test": "explicitMemoryRequestIsPersistedAndVisible",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.JarvisFlowTest",
+        "test": "typedTimeQuestionUsesTheActualKeylessTool",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.JarvisFlowTest",
+        "test": "persianSelectionLocalizesHomeAndMemoryNavigation",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.LiveControlFlowTest",
+        "test": "currentTargetTapDraftAndStaleTargetGuard",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.NativeEngineTest",
+        "test": "bundledEnglishOcrReadsActualRenderedPixels",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.NativeEngineTest",
+        "test": "installedNeuralVoicesGenerateNonSilentAudioInAllThreeLanguages",
+        "code": -4,
+        "status": "skipped"
+      },
+      {
+        "class": "com.jarvis.assistant.ScreenCaptureFlowTest",
+        "test": "realAndroidProjectionCapturesOneReadableFrameAndClearRemovesIt",
+        "code": 0,
+        "status": "passed"
+      }
+    ],
+    "focused_recheck": [
+      {
+        "class": "com.jarvis.assistant.HudFlowTest",
+        "test": "navigationSearchExplicitMemorySaveAndCategoryPersist",
+        "code": 0,
+        "status": "passed"
+      }
+    ],
+    "cases": [
+      {
+        "class": "com.jarvis.assistant.ConnectedFolderFlowTest",
+        "test": "persistedReadGrantBrowseReadReconnectAndRevoke",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.ConnectedFolderFlowTest",
+        "test": "rejectsNonTreeUris",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.GeminiSettingsTest",
+        "test": "stalledCheckCanBeCancelledWithoutClaimingSuccess",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.GeminiSettingsTest",
+        "test": "compatibleModelCanBeSelectedTestedAndSaved",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.GeminiSettingsTest",
+        "test": "failedTestIsShownWithoutClaimingConnectionSuccess",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.HudFlowTest",
+        "test": "codexCancelNeverExecutesProtectedAction",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.HudFlowTest",
+        "test": "navigationSearchExplicitMemorySaveAndCategoryPersist",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.HudFlowTest",
+        "test": "batteryAndWeatherPermissionDenialDoNotCreateMeasurements",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.HudFlowTest",
+        "test": "rtlAndHudPreferencesSurviveActivityRecreation",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.HudFlowTest",
+        "test": "batteryEventsChargingFullAndForegroundReentryUseSystemValues",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.HudFlowTest",
+        "test": "startupBatteryIsRealAndHudCanRenderOnSmallScreen",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.HudFlowTest",
+        "test": "overlappingVisibleActivitiesRetainTelemetryUntilLastOwnerStops",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.JarvisFlowTest",
+        "test": "explicitLocalChoiceKeepsQuotaSeparateAndDisablesCloudVoice",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.JarvisFlowTest",
+        "test": "privateMemorySpeechStaysOnDeviceWhenCloudVoiceIsEnabled",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.JarvisFlowTest",
+        "test": "firstLaunchCanFinishWithoutAKeyOrOptionalPermission",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.JarvisFlowTest",
+        "test": "youtubeProposalWaitsForApprovalAndCanBeCancelled",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.JarvisFlowTest",
+        "test": "explicitMemoryRequestIsPersistedAndVisible",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.JarvisFlowTest",
+        "test": "typedTimeQuestionUsesTheActualKeylessTool",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.JarvisFlowTest",
+        "test": "persianSelectionLocalizesHomeAndMemoryNavigation",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.LiveControlFlowTest",
+        "test": "currentTargetTapDraftAndStaleTargetGuard",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.NativeEngineTest",
+        "test": "bundledEnglishOcrReadsActualRenderedPixels",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.NativeEngineTest",
+        "test": "installedNeuralVoicesGenerateNonSilentAudioInAllThreeLanguages",
+        "code": -4,
+        "status": "skipped"
+      },
+      {
+        "class": "com.jarvis.assistant.ScreenCaptureFlowTest",
+        "test": "realAndroidProjectionCapturesOneReadableFrameAndClearRemovesIt",
+        "code": 0,
+        "status": "passed"
+      }
+    ]
+  },
+  "lint": {
+    "debug": {
+      "Error": 0,
+      "Fatal": 0,
+      "Warning": 20
+    },
+    "release": {
+      "Error": 0,
+      "Fatal": 0,
+      "Warning": 20
+    }
+  },
+  "checked_at_utc": "2026-11-02T04:28:34.805129+00:00",
+  "limits": [
+    "Physical Redmi 9, enrolled biometric/device-credential success, noisy/background wake and call interruption not exercised on physical hardware.",
+    "Live Open-Meteo egress denied by this cloud network policy; real HTTP transport covered by MockWebServer tests.",
+    "Optional neural language models absent: neural synthesis test skipped. Actual Qwen inference and real WhatsApp/photo sending not exercised.",
+    "Speaking visual motion is explicitly decorative; live mic levels are measured."
+  ]
+}
