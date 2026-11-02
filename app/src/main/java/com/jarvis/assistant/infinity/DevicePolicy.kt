@@ -19,6 +19,7 @@ object DevicePolicy {
         return devices.getOrNull(index)
     }
     fun usableSsid(raw:String?):String?=raw?.trim()?.removeSurrounding("\"")?.takeIf{it.isNotBlank() && !it.equals("<unknown ssid>",true) && it!="0x"}
+    fun wifiRssi(raw:Int?):Int?=raw?.takeIf{it in -126..-1} // Android's -127 sentinel is not a measurement.
     fun throughputMbps(bytes:Long,elapsedNanos:Long):Double {require(bytes>0 && elapsedNanos>0);return bytes*8_000.0/elapsedNanos}
     fun knownProperty(value:Long):Long?=value.takeUnless{it==Long.MIN_VALUE || it==Int.MIN_VALUE.toLong()}
 }
