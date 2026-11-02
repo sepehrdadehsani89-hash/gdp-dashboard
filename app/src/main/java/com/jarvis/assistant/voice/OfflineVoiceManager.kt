@@ -38,6 +38,7 @@ class OfflineVoiceManager(private val context: Context) {
     @Volatile private var track: AudioTrack? = null
     private var nativeVoice: OfflineTts? = null
     private var loadedLanguage: AppLanguage? = null
+    @Volatile private var playbackMeter: com.jarvis.assistant.sentinel.PlaybackCursorMeter? = null
 
     data class VoiceSpec(val archiveName: String, val modelName: String, val sha256: String, val approximateMegabytes: Int, val datasetLicense: String) {
         val url get() = "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/$archiveName.tar.bz2"
@@ -174,26 +175,31 @@ class OfflineVoiceManager(private val context: Context) {
                     check(audio.state == AudioTrack.STATE_INITIALIZED) { "Audio output could not initialize." }
                     audio.play()
                     var writtenSamples = 0L
+                    var outputFailed=false
+                    val meter=com.jarvis.assistant.sentinel.PlaybackCursorMeter(audio)
+                    playbackMeter=meter
                     audio.setVolume(com.jarvis.assistant.hud.HudPreferences(context).read().voiceVolume)
                     voice.generateWithCallback(text.take(6000), sid = 0, speed = com.jarvis.assistant.hud.HudPreferences(context).read().voiceRate) { samples ->
                         var offset = 0
                         while (offset < samples.size && token == generation.get()) {
-                            val written = audio.write(samples, offset, samples.size - offset, AudioTrack.WRITE_BLOCKING)
-                            if (written <= 0) return@generateWithCallback 0
+                            val written = audio.write(samples, offset, minOf(1024,samples.size-offset), AudioTrack.WRITE_BLOCKING)
+                            if (written <= 0) { outputFailed=true;return@generateWithCallback 0 }
+                            meter.written(samples,offset,written,writtenSamples)
                             offset += written; writtenSamples += written
                         }
                         if (token == generation.get()) 1 else 0
                     }
+                    check(!outputFailed || token!=generation.get()){ "Audio output interrupted" }
                     val drainDeadline = System.currentTimeMillis() + 10_000
                     while (token == generation.get() && audio.playbackHeadPosition.toLong() < writtenSamples && System.currentTimeMillis() < drainDeadline) Thread.sleep(20)
                     if (token == generation.get()) main.post { if (token == generation.get()) onDone() }
-                } finally { if (track === audio) track = null; runCatching { audio.stop() }; audio.release() }
+                } finally { if(track===audio){playbackMeter?.close();playbackMeter=null;track=null}; runCatching { audio.stop() }; audio.release() }
             } catch (_: Throwable) {
                 if (token == generation.get()) main.post { if (token == generation.get()) onError("Offline voice could not run on this device. Check the model and available memory.") }
             }
         }
     }
 
-    fun stop() { generation.incrementAndGet(); runCatching { track?.pause() }; runCatching { track?.flush() }; runCatching { track?.stop() } }
+    fun stop() { generation.incrementAndGet(); playbackMeter?.close();playbackMeter=null; runCatching { track?.pause() }; runCatching { track?.flush() }; runCatching { track?.stop() } }
     fun shutdown() { stop(); serial.execute { nativeVoice?.release(); nativeVoice = null }; serial.shutdown() }
 }

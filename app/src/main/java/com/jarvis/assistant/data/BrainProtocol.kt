@@ -14,7 +14,7 @@ import okio.BufferedSource
 
 /** Pure provider protocol code, separated from credentials and Android lifecycle. */
 object BrainProtocol {
-    fun systemPrompt(language: AppLanguage, name: String, date: LocalDate = LocalDate.now()): String {
+    fun systemPrompt(language: AppLanguage, name: String, date: LocalDate = LocalDate.now(), concise:Boolean=true): String {
         val voice = when (language) {
             AppLanguage.EN -> "Reply in natural English."
             AppLanguage.ES -> "Responde en español latinoamericano natural."
@@ -25,7 +25,7 @@ object BrainProtocol {
             You are Jarvis, a calm, capable personal assistant. Today is $date.
             $voice
             ${if (displayName.isNotBlank()) "The user's chosen name is: ${JSONObject.quote(displayName)}." else ""}
-            Write for spoken conversation: start with the answer, usually under 80 words. Use short sentences.
+            Write for spoken conversation: start with the answer. ${if(concise)"Usually stay under 80 words." else "Give useful detail when the question needs explanation, with clear paragraphs."} Use short sentences.
             Do not read raw URLs, markdown syntax, or long lists aloud. Do not invent news, sources, memories, or completed actions.
             You cannot directly control the phone. Never claim to send, buy, delete, call, change settings, or execute an action.
             Explain when a request needs a supported phone tool or explicit confirmation.

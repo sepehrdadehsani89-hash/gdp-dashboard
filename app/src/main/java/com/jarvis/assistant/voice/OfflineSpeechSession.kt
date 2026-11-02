@@ -26,6 +26,7 @@ internal class OfflineSpeechSession(
     private val closed = AtomicBoolean(false)
     private val audioLock = Any()
     private val main = Handler(Looper.getMainLooper())
+    @Volatile private var deadline=Long.MAX_VALUE
     @Volatile private var recorder: AudioRecord? = null
 
     fun start() {
@@ -55,9 +56,9 @@ internal class OfflineSpeechSession(
                             }
                             com.jarvis.assistant.hud.AudioSignals.start(this, "Offline microphone · PCM RMS")
                             val bytes = ByteArray(4096)
-                            val deadline = System.currentTimeMillis() + 25_000
+                            deadline = android.os.SystemClock.elapsedRealtime() + ConversationWindow.DURATION_MS
                             var previousPartial = ""
-                            while (!closed.get() && System.currentTimeMillis() < deadline) {
+                            while (!closed.get() && android.os.SystemClock.elapsedRealtime() < deadline) {
                                 val count = audio.read(bytes, 0, bytes.size)
                                 check(count >= 0) { "Microphone capture interrupted." }
                                 if (count == 0) continue
@@ -75,7 +76,7 @@ internal class OfflineSpeechSession(
                             }
                             if (!closed.get()) {
                                 val final = JSONObject(recognizer.finalResult).optString("text")
-                                if (final.isNotBlank()) emitResult(final) else emitError("No speech was recognized. Please try again.")
+                                emitError("10-second command window closed. Tap the microphone or say your wake phrase again.")
                             }
                         } finally { com.jarvis.assistant.hud.AudioSignals.stop(this); runCatching { audio.stop() }; audio.release(); recorder = null }
                     }
@@ -87,6 +88,6 @@ internal class OfflineSpeechSession(
     }
 
     fun close() { synchronized(audioLock) { closed.set(true); runCatching { recorder?.stop() } } }
-    private fun emitResult(text: String) { main.post { if (!closed.get()) { closed.set(true); onResult(text) } } }
+    private fun emitResult(text: String) { main.post { if (!closed.get()) { closed.set(true); if(android.os.SystemClock.elapsedRealtime()<deadline)onResult(text) else onError("10-second command window closed.") } } }
     private fun emitError(message: String) { main.post { if (!closed.get()) { closed.set(true); onError(message) } } }
 }

@@ -17,7 +17,7 @@ class AuthorizationCoordinator(private val now:()->Long,private val timeout:Long
         request=r.copy(status=if(success)AuthorizationStatus.AUTHORIZED else AuthorizationStatus.DENIED)
         return success
     }
-    @Synchronized fun cancel(){request=request?.copy(status=AuthorizationStatus.DENIED)}
+    @Synchronized fun cancel(){request=request?.let{if(it.status in listOf(AuthorizationStatus.AUTHORIZATION_REQUIRED,AuthorizationStatus.AWAITING_CODEX,AuthorizationStatus.IDENTITY_CONFIRMATION))it.copy(status=AuthorizationStatus.DENIED) else null}}
     private fun transition(s:AuthorizationStatus):AuthorizationRequest? { val r=current() ?: return null; if(r.status in listOf(AuthorizationStatus.DENIED,AuthorizationStatus.EXPIRED,AuthorizationStatus.AUTHORIZED))return r;return r.copy(status=s).also{request=it} }
     companion object { fun isCodex(text:String)=text.trim().lowercase().trimEnd('.','!','؟','?') in setOf("codex","códex","کدکس","کدکس را فعال کن") }
 }

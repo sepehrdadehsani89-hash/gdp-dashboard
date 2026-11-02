@@ -101,6 +101,7 @@ class SpeechController(context: Context) {
             try {
                 val token = generation
                 var completed = false
+                val captureDeadline=android.os.SystemClock.elapsedRealtime()+ConversationWindow.DURATION_MS
                 val instance = if (onDevice && Build.VERSION.SDK_INT >= 31) SpeechRecognizer.createOnDeviceSpeechRecognizer(context)
                     else SpeechRecognizer.createSpeechRecognizer(context)
                 recognizer = instance
@@ -109,7 +110,7 @@ class SpeechController(context: Context) {
                     override fun onBeginningOfSpeech() = Unit
                     override fun onRmsChanged(rmsdB: Float) { if(token==generation) com.jarvis.assistant.hud.AudioSignals.level(instance, ((rmsdB+2)/12).coerceIn(0f,1f)) }
                     override fun onBufferReceived(buffer: ByteArray?) = Unit
-                    override fun onEndOfSpeech() = Unit
+                    override fun onEndOfSpeech() { com.jarvis.assistant.hud.AudioSignals.stop(instance) }
                     override fun onEvent(eventType: Int, params: Bundle?) = Unit
                     override fun onError(error: Int) {
                         if (token != generation || completed) return
@@ -122,7 +123,7 @@ class SpeechController(context: Context) {
                         completed = true
                         val text = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull().orEmpty()
                         com.jarvis.assistant.hud.AudioSignals.stop(instance); instance.destroy(); recognizer = null
-                        if (text.isBlank()) onError(recognitionError(SpeechRecognizer.ERROR_NO_MATCH, language)) else onResult(text)
+                        if(android.os.SystemClock.elapsedRealtime()>=captureDeadline)onError("10-second command window closed.") else if (text.isBlank()) onError(recognitionError(SpeechRecognizer.ERROR_NO_MATCH, language)) else onResult(text)
                     }
                     override fun onPartialResults(partialResults: Bundle?) {
                         if (token == generation && !completed) onPartial(partialResults?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull().orEmpty())
@@ -141,7 +142,7 @@ class SpeechController(context: Context) {
                         completed = true; instance.cancel(); com.jarvis.assistant.hud.AudioSignals.stop(instance); instance.destroy(); recognizer = null
                         onError(recognitionError(SpeechRecognizer.ERROR_SPEECH_TIMEOUT, language))
                     }
-                }, 30_000)
+                }, ConversationWindow.DURATION_MS)
             } catch (_: Exception) {
                 recognizer?.destroy(); recognizer = null
                 onError(language.choose("Speech capture is unavailable. Check the microphone and speech service.", "No se puede escuchar. Revisa el micrófono y el servicio de voz.", "ضبط گفتار در دسترس نیست. میکروفن و سرویس گفتار را بررسی کنید."))
@@ -152,7 +153,9 @@ class SpeechController(context: Context) {
     fun availableVoices(language: AppLanguage): List<String> = if (!ttsReady) emptyList() else tts.voices.orEmpty().filter { it.locale.language == language.code && !it.isNetworkConnectionRequired && !it.features.orEmpty().contains(TextToSpeech.Engine.KEY_FEATURE_NOT_INSTALLED) }.map { it.name }.sorted()
 
     fun voiceStatus(language: AppLanguage): String {
-        if (offlineVoice.modelPath(language) != null && systemVoice(language) == null) {
+        val selected=com.jarvis.assistant.hud.HudPreferences(context).read().voiceEngine
+        if(selected=="neural")return if(offlineVoice.modelPath(language)!=null)"Piper / sherpa-onnx · selected on-device neural voice" else "Selected neural voice is not downloaded for ${language.label}"
+        if (selected!="system" && offlineVoice.modelPath(language) != null && systemVoice(language) == null) {
             return "Piper / sherpa-onnx · ${language.choose("on-device neural voice", "voz neuronal local", "صدای عصبی روی دستگاه") }"
         }
         if (!ttsReady) return language.choose(if (ttsFailed) "Voice engine unavailable" else "Voice engine initializing", "Inicializando motor de voz", "موتور گفتار در حال آماده‌شدن است")
@@ -251,7 +254,7 @@ class SpeechController(context: Context) {
         tts.stop()
         player?.run { runCatching { stop() }; release() }; player = null
         focus?.let { audio.abandonAudioFocusRequest(it) }; focus = null
-        WakeListenerService.suppressFor(1000)
+        WakeListenerService.setSpeechActive(false)
     }
 
     private fun finishSpeaking() {
@@ -260,7 +263,7 @@ class SpeechController(context: Context) {
         utterancePrefix = null; lastUtterance = null
         player?.release(); player = null
         focus?.let { audio.abandonAudioFocusRequest(it) }; focus = null
-        WakeListenerService.suppressFor(1000)
+        WakeListenerService.setSpeechActive(false)
         callback?.invoke()
     }
 
@@ -281,7 +284,9 @@ class SpeechController(context: Context) {
             }
             .build()
         focus = request
-        return audio.requestAudioFocus(request) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
+        val granted=audio.requestAudioFocus(request)==AudioManager.AUDIOFOCUS_REQUEST_GRANTED
+        if(granted)WakeListenerService.setSpeechActive(true)
+        return granted
     }
 
     private fun isQuietMode(): Boolean {

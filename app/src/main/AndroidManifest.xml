@@ -14,7 +14,9 @@
     <uses-permission android:name="android.permission.READ_CALENDAR" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
+    <uses-feature android:name="android.software.live_wallpaper" android:required="false" />
     <queries>
+        <intent><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.HOME" /></intent>
         <intent><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.LAUNCHER" /></intent>
         <intent><action android:name="android.intent.action.VIEW" /><data android:scheme="https" /></intent>
         <intent><action android:name="android.speech.RecognitionService" /></intent>
@@ -37,6 +39,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <service android:name=".sentinel.JarvisWallpaperService" android:label="@string/sentinel_wallpaper_name" android:exported="true" android:permission="android.permission.BIND_WALLPAPER">
+            <intent-filter><action android:name="android.service.wallpaper.WallpaperService" /></intent-filter>
+            <meta-data android:name="android.service.wallpaper" android:resource="@xml/jarvis_wallpaper" />
+        </service>
+        <activity android:name=".sentinel.SentinelWallpaperSettingsActivity" android:exported="true" android:theme="@style/Theme.Jarvis" />
         <service android:name=".voice.WakeListenerService" android:exported="false" android:foregroundServiceType="microphone" />
         <activity android:name=".screen.ScreenCaptureActivity" android:exported="false" android:excludeFromRecents="true" android:taskAffinity="${applicationId}.screen" android:theme="@style/Theme.Jarvis.Capture" />
         <service android:name=".screen.ScreenCaptureService" android:exported="false" android:foregroundServiceType="mediaProjection" />

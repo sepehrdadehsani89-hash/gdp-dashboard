@@ -1,0 +1,10 @@
+Jarvis Sentinel procedural sound effects
+
+The 26 sentinel_*.wav assets are original deterministic FM/sine synthesis generated
+by scripts/generate-sentinel-sounds.py, with no recordings, third-party samples,
+or movie effects. They are made available under CC0 1.0 Universal.
+https://creativecommons.org/publicdomain/zero/1.0/
+
+Playback is governed by the user's effects volume, silent/Do Not Disturb settings,
+microphone capture, speech and audio-focus policy. Physical sound quality still
+requires listening on the target phone.

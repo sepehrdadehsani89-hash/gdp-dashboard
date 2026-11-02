@@ -152,12 +152,12 @@ private val Warm = Color(0xFFF0C8A9)
 private val Line = Color(0xFF263A50)
 
 @Composable
-fun JarvisAppUi(state: JarvisUiState, actions: JarvisUiActions, settingsRequest:Int=0) {
+fun JarvisAppUi(state: JarvisUiState, actions: JarvisUiActions, settingsRequest:Int=0, sentinelRequest:Int=0) {
     val language = state.settings.language
     CompositionLocalProvider(LocalLayoutDirection provides if (language == AppLanguage.FA) LayoutDirection.Rtl else LayoutDirection.Ltr) {
         MaterialTheme(
             colorScheme = darkColorScheme(
-                primary = Mint, onPrimary = Ink, secondary = Lavender, background = Ink,
+                primary = when(state.hud.settings.accent){"purple"->Lavender;"blue"->Color(0xFF38BDF8);else->Mint}, onPrimary = Ink, secondary = Lavender, background = Ink,
                 surface = Panel, onSurface = Color(0xFFF2F5FA), onSurfaceVariant = Muted,
                 surfaceVariant = PanelLight, outline = Line, error = Color(0xFFFFB4B4),
             ),
@@ -165,7 +165,7 @@ fun JarvisAppUi(state: JarvisUiState, actions: JarvisUiActions, settingsRequest:
         ) {
             Surface(color = Ink, modifier = Modifier.fillMaxSize()) {
                 if (!state.settings.onboardingComplete) Onboarding(state, actions)
-                else MainShell(state, actions, settingsRequest)
+                else MainShell(state, actions, settingsRequest, sentinelRequest)
                 state.authorization?.takeIf { it.status in listOf(com.jarvis.assistant.hud.AuthorizationStatus.AUTHORIZATION_REQUIRED,com.jarvis.assistant.hud.AuthorizationStatus.AWAITING_CODEX) }?.let { request ->
                     AlertDialog(onDismissRequest=actions.onCancelAuthorization,
                         title={Text("Codex · authorization required")},
@@ -192,7 +192,7 @@ fun JarvisAppUi(state: JarvisUiState, actions: JarvisUiActions, settingsRequest:
 }
 
 @Composable
-private fun MainShell(state: JarvisUiState, actions: JarvisUiActions, settingsRequest:Int) {
+private fun MainShell(state: JarvisUiState, actions: JarvisUiActions, settingsRequest:Int, sentinelRequest:Int) {
     var tab by rememberSaveable { mutableIntStateOf(0) }
     LaunchedEffect(settingsRequest){if(settingsRequest>0)tab=2}
     val l = state.settings.language
@@ -203,7 +203,7 @@ private fun MainShell(state: JarvisUiState, actions: JarvisUiActions, settingsRe
         bottomBar = {
             NavigationBar(containerColor = Ink, tonalElevation = 0.dp) {
                 labels.forEachIndexed { index, label ->
-                    NavigationBarItem(selected = tab == index, onClick = { tab = index },
+                    NavigationBarItem(selected = tab == index, onClick = { actions.onInteraction(com.jarvis.assistant.sentinel.SentinelSound.TAB); tab = index },
                         icon = { Icon(icons[index], contentDescription = null) }, label = { Text(label) })
                 }
             }
@@ -214,7 +214,7 @@ private fun MainShell(state: JarvisUiState, actions: JarvisUiActions, settingsRe
                 when (tab) {
                     0 -> Home(state, actions) { tab = 2 }
                     1 -> MemoryScreen(state, actions)
-                    else -> SettingsScreen(state, actions)
+                    else -> SettingsScreen(state, actions, sentinelRequest)
                 }
             }
         }
@@ -240,12 +240,13 @@ private fun Home(state: JarvisUiState, actions: JarvisUiActions, onOpenSettings:
     }
     val scroll = rememberLazyListState()
     val busy = state.phase in setOf(AssistantPhase.LISTENING, AssistantPhase.THINKING, AssistantPhase.SPEAKING)
-    LaunchedEffect(state.messages.size, state.phase, state.transcript.isNotBlank()) {
-        if (state.messages.isNotEmpty()) {
+    LaunchedEffect(state.messages.size, state.phase, state.transcript.isNotBlank(),state.voiceInteraction) {
+        if (state.messages.isNotEmpty() && !state.voiceInteraction) {
             val target = state.messages.size + if (state.transcript.isNotBlank() && busy) 1 else 0
             scroll.animateScrollToItem(target)
         }
     }
+    LaunchedEffect(state.sentinelVisual.activationId){if(state.sentinelVisual.activationId>0)scroll.animateScrollToItem(0)}
     Column(Modifier.fillMaxSize().imePadding()) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 18.dp), verticalAlignment = Alignment.CenterVertically) {
             Text("JARVIS · HUD",color=Mint,fontSize=9.sp,letterSpacing=2.sp)
@@ -321,10 +322,10 @@ private fun Home(state: JarvisUiState, actions: JarvisUiActions, onOpenSettings:
                     keyboardActions = KeyboardActions(onSend = { sendInput() }),
                     trailingIcon = { if (input.isNotBlank()) IconButton(onClick = sendInput) { Icon(Icons.AutoMirrored.Rounded.Send, l.choose("Send", "Enviar", "ارسال"), tint = Mint) } },
                 )
-                Button(onClick = if (busy && state.phase != AssistantPhase.SPEAKING) actions.onStop else actions.onMic,
+                Button(onClick = actions.onMic,
                     shape = CircleShape, contentPadding = PaddingValues(0.dp), modifier = Modifier.size(60.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = if (busy) Warm else Mint)) {
-                    Icon(if (busy && state.phase != AssistantPhase.SPEAKING) Icons.Rounded.Stop else Icons.Rounded.Mic, l.choose(if (state.phase==AssistantPhase.SPEAKING) "Interrupt and speak" else if (busy) "Stop" else "Speak", if (state.phase==AssistantPhase.SPEAKING) "Interrumpir y hablar" else if (busy) "Detener" else "Hablar", if (state.phase==AssistantPhase.SPEAKING) "قطع پاسخ و صحبت" else if (busy) "توقف" else "صحبت کنید"), Modifier.size(25.dp))
+                    Icon(if (state.phase==AssistantPhase.LISTENING) Icons.Rounded.Stop else Icons.Rounded.Mic, l.choose(if (state.phase==AssistantPhase.SPEAKING) "Interrupt and speak" else if (busy) "Stop" else "Speak", if (state.phase==AssistantPhase.SPEAKING) "Interrumpir y hablar" else if (busy) "Detener" else "Hablar", if (state.phase==AssistantPhase.SPEAKING) "قطع پاسخ و صحبت" else if (busy) "توقف" else "صحبت کنید"), Modifier.size(25.dp))
                 }
             }
         }
@@ -507,7 +508,11 @@ private fun ToggleRow(title: String, subtitle: String, checked: Boolean, onCheck
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun SettingsScreen(state: JarvisUiState, actions: JarvisUiActions) {
+private fun SettingsScreen(state: JarvisUiState, actions: JarvisUiActions, sentinelRequest:Int=0) {
+    var sentinel by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(sentinelRequest){if(sentinelRequest>0)sentinel=true}
+    androidx.activity.compose.BackHandler(enabled=sentinel){sentinel=false}
+    if(sentinel){SentinelSettingsUi(state,actions){sentinel=false};return}
     val l = state.settings.language
     var draft by remember(state.settings) { mutableStateOf(state.settings) }
     var key by remember { mutableStateOf("") }
@@ -567,6 +572,7 @@ private fun SettingsScreen(state: JarvisUiState, actions: JarvisUiActions) {
     LaunchedEffect(state.settings.provider, state.settings.model, state.settings.language) { clearConnectionCheck() }
     LaunchedEffect(checking) { connectionElapsed = 0; while (checking) { delay(1000); connectionElapsed++ } }
     LazyColumn(contentPadding = PaddingValues(24.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
+        item { Button(onClick={actions.onInteraction(com.jarvis.assistant.sentinel.SentinelSound.PANEL_OPEN);sentinel=true},modifier=Modifier.fillMaxWidth()){Text(l.choose("Sentinel · wallpaper & sound","Sentinel · fondo y sonido","سنتینل · پس‌زمینه و صدا"))} }
         item { HudSettingsCard(state, actions) }
         item { if(state.authorization!=null) AuthorizationPanel(state,actions) }
         item { PageTitle(l.choose("Made to feel like yours.", "Hecho a tu manera.", "همان‌طور که شما می‌خواهید."), l.choose("SETTINGS", "AJUSTES", "تنظیمات")) }

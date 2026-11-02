@@ -56,6 +56,10 @@ class DeviceTools(private val context: Context, private val store: JarvisStore) 
         Regex("^(?:remind me|recuérdame|یادآوری کن)\\s+(.+)$",RegexOption.IGNORE_CASE).matchEntire(text.trim())?.let {
             return proposal("Open a calendar draft for: ${it.groupValues[1]}? Choose the date and save it in your calendar.","reminder_draft",it.groupValues[1].take(300))
         }
+        MediaCommand.parse(text)?.let { command->
+            if(locked())return AssistantReply(unlockMessage(language))
+            return proposal(language.choose("Send media '$command' to Android's active player?","¿Enviar '$command' al reproductor activo de Android?","درخواست رسانهٔ '$command' به پخش‌کنندهٔ فعال اندروید ارسال شود؟"), "media_control",command)
+        }
         val normalized = ToolPolicy.normalize(text)
         val remembered = LocalIntentParser.rememberedText(text)
         if (remembered != null) {
@@ -69,7 +73,7 @@ class DeviceTools(private val context: Context, private val store: JarvisStore) 
             return AssistantReply(if (facts.isEmpty()) language.choose("You haven't asked me to remember anything yet.", "Aún no me has pedido que recuerde nada.", "هنوز چیزی از من نخواسته‌اید که به خاطر بسپارم.") else language.choose("Here is what you asked me to remember:\n", "Esto es lo que me pediste recordar:\n", "این‌ها مواردی هستند که خواسته‌اید به خاطر بسپارم:\n") + facts.joinToString("\n") { it.text })
         }
         if (LocalIntentParser.isNews(text)) return news(text, language)
-        if (UtilityIntentParser.isWeather(text)) {
+        if (UtilityIntentParser.isWeather(text) && com.jarvis.assistant.sentinel.WeatherQuestion.isRequest(text)) {
             val city = UtilityIntentParser.weatherCity(text)
                 ?: return AssistantReply(language.choose("Which city? For example, “weather in Quito”. I only send the city you request to the weather source.", "¿Qué ciudad? Por ejemplo, «clima en Quito». Solo envío la ciudad que pides a la fuente meteorológica.", "کدام شهر؟ مثلاً «هوای تهران». فقط نام شهری را که درخواست کرده‌اید به منبع هواشناسی می‌فرستم."))
             return WeatherTool().reply(city, language)
@@ -153,6 +157,16 @@ class DeviceTools(private val context: Context, private val store: JarvisStore) 
                 }
                 "nav_home", "nav_back" -> {
                     check(JarvisAccessibilityService.navigate(context, action.kind == "nav_home"))
+                }
+                "media_control" -> {
+                    val audio=context.getSystemService(android.media.AudioManager::class.java)
+                    val key=MediaCommand.key(action.payload)
+                    audio.dispatchMediaKeyEvent(android.view.KeyEvent(android.view.KeyEvent.ACTION_DOWN,key))
+                    audio.dispatchMediaKeyEvent(android.view.KeyEvent(android.view.KeyEvent.ACTION_UP,key))
+                    kotlinx.coroutines.delay(350)
+                    return@withContext language.choose("Media request sent to Android. ${if(audio.isMusicActive)"Android reports active media audio." else "Android does not report active media audio."} Track changes are not verified here; check the player.",
+                        "Solicitud enviada a Android. ${if(audio.isMusicActive)"Android informa audio multimedia activo." else "Android no informa audio multimedia activo."} Comprueba la pista en el reproductor.",
+                        "درخواست به اندروید ارسال شد. ${if(audio.isMusicActive)"اندروید پخش رسانهٔ فعال گزارش می‌کند." else "اندروید پخش رسانهٔ فعال گزارش نمی‌کند."} تغییر آهنگ را در پخش‌کننده بررسی کنید.")
                 }
                 "reminder_draft" -> {
                     context.startActivity(Intent(Intent.ACTION_INSERT,android.provider.CalendarContract.Events.CONTENT_URI)

@@ -49,6 +49,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -70,6 +71,8 @@ class AssistantRuntime(private val context: Context) {
     private val categories = context.getSharedPreferences("jarvis_memory_categories", Context.MODE_PRIVATE)
     private val mutableState = MutableStateFlow(JarvisUiState())
     val state = mutableState.asStateFlow()
+    val visuals = com.jarvis.assistant.sentinel.ReactorAnimationController { SystemClock.elapsedRealtime() }
+    val effects = com.jarvis.assistant.sentinel.JarvisSoundEffects(context,{hud.state.value.settings},{state.value.phase})
     /** Safe routing diagnostic: provider ID only, never speech text or credentials. */
     @Volatile var lastSpeechDestination: String = "none"
         private set
@@ -91,6 +94,7 @@ class AssistantRuntime(private val context: Context) {
     private var brainDownload: Job? = null
     private var voiceDownload: Job? = null
     private var providerCheck: Job? = null
+    private var activationEffects:Job?=null
     private val conversation = ConversationContext()
     private val screenSession = ScreenSession()
     private var captureStarted = 0L
@@ -109,6 +113,50 @@ class AssistantRuntime(private val context: Context) {
     fun initialize() {
         if (initialized) return
         initialized = true
+        if(hud.state.value.settings.soundEffects)effects.warm()
+        scope.launch {com.jarvis.assistant.sentinel.PlaybackLevels.state.collectLatest{audio->mutableState.update{it.copy(playback=audio)}}}
+        scope.launch { visuals.state.collectLatest { visual ->
+            mutableState.update { it.copy(sentinelVisual=visual) }
+            if(visual.mode==com.jarvis.assistant.sentinel.SentinelMode.RETURNING_TO_WALLPAPER){
+                effects.play(com.jarvis.assistant.sentinel.SentinelSound.SLEEP)
+                delay(600);visuals.settle()
+            }
+        } }
+        scope.launch {
+            var previous=state.value
+            state.collect { current ->
+                if(current.hud.settings.soundEffects!=previous.hud.settings.soundEffects){if(current.hud.settings.soundEffects)effects.warm() else effects.silence()}
+                visuals.update(current.phase,current.voiceWindowDeadline>SystemClock.elapsedRealtime() || current.followUpArming,current.authorization?.status)
+                if(current.phase!=previous.phase){
+                    val sound=when(current.phase){
+                        AssistantPhase.LISTENING->com.jarvis.assistant.sentinel.SentinelSound.LISTEN
+                        AssistantPhase.THINKING->com.jarvis.assistant.sentinel.SentinelSound.RECOGNIZED
+                        AssistantPhase.SPEAKING->com.jarvis.assistant.sentinel.SentinelSound.SPEAK_START
+                        AssistantPhase.ERROR->com.jarvis.assistant.sentinel.SentinelSound.ERROR
+                        else->if(previous.phase==AssistantPhase.SPEAKING)com.jarvis.assistant.sentinel.SentinelSound.SPEAK_STOP else null
+                    }
+                    sound?.let(effects::play)
+                    if(current.phase==AssistantPhase.THINKING)scope.launch { delay(220);if(state.value.phase==AssistantPhase.THINKING)effects.play(com.jarvis.assistant.sentinel.SentinelSound.PROCESSING) }
+                }
+                if(previous.messages.isNotEmpty() && current.messages.lastOrNull()?.id!=previous.messages.lastOrNull()?.id && current.messages.lastOrNull()?.role==MessageRole.ASSISTANT)effects.play(com.jarvis.assistant.sentinel.SentinelSound.RESPONSE)
+                val oldBattery=previous.hud.telemetry.battery;val battery=current.hud.telemetry.battery
+                if(oldBattery.percent!=null && battery.percent!=null){
+                    if(battery.charging!=oldBattery.charging)effects.play(if(battery.charging)com.jarvis.assistant.sentinel.SentinelSound.CHARGE else com.jarvis.assistant.sentinel.SentinelSound.UNPLUG)
+                    if(oldBattery.percent>=20 && battery.percent<20)effects.play(com.jarvis.assistant.sentinel.SentinelSound.LOW_BATTERY)
+                }
+                if(previous.hud.telemetry.network!="Unavailable" && current.hud.telemetry.internetValidated!=previous.hud.telemetry.internetValidated)effects.play(if(current.hud.telemetry.internetValidated)com.jarvis.assistant.sentinel.SentinelSound.NETWORK_RESTORED else com.jarvis.assistant.sentinel.SentinelSound.NETWORK_LOST)
+                if(current.authorization?.status!=previous.authorization?.status){
+                    val sound=when(current.authorization?.status){
+                        com.jarvis.assistant.hud.AuthorizationStatus.AWAITING_CODEX->com.jarvis.assistant.sentinel.SentinelSound.CODEX
+                        com.jarvis.assistant.hud.AuthorizationStatus.IDENTITY_CONFIRMATION->com.jarvis.assistant.sentinel.SentinelSound.IDENTITY
+                        com.jarvis.assistant.hud.AuthorizationStatus.AUTHORIZED->com.jarvis.assistant.sentinel.SentinelSound.AUTH_SUCCESS
+                        com.jarvis.assistant.hud.AuthorizationStatus.DENIED,com.jarvis.assistant.hud.AuthorizationStatus.EXPIRED->com.jarvis.assistant.sentinel.SentinelSound.AUTH_DENIED
+                        else->null
+                    };sound?.let(effects::play)
+                }
+                previous=current
+            }
+        }
         scope.launch { hud.state.collectLatest { h -> mutableState.update { it.copy(hud=h) } } }
         scope.launch { com.jarvis.assistant.hud.AudioSignals.state.collectLatest { a -> mutableState.update { it.copy(audio=a) } } }
         scope.launch { store.settings.collectLatest { settings ->
@@ -118,10 +166,14 @@ class AssistantRuntime(private val context: Context) {
         } }
         scope.launch { store.messages.collectLatest { messages -> mutableState.update { it.copy(messages = messages) } } }
         scope.launch { store.memories.collectLatest { memories -> mutableState.update { it.copy(memories = memories, memoryCategories=memories.associate { m -> m.id to categories.getString(m.id.toString(), "Notes").orEmpty() }) } } }
-        scope.launch { WakeListenerService.state.collectLatest { wake -> mutableState.update { it.copy(wakeStatus = wake.status, phase=if(wake.awaitingCommand && it.phase==AssistantPhase.READY) AssistantPhase.LISTENING else if(!wake.awaitingCommand && it.phase==AssistantPhase.LISTENING && wake.listening) AssistantPhase.READY else it.phase) } } }
+        scope.launch { WakeListenerService.state.collectLatest { wake -> mutableState.update { it.copy(wakeStatus = wake.status, wakeEnabled=wake.running, followUpArming=wake.waitingForCapture, voiceWindowDeadline= wake.commandDeadlineElapsed, transcript=if(!wake.awaitingCommand && it.phase==AssistantPhase.LISTENING)"" else it.transcript, phase=if(wake.awaitingCommand && it.phase in setOf(AssistantPhase.READY,AssistantPhase.ERROR,AssistantPhase.PAUSED)) AssistantPhase.LISTENING else if(!wake.awaitingCommand && it.phase==AssistantPhase.LISTENING && (wake.listening || !wake.running || wake.interrupted)) AssistantPhase.READY else it.phase) } } }
         ContextCompat.registerReceiver(context, object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 when (intent?.action) {
+                    WakeListenerService.ACTION_PARTIAL -> {
+                        if(!locked() && state.value.phase==AssistantPhase.LISTENING && state.value.voiceWindowDeadline>SystemClock.elapsedRealtime())
+                            mutableState.update{it.copy(transcript=intent.getStringExtra(WakeListenerService.EXTRA_TEXT).orEmpty().take(4000))}
+                    }
                     WakeListenerService.ACTION_COMMAND -> {
                         val text = intent.getStringExtra(WakeListenerService.EXTRA_TEXT).orEmpty()
                         if (text.isNotBlank()) submit(text, true)
@@ -130,6 +182,7 @@ class AssistantRuntime(private val context: Context) {
                 }
             }
         }, IntentFilter().apply {
+            addAction(WakeListenerService.ACTION_PARTIAL)
             addAction(WakeListenerService.ACTION_COMMAND)
             addAction(WakeListenerService.ACTION_STOP)
         }, ContextCompat.RECEIVER_NOT_EXPORTED)
@@ -137,10 +190,35 @@ class AssistantRuntime(private val context: Context) {
             override fun onReceive(context: Context?, intent: Intent?) {
                 clearScreenContext(); conversation.clear(); captureStarted = 0; awaitScreenQuestion = false
                 mutableState.update { it.copy(pendingAction = null) }
-                if (privateTurn || !store.settings.value.allowLockedChat) { cancelSession(); resumeWake() }
+                if (privateTurn || !store.settings.value.allowLockedChat) {
+                    cancelSession()
+                    mutableState.update{it.copy(phase=AssistantPhase.READY,voiceInteraction=false,voiceWindowDeadline=0,followUpArming=false,transcript="")}
+                    resumeWake()
+                }
             }
         }, IntentFilter(Intent.ACTION_SCREEN_OFF), ContextCompat.RECEIVER_NOT_EXPORTED)
         scope.launch { delay(1000); refreshCapabilities() }
+    }
+
+    fun wakeActivated(){
+        mutableState.update{it.copy(voiceInteraction=true,error=null,phase=if(it.phase in setOf(AssistantPhase.ERROR,AssistantPhase.PAUSED))AssistantPhase.READY else it.phase)}
+        visuals.activate();effects.userPlay(com.jarvis.assistant.sentinel.SentinelSound.WAKE)
+        activationEffects?.cancel()
+        val activation=visuals.state.value.activationId
+        activationEffects=scope.launch {
+            delay(400);if(visuals.state.value.activationId==activation && visuals.state.value.mode !in listOf(com.jarvis.assistant.sentinel.SentinelMode.DORMANT,com.jarvis.assistant.sentinel.SentinelMode.RETURNING_TO_WALLPAPER))effects.play(com.jarvis.assistant.sentinel.SentinelSound.REACTOR)
+            delay(1700);if(visuals.state.value.activationId==activation){visuals.settle();effects.play(com.jarvis.assistant.sentinel.SentinelSound.READY)}
+        }
+    }
+    fun dismissHud(){
+        activationEffects?.cancel();effects.silence()
+        cancelAuthorization(false);cancelSession();clearScreenContext()
+        mutableState.update { it.copy(phase=AssistantPhase.READY,voiceInteraction=false,transcript="",pendingAction=null) }
+        resumeWake();visuals.dismiss()
+    }
+    fun endListening(){
+        activationEffects?.cancel()
+        cancelSession();mutableState.update{it.copy(phase=AssistantPhase.READY,voiceInteraction=false,transcript="",pendingAction=null)};resumeWake()
     }
 
     fun refreshCapabilities() {
@@ -196,13 +274,14 @@ class AssistantRuntime(private val context: Context) {
     fun listen() {
         if (locked() && !store.settings.value.allowLockedChat) { fail(unlockMessage()); return }
         cancelSession()
+        val listeningGeneration=sessionGeneration
         pauseWake()
         val lang = language()
-        mutableState.update { it.copy(phase = AssistantPhase.LISTENING, transcript = "", error = null, pendingAction = null) }
+        mutableState.update { it.copy(phase = AssistantPhase.LISTENING, voiceInteraction=true, transcript = "", error = null, pendingAction = null) }
         speech.listen(lang, store.settings.value.allowNetworkSpeech,
-            onPartial = { text -> mutableState.update { it.copy(transcript = text) } },
-            onResult = { text -> submit(text, true) },
-            onError = { message -> fail(message); resumeWake() },
+            onPartial = { text -> if(listeningGeneration==sessionGeneration)mutableState.update { it.copy(transcript = text) } },
+            onResult = { text -> if(listeningGeneration==sessionGeneration)submit(text, true) },
+            onError = { message -> if(listeningGeneration==sessionGeneration){if(message.startsWith("10-second"))endListening() else { fail(message); resumeWake() }} },
         )
     }
 
@@ -222,8 +301,8 @@ class AssistantRuntime(private val context: Context) {
         val pending = state.value.pendingAction
         if (pending != null) {
             when (LanguageRules.confirmation(text)) {
-                true -> { confirmAction(pending.id); return }
-                false -> { cancelAction(); return }
+                true -> { lastRequestWasVoice=voiced; confirmAction(pending.id); return }
+                false -> { cancelAction(voiced); return }
                 null -> Unit
             }
         }
@@ -231,6 +310,7 @@ class AssistantRuntime(private val context: Context) {
         pauseWake()
         privateTurn = !isLocked
         lastRequestWasVoice = voiced
+        mutableState.update{it.copy(voiceInteraction=voiced)}
         val lang = LanguageRules.languageRequest(text) ?: LanguageRules.detect(text, language())
         lastReplyLanguage = lang
         val generation = sessionGeneration
@@ -250,7 +330,7 @@ class AssistantRuntime(private val context: Context) {
                     } else if (ScreenContextPolicy.isCaptureRequest(text)) requestScreenCapture(lang)
                     else if (screenSession.current(SystemClock.elapsedRealtime()) != null && ScreenContextPolicy.isFollowUp(text)) generate(text, lang, uris, generation)
                     else {
-                        val local = phone.route(text, lang) ?: tools.route(text, lang)
+                        val local = weatherQuestion(text,lang) ?: phone.route(text, lang) ?: tools.route(text, lang)
                         if (local != null) { clearScreenContext(); awaitScreenQuestion = false; local }
                         else generate(text, lang, uris, generation)
                     }
@@ -268,6 +348,17 @@ class AssistantRuntime(private val context: Context) {
                 }
             }
         }
+    }
+
+    private suspend fun weatherQuestion(text:String,lang:AppLanguage):AssistantReply? {
+        if(!com.jarvis.assistant.sentinel.WeatherQuestion.isRequest(text))return null
+        val general=com.jarvis.assistant.sentinel.WeatherQuestion.matches(text)
+        val city=if(general)null else com.jarvis.assistant.tools.UtilityIntentParser.weatherCity(text)
+        if(city==null && !general)return null
+        return try{
+            val reading=hud.weatherForQuestion(city)
+            AssistantReply(com.jarvis.assistant.sentinel.WeatherQuestion.describe(reading,lang,hud.state.value.settings.fahrenheit),listOf(com.jarvis.assistant.core.SourceLink("Open-Meteo","https://open-meteo.com/")))
+        }catch(e:CancellationException){throw e}catch(e:Exception){AssistantReply(e.message ?: "Weather unavailable. Configure a city in Settings.")}
     }
 
     private suspend fun generate(text: String, lang: AppLanguage, uris: List<Uri>, generation: Long, publicLocked: Boolean = false): AssistantReply = coroutineScope {
@@ -327,11 +418,11 @@ class AssistantRuntime(private val context: Context) {
         try {
             val answer = if (settings.provider == "local") {
                 val localPrompt = LocalContextBudget.build(text, listOf(selectedText, screenContext).joinToString("\n"), memory)
-                brain.answer(localPrompt, lang, emptyList(), onChunk)
+                brain.answer(localPrompt, lang, emptyList(), onChunk, concise=hud.state.value.settings.sentinel.conciseReplies)
             } else {
                 if (screen != null && (!screen.cloudConsent || screen.provider != settings.provider)) throw ProviderException("Capture the screen again and approve sharing with the selected provider.")
                 llm.answer(text, lang, contextText.take(24_000), if (generalHistoryAllowed) conversation.snapshot() else emptyList(), onChunk,
-                    screenshot = screen?.jpeg?.takeIf { settings.provider == "gemini" }, includeIdentity = !publicLocked)
+                    screenshot = screen?.jpeg?.takeIf { settings.provider == "gemini" }, includeIdentity = !publicLocked, concise=hud.state.value.settings.sentinel.conciseReplies)
             }
             if (streamingSpeech) chunks.finish().takeIf { it.isNotBlank() }?.let { audioQueue.trySend(it) }
             audioQueue.close(); speaker?.join()
@@ -343,21 +434,23 @@ class AssistantRuntime(private val context: Context) {
     }
 
     private suspend fun deliver(reply: AssistantReply, lang: AppLanguage, voiced: Boolean, generation: Long) {
-        store.addMessage(ChatMessage(role = MessageRole.ASSISTANT, text = reply.text, sources = reply.sources))
-        mutableState.update { it.copy(transcript = "", pendingAction = reply.action, phase = AssistantPhase.READY) }
-        if (reply.speechHandled) resumeWake()
-        else if (voiced || store.settings.value.speakReplies) speak(reply.text, lang, generation, reply.allowCloudSpeech) else resumeWake()
+        store.addMessage(ChatMessage(role=MessageRole.ASSISTANT,text=reply.text,sources=reply.sources))
+        val speakReply=!reply.speechHandled && (voiced || store.settings.value.speakReplies)
+        if(reply.speechHandled)resumeWake(followUp=lastRequestWasVoice && !locked() || awaitScreenQuestion)
+        else if(!speakReply)resumeWake(followUp=awaitScreenQuestion)
+        mutableState.update{it.copy(transcript="",pendingAction=reply.action,phase=if(speakReply)AssistantPhase.SPEAKING else AssistantPhase.READY)}
+        if(speakReply)speak(reply.text,lang,generation,reply.allowCloudSpeech,followUpOnDone=voiced || awaitScreenQuestion)
     }
 
-    private fun speak(text: String, lang: AppLanguage, generation: Long = sessionGeneration, allowCloudSpeech: Boolean = true) {
+    private fun speak(text: String, lang: AppLanguage, generation: Long = sessionGeneration, allowCloudSpeech: Boolean = true, followUpOnDone: Boolean = false) {
         if (locked() && (privateTurn || !store.settings.value.allowLockedChat)) { fail(unlockMessage()); return }
         val useCloudVoice = store.settings.value.useCloudVoice && allowCloudSpeech
         lastSpeechDestination = if (useCloudVoice) "openai" else "on-device"
         mutableState.update { it.copy(phase = AssistantPhase.SPEAKING) }
         val done = {
             if (generation == sessionGeneration) {
+                resumeWake(followUp = followUpOnDone && !locked())
                 mutableState.update { it.copy(phase = AssistantPhase.READY) }
-                resumeWake()
             }
         }
         val error: (String) -> Unit = { message -> if (generation == sessionGeneration) { fail(message); resumeWake() } }
@@ -386,13 +479,17 @@ class AssistantRuntime(private val context: Context) {
         mutableState.update { it.copy(pendingAction = null, phase = AssistantPhase.THINKING) }
         session = scope.launch {
             val result = tools.execute(proposal)
+            if(result in listOf("Done.","Listo.","انجام شد."))effects.play(com.jarvis.assistant.sentinel.SentinelSound.SUCCESS)
             if (generation == sessionGeneration) deliver(AssistantReply(result), lastReplyLanguage, lastRequestWasVoice, generation)
         }
     }
 
-    fun cancelAction() {
-        tools.cancelPendingActions()
-        mutableState.update { it.copy(pendingAction = null) }
+    fun cancelAction() = cancelAction(false)
+    private fun cancelAction(voiced:Boolean) {
+        cancelSession();tools.cancelPendingActions()
+        mutableState.update { it.copy(pendingAction=null,phase=AssistantPhase.READY,transcript="") }
+        if(voiced)speak(language().choose("Cancelled.","Cancelado.","لغو شد."),language(),allowCloudSpeech=false,followUpOnDone=true)
+        else resumeWake()
     }
 
     fun startWake() {
@@ -413,14 +510,20 @@ class AssistantRuntime(private val context: Context) {
         }
     }
 
-    fun stopWake() { WakeListenerService.disableRecovery(context); context.stopService(Intent(context, WakeListenerService::class.java)) }
+    fun stopWake() {
+        val awaiting=WakeListenerService.state.value.awaitingCommand || WakeListenerService.state.value.waitingForCapture
+        WakeListenerService.disableRecovery(context);WakeListenerService.stopImmediately()
+        context.stopService(Intent(context,WakeListenerService::class.java))
+        mutableState.update{it.copy(wakeEnabled=false,voiceWindowDeadline=0,followUpArming=false,phase=if(awaiting && it.phase==AssistantPhase.LISTENING)AssistantPhase.READY else it.phase)}
+    }
     private fun pauseWake() {
         if (WakeListenerService.state.value.running) context.startService(Intent(context, WakeListenerService::class.java).setAction(WakeListenerService.ACTION_PAUSE))
     }
-    private fun resumeWake() {
+    private fun resumeWake(followUp: Boolean = false) {
         if (screenCapturePending()) return
         if (WakeListenerService.state.value.running) runCatching {
-            context.startService(Intent(context, WakeListenerService::class.java).setAction(WakeListenerService.ACTION_RESUME).putExtra("follow_up", awaitScreenQuestion || (lastRequestWasVoice && !locked()) || state.value.authorization?.status==com.jarvis.assistant.hud.AuthorizationStatus.AWAITING_CODEX))
+            mutableState.update{it.copy(followUpArming=followUp)}
+            context.startService(Intent(context, WakeListenerService::class.java).setAction(WakeListenerService.ACTION_RESUME).putExtra("follow_up", followUp))
         }
     }
 
@@ -541,7 +644,7 @@ class AssistantRuntime(private val context: Context) {
         cancelAuthorization(false); cancelSession(); pauseWake()
         authorization.begin(description); authorizedAction=action
         mutableState.update { it.copy(authorization=authorization.awaiting(), phase=AssistantPhase.READY, pendingAction=null, error=null) }
-        resumeWake()
+        resumeWake(followUp = true)
         authorizationExpiry=scope.launch { delay(90_000); mutableState.update { it.copy(authorization=authorization.current()) }; authorizedAction=null }
     }
     fun requestIdentity() {
@@ -594,7 +697,7 @@ class AssistantRuntime(private val context: Context) {
         cancelSession()
         wakeDownload?.cancel(); brainDownload?.cancel(); voiceDownload?.cancel()
         stopWake()
-        mutableState.update { it.copy(phase = AssistantPhase.PAUSED, transcript = "", pendingAction = null, modelProgress = null, brainProgress = null, voiceProgress = null) }
+        mutableState.update { it.copy(phase = AssistantPhase.PAUSED, voiceInteraction=false,voiceWindowDeadline=0,followUpArming=false, transcript = "", pendingAction = null, modelProgress = null, brainProgress = null, voiceProgress = null) }
     }
 
     private fun cancelSession() {

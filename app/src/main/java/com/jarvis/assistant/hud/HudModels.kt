@@ -14,11 +14,11 @@ data class BatteryReading(val percent: Int? = null, val charging: Boolean = fals
     }
 }
 data class Telemetry(val battery: BatteryReading = BatteryReading(), val epochMillis: Long = System.currentTimeMillis(),
-    val timezone: String = ZoneId.systemDefault().id, val system24Hour: Boolean = false,
+    val timezone: String = ZoneId.systemDefault().id, val system24Hour: Boolean = false, val systemMotion:Boolean=true,
     val network: String = "Unavailable", val internetValidated: Boolean = false, val powerSaver: Boolean = false,
     val systemAvailableBytes: Long? = null, val systemTotalBytes: Long? = null, val appPssKiB: Int? = null)
 
-data class HudSettings(val weatherCity: String = "", val fahrenheit: Boolean = false, val clockFormat: String = "system",
+data class HudSettings(val sentinel:com.jarvis.assistant.sentinel.SentinelSettings = com.jarvis.assistant.sentinel.SentinelSettings(), val weatherCity: String = "", val fahrenheit: Boolean = false, val clockFormat: String = "system",
     val animationProfile: String = "balanced", val reducedMotion: Boolean = false, val autoBatterySaver: Boolean = true,
     val animationIntensity: Float = .7f, val accent: String = "cyan", val soundEffects: Boolean = true,
     val autoDismissSeconds: Int = 0, val codexEnabled: Boolean = true,
@@ -39,7 +39,7 @@ object ClockDisplay {
 }
 object HudMotion {
     fun fps(settings: HudSettings, battery: BatteryReading, powerSaver: Boolean, systemMotion: Boolean): Int = when {
-        settings.reducedMotion || !systemMotion -> 0
+        settings.reducedMotion || !systemMotion || settings.sentinel.animationSpeed==0f -> 0
         powerSaver || settings.animationProfile == "saver" || settings.autoBatterySaver && (battery.percent ?: 100) < 10 -> 8
         (battery.percent ?: 100) < 20 -> 12
         settings.animationProfile == "cinematic" -> 30

@@ -42,13 +42,14 @@ class LlmClient internal constructor(
         onChunk: (String) -> Unit,
         screenshot: ByteArray? = null,
         includeIdentity: Boolean = true,
+        concise:Boolean=true,
     ): String {
         val settings = currentSettings()
         val provider = settings.provider
         val key = savedKey(provider)
         if (key.isBlank()) throw MissingApiKeyException(language)
         val model = BrainProtocol.model(provider, settings.model)
-        val body = BrainProtocol.requestBody(provider, model, BrainProtocol.systemPrompt(language, if (includeIdentity) settings.name else ""), userText, context, history, screenshot)
+        val body = BrainProtocol.requestBody(provider, model, BrainProtocol.systemPrompt(language, if (includeIdentity) settings.name else "", concise=concise), userText, context, history, screenshot)
         return stream(http.newCall(request(provider, model, key, body)), provider, language, onChunk)
     }
 

@@ -2,6 +2,9 @@ package com.jarvis.assistant.ui
 
 import android.animation.ValueAnimator
 import android.os.SystemClock
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -17,6 +20,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.semantics.Role
+import com.jarvis.assistant.sentinel.*
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.semantics.contentDescription
@@ -27,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.jarvis.assistant.core.*
 import com.jarvis.assistant.hud.*
@@ -42,7 +49,7 @@ private val Back=Color(0xFF050C14)
 
 @Composable
 internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composable ColumnScope.()->Unit) {
-    Column(modifier.background(Brush.verticalGradient(listOf(Back,Color.Black)),CutCornerShape(10.dp)).border(.7.dp,Cyan.copy(alpha=.48f),CutCornerShape(10.dp)).padding(12.dp),verticalArrangement=Arrangement.spacedBy(7.dp)) {
+    Column(modifier.background(Brush.verticalGradient(listOf(Back,Color.Black)),CutCornerShape(10.dp)).border(.7.dp,MaterialTheme.colorScheme.primary.copy(alpha=.48f),CutCornerShape(10.dp)).padding(12.dp),verticalArrangement=Arrangement.spacedBy(7.dp)) {
         Text(title.uppercase(),color=Ice,fontSize=10.sp,letterSpacing=2.sp)
         HorizontalDivider(color=Cyan.copy(alpha=.25f))
         content()
@@ -57,31 +64,43 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
 @Composable internal fun HudDashboard(state:JarvisUiState,actions:JarvisUiActions,onSettings:()->Unit) {
     val h=state.hud; val t=h.telemetry; val s=h.settings; val l=state.settings.language
     val locale=remember(l){Locale.forLanguageTag(l.tag)}
-    val color=if(s.accent=="purple")Purple else Cyan
+    var conversation by remember{mutableStateOf(false)}
+    var presentationNow by remember{mutableLongStateOf(SystemClock.elapsedRealtime())}
+    val lifecycle=LocalLifecycleOwner.current.lifecycle
+    LaunchedEffect(state.sentinelVisual.activationId,lifecycle){
+        lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED){
+            while(state.sentinelVisual.activationId>0 && SystemClock.elapsedRealtime()-state.sentinelVisual.activatedAt<2100){presentationNow=SystemClock.elapsedRealtime();delay(50)}
+            presentationNow=SystemClock.elapsedRealtime()
+        }
+    }
+    val reveal=if(state.sentinelVisual.mode==SentinelMode.ACTIVATING && !s.reducedMotion && t.systemMotion)ReactorGeometry.awakening(presentationNow-state.sentinelVisual.activatedAt).panels else 1f
+    val panelMotion=Modifier.graphicsLayer{alpha=reveal}.drawBehind{drawLine(color=Color(0xFF00E5FF),start=Offset.Zero,end=Offset(size.width*reveal,0f),strokeWidth=1.dp.toPx())}
+    val color=when(s.accent){"purple"->Purple;"blue"->Color(0xFF38BDF8);else->Cyan}
     Column(Modifier.fillMaxWidth(),horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.spacedBy(12.dp)) {
         Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically){
             Column(Modifier.weight(1f)) {
                 Text("J A R V I S",color=color,fontSize=24.sp,letterSpacing=5.sp,fontWeight=FontWeight.Light)
                 Text("PERSONAL INTELLIGENCE SYSTEM",color=Dim,fontSize=8.sp,letterSpacing=2.sp)
             }
-            IconButton(onClick=onSettings){Icon(Icons.Rounded.Settings,"HUD settings",tint=color)}
+            IconButton(onClick={actions.onInteraction(SentinelSound.PANEL_OPEN);onSettings()}){Icon(Icons.Rounded.Settings,"HUD settings",tint=color)}
             IconButton(onClick=actions.onDismiss){Icon(Icons.Rounded.Close,"Dismiss Jarvis",tint=Dim)}
         }
         Text(ClockDisplay.time(t.epochMillis,t.timezone,locale,s.clockFormat,t.system24Hour),color=Ice,fontSize=38.sp,fontWeight=FontWeight.Light)
         Text(ClockDisplay.date(t.epochMillis,t.timezone,locale),color=Dim,fontSize=12.sp,textAlign=TextAlign.Center)
         Text(t.timezone,color=Dim,fontSize=10.sp)
+        CommandCountdown(state)
         val hour=java.time.Instant.ofEpochMilli(t.epochMillis).atZone(java.time.ZoneId.of(t.timezone)).hour
         Text(when(hour){in 5..11->l.choose("Good morning","Buenos días","صبح بخیر");in 12..17->l.choose("Good afternoon","Buenas tardes","عصر بخیر");else->l.choose("Good evening","Buenas noches","شب بخیر")}+state.settings.name.takeIf(String::isNotBlank)?.let {", $it"}.orEmpty(),color=Dim,fontSize=11.sp)
         BoxWithConstraints(Modifier.fillMaxWidth()) {
             val wide=maxWidth>=650.dp
             if(wide) Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(12.dp)) {
-                SystemPanel(state,Modifier.weight(1f)); HudCore(state,Modifier.weight(2f)); TelemetryPanel(state,Modifier.weight(1f))
+                SystemPanel(state,actions,Modifier.weight(1f).then(panelMotion)); HudCore(state,Modifier.weight(2f),actions); TelemetryPanel(state,Modifier.weight(1f).then(panelMotion))
             } else Column {
-                Row(horizontalArrangement=Arrangement.spacedBy(10.dp)){SystemPanel(state,Modifier.weight(1f));TelemetryPanel(state,Modifier.weight(1f))}
-                HudCore(state,Modifier.fillMaxWidth())
+                Row(horizontalArrangement=Arrangement.spacedBy(10.dp)){SystemPanel(state,actions,Modifier.weight(1f).then(panelMotion));TelemetryPanel(state,Modifier.weight(1f).then(panelMotion))}
+                HudCore(state,Modifier.fillMaxWidth(),actions)
             }
         }
-        Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(10.dp)) {
+        Row(Modifier.fillMaxWidth().then(panelMotion),horizontalArrangement=Arrangement.spacedBy(10.dp)) {
             WeatherPanel(state,actions,Modifier.weight(1f))
             HudPanel(l.choose("Quick info","Información","اطلاعات"),Modifier.weight(1f)) {
                 Reading("MEMORIES",state.memories.size.toString())
@@ -92,23 +111,32 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
             }
         }
         if(state.authorization!=null) AuthorizationPanel(state,actions)
-        HudPanel(l.choose("Live transcript","Transcripción","رونویسی زنده"),Modifier.fillMaxWidth()) {
+        HudPanel(l.choose("Live transcript","Transcripción","رونویسی زنده"),Modifier.fillMaxWidth().clickable(role=Role.Button){actions.onInteraction(SentinelSound.PANEL_OPEN);conversation=true}) {
             Text(state.transcript.ifBlank { l.choose("Tap the microphone or use your enabled wake phrase.","Toca el micrófono o usa la frase de activación.","میکروفن را لمس کنید یا عبارت بیدارباش فعال را بگویید.") },color=Ice,fontSize=15.sp)
         }
         state.messages.lastOrNull { it.role==MessageRole.ASSISTANT }?.let { message ->
             HudPanel("JARVIS",Modifier.fillMaxWidth()){Text(l.choose("Response: ","Respuesta: ","پاسخ: ")+message.text,color=Ice,fontSize=15.sp)}
         }
     }
+    if(conversation)AlertDialog(onDismissRequest={conversation=false},title={Text(l.choose("Conversation","Conversación","گفت‌وگو"))},text={
+        androidx.compose.foundation.lazy.LazyColumn(Modifier.heightIn(max=420.dp)){
+            state.messages.takeLast(30).forEach{message->item{Text("${message.role}: ${message.text}",Modifier.padding(vertical=8.dp))}}
+            item{Text(state.transcript.ifBlank{"No active transcript"})}
+        }
+    },confirmButton={TextButton(onClick={conversation=false;actions.onInteraction(SentinelSound.PANEL_CLOSE)}){Text("Close")}})
 }
-@Composable private fun SystemPanel(state:JarvisUiState,modifier:Modifier) {
+@Composable private fun SystemPanel(state:JarvisUiState,actions:JarvisUiActions,modifier:Modifier) {
     val t=state.hud.telemetry
-    HudPanel("System link",modifier){
+    var details by remember{mutableStateOf(false)}
+    HudPanel("System link",modifier.clickable(role=Role.Button){actions.onInteraction(SentinelSound.PANEL_OPEN);details=true}){
         Reading("NETWORK",t.network)
         Reading("INTERNET",if(t.internetValidated)"Validated" else "Not verified")
         Reading("AUDIO IN",if(state.audio.recording)"Recording" else "Inactive")
         Reading("WAKE WORD",state.settings.language.wakePhrase)
         Text(state.wakeStatus.ifBlank {"Wake listening off"},color=Dim,fontSize=10.sp)
     }
+    if(details)AlertDialog(onDismissRequest={details=false},title={Text("Connection status")},text={Text("Transport: ${t.network}\nAndroid validated internet: ${t.internetValidated}\nProvider: ${state.settings.provider}\n${if(state.hasApiKey)"A key is saved; Test connection verifies it." else "No provider key saved."}\n${state.brainStatus}",Modifier.heightIn(max=420.dp).verticalScroll(rememberScrollState()))},
+        confirmButton={TextButton(onClick={actions.onOpenPermission("network")}){Text("Network settings")}},dismissButton={TextButton(onClick={details=false}){Text("Close")}})
 }
 @Composable private fun TelemetryPanel(state:JarvisUiState,modifier:Modifier) {
     val t=state.hud.telemetry;val b=t.battery
@@ -121,32 +149,37 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
         Reading("HEALTH",b.health)
     }
 }
-@Composable internal fun HudCore(state:JarvisUiState,modifier:Modifier=Modifier) {
+@Composable internal fun HudCore(state:JarvisUiState,modifier:Modifier=Modifier,actions:JarvisUiActions?=null) {
     val t=state.hud.telemetry; val s=state.hud.settings; val b=t.battery
     val lifecycle=LocalLifecycleOwner.current.lifecycle
     var active by remember { mutableStateOf(lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) }
     DisposableEffect(lifecycle){val observer=LifecycleEventObserver{_,_->active=lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)};lifecycle.addObserver(observer);onDispose{lifecycle.removeObserver(observer)}}
     val fps=HudMotion.fps(s,b,t.powerSaver,ValueAnimator.areAnimatorsEnabled())
-    var angle by remember { mutableFloatStateOf(0f) }
-    LaunchedEffect(active,fps,s.animationIntensity,state.phase,state.authorization?.status) {
-        if(active && fps>0) { var last=SystemClock.elapsedRealtime();while(true){delay(1000L/fps);val now=SystemClock.elapsedRealtime();val speed=if(state.authorization?.status in listOf(AuthorizationStatus.AWAITING_CODEX,AuthorizationStatus.IDENTITY_CONFIRMATION))1f else when(state.phase){AssistantPhase.READY->2.5f;AssistantPhase.THINKING->12f;AssistantPhase.SPEAKING->6f;AssistantPhase.ERROR->1f;else->9f};angle=(angle+(now-last).coerceAtMost(100)*.001f*speed*s.animationIntensity)%360;last=now} }
+    var frameNow by remember{mutableLongStateOf(SystemClock.elapsedRealtime())}
+    var batteryDetails by remember{mutableStateOf(false)}
+    LaunchedEffect(active,fps,s.sentinel.animationSpeed,state.sentinelVisual.mode) {
+        if(active && fps>0)while(true){delay(1000L/fps);frameNow=SystemClock.elapsedRealtime()}
     }
+    val angle=ReactorGeometry.angle(if(fps>0)frameNow else 0,ReactorGeometry.speed(s,state.sentinelVisual.mode),0)
+    val boot=if(state.sentinelVisual.mode==SentinelMode.ACTIVATING && fps>0)ReactorGeometry.awakening(frameNow-state.sentinelVisual.activatedAt) else Awakening(1f,1f,1f,0f,true)
     val auth=state.authorization?.status
     val authorizing=auth in listOf(AuthorizationStatus.AUTHORIZATION_REQUIRED,AuthorizationStatus.AWAITING_CODEX,AuthorizationStatus.IDENTITY_CONFIRMATION)
-    val color=when { authorizing->Purple; auth==AuthorizationStatus.DENIED->Color(0xFFFF5368); (b.percent ?: 100)<10->Color(0xFFFF5368);(b.percent ?: 100)<20->Color(0xFFFFBF55);s.accent=="purple"->Purple;else->Cyan }
-    val ticks=remember { List(120){ val rad=it*PI*2/120;Offset(cos(rad).toFloat(),sin(rad).toFloat()) } }
-    Box(modifier.aspectRatio(1f).sizeIn(maxWidth=450.dp,maxHeight=450.dp),contentAlignment=Alignment.Center) {
+    val color=when { authorizing->Purple; state.phase==AssistantPhase.ERROR->Color(0xFFFF5368); (b.percent ?: 100)<10->Color(0xFFFF5368);(b.percent ?: 100)<20->Color(0xFFFFBF55);s.accent=="purple"->Purple;s.accent=="blue"->Color(0xFF38BDF8);else->Cyan }
+    val ticks=remember { ReactorGeometry.ticks.map{Offset(it.x,it.y)} }
+    Box(modifier.aspectRatio(1f).sizeIn(maxWidth=450.dp,maxHeight=450.dp).clickable(enabled=actions!=null,role=Role.Button,onClickLabel="Activate voice"){actions?.onMic?.invoke()},contentAlignment=Alignment.Center) {
         Canvas(Modifier.fillMaxSize().semantics { contentDescription="Battery reactor ${b.percent?.toString() ?: "unavailable"} percent" }) {
-            val r=size.minDimension*.455f; val center=Offset(size.width/2,size.height/2)
-            drawCircle(Brush.radialGradient(listOf(color.copy(alpha=.15f),color.copy(alpha=.02f),Color.Transparent),center,r),r,center)
-            ticks.forEachIndexed { i,v -> val outer=center+v*r;val inner=center+v*(r-if(i%5==0)8.dp.toPx() else 3.dp.toPx());drawLine(color.copy(alpha=if(i%5==0).8f else .4f),inner,outer,if(i%5==0)1.2.dp.toPx() else .6.dp.toPx()) }
-            val energy=if(state.audio.recording)state.audio.level else 0f
+            val r=size.minDimension*.42f*s.sentinel.reactorScale; val center=Offset(size.width/2,size.height/2)
+            drawCircle(Brush.radialGradient(listOf(color.copy(alpha=.24f*s.sentinel.ambientGlow*boot.core),color.copy(alpha=.02f),Color.Transparent),center,r),r,center)
+            ticks.forEachIndexed { i,v -> if(s.sentinel.detail=="minimal" && i%3!=0)return@forEachIndexed; val outer=center+v*r;val inner=center+v*(r-if(i%5==0)8.dp.toPx() else 3.dp.toPx());drawLine(color.copy(alpha=if(i%5==0).8f else .4f),inner,outer,if(i%5==0)1.2.dp.toPx() else .6.dp.toPx()) }
+            val energy=if(state.playback.active)state.playback.level else if(state.audio.recording && state.phase==AssistantPhase.LISTENING)state.audio.level else 0f
             drawCircle(color.copy(alpha=.09f+energy*.22f),r*.52f,center,style=Stroke((5+energy*4).dp.toPx()))
-            for(i in 0..11){val rad=(i*30f+angle*.35f)*PI/180;val rr=r*(.58f+(i%3)*.08f);drawCircle(color.copy(alpha=.35f),.8.dp.toPx(),center+Offset(cos(rad).toFloat()*rr,sin(rad).toFloat()*rr))}
-            for(ring in 0..4){val rr=r*(.44f+ring*.12f);drawCircle(color.copy(alpha=.25f),rr,center,style=Stroke(.6.dp.toPx()))}
-            for(ring in 0..2){val rr=r*(.95f-ring*.15f);val spin=angle*(if(ring%2==0)1 else -1)
-                rotate(spin,center){for(i in 0..2){ drawArc(if(i==1)Purple.copy(alpha=.85f) else color.copy(alpha=.8f),i*120f+12,if(ring==0)40f else 64f,false,Offset(center.x-rr,center.y-rr),Size(rr*2,rr*2),style=Stroke(if(ring==0)5.dp.toPx() else 2.dp.toPx()))}}
+            for(i in 0 until (s.sentinel.particleDensity*(if(s.sentinel.detail=="minimal")8 else 24)).toInt()){val rad=(i*30f+angle*.35f)*PI/180;val rr=r*(.58f+(i%3)*.08f);drawCircle(color.copy(alpha=.35f),.8.dp.toPx(),center+Offset(cos(rad).toFloat()*rr,sin(rad).toFloat()*rr))}
+            for(ring in 0..4){val rr=r*ReactorGeometry.ringScales[ring];drawCircle(color.copy(alpha=.25f),rr,center,style=Stroke(.6.dp.toPx()))}
+            for(ring in 0..2){val rr=r*ReactorGeometry.arcScales[ring];val spin=ReactorGeometry.angle(if(fps>0)frameNow else 0,ReactorGeometry.speed(s,state.sentinelVisual.mode),ring)
+                rotate(spin,center){for(i in 0..2){ drawArc(if(i==1)Purple.copy(alpha=.85f) else color.copy(alpha=.8f),i*120f+12,(if(ring==0)40f else 64f)*boot.rings,false,Offset(center.x-rr,center.y-rr),Size(rr*2,rr*2),style=Stroke(if(ring==0)5.dp.toPx() else 2.dp.toPx()))}}
             }
+            if(boot.pulse>0)drawCircle(color.copy(alpha=boot.pulse*.5f),r*(.5f+boot.pulse*.6f),center,style=Stroke(1.5.dp.toPx()))
+            if(b.charging && !b.full && s.sentinel.chargingEffects){val rr=r*1.025f;drawArc(color.copy(alpha=.7f),angle*2,36f,false,Offset(center.x-rr,center.y-rr),Size(rr*2,rr*2),style=Stroke(2.dp.toPx()))}
             val core=r*.49f
             drawCircle(Brush.radialGradient(listOf(Back,color.copy(alpha=.18f)),center,core),core,center)
             drawCircle(color,core,center,style=Stroke(1.4.dp.toPx()))
@@ -154,7 +187,7 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
             drawPath(pointer,color)
             // Mesh is decorative geometry. It never represents a sensor reading.
             for(i in -3..3){val y=center.y+i*core/4;val dx=sqrt(max(0f,core*core-(y-center.y).pow(2)));drawLine(color.copy(alpha=.10f),Offset(center.x-dx,y),Offset(center.x+dx,y),.6f)}
-            if(state.audio.recording){val values=state.audio.history; val step=core*1.45f/32
+            if(state.audio.recording && state.phase==AssistantPhase.LISTENING || state.playback.active){val values=if(state.playback.active)state.playback.history else state.audio.history; val step=core*1.45f/32
                 values.forEachIndexed { i,value -> val x=center.x-core*.725f+i*step;val height=value*core*.28f;drawLine(Purple,Offset(x,center.y+core*.55f-height),Offset(x,center.y+core*.55f+height),1.4.dp.toPx()) }
             }
             for(i in 0..3){val rad=i*PI/2;val v=Offset(cos(rad).toFloat(),sin(rad).toFloat());drawLine(color,center+v*(r*.97f),center+v*(r*1.06f),1.3.dp.toPx())}
@@ -162,16 +195,18 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
         Column(horizontalAlignment=Alignment.CenterHorizontally,modifier=Modifier.fillMaxWidth(.48f)) {
             if(authorizing) Icon(Icons.Rounded.Lock,"Authorization required",Modifier.size(16.dp),tint=Purple)
             Text(if(authorizing)"CODEX" else when(state.phase){AssistantPhase.LISTENING->"LISTENING";AssistantPhase.SPEAKING->"SPEAKING";AssistantPhase.THINKING->"THINKING";AssistantPhase.ERROR->"ATTENTION";else->"READY"},color=Ice,fontSize=10.sp,letterSpacing=2.sp)
-            Text(b.percent?.let {"$it%"} ?: "—",color=Ice,fontSize=44.sp,fontWeight=FontWeight.Light)
+            Text(b.percent?.let {"$it%"} ?: "—",modifier=Modifier.clickable(enabled=actions!=null,role=Role.Button,onClickLabel="Battery details"){actions?.onInteraction?.invoke(SentinelSound.PANEL_OPEN);batteryDetails=true},color=Ice,fontSize=44.sp,fontWeight=FontWeight.Light)
             Text(if(b.full)"FULL" else if(b.charging)"CHARGING · ${b.source}" else "BATTERY",color=color,fontSize=9.sp,textAlign=TextAlign.Center)
         }
-        Text(if(state.audio.recording)"LIVE MIC · ${state.audio.source}" else if(state.phase==AssistantPhase.SPEAKING)"SPEAKING · DECORATIVE MOTION" else "${s.animationProfile.uppercase()} · ${if(fps==0)"STILL" else "$fps FPS CAP"}",color=Dim,fontSize=8.sp,modifier=Modifier.align(Alignment.BottomCenter))
+        Text(if(state.playback.active)"LIVE PCM PLAYBACK · NEURAL VOICE" else if(state.audio.recording)"LIVE MIC · ${state.audio.source}" else if(state.phase==AssistantPhase.SPEAKING)"SPEAKING · DECORATIVE MOTION" else "${s.animationProfile.uppercase()} · ${if(fps==0)"STILL" else "$fps FPS CAP"}",color=Dim,fontSize=8.sp,modifier=Modifier.align(Alignment.BottomCenter))
     }
+    if(batteryDetails)AlertDialog(onDismissRequest={batteryDetails=false},title={Text("Battery details")},text={Text("Charge: ${b.percent?.let{"$it%"} ?: "Unavailable"}\nCharging: ${b.charging}\nFull: ${b.full}\nSource: ${b.source}\nTemperature: ${b.temperatureC?.let{"$it °C"} ?: "Unavailable"}\nHealth: ${b.health}\nAndroid power saver: ${t.powerSaver}",Modifier.heightIn(max=420.dp).verticalScroll(rememberScrollState()))},confirmButton={TextButton(onClick={batteryDetails=false}){Text("Close")}})
 }
 @Composable private fun WeatherPanel(state:JarvisUiState,actions:JarvisUiActions,modifier:Modifier) {
     val w=state.hud.weather;val r=w.reading;val f=state.hud.settings.fahrenheit
+    var details by remember{mutableStateOf(false)}
     fun temp(v:Double?)=v?.let {"${if(f)(it*9/5+32).roundToInt() else it.roundToInt()}°${if(f)"F" else "C"}"} ?: "Unavailable"
-    HudPanel("Local conditions",modifier) {
+    HudPanel("Local conditions",modifier.clickable(role=Role.Button){actions.onInteraction(SentinelSound.PANEL_OPEN);details=true}) {
         if(r==null)Text(if(w.loading)"Fetching weather…" else "Set a city in Settings or choose approximate location.",color=Dim,fontSize=11.sp)
         else {
             Text(r.place,color=Ice,fontSize=12.sp)
@@ -187,8 +222,10 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
         w.error?.let {Text(it,color=Color(0xFFFFBF55),fontSize=10.sp)}
         if(w.loading)LinearProgressIndicator(Modifier.fillMaxWidth())
         if(state.hud.settings.weatherCity.isNotBlank())TextButton(onClick=actions.onWeatherRefresh){Text("Refresh",fontSize=11.sp)}
-        Text("Open-Meteo · weather data",color=Dim,fontSize=9.sp)
+        TextButton(onClick={actions.onOpenSource("https://open-meteo.com/")}){Text("Open-Meteo · CC BY 4.0",color=Dim,fontSize=9.sp)}
     }
+    if(details)AlertDialog(onDismissRequest={details=false},title={Text("Weather details")},text={Text(if(r==null)w.error ?: "Choose a city in Settings or request approximate location once." else WeatherQuestion.describe(r,state.settings.language,f)+"\nSunrise: ${r.sunrise ?: "Unavailable"}\nSunset: ${r.sunset ?: "Unavailable"}\n${if(w.stale)"Cached / stale" else "Current cached reading"}",Modifier.heightIn(max=420.dp).verticalScroll(rememberScrollState()))},
+        confirmButton={TextButton(onClick=actions.onWeatherRefresh,enabled=state.hud.settings.weatherCity.isNotBlank()){Text("Refresh")}},dismissButton={TextButton(onClick={details=false}){Text("Close")}})
 }
 @Composable internal fun AuthorizationPanel(state:JarvisUiState,actions:JarvisUiActions) {
     state.authorization?.let { request ->
@@ -247,3 +284,14 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
     }
 }
 @Composable private fun HudToggle(label:String,checked:Boolean,onChange:(Boolean)->Unit){Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically){Text(label,Modifier.weight(1f),color=Ice);Switch(checked,onChange)}}
+
+@Composable private fun CommandCountdown(state:JarvisUiState){
+    val lifecycle=LocalLifecycleOwner.current.lifecycle
+    var seconds by remember(state.voiceWindowDeadline){mutableIntStateOf(((state.voiceWindowDeadline-SystemClock.elapsedRealtime()+999)/1000).toInt().coerceAtLeast(0))}
+    LaunchedEffect(state.voiceWindowDeadline,lifecycle){lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED){
+        while(state.voiceWindowDeadline>SystemClock.elapsedRealtime()){
+            seconds=((state.voiceWindowDeadline-SystemClock.elapsedRealtime()+999)/1000).toInt().coerceAtLeast(0);delay(200)
+        };seconds=0
+    }}
+    Text(if(seconds>0)"COMMAND WINDOW · ${seconds}s" else if(state.followUpArming)"MIC REARMING · FOLLOW-UP NEXT" else if(state.phase==AssistantPhase.LISTENING)"MANUAL CAPTURE · UP TO 10s" else if(state.wakeEnabled)"WAKE WORD ONLY · ${state.settings.language.wakePhrase}" else "WAKE OFF · TAP MIC",color=if(seconds>0)Cyan else Dim,fontSize=10.sp)
+}

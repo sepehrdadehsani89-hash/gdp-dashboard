@@ -1,4 +1,6 @@
 <resources>
     <string name="app_name">Jarvis</string>
     <string name="accessibility_description">Optional live screen access for Jarvis. Reads text, taps a named control or edits a focused draft only on your explicit request. Passwords and protected apps are excluded. Sending and destructive controls must be operated manually.</string>
+    <string name="sentinel_wallpaper_name">Jarvis · Sentinel</string>
+    <string name="sentinel_wallpaper_description">Native battery, clock and optional weather. Apply using Android. Microphone listening is enabled separately inside Jarvis.</string>
 </resources>

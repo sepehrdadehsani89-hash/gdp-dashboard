@@ -9,6 +9,8 @@ import com.jarvis.assistant.core.PendingAction
 import com.jarvis.assistant.core.ConnectionCheck
 
 data class JarvisUiState(
+    val playback:com.jarvis.assistant.sentinel.PlaybackReading = com.jarvis.assistant.sentinel.PlaybackReading(),
+    val sentinelVisual:com.jarvis.assistant.sentinel.SentinelVisualState = com.jarvis.assistant.sentinel.SentinelVisualState(),
     val hud: com.jarvis.assistant.hud.HudState = com.jarvis.assistant.hud.HudState(),
     val audio: com.jarvis.assistant.hud.AudioReading = com.jarvis.assistant.hud.AudioReading(),
     val authorization: com.jarvis.assistant.hud.AuthorizationRequest? = null,
@@ -21,6 +23,10 @@ data class JarvisUiState(
     val transcript: String = "",
     val error: String? = null,
     val wakeStatus: String = "",
+    val wakeEnabled:Boolean=false,
+    val followUpArming:Boolean=false,
+    val voiceInteraction:Boolean=false,
+    val voiceWindowDeadline: Long = 0,
     val modelProgress: Float? = null,
     val hasApiKey: Boolean = false,
     val hasMicrophone: Boolean = false,
@@ -36,6 +42,8 @@ data class JarvisUiState(
 )
 
 data class JarvisUiActions(
+    val onInteraction: (com.jarvis.assistant.sentinel.SentinelSound)->Unit = {},
+    val onPreviewWallpaper: ()->Unit = {},
     val onSaveHud: (com.jarvis.assistant.hud.HudSettings) -> Unit = {},
     val onWeatherRefresh: () -> Unit = {},
     val onApproximateWeather: () -> Unit = {},

@@ -34,6 +34,9 @@ import com.jarvis.assistant.core.choose
 
 class MainActivity : ComponentActivity() {
     private val runtime get() = (application as JarvisApplication).runtime
+    private var sentinelRequest by androidx.compose.runtime.mutableIntStateOf(0)
+    private var wakeOpened=false
+    private var touchedAfterWake=false
     private var settingsRequest by androidx.compose.runtime.mutableIntStateOf(0)
     private var micAfterGrant = false
     private var authentication: android.os.CancellationSignal? = null
@@ -65,9 +68,9 @@ class MainActivity : ComponentActivity() {
                 override fun onAuthenticationError(code:Int,message:CharSequence){authentication=null;runtime.completeIdentity(request.id,false)}
             })
     }
-    override fun onUserInteraction(){super.onUserInteraction();lastInteraction=android.os.SystemClock.elapsedRealtime()}
-    override fun onStart(){super.onStart(); runtime.hud.startVisible(this)}
-    override fun onStop(){runtime.hud.stopVisible(this);super.onStop()}
+    override fun onUserInteraction(){super.onUserInteraction();lastInteraction=android.os.SystemClock.elapsedRealtime();if(wakeOpened)touchedAfterWake=true}
+    override fun onStart(){super.onStart();visibleActivities.incrementAndGet(); runtime.hud.startVisible(this)}
+    override fun onStop(){runtime.hud.stopVisible(this);visibleActivities.decrementAndGet();super.onStop()}
     override fun onDestroy(){authentication?.cancel();super.onDestroy()}
     private val microphone = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         runtime.refreshCapabilities()
@@ -92,6 +95,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun folderMenu() {
+        runtime.effects.play(com.jarvis.assistant.sentinel.SentinelSound.PANEL_OPEN)
         val choices = if (folders.root == null) arrayOf("Connect folder (read only)") else arrayOf("Browse connected folder", "Connect another folder", "Disconnect folder")
         AlertDialog.Builder(this).setTitle("Connected folder").setItems(choices) { _, index ->
             when (choices[index]) {
@@ -122,10 +126,13 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if(intent.getBooleanExtra("open_settings",false))settingsRequest++
+        if(intent.getBooleanExtra("sentinel_settings",false))sentinelRequest++
+        wakeOpened=intent.getBooleanExtra("sentinel_wake",false)
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
             navigationBarStyle = SystemBarStyle.dark(Color.rgb(8, 15, 25)),
         )
+        onBackPressedDispatcher.addCallback(this,object:androidx.activity.OnBackPressedCallback(true){override fun handleOnBackPressed(){dismissHud()}})
         setContent {
             val state by runtime.state.collectAsStateWithLifecycle()
             androidx.compose.runtime.LaunchedEffect(state.authorization) {
@@ -141,29 +148,39 @@ class MainActivity : ComponentActivity() {
                     while(true){kotlinx.coroutines.delay(1000);if(lifecycle.currentState.isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED) && android.os.SystemClock.elapsedRealtime()-lastInteraction>seconds*1000){finish();break}}
                 }
             }
+            androidx.compose.runtime.LaunchedEffect(state.sentinelVisual.mode,state.hud.settings.sentinel.returnOnTimeout){
+                if(state.sentinelVisual.mode==com.jarvis.assistant.sentinel.SentinelMode.RETURNING_TO_WALLPAPER && wakeOpened && !touchedAfterWake && state.hud.settings.sentinel.returnOnTimeout){
+                    kotlinx.coroutines.delay(if(state.hud.settings.reducedMotion)0 else 600)
+                    if(!touchedAfterWake && runtime.state.value.phase==com.jarvis.assistant.core.AssistantPhase.READY)finish()
+                }
+            }
             JarvisAppUi(state, JarvisUiActions(
-                onSaveHud = runtime::saveHud,
+                onInteraction = runtime.effects::userPlay,
+                onPreviewWallpaper = ::previewWallpaper,
+                onSaveHud = {runtime.effects.play(com.jarvis.assistant.sentinel.SentinelSound.BUTTON);runtime.saveHud(it)},
                 onWeatherRefresh = { runtime.hud.refreshWeather() },
                 onApproximateWeather = ::approximateWeather,
                 onCodex = runtime::requestIdentity,
                 onCancelAuthorization = { authentication?.cancel(); runtime.cancelAuthorization() },
-                onDismiss = ::finish,
+                onDismiss = ::dismissHud,
                 onSaveMemory = runtime::saveMemory,
                 onCategory = runtime::setCategory,
-                onSend = { runtime.submit(it) },
+                onSend = { runtime.effects.userPlay(com.jarvis.assistant.sentinel.SentinelSound.BUTTON);runtime.submit(it) },
                 onMic = {
-                    if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) runtime.listen()
+                    if(runtime.state.value.phase==com.jarvis.assistant.core.AssistantPhase.LISTENING)runtime.endListening()
+                    else if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) runtime.listen()
                     else { micAfterGrant = true; microphone.launch(Manifest.permission.RECORD_AUDIO) }
                 },
                 onStop = runtime::stopEverything,
-                onLanguage = runtime::setLanguage,
+                onLanguage = {runtime.effects.userPlay(com.jarvis.assistant.sentinel.SentinelSound.BUTTON);runtime.setLanguage(it)},
                 onSaveSettings = { value, key ->
+                    runtime.effects.play(com.jarvis.assistant.sentinel.SentinelSound.BUTTON)
                     val old=runtime.state.value.settings
                     if(old.onboardingComplete && (key.isNotBlank() || value.allowLockedChat!=old.allowLockedChat || value.shareSavedMemories!=old.shareSavedMemories || value.useCloudVoice!=old.useCloudVoice))runtime.protect("Change privacy or provider credentials") { runtime.saveSettings(value,key) }
                     else runtime.saveSettings(value,key)
                 },
-                onListGeminiModels = runtime::listGeminiModels,
-                onTestProvider = runtime::testProvider,
+                onListGeminiModels = {key->runtime.effects.userPlay(com.jarvis.assistant.sentinel.SentinelSound.PROCESSING);runtime.listGeminiModels(key)},
+                onTestProvider = {settings,key->runtime.effects.userPlay(com.jarvis.assistant.sentinel.SentinelSound.PROCESSING);runtime.testProvider(settings,key)},
                 onPlayConnectionTest = runtime::playConnectionSample,
                 onRememberDelete = { id -> runtime.protect("Delete saved memory") { runtime.deleteMemory(id) } },
                 onClearConversation = { runtime.protect("Delete conversation history") { runtime.clearConversation() } },
@@ -179,26 +196,43 @@ class MainActivity : ComponentActivity() {
                 onDownloadVoice = runtime::downloadVoice,
                 onVoiceCheck = runtime::voiceCheck,
                 onFolders = ::folderMenu,
-                onSharePhotos = runtime::sharePhotos,
-                onUseLocal = runtime::useLocal,
-                onPickFiles = { documents.launch(arrayOf("text/*", "application/pdf", "application/json")) },
-                onPickPhotos = { documents.launch(arrayOf("image/*")) },
+                onSharePhotos = {runtime.effects.userPlay(com.jarvis.assistant.sentinel.SentinelSound.PANEL_OPEN);runtime.sharePhotos()},
+                onUseLocal = {runtime.effects.userPlay(com.jarvis.assistant.sentinel.SentinelSound.BUTTON);runtime.useLocal()},
+                onPickFiles = { runtime.effects.userPlay(com.jarvis.assistant.sentinel.SentinelSound.PANEL_OPEN);documents.launch(arrayOf("text/*", "application/pdf", "application/json")) },
+                onPickPhotos = { runtime.effects.userPlay(com.jarvis.assistant.sentinel.SentinelSound.PANEL_OPEN);documents.launch(arrayOf("image/*")) },
                 onClearAttachments = runtime::clearAttachments,
                 onOpenPermission = ::openPermission,
                 onConfirmAction = runtime::confirmAction,
                 onCancelAction = runtime::cancelAction,
                 onOpenSource = ::openSource,
-            ), settingsRequest)
+            ), settingsRequest, sentinelRequest)
         }
     }
 
-    override fun onNewIntent(intent:Intent){super.onNewIntent(intent);setIntent(intent);if(intent.getBooleanExtra("open_settings",false))settingsRequest++}
+    override fun onNewIntent(intent:Intent){super.onNewIntent(intent);setIntent(intent)
+        if(intent.getBooleanExtra("open_settings",false)){settingsRequest++;wakeOpened=false;touchedAfterWake=true}
+        if(intent.getBooleanExtra("sentinel_settings",false))sentinelRequest++
+        if(intent.getBooleanExtra("sentinel_wake",false)){wakeOpened=true;touchedAfterWake=false}
+    }
+    private fun dismissHud(){runtime.dismissHud();finish()}
+    private fun previewWallpaper(){
+        runtime.effects.play(com.jarvis.assistant.sentinel.SentinelSound.PANEL_OPEN)
+        val component=android.content.ComponentName(this,com.jarvis.assistant.sentinel.JarvisWallpaperService::class.java)
+        val preview=Intent(android.app.WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER).putExtra(android.app.WallpaperManager.EXTRA_LIVE_WALLPAPER_COMPONENT,component)
+        try{startActivity(preview)}catch(_:ActivityNotFoundException){
+            runCatching{startActivity(Intent(android.app.WallpaperManager.ACTION_LIVE_WALLPAPER_CHOOSER))}.onFailure{
+                AlertDialog.Builder(this).setTitle("Wallpaper preview unavailable").setMessage("This Android build has no compatible live-wallpaper picker. You can still use the Jarvis assistant normally.").setPositiveButton("Close",null).show()
+            }
+        }
+    }
 
     override fun onResume() { super.onResume(); runtime.refreshCapabilities() }
 
     private fun openPermission(name: String) {
+        runtime.effects.play(if(name=="licenses")com.jarvis.assistant.sentinel.SentinelSound.PANEL_OPEN else com.jarvis.assistant.sentinel.SentinelSound.PERMISSION)
         when (name) {
             "licenses" -> showLicenses()
+            "network" -> openSettings(Intent(Settings.ACTION_WIRELESS_SETTINGS))
             "microphone" -> microphone.launch(Manifest.permission.RECORD_AUDIO)
             "notifications" -> if (Build.VERSION.SDK_INT >= 33) optionalPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
                 else openSettings(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, packageName))
@@ -218,7 +252,7 @@ class MainActivity : ComponentActivity() {
         val notices = assets.open("legal/THIRD_PARTY_NOTICES.md").bufferedReader().use { it.readText() }
         val license = assets.open("legal/LICENSE").bufferedReader().use { it.readText() }
         val text = TextView(this).apply {
-            this.text = "$notices\n\n$license"
+            this.text = "$notices\n\n$license\n\n" + assets.open("legal/SENTINEL_SOUND_LICENSE.txt").bufferedReader().use{it.readText()}
             textSize = 13f
             setPadding(32, 24, 32, 24)
             setTextIsSelectable(true)
@@ -241,5 +275,9 @@ class MainActivity : ComponentActivity() {
         val uri = runCatching { Uri.parse(url) }.getOrNull() ?: return
         if (uri.scheme != "https" || uri.host.isNullOrBlank() || uri.userInfo != null) return
         runCatching { startActivity(Intent(Intent.ACTION_VIEW, uri)) }
+    }    companion object {
+        private val visibleActivities=java.util.concurrent.atomic.AtomicInteger()
+        val isVisible:Boolean get()=visibleActivities.get()>0
     }
+
 }

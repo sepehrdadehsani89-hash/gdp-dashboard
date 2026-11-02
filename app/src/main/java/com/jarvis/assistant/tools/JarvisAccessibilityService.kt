@@ -20,6 +20,7 @@ class JarvisAccessibilityService : AccessibilityService() {
     companion object {
         @Volatile private var current = WeakReference<JarvisAccessibilityService>(null)
         val connected: Boolean get() = current.get() != null
+        fun activePackage():String? = current.get()?.rootInActiveWindow?.let { root->try{root.packageName?.toString()}finally{@Suppress("DEPRECATION")root.recycle()} }
 
         fun snapshot(context: Context, forCapture: Boolean = false): ScreenReadResult {
             if (context.getSystemService(KeyguardManager::class.java).isDeviceLocked) return ScreenReadResult(null, ScreenFailure.LOCKED)

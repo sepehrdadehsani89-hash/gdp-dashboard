@@ -165,11 +165,12 @@ class LocalBrain(context: Context) {
         language: AppLanguage,
         history: List<ChatMessage>,
         onChunk: (String) -> Unit,
+        concise:Boolean=true,
     ): String = withContext(Dispatchers.IO) {
         inferenceMutex.withLock {
             check(modelReady()) { "Download the on-device model in Settings first. No API key is needed." }
             check(nativeAvailable) { "The local AI runtime is unavailable on this phone architecture." }
-            val prompt = LocalPromptBuilder.build(text, language, history).toByteArray(Charsets.UTF_8)
+            val prompt = LocalPromptBuilder.build(text, language, history, concise).toByteArray(Charsets.UTF_8)
             if (handle == 0L) handle = nativeCreate(modelFile.absolutePath)
             check(handle != 0L) { "Could not initialize the local AI runtime." }
             currentCoroutineContext().ensureActive()
@@ -180,7 +181,7 @@ class LocalBrain(context: Context) {
                     try { awaitCancellation() } finally { nativeCancel(activeHandle) }
                 }
                 try {
-                    nativeGenerate(activeHandle, prompt, 256, object : TokenReceiver {
+                    nativeGenerate(activeHandle, prompt, if(concise)256 else 512, object : TokenReceiver {
                         override fun onToken(bytes: ByteArray) {
                             onChunk(bytes.toString(Charsets.UTF_8))
                         }

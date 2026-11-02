@@ -28,6 +28,7 @@ class HudRepository(private val context:Context) {
     val state=mutable.asStateFlow()
     private var visible=false
     private val visibleOwners=mutableSetOf<Any>()
+    private val weatherOwners=mutableSetOf<Any>()
     private var job:Job?=null
     private var weatherJob:Job?=null
     private var generation=0L
@@ -43,9 +44,13 @@ class HudRepository(private val context:Context) {
         override fun onCapabilitiesChanged(n:Network,c:NetworkCapabilities){ refresh() }
         override fun onLost(n:Network){ refresh() }
     }
-    fun startVisible(owner:Any=this){
+    fun startVisible(owner:Any=this,includeWeather:Boolean=true){
+        val addedWeather=includeWeather && weatherOwners.add(owner)
         if(!visibleOwners.add(owner))return
-        if(visible)return
+        if(visible){
+            if(addedWeather && state.value.weather.stale && !state.value.weather.loading && state.value.settings.weatherCity.isNotBlank())refreshWeather()
+            return
+        }
         visible=true
         val sticky=ContextCompat.registerReceiver(context,receiver,IntentFilter().apply {
             addAction(Intent.ACTION_BATTERY_CHANGED); addAction(Intent.ACTION_TIME_TICK); addAction(Intent.ACTION_TIME_CHANGED)
@@ -58,21 +63,33 @@ class HudRepository(private val context:Context) {
             ?: context.registerReceiver(null,IntentFilter(Intent.ACTION_BATTERY_CHANGED))
         initial?.let { i->mutable.update { it.copy(telemetry=it.telemetry.copy(battery=battery(i))) } }
         context.contentResolver.registerContentObserver(Settings.System.getUriFor(Settings.System.TIME_12_24),false,observer)
+        context.contentResolver.registerContentObserver(Settings.Global.getUriFor(Settings.Global.ANIMATOR_DURATION_SCALE),false,observer)
         runCatching { cm.registerDefaultNetworkCallback(callback,handler) }
         refresh(); memory()
         val s=state.value.settings
         val cached=weather.cached(s.weatherCity)
         mutable.update { it.copy(weather=it.weather.copy(reading=cached,stale=WeatherRepository.stale(cached,System.currentTimeMillis()))) }
-        if(s.weatherCity.isNotBlank() && state.value.weather.stale) refreshWeather()
-        job=scope.launch { var ticks=0; while(isActive){ delay(30_000); memory(); ticks++; if(ticks%30==0 && state.value.settings.weatherCity.isNotBlank()) refreshWeather() } }
+        if(weatherOwners.isNotEmpty() && s.weatherCity.isNotBlank() && state.value.weather.stale) refreshWeather()
+        job=scope.launch { var ticks=0; while(isActive){ delay(30_000); memory(); ticks++; if(ticks%30==0 && weatherOwners.isNotEmpty() && state.value.settings.weatherCity.isNotBlank()) refreshWeather() } }
     }
     fun stopVisible(owner:Any=this){
         visibleOwners.remove(owner)
+        weatherOwners.remove(owner)
+        if(weatherOwners.isEmpty())cancelPassiveWeather()
         if(visibleOwners.isNotEmpty() || !visible)return
         visible=false; job?.cancel(); weatherJob?.cancel(); generation++
         runCatching{ context.unregisterReceiver(receiver) }; context.contentResolver.unregisterContentObserver(observer)
         runCatching{cm.unregisterNetworkCallback(callback)}
         mutable.update { it.copy(weather=it.weather.copy(loading=false)) }
+    }
+    fun weatherInterest(owner:Any,enabled:Boolean){
+        if(owner !in visibleOwners)return
+        val changed=if(enabled)weatherOwners.add(owner) else weatherOwners.remove(owner)
+        if(changed && enabled && state.value.weather.stale && !state.value.weather.loading && state.value.settings.weatherCity.isNotBlank())refreshWeather()
+        if(changed && !enabled && weatherOwners.isEmpty())cancelPassiveWeather()
+    }
+    private fun cancelPassiveWeather(){
+        if(weatherJob?.isActive==true){weatherJob?.cancel();generation++;mutable.update{it.copy(weather=it.weather.copy(loading=false))}}
     }
     fun clear(){
         generation++;weatherJob?.cancel();weather.clear();prefs.save(HudSettings())
@@ -86,7 +103,7 @@ class HudRepository(private val context:Context) {
     private fun refresh(){
         val caps=cm.getNetworkCapabilities(cm.activeNetwork)
         val network=when { caps==null->"Offline"; caps.hasTransport(NetworkCapabilities.TRANSPORT_VPN)->"VPN"; caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)->"Wi-Fi";caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)->"Mobile";caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)->"Ethernet";else->"Network" }
-        mutable.update { it.copy(telemetry=it.telemetry.copy(epochMillis=System.currentTimeMillis(),timezone=ZoneId.systemDefault().id,system24Hour=DateFormat.is24HourFormat(context),network=network,internetValidated=caps?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)==true,powerSaver=context.getSystemService(PowerManager::class.java).isPowerSaveMode),weather=it.weather.copy(stale=WeatherRepository.stale(it.weather.reading,System.currentTimeMillis()))) }
+        mutable.update { it.copy(telemetry=it.telemetry.copy(epochMillis=System.currentTimeMillis(),timezone=ZoneId.systemDefault().id,system24Hour=DateFormat.is24HourFormat(context),systemMotion=android.animation.ValueAnimator.areAnimatorsEnabled(),network=network,internetValidated=caps?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)==true,powerSaver=context.getSystemService(PowerManager::class.java).isPowerSaveMode),weather=it.weather.copy(stale=WeatherRepository.stale(it.weather.reading,System.currentTimeMillis()))) }
     }
     private fun memory(){
         val info=ActivityManager.MemoryInfo(); context.getSystemService(ActivityManager::class.java).getMemoryInfo(info)
@@ -103,6 +120,21 @@ class HudRepository(private val context:Context) {
                 if(token==generation)mutable.update { it.copy(weather=WeatherState(reading=result,stale=false,locationNotice=if(approximate)"Approximate coordinates sent to Open-Meteo for this request; not saved." else null)) }
             }catch(e:CancellationException){throw e}catch(e:Exception){ if(token==generation)mutable.update { it.copy(weather=it.weather.copy(loading=false,error=e.message ?: "Weather unavailable",stale=true)) } }
         }
+    }
+    suspend fun weatherForQuestion(city:String?=null):WeatherReading {
+        weatherJob?.join()
+        val current=state.value.weather.reading
+        val chosen=city ?: state.value.settings.weatherCity
+        if(city==null && !WeatherRepository.stale(current,System.currentTimeMillis()))return current!!
+        check(chosen.isNotBlank()){ "Set a weather city in Settings or ask for weather in a named city. Approximate location is optional and must be requested with its button." }
+        val token=++generation
+        mutable.update{it.copy(weather=it.weather.copy(loading=true,error=null))}
+        try{
+            val result=weather.fetch(chosen)
+            if(token==generation)mutable.update{it.copy(weather=WeatherState(reading=result,stale=false))}
+            return result
+        }catch(e:CancellationException){if(token==generation)mutable.update{it.copy(weather=it.weather.copy(loading=false))};throw e}
+        catch(e:Exception){if(token==generation)mutable.update{it.copy(weather=it.weather.copy(loading=false,error=e.message,stale=true))};throw e}
     }
     private suspend fun approximateLocation():Pair<Double,Double> {
         check(ContextCompat.checkSelfPermission(context,Manifest.permission.ACCESS_COARSE_LOCATION)==PackageManager.PERMISSION_GRANTED) { "Approximate location permission denied. Enter a city instead." }
