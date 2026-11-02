@@ -14,8 +14,8 @@ android {
         applicationId = "com.jarvis.next"
         minSdk = 29
         targetSdk = 35
-        versionCode = 3
-        versionName = "3.0.0"
+        versionCode = 4
+        versionName = "4.0.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
         ndk { abiFilters += providers.gradleProperty("jarvisAbis").getOrElse("arm64-v8a").split(",") }
@@ -63,6 +63,7 @@ android {
 }
 
 dependencies {
+    implementation("androidx.work:work-runtime-ktx:2.10.0")
     implementation("androidx.documentfile:documentfile:1.0.1")
     implementation(libs.androidx.core)
     implementation(libs.androidx.activity)

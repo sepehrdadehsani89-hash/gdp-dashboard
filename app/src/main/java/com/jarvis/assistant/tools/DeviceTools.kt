@@ -29,6 +29,8 @@ import okhttp3.Request
 
 /** Deterministic, user-requested tools. Model-generated prose cannot invoke these. */
 class DeviceTools(private val context: Context, private val store: JarvisStore) {
+    val appRegistry=com.jarvis.assistant.neural.AppRegistry(context)
+    private var recentNews:Pair<Long,List<NewsArticle>>?=null
     private val pending = ConcurrentHashMap<String, PendingAction>()
     private val client = OkHttpClient.Builder()
         .connectTimeout(10, TimeUnit.SECONDS).readTimeout(15, TimeUnit.SECONDS)
@@ -71,6 +73,10 @@ class DeviceTools(private val context: Context, private val store: JarvisStore) 
             if (locked()) return AssistantReply(unlockMessage(language))
             val facts = store.memories.value.take(20)
             return AssistantReply(if (facts.isEmpty()) language.choose("You haven't asked me to remember anything yet.", "Aún no me has pedido que recuerde nada.", "هنوز چیزی از من نخواسته‌اید که به خاطر بسپارم.") else language.choose("Here is what you asked me to remember:\n", "Esto es lo que me pediste recordar:\n", "این‌ها مواردی هستند که خواسته‌اید به خاطر بسپارم:\n") + facts.joinToString("\n") { it.text })
+        }
+        val headline=Regex("^(?:tell me more about|more about|amplía|mas sobre|بیشتر درباره) (?:the )?(first|second|third|1|2|3|primero|segundo|اول|دوم|سوم)(?: headline| noticia| خبر)?[.!؟?]*$",RegexOption.IGNORE_CASE).matchEntire(text.trim())
+        if(headline!=null){val articles=recentNews?.takeIf{System.currentTimeMillis()-it.first in 0..600_000}?.second;val offset=when(headline.groupValues[1].lowercase(Locale.ROOT)){"first","1","primero","اول"->0;"second","2","segundo","دوم"->1;else->2};val article=articles?.getOrNull(offset)
+            return if(article==null)AssistantReply("Fetch a fresh headline list first.") else AssistantReply("${article.title}\n${article.publisher} · ${article.publishedAt ?: "publication date unavailable"}\nThis is the source headline, not a full article summary. Tap the source to read it, or ask: research ${article.url}",listOf(SourceLink(article.title,article.url)))
         }
         if (LocalIntentParser.isNews(text)) return news(text, language)
         if (UtilityIntentParser.isWeather(text) && com.jarvis.assistant.sentinel.WeatherQuestion.isRequest(text)) {
@@ -124,7 +130,7 @@ class DeviceTools(private val context: Context, private val store: JarvisStore) 
             val url = if (youtube.isBlank()) "https://www.youtube.com" else "https://www.youtube.com/results?search_query=${encode(youtube)}"
             return proposal(language.choose(if (youtube.isBlank()) "Open YouTube?" else "Search YouTube for “$youtube”?", if (youtube.isBlank()) "¿Abrir YouTube?" else "¿Buscar «$youtube» en YouTube?", if (youtube.isBlank()) "یوتیوب باز شود؟" else "«$youtube» را در یوتیوب جستجو کنم؟"), "open_url", url)
         }
-        val appName = LocalIntentParser.appName(text)
+        val appName = com.jarvis.assistant.neural.AppMatching.commandTarget(text) ?: LocalIntentParser.appName(text)
         if (appName != null) return app(appName, language)
         if (listOf("my files", "my photos", "mis archivos", "mis fotos", "فایل های من", "عکس های من", "فایل‌ها", "عکس‌ها").any(normalized::contains)) {
             return AssistantReply(language.choose("Tap Attach to choose files or photos. Android lets you decide exactly what Jarvis can read; I don't have access to all of your private app data.", "Toca Adjuntar para elegir archivos o fotos. Android te permite decidir qué puede leer Jarvis; no tengo acceso a todos los datos privados de tus aplicaciones.", "برای انتخاب فایل یا عکس، دکمه پیوست را بزنید. اندروید به شما اجازه می‌دهد دقیقاً مشخص کنید جارویس چه چیزی را بخواند؛ من به همه اطلاعات خصوصی برنامه‌ها دسترسی ندارم."))
@@ -150,10 +156,16 @@ class DeviceTools(private val context: Context, private val store: JarvisStore) 
                     check(resolved == null || !ToolPolicy.protectedPackage(resolved))
                     context.startActivity(intent)
                 }
+                "app_alias" -> {
+                    val value=org.json.JSONObject(action.payload)
+                    appRegistry.saveAlias(value.getString("alias"),value.getString("package"))
+                    return@withContext language.choose("App alias saved. Review or delete it in Neural Core settings.","Alias guardado. Puedes editarlo en Neural Core.","نام مستعار ذخیره شد؛ در تنظیمات هستهٔ عصبی قابل تغییر یا حذف است.")
+                }
                 "open_app" -> {
                     check(!ToolPolicy.protectedPackage(action.payload))
                     val intent = context.packageManager.getLaunchIntentForPackage(action.payload) ?: error("Application unavailable")
                     context.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                    return@withContext language.choose("App launch requested. Check the foreground app; Android controls whether it opens.","Apertura solicitada. Android controla el inicio; comprueba la aplicación.","باز کردن برنامه درخواست شد؛ نمایش آن را در اندروید بررسی کنید.")
                 }
                 "nav_home", "nav_back" -> {
                     check(JarvisAccessibilityService.navigate(context, action.kind == "nav_home"))
@@ -200,25 +212,40 @@ class DeviceTools(private val context: Context, private val store: JarvisStore) 
     fun cancelPendingActions() { pending.clear() }
 
     private fun proposal(description: String, kind: String, payload: String): AssistantReply {
+        require(kind in com.jarvis.assistant.neural.ToolRegistry.definitions){"Unregistered action"}
         pending.entries.removeAll { !ToolPolicy.confirmationCurrent(it.value.createdAt, System.currentTimeMillis()) }
         val action = PendingAction(description = description, kind = kind, payload = payload)
         pending[action.id] = action
         return AssistantReply(description, action = action)
     }
 
+    fun requestApp(name:String,language:AppLanguage,alwaysConfirm:Boolean=false):AssistantReply {
+        if(locked())return AssistantReply(unlockMessage(language))
+        if(!alwaysConfirm)return app(name,language)
+        val matches=com.jarvis.assistant.neural.AppMatching.match(name,appRegistry.apps())
+        if(matches.isEmpty() || matches.size>1 && matches[1].score>=matches[0].score-.08)return AssistantReply("Choose an unambiguous available app in Neural Core settings.")
+        val target=matches.first().app
+        return proposal(language.choose("Open ${target.label}?","¿Abrir ${target.label}?","${target.label} باز شود؟"),"open_app",target.packageId)
+    }
+    fun requestAlias(alias:String,name:String,language:AppLanguage):AssistantReply {
+        if(locked())return AssistantReply(unlockMessage(language))
+        val matches=com.jarvis.assistant.neural.AppMatching.match(name,appRegistry.apps())
+        if(matches.isEmpty() || matches.size>1 && matches[1].score>=matches[0].score-.08)return AssistantReply("Choose the alias target in Neural Core settings.")
+        val payload=org.json.JSONObject().put("alias",alias.take(80)).put("package",matches.first().app.packageId).toString()
+        return proposal(language.choose("Save '$alias' as ${matches.first().app.label}?","¿Guardar '$alias' como ${matches.first().app.label}?","«$alias» برای ${matches.first().app.label} ذخیره شود؟"),"app_alias",payload)
+    }
+
     private fun app(name: String, language: AppLanguage): AssistantReply {
         if (locked()) return AssistantReply(unlockMessage(language))
-        val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
-        val apps = context.packageManager.queryIntentActivities(intent, 0).map { it.activityInfo.packageName to it.loadLabel(context.packageManager).toString() }.distinctBy { it.first }
-        val exact = apps.filter { ToolPolicy.normalize(it.second) == name }
-        val matches = exact.ifEmpty { apps.filter { ToolPolicy.normalize(it.second).contains(name) || name.contains(ToolPolicy.normalize(it.second)) } }
-        if (matches.isEmpty()) return AssistantReply(language.choose("I couldn't find an installed app named “$name”.", "No encontré una aplicación instalada llamada «$name».", "برنامه نصب‌شده‌ای با نام «$name» پیدا نکردم."))
-        if (matches.size > 1) return AssistantReply(language.choose("Which app? ", "¿Qué aplicación? ", "کدام برنامه؟ ") + matches.take(5).joinToString { it.second })
-        val (packageName, label) = matches.single()
-        if (ToolPolicy.protectedPackage(packageName)) return AssistantReply(language.choose("I don't operate protected banking, payment, password, or security apps. Please open it yourself.", "No manejo aplicaciones protegidas de banca, pagos, contraseñas o seguridad. Ábrela tú.", "من برنامه‌های محافظت‌شده بانکی، پرداخت، رمز عبور یا امنیتی را کنترل نمی‌کنم. لطفاً خودتان آن را باز کنید."))
+        val matches=com.jarvis.assistant.neural.AppMatching.match(name,appRegistry.apps())
+        if(matches.isEmpty())return AssistantReply(language.choose("I couldn't find a matching available app.","No encontré una aplicación disponible que coincida.","برنامهٔ در دسترس مطابقی پیدا نشد."))
+        val best=matches.first()
+        if(matches.size>1 && matches[1].score>=best.score-.08)return AssistantReply(language.choose("Which app: ","¿Qué aplicación: ","کدام برنامه: ")+matches.take(3).joinToString{it.app.label})
+        val packageName=best.app.packageId;val label=best.app.label
+        if(!best.exact)return proposal(language.choose("Do you mean $label?","¿Te refieres a $label?","منظورتان $label است؟"),"open_app",packageName)
         return try {
             withLaunch(packageName)
-            AssistantReply("Opened $label.")
+            AssistantReply(language.choose("Opening request sent to Android for $label.","Solicitud de apertura enviada a Android para $label.","درخواست باز کردن $label به اندروید ارسال شد."))
         } catch (_: Exception) { AssistantReply("Android could not open $label.") }
     }
 
@@ -244,7 +271,7 @@ class DeviceTools(private val context: Context, private val store: JarvisStore) 
         return AssistantReply(if (items == null) language.choose("Enable optional Notification access in Settings to read current notifications. Protected apps and private codes are excluded.", "Activa el acceso opcional a notificaciones en Ajustes para leerlas. Se excluyen aplicaciones protegidas y códigos privados.", "برای خواندن اعلان‌های فعلی، دسترسی اختیاری اعلان را در تنظیمات فعال کنید. برنامه‌های محافظت‌شده و کدهای خصوصی مستثنا هستند.") else if (items.isEmpty()) language.choose("There are no readable notifications right now.", "No hay notificaciones legibles ahora.", "در حال حاضر اعلان قابل‌خواندنی وجود ندارد.") else language.choose("Your recent notifications:\n", "Tus notificaciones recientes:\n", "اعلان‌های اخیر شما:\n") + items.joinToString("\n"))
     }
 
-    private suspend fun news(text: String, language: AppLanguage): AssistantReply {
+    suspend fun news(text: String, language: AppLanguage): AssistantReply {
         val yesterday = LocalIntentParser.isYesterday(text)
         val window = if (yesterday) ToolPolicy.yesterday() else null
         val region = if (language == AppLanguage.FA) "IR" else "US"
@@ -255,11 +282,12 @@ class DeviceTools(private val context: Context, private val store: JarvisStore) 
             else "https://news.google.com/rss/search?q=${encode(query)}&hl=$hl&gl=$region&ceid=$region:${language.code}"
         return try {
             val bytes = fetch(url)
-            val articles = withContext(Dispatchers.Default) { NewsParser.parse(bytes, window) }.take(5)
+            val articles = withContext(Dispatchers.Default) { NewsParser.parse(bytes, window) }.distinctBy{it.url}.distinctBy{it.title.lowercase(Locale.ROOT)}.take(5)
+            recentNews=System.currentTimeMillis() to articles
             if (articles.isEmpty()) AssistantReply(language.choose("I couldn't verify any matching headlines${if (yesterday) " for yesterday" else ""}. Try another topic.", "No pude verificar titulares coincidentes${if (yesterday) " de ayer" else ""}. Prueba otro tema.", "نتوانستم خبر منطبقی${if (yesterday) " از دیروز" else ""} تأیید کنم. موضوع دیگری را امتحان کنید."))
             else {
                 val intro = language.choose(if (yesterday) "Here are yesterday's headlines, dated ${window!!.date}:" else "Here are the latest available headlines:", if (yesterday) "Estos son los titulares de ayer, ${window!!.date}:" else "Estos son los últimos titulares disponibles:", if (yesterday) "تیترهای دیروز، ${window!!.date}:" else "تازه‌ترین تیترهای موجود:")
-                AssistantReply(intro + "\n" + articles.mapIndexed { index, article -> "${index + 1}. ${article.title}" }.joinToString("\n") + "\n" + language.choose("These are source headlines, not independently verified reporting. Tap a source for the full story.", "Son titulares de las fuentes, no reportajes verificados de forma independiente. Toca una fuente para leer más.", "این‌ها تیتر منابع هستند و مستقلاً راستی‌آزمایی نشده‌اند. برای متن کامل، منبع را باز کنید."), articles.map { SourceLink(it.title, it.url) })
+                AssistantReply(intro + "\n" + articles.mapIndexed { index, article -> "${index + 1}. ${article.title} · ${article.publisher} · ${article.publishedAt ?: "date unavailable"}" }.joinToString("\n") + "\n" + language.choose("These are source headlines, not independently verified reporting. Tap a source for the full story.", "Son titulares de las fuentes, no reportajes verificados de forma independiente. Toca una fuente para leer más.", "این‌ها تیتر منابع هستند و مستقلاً راستی‌آزمایی نشده‌اند. برای متن کامل، منبع را باز کنید."), articles.map { SourceLink(it.title, it.url) })
             }
         } catch (cancelled: CancellationException) { throw cancelled }
         catch (_: Exception) { AssistantReply(language.choose("I couldn't reach the news feed. Check your connection and try again.", "No pude conectar con las noticias. Comprueba tu conexión e inténtalo de nuevo.", "به منبع خبر دسترسی پیدا نکردم. اتصال اینترنت را بررسی کنید و دوباره تلاش کنید.")) }

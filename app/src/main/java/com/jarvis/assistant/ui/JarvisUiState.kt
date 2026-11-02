@@ -9,6 +9,7 @@ import com.jarvis.assistant.core.PendingAction
 import com.jarvis.assistant.core.ConnectionCheck
 
 data class JarvisUiState(
+    val neuralStage:String="Idle",
     val playback:com.jarvis.assistant.sentinel.PlaybackReading = com.jarvis.assistant.sentinel.PlaybackReading(),
     val sentinelVisual:com.jarvis.assistant.sentinel.SentinelVisualState = com.jarvis.assistant.sentinel.SentinelVisualState(),
     val hud: com.jarvis.assistant.hud.HudState = com.jarvis.assistant.hud.HudState(),
@@ -42,6 +43,7 @@ data class JarvisUiState(
 )
 
 data class JarvisUiActions(
+    val onOpenNeural:()->Unit={},
     val onInteraction: (com.jarvis.assistant.sentinel.SentinelSound)->Unit = {},
     val onPreviewWallpaper: ()->Unit = {},
     val onSaveHud: (com.jarvis.assistant.hud.HudSettings) -> Unit = {},

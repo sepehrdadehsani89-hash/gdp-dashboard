@@ -11,6 +11,7 @@ class ConversationContext {
         turns.addLast(ChatMessage(role = MessageRole.ASSISTANT, text = answer.take(3000)))
         while (turns.size > 8 || turns.sumOf { it.text.length } > 12_000) { turns.removeFirst(); turns.removeFirst() }
     }
+    fun expire(before:Long){if(turns.any{it.timestamp<before})clear()}
     fun clear() = turns.clear()
 }
 

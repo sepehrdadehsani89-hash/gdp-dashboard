@@ -1,0 +1,22 @@
+{
+  "id": "education",
+  "title": "Education starter",
+  "version": "1",
+  "publication": "2026-11-02",
+  "license": "CC0-1.0",
+  "source": "Original Jarvis educational reference notes",
+  "entries": [
+    {
+      "title": "Learning: retrieval practice",
+      "text": "After studying, close the material and try to explain the main idea from memory. Compare your explanation with the source, correct gaps, and revisit it after increasing intervals. Retrieval practice is different from merely rereading. Use examples and ask why a method works."
+    },
+    {
+      "title": "Problem solving: units and estimates",
+      "text": "Write down what is known and what must be found. Check units before calculating. Make a rough estimate, solve the problem, then compare the result with the estimate and physical constraints. If information is missing, state what is missing instead of inventing values."
+    },
+    {
+      "title": "Writing: clear structure",
+      "text": "Begin with the point your reader needs. Give supporting evidence and explain its relevance. Separate observation from interpretation. Attribute borrowed ideas and quotations. A source citation should identify a real source you have actually consulted, not a plausible invented title."
+    }
+  ]
+}

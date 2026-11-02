@@ -1,0 +1,18 @@
+{
+  "baseline_source": "1df3528",
+  "existing_model_repository": "Qwen/Qwen2.5-0.5B-Instruct-GGUF",
+  "existing_model_file": "qwen2.5-0.5b-instruct-q4_k_m.gguf",
+  "weights_present_in_workspace": false,
+  "official_metadata_http_result": 403,
+  "blocked_by": "enforced managed-cloud destination policy",
+  "physical_device_available": false,
+  "actual_weight_bytes": null,
+  "load_ms": null,
+  "first_token_ms": null,
+  "tokens_per_second": null,
+  "measured_model_ram": null,
+  "language_quality_scores": null,
+  "hallucination_rate": null,
+  "battery_energy": null,
+  "replacement_decision": "Retain existing Lite. Balanced is an explicit experimental candidate, not a tested winner; Advanced is unavailable on unverified hardware."
+}

@@ -1,0 +1,22 @@
+{
+  "id": "general",
+  "title": "General knowledge starter",
+  "version": "1",
+  "publication": "2026-11-02",
+  "license": "CC0-1.0",
+  "source": "Original Jarvis educational reference notes",
+  "entries": [
+    {
+      "title": "Geography: latitude and longitude",
+      "text": "Latitude describes angular position north or south of the equator, from −90° to 90°. Longitude describes angular position east or west of the prime meridian, usually from −180° to 180°. A coordinate alone is not a live location fix; its time, source and accuracy matter."
+    },
+    {
+      "title": "History: interpreting sources",
+      "text": "Historical claims should be checked against dated sources and their context. A primary source comes from the period or event being studied; a secondary source analyzes earlier evidence. Both can contain bias or mistakes. Distinguish documented events, disputed interpretations and unknown details."
+    },
+    {
+      "title": "Everyday information: forecasts and news",
+      "text": "A forecast is a probabilistic prediction, not a guarantee. A publication date is not proof that a report is accurate. Separate source headlines from independently verified reporting. Offline reference material is not a live news service. Do not infer current conditions from old cached information."
+    }
+  ]
+}

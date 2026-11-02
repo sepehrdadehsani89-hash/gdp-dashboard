@@ -69,8 +69,8 @@ class MainActivity : ComponentActivity() {
             })
     }
     override fun onUserInteraction(){super.onUserInteraction();lastInteraction=android.os.SystemClock.elapsedRealtime();if(wakeOpened)touchedAfterWake=true}
-    override fun onStart(){super.onStart();visibleActivities.incrementAndGet(); runtime.hud.startVisible(this)}
-    override fun onStop(){runtime.hud.stopVisible(this);visibleActivities.decrementAndGet();super.onStop()}
+    override fun onStart(){super.onStart();updateImmersive();visibleActivities.incrementAndGet(); runtime.hud.startVisible(this)}
+    override fun onStop(){androidx.core.view.WindowCompat.getInsetsController(window,window.decorView).show(androidx.core.view.WindowInsetsCompat.Type.systemBars());runtime.hud.stopVisible(this);visibleActivities.decrementAndGet();super.onStop()}
     override fun onDestroy(){authentication?.cancel();super.onDestroy()}
     private val microphone = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         runtime.refreshCapabilities()
@@ -155,6 +155,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
             JarvisAppUi(state, JarvisUiActions(
+                onOpenNeural={startActivity(Intent(this,com.jarvis.assistant.neural.NeuralSettingsActivity::class.java))},
                 onInteraction = runtime.effects::userPlay,
                 onPreviewWallpaper = ::previewWallpaper,
                 onSaveHud = {runtime.effects.play(com.jarvis.assistant.sentinel.SentinelSound.BUTTON);runtime.saveHud(it)},
@@ -192,7 +193,7 @@ class MainActivity : ComponentActivity() {
                 },
                 onStopWake = runtime::stopWake,
                 onDownloadWake = runtime::downloadWake,
-                onDownloadBrain = runtime::downloadBrain,
+                onDownloadBrain = {startActivity(Intent(this,com.jarvis.assistant.neural.NeuralSettingsActivity::class.java))},
                 onDownloadVoice = runtime::downloadVoice,
                 onVoiceCheck = runtime::voiceCheck,
                 onFolders = ::folderMenu,
@@ -213,6 +214,12 @@ class MainActivity : ComponentActivity() {
         if(intent.getBooleanExtra("open_settings",false)){settingsRequest++;wakeOpened=false;touchedAfterWake=true}
         if(intent.getBooleanExtra("sentinel_settings",false))sentinelRequest++
         if(intent.getBooleanExtra("sentinel_wake",false)){wakeOpened=true;touchedAfterWake=false}
+        updateImmersive()
+    }
+    private fun updateImmersive(){
+        val controller=androidx.core.view.WindowCompat.getInsetsController(window,window.decorView)
+        if(wakeOpened){controller.systemBarsBehavior=androidx.core.view.WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE;controller.hide(androidx.core.view.WindowInsetsCompat.Type.systemBars())}
+        else controller.show(androidx.core.view.WindowInsetsCompat.Type.systemBars())
     }
     private fun dismissHud(){runtime.dismissHud();finish()}
     private fun previewWallpaper(){

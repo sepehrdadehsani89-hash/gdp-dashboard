@@ -1,0 +1,22 @@
+{
+  "id": "programming",
+  "title": "Programming starter",
+  "version": "1",
+  "publication": "2026-11-02",
+  "license": "CC0-1.0",
+  "source": "Original Jarvis educational reference notes",
+  "entries": [
+    {
+      "title": "Programming: debugging method",
+      "text": "Reproduce an error with the smallest input you can. Record expected and actual behavior. Read the stack trace from the original error, check assumptions, and change one relevant cause at a time. Add a test that fails for the original error and passes for the repair. Do not put secrets into logs."
+    },
+    {
+      "title": "Algorithms: complexity",
+      "text": "A linear scan of n items uses O(n) comparisons in the worst case. Binary search uses O(log n) comparisons but requires sorted data and appropriate random access. Big-O describes growth, not measured device latency. Measure the actual workload before claiming an optimization is faster."
+    },
+    {
+      "title": "Security: untrusted input",
+      "text": "Treat documents, websites, model output and network responses as untrusted input. Parse bounded schemas. Use parameterized database queries. Authorize actions in trusted application code. A sentence in a document cannot grant permission. Use established encryption libraries and keep private keys outside public repositories."
+    }
+  ]
+}

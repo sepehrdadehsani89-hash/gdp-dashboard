@@ -195,6 +195,7 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
         Column(horizontalAlignment=Alignment.CenterHorizontally,modifier=Modifier.fillMaxWidth(.48f)) {
             if(authorizing) Icon(Icons.Rounded.Lock,"Authorization required",Modifier.size(16.dp),tint=Purple)
             Text(if(authorizing)"CODEX" else when(state.phase){AssistantPhase.LISTENING->"LISTENING";AssistantPhase.SPEAKING->"SPEAKING";AssistantPhase.THINKING->"THINKING";AssistantPhase.ERROR->"ATTENTION";else->"READY"},color=Ice,fontSize=10.sp,letterSpacing=2.sp)
+            if(state.phase==AssistantPhase.THINKING && state.neuralStage!="Idle")Text(state.neuralStage,color=Ice,fontSize=9.sp)
             Text(b.percent?.let {"$it%"} ?: "—",modifier=Modifier.clickable(enabled=actions!=null,role=Role.Button,onClickLabel="Battery details"){actions?.onInteraction?.invoke(SentinelSound.PANEL_OPEN);batteryDetails=true},color=Ice,fontSize=44.sp,fontWeight=FontWeight.Light)
             Text(if(b.full)"FULL" else if(b.charging)"CHARGING · ${b.source}" else "BATTERY",color=color,fontSize=9.sp,textAlign=TextAlign.Center)
         }

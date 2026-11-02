@@ -1,0 +1,47 @@
+[
+  {
+    "id": "science",
+    "title": "Science starter",
+    "version": "1",
+    "publication": "2026-11-02",
+    "bytes": 1696,
+    "sha256": "0bf508c6c1ee900c2f7b1589beff76b21e6bd359e84388f4b2ca92171deba184",
+    "file": "science-v1.json"
+  },
+  {
+    "id": "programming",
+    "title": "Programming starter",
+    "version": "1",
+    "publication": "2026-11-02",
+    "bytes": 1340,
+    "sha256": "ac36b1bbb7dfdf7981d5d004c0743e7299267b7bf8624ead3026d0a27524fa4e",
+    "file": "programming-v1.json"
+  },
+  {
+    "id": "education",
+    "title": "Education starter",
+    "version": "1",
+    "publication": "2026-11-02",
+    "bytes": 1268,
+    "sha256": "a743c593a2c771d6b77aa69f3b12170b7f713dfd8ca2d677ec884301bcac8826",
+    "file": "education-v1.json"
+  },
+  {
+    "id": "language",
+    "title": "Language starter \u00b7 EN/ES/FA",
+    "version": "1",
+    "publication": "2026-11-02",
+    "bytes": 1426,
+    "sha256": "dc2c2a6081b5a18124bc097cb07eb3e7da90bffb0dee8311c2fd4855792d6b03",
+    "file": "language-v1.json"
+  },
+  {
+    "id": "general",
+    "title": "General knowledge starter",
+    "version": "1",
+    "publication": "2026-11-02",
+    "bytes": 1335,
+    "sha256": "856d012c4688424102c4e5de25743587a9f90084fc5db398a8b1644140aae176",
+    "file": "general-v1.json"
+  }
+]

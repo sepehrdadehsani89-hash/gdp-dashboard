@@ -25,3 +25,5 @@ The source bundle accompanies the APK. Keep it available with any redistribution
 | ONNX Runtime | MIT; upstream SDK notices retained |
 
 Gradle resolves additional transitive components with their own notices. Original AAR/JAR metadata and upstream licenses remain authoritative. Build scripts do not strip native license obligations. No API keys, private signing keys, model weights requiring user credentials, or personal phone data are included in this source distribution.
+
+Neural Core optional model profiles retain official Qwen2.5-0.5B Instruct GGUF and add the independently verified official Qwen2.5-1.5B Instruct GGUF candidate. Downloads require Apache-2.0 metadata from their respective official repositories. No weights are bundled; model variants must not be assumed to share terms. The small optional Neural Core reference packs are original CC0 1.0 prose; their license accompanies `downloads/neural-packs`. WorkManager is an AndroidX Apache-2.0 library. The frozen 3.0 prompt adapter is this project's own prior source, retained solely for labelled evaluation.

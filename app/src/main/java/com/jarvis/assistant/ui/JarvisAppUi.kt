@@ -572,6 +572,7 @@ private fun SettingsScreen(state: JarvisUiState, actions: JarvisUiActions, senti
     LaunchedEffect(state.settings.provider, state.settings.model, state.settings.language) { clearConnectionCheck() }
     LaunchedEffect(checking) { connectionElapsed = 0; while (checking) { delay(1000); connectionElapsed++ } }
     LazyColumn(contentPadding = PaddingValues(24.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
+        item { Button(onClick=actions.onOpenNeural,modifier=Modifier.fillMaxWidth()){Text(l.choose("Neural Core · brain, knowledge & briefings","Neural Core · cerebro y resúmenes","هستهٔ عصبی · دانش و گزارش روزانه"))} }
         item { Button(onClick={actions.onInteraction(com.jarvis.assistant.sentinel.SentinelSound.PANEL_OPEN);sentinel=true},modifier=Modifier.fillMaxWidth()){Text(l.choose("Sentinel · wallpaper & sound","Sentinel · fondo y sonido","سنتینل · پس‌زمینه و صدا"))} }
         item { HudSettingsCard(state, actions) }
         item { if(state.authorization!=null) AuthorizationPanel(state,actions) }
@@ -594,10 +595,11 @@ private fun SettingsScreen(state: JarvisUiState, actions: JarvisUiActions, senti
             if (draft.provider == "local") {
                 Text(l.choose("The optional model is roughly 400 MB; use Wi-Fi. On a Redmi 9, answers can be slow and Persian quality is limited. It is a small local model, not a cloud-level assistant.", "El modelo opcional ocupa unos 400 MB; usa Wi-Fi. En un Redmi 9 puede ser lento y el persa es limitado. Es un modelo local pequeño, con capacidades limitadas.", "مدل اختیاری حدود ۴۰۰ مگابایت است؛ از وای‌فای استفاده کنید. روی ردمی ۹ پاسخ‌ها ممکن است کند باشند و کیفیت فارسی محدود است. این یک مدل کوچک روی گوشی است و توانایی سرویس‌های بزرگ آنلاین را ندارد."), color = Muted, style = MaterialTheme.typography.bodySmall)
                 if (state.brainStatus.isNotBlank()) Text(state.brainStatus, color = Warm)
+                if(state.neuralStage!="Idle")Text(state.neuralStage,color=Warm)
                 state.brainProgress?.let { LinearProgressIndicator(progress = { it.coerceIn(0f, 1f) }, modifier = Modifier.fillMaxWidth()) }
                 OutlinedButton(onClick = actions.onDownloadBrain, enabled = state.brainProgress == null, modifier = Modifier.fillMaxWidth()) { Text(l.choose("Download on-device model", "Descargar modelo local", "دانلود مدل روی گوشی")) }
             } else {
-            OutlinedTextField(draft.model, { clearConnectionCheck(false); draft = draft.copy(model = it); saved = false }, modifier = Modifier.fillMaxWidth(), singleLine = true, label = { Text(l.choose("Model ID", "ID del modelo", "شناسهٔ مدل")) }, shape = RoundedCornerShape(14.dp))
+            if(draft.provider!="local")OutlinedTextField(draft.model, { clearConnectionCheck(false); draft = draft.copy(model = it); saved = false }, modifier = Modifier.fillMaxWidth(), singleLine = true, label = { Text(l.choose("Model ID", "ID del modelo", "شناسهٔ مدل")) }, shape = RoundedCornerShape(14.dp))
             OutlinedTextField(key, { clearConnectionCheck(); key = it; saved = false }, modifier = Modifier.fillMaxWidth(), singleLine = true,
                 label = { Text(l.choose("API key", "Clave API", "کلید API")) },
                 placeholder = { Text(l.choose("Leave blank to keep the saved key", "Vacío conserva la clave guardada", "برای حفظ کلید قبلی خالی بگذارید")) },

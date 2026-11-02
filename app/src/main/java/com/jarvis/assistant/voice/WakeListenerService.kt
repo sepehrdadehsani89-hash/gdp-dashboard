@@ -215,7 +215,8 @@ class WakeListenerService : Service() {
         val launch=Intent(this,com.jarvis.assistant.MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP).putExtra("sentinel_wake",true)
         val manager=getSystemService(NotificationManager::class.java)
         manager.createNotificationChannel(NotificationChannel("jarvis_activation","Jarvis activation",NotificationManager.IMPORTANCE_DEFAULT))
-        val open=PendingIntent.getActivity(this,2,launch,PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+        val presentation=if(getSystemService(android.app.KeyguardManager::class.java).isKeyguardLocked)Intent(this,com.jarvis.assistant.neural.SafeActivationActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP) else launch
+        val open=PendingIntent.getActivity(this,2,presentation,PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         manager.notify(3102,NotificationCompat.Builder(this,"jarvis_activation").setSmallIcon(android.R.drawable.ic_btn_speak_now)
             .setContentTitle("Jarvis is listening").setContentText("Tap to open your HUD. Unlock normally for protected actions.")
             .setContentIntent(open).setAutoCancel(true).setVisibility(NotificationCompat.VISIBILITY_PRIVATE).setSilent(true).build())
@@ -260,7 +261,8 @@ class WakeListenerService : Service() {
 
     private fun updateActivationNotification(text:String){
         val launch=Intent(this,com.jarvis.assistant.MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP).putExtra("sentinel_wake",true)
-        val open=PendingIntent.getActivity(this,2,launch,PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+        val presentation=if(getSystemService(android.app.KeyguardManager::class.java).isKeyguardLocked)Intent(this,com.jarvis.assistant.neural.SafeActivationActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP) else launch
+        val open=PendingIntent.getActivity(this,2,presentation,PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         getSystemService(NotificationManager::class.java).notify(3102,NotificationCompat.Builder(this,"jarvis_activation").setSmallIcon(android.R.drawable.ic_btn_speak_now)
             .setContentTitle("Jarvis").setContentText(text).setContentIntent(open).setAutoCancel(true).setSilent(true).setVisibility(NotificationCompat.VISIBILITY_PRIVATE).build())
     }

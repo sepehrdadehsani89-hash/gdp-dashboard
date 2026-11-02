@@ -67,6 +67,9 @@ interface JarvisDao {
     @Query("DELETE FROM messages WHERE id NOT IN (SELECT id FROM messages ORDER BY timestamp DESC LIMIT 200)")
     suspend fun trimMessages()
 
+    @Query("DELETE FROM messages WHERE timestamp < :before")
+    suspend fun expireMessages(before:Long)
+
     @Query("DELETE FROM messages")
     suspend fun deleteMessages()
 
@@ -95,6 +98,7 @@ class JarvisStore(context: Context) {
     private val dao = database.dao()
     private val mutableSettings = MutableStateFlow(readSettings())
     val settings: StateFlow<AssistantSettings> = mutableSettings.asStateFlow()
+    private val ephemeral=MutableStateFlow<List<ChatMessage>>(emptyList())
     val messages: StateFlow<List<ChatMessage>> = dao.observeMessages().map { rows ->
         rows.map { row ->
             ChatMessage(
@@ -105,7 +109,7 @@ class JarvisStore(context: Context) {
                 sources = decodeSources(row.sources),
             )
         }
-    }.stateIn(scope, SharingStarted.Eagerly, emptyList())
+    }.let{persisted->kotlinx.coroutines.flow.combine(persisted,ephemeral){a,b->(a+b).sortedBy{it.timestamp}.takeLast(200)}}.stateIn(scope, SharingStarted.Eagerly, emptyList())
     val memories: StateFlow<List<MemoryItem>> = dao.observeMemories().map { rows ->
         rows.map { MemoryItem(it.id, it.text, it.createdAt) }
     }.stateIn(scope, SharingStarted.Eagerly, emptyList())
@@ -124,7 +128,10 @@ class JarvisStore(context: Context) {
         dao.trimMessages()
     }
 
-    suspend fun clearConversation() = dao.deleteMessages()
+    suspend fun expireHistory(before:Long)=dao.expireMessages(before)
+
+    fun addEphemeral(message:ChatMessage){ephemeral.value=(ephemeral.value+message).takeLast(200)}
+    suspend fun clearConversation(){ephemeral.value=emptyList();dao.deleteMessages()}
 
     /** Called only after the user's explicit remember request or memory-screen action. */
     suspend fun remember(text: String): Long {
@@ -184,6 +191,7 @@ class JarvisStore(context: Context) {
     }
 
     suspend fun clearAll() {
+        ephemeral.value=emptyList()
         database.withTransaction {
             dao.deleteMessages()
             dao.deleteMemories()

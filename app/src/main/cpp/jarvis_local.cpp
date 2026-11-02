@@ -1,4 +1,5 @@
 #include <jni.h>
+#include <chrono>
 #include "llama.h"
 #include <algorithm>
 #include <atomic>
@@ -18,6 +19,8 @@ struct Engine {
         if (model) llama_model_free(model);
     }
     std::string path;
+    int contextTokens=1536, threads=2;
+    int64_t stats[5]={0,0,0,0,0};
     llama_model *model = nullptr;
     llama_context *context = nullptr;
     std::atomic<bool> cancelled{false};
@@ -75,11 +78,11 @@ void load(Engine &engine) {
     }
     if (!engine.model) throw std::runtime_error("Could not load the verified model. Free memory and try again.");
     auto contextParams = llama_context_default_params();
-    contextParams.n_ctx = 1536;
+    contextParams.n_ctx = engine.contextTokens;
     contextParams.n_batch = 128;
     contextParams.n_ubatch = 128;
-    contextParams.n_threads = 2;
-    contextParams.n_threads_batch = 2;
+    contextParams.n_threads = engine.threads;
+    contextParams.n_threads_batch = engine.threads;
     contextParams.offload_kqv = false;
     contextParams.no_perf = true;
     contextParams.abort_callback = [](void *data) {
@@ -112,13 +115,14 @@ size_t completeUtf8Prefix(const std::string &value) {
 }
 
 extern "C" JNIEXPORT jlong JNICALL
-Java_com_jarvis_assistant_local_LocalBrain_nativeCreate(JNIEnv *env, jobject, jstring path) {
+Java_com_jarvis_assistant_local_LocalBrain_nativeCreate(JNIEnv *env, jobject, jstring path, jint contextTokens, jint threads) {
     try {
         const char *raw = env->GetStringUTFChars(path, nullptr);
         if (!raw) return 0;
         std::string file(raw);
         env->ReleaseStringUTFChars(path, raw);
         auto engine = std::make_shared<Engine>(file);
+        engine->contextTokens=std::clamp(static_cast<int>(contextTokens),1024,2048);engine->threads=std::clamp(static_cast<int>(threads),1,2);
         auto id = nextId.fetch_add(1);
         std::lock_guard<std::mutex> lock(registryMutex);
         engines.emplace(id, std::move(engine));
@@ -140,17 +144,34 @@ Java_com_jarvis_assistant_local_LocalBrain_nativeGenerate(JNIEnv *env, jobject, 
         std::string prompt(static_cast<size_t>(inputSize), '\0');
         env->GetByteArrayRegion(input, 0, inputSize, reinterpret_cast<jbyte *>(prompt.data()));
         if (env->ExceptionCheck()) return nullptr;
-        load(*engine);
+        auto clock=[](){return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();};
+        auto loadStarted=clock();load(*engine);engine->stats[2]=clock()-loadStarted;engine->stats[1]=0;
         checkCancelled(*engine);
         const llama_vocab *vocab = llama_model_get_vocab(engine->model);
         int count = -llama_tokenize(vocab, prompt.data(), static_cast<int32_t>(prompt.size()), nullptr, 0, true, true);
-        int maximumNew = std::clamp(static_cast<int>(requestedTokens), 1, 256);
-        if (count <= 0 || count > 1200 || count + maximumNew >= 1536) {
+        int maximumNew = std::clamp(static_cast<int>(requestedTokens), 1, 512);
+        // Drop only complete oldest history pairs; never truncate the current user or system rules.
+        const std::string boundary="<|im_end|>\n";
+        while(count>engine->contextTokens-maximumNew-32){
+            auto systemEnd=prompt.find(boundary);
+            if(systemEnd==std::string::npos)break;
+            auto first=systemEnd+boundary.size();
+            auto userEnd=prompt.find(boundary,first);
+            if(userEnd==std::string::npos)break;
+            auto assistantStart=userEnd+boundary.size();
+            if(prompt.compare(assistantStart,std::string("<|im_start|>assistant\n").size(),"<|im_start|>assistant\n")!=0)break;
+            auto assistantEnd=prompt.find(boundary,assistantStart);
+            if(assistantEnd==std::string::npos)break;
+            prompt.erase(first,assistantEnd+boundary.size()-first);
+            count=-llama_tokenize(vocab,prompt.data(),static_cast<int32_t>(prompt.size()),nullptr,0,true,true);
+        }
+        if (count <= 0 || count > engine->contextTokens-maximumNew-32 || count + maximumNew >= engine->contextTokens) {
             throw std::runtime_error("This question is too long for the small offline model. Shorten it or start a new conversation.");
         }
         std::vector<llama_token> tokens(static_cast<size_t>(count));
         count = llama_tokenize(vocab, prompt.data(), static_cast<int32_t>(prompt.size()), tokens.data(), count, true, true);
         if (count <= 0) throw std::runtime_error("Could not tokenize the question.");
+        engine->stats[0]=count;auto promptStarted=clock();
         llama_kv_self_clear(engine->context);
         for (int offset = 0; offset < count; offset += 128) {
             checkCancelled(*engine);
@@ -159,6 +180,7 @@ Java_com_jarvis_assistant_local_LocalBrain_nativeGenerate(JNIEnv *env, jobject, 
             checkCancelled(*engine);
             if (status != 0) throw std::runtime_error("Local AI prompt evaluation failed. Free memory and retry.");
         }
+        engine->stats[3]=clock()-promptStarted;auto generationStarted=clock();
         auto params = llama_sampler_chain_default_params();
         params.no_perf = true;
         std::unique_ptr<llama_sampler, decltype(&llama_sampler_free)> sampler(llama_sampler_chain_init(params), llama_sampler_free);
@@ -182,6 +204,7 @@ Java_com_jarvis_assistant_local_LocalBrain_nativeGenerate(JNIEnv *env, jobject, 
                 size = llama_token_to_piece(vocab, token, piece.data(), static_cast<int32_t>(piece.size()), 0, false);
             }
             if (size < 0) throw std::runtime_error("Could not decode local AI output.");
+            engine->stats[1]++;
             output.append(piece.data(), static_cast<size_t>(size));
             pending.append(piece.data(), static_cast<size_t>(size));
             size_t complete = completeUtf8Prefix(pending);
@@ -198,6 +221,7 @@ Java_com_jarvis_assistant_local_LocalBrain_nativeGenerate(JNIEnv *env, jobject, 
             checkCancelled(*engine);
             if (status != 0) throw std::runtime_error("Local AI generation failed. Please retry.");
         }
+        engine->stats[4]=clock()-generationStarted;
         env->DeleteLocalRef(callbackClass);
         if (!pending.empty()) output.resize(output.size() - pending.size());
         return bytes(env, output);
@@ -235,4 +259,10 @@ Java_com_jarvis_assistant_local_LocalBrain_nativeDestroy(JNIEnv *, jobject, jlon
         found->second->cancelled.store(true);
         engines.erase(found);
     }
+}
+
+extern "C" JNIEXPORT jlongArray JNICALL
+Java_com_jarvis_assistant_local_LocalBrain_nativeStatistics(JNIEnv *env,jobject,jlong id){
+    try{auto engine=lookup(id);std::lock_guard<std::mutex> lock(engine->generationMutex);jlong values[10]={0};for(int i=0;i<5;i++)values[i]=engine->stats[i];if(engine->model){values[5]=llama_model_n_ctx_train(engine->model);values[6]=llama_vocab_n_tokens(llama_model_get_vocab(engine->model));values[7]=llama_model_n_params(engine->model);values[8]=llama_model_size(engine->model);values[9]=llama_vocab_type(llama_model_get_vocab(engine->model));}auto result=env->NewLongArray(10);if(result)env->SetLongArrayRegion(result,0,10,values);return result;}
+    catch(const std::exception &e){throwJava(env,"java/lang/IllegalStateException",e.what());return nullptr;}
 }

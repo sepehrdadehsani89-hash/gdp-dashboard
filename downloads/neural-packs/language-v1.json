@@ -1,0 +1,22 @@
+{
+  "id": "language",
+  "title": "Language starter · EN/ES/FA",
+  "version": "1",
+  "publication": "2026-11-02",
+  "license": "CC0-1.0",
+  "source": "Original Jarvis educational reference notes",
+  "entries": [
+    {
+      "title": "English: polite requests",
+      "text": "A polite English request can use “Could you please …?” followed by the base verb. For example: “Could you please send the agenda?” State the desired action and any deadline clearly. An ambiguous pronoun such as “it” needs a clear antecedent."
+    },
+    {
+      "title": "Español: peticiones y claridad",
+      "text": "Una petición amable puede usar «¿Podrías …, por favor?». Por ejemplo: «¿Podrías enviar la agenda, por favor?». Usa un sujeto o antecedente claro cuando «eso» o «lo» pueda resultar ambiguo. Los signos de interrogación enmarcan la pregunta: ¿ … ?"
+    },
+    {
+      "title": "فارسی: نوشتن روشن",
+      "text": "درخواست روشن باید کار مورد نظر و زمان لازم را مشخص کند. برای نمونه: «لطفاً دستور جلسه را تا فردا بفرستید.» اگر مرجع «این» یا «آن» روشن نیست، نام موضوع را بنویسید. متن فارسی از راست به چپ نوشته می‌شود؛ اعداد و نام‌های لاتین ممکن است جهت متفاوت داشته باشند."
+    }
+  ]
+}

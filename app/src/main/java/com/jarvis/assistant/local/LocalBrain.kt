@@ -18,6 +18,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.asStateFlow
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONObject
@@ -28,10 +29,28 @@ import java.util.concurrent.TimeUnit
 
 /** Explicit-download, phone-resident inference. No user text is sent over the network. */
 @Keep
-class LocalBrain(context: Context) {
-    private val directory = File(context.applicationContext.filesDir, "local-brain").apply { mkdirs() }
-    private val modelFile = File(directory, MODEL_FILENAME)
-    private val manifestFile = File(directory, "verified-model.json")
+class LocalBrain(private val context: Context,val preferences: com.jarvis.assistant.neural.NeuralPreferences = com.jarvis.assistant.neural.NeuralPreferences(context)) {
+    val profile get()=com.jarvis.assistant.neural.BrainProfiles.get(preferences.state.value.profile)
+    private val root=File(context.applicationContext.filesDir,"local-brain").apply{mkdirs()}
+    private fun directoryFor(p:com.jarvis.assistant.neural.BrainProfile)=if(p.id=="lite")root else File(root,p.id).apply{mkdirs()}
+    private val progressState=kotlinx.coroutines.flow.MutableStateFlow("Idle")
+    val progress=progressState.asStateFlow()
+    @Volatile private var loadedProfile=""
+    @Volatile private var stopReason:String?=null
+    @Volatile var lastMetrics:com.jarvis.assistant.neural.InferenceMetrics?=null;private set
+    suspend fun inspectDownload(p:com.jarvis.assistant.neural.BrainProfile):ModelDownloadPolicy.Descriptor=withContext(Dispatchers.IO){
+        require(p.available)
+        ModelDownloadPolicy.parseOfficialMetadata(fetchMetadata("https://huggingface.co/api/models/${p.repository}/revision/main?blobs=true"),p)
+    }
+    suspend fun select(id:String){val next=com.jarvis.assistant.neural.BrainProfiles.get(id);require(next.available);release();preferences.save(preferences.state.value.copy(profile=next.id))}
+    fun hardwareError(p:com.jarvis.assistant.neural.BrainProfile=profile):String? {
+        val info=android.app.ActivityManager.MemoryInfo();context.getSystemService(android.app.ActivityManager::class.java).getMemoryInfo(info)
+        return com.jarvis.assistant.neural.BrainProfiles.admission(p,info.totalMem/1048576,info.availMem/1048576,info.lowMemory,context.getSystemService(android.os.PowerManager::class.java).currentThermalStatus,android.os.Build.SUPPORTED_ABIS.contains("arm64-v8a"))
+    }
+
+    private val directory get()=directoryFor(profile)
+    private val modelFile get()=File(directory,profile.file)
+    private val manifestFile get()=File(directory,"verified-model.json")
     private val inferenceMutex = Mutex()
     private val downloadMutex = Mutex()
     @Volatile private var handle: Long = 0L
@@ -47,26 +66,31 @@ class LocalBrain(context: Context) {
     @Keep
     interface TokenReceiver { @Keep fun onToken(bytes: ByteArray) }
 
-    fun modelReady(): Boolean = runCatching {
+    fun modelReady():Boolean=ready(profile)
+    private fun ready(selected:com.jarvis.assistant.neural.BrainProfile): Boolean = runCatching {
+        val modelFile=File(directoryFor(selected),selected.file);val manifestFile=File(directoryFor(selected),"verified-model.json")
         if (!modelFile.isFile || !manifestFile.isFile) return@runCatching false
         val metadata = JSONObject(manifestFile.readText())
-        metadata.getString("repository") == MODEL_REPOSITORY &&
+        metadata.getString("repository") == selected.repository && metadata.optString("file",selected.file)==selected.file &&
             metadata.getString("sha256").matches(Regex("[a-f0-9]{64}")) &&
             metadata.getString("revision").matches(Regex("[a-f0-9]{40}")) &&
             metadata.getLong("size") == modelFile.length() && modelFile.length() > 1_000_000
     }.getOrDefault(false)
 
     fun modelStatus(): String = if (modelReady()) {
-        "Qwen2.5 0.5B Q4_K_M • on-device • ${modelFile.length() / (1024 * 1024)} MB"
+        "${profile.title} • Qwen2.5 Q4_K_M • ${modelFile.length()} bytes • ${profile.context} token runtime context"
     } else {
-        "Download the optional on-device model (about 400 MB). No API key required."
+        "${profile.title} weights are not installed. Inspect exact size and license in Neural Core. No API key required."
     }
 
-    suspend fun download(onProgress: (Float) -> Unit) = withContext(Dispatchers.IO) {
+    suspend fun download(approved:ModelDownloadPolicy.Descriptor?=null,target:com.jarvis.assistant.neural.BrainProfile=profile,onProgress: (Float) -> Unit) = withContext(Dispatchers.IO) {
         downloadMutex.withLock {
-            if (modelReady()) { onProgress(1f); return@withLock }
+            val selected=target
+            val directory=directoryFor(selected);val modelFile=File(directory,selected.file);val manifestFile=File(directory,"verified-model.json")
+            require(selected.available)
+            if (ready(selected)) { onProgress(1f); return@withLock }
             downloadCancelled = false
-            val temporary = File(directory, "$MODEL_FILENAME.part")
+            val temporary = File(directory, "${selected.file}.part")
             val temporaryManifest = File(directory, "verified-model.json.part")
             val cancellationWatcher = CoroutineScope(currentCoroutineContext()).launch(
                 Dispatchers.Default, start = CoroutineStart.UNDISPATCHED,
@@ -74,33 +98,40 @@ class LocalBrain(context: Context) {
                 try { awaitCancellation() } finally { activeDownload?.cancel() }
             }
             try {
-                if (temporary.exists()) check(temporary.delete()) { "Could not remove an interrupted model download." }
+                // Keep an interrupted, revision-bound partial download for a verified Range retry.
                 temporaryManifest.delete()
                 currentCoroutineContext().ensureActive()
                 onProgress(0f)
-                val metadataUrl = "https://huggingface.co/api/models/$MODEL_REPOSITORY/revision/main?blobs=true"
+                val metadataUrl = "https://huggingface.co/api/models/${selected.repository}/revision/main?blobs=true"
                 val metadataText = fetchMetadata(metadataUrl)
                 currentCoroutineContext().ensureActive()
                 if (downloadCancelled) throw CancellationException("Model download cancelled")
-                val descriptor = ModelDownloadPolicy.parseOfficialMetadata(metadataText)
+                val descriptor = ModelDownloadPolicy.parseOfficialMetadata(metadataText,selected)
+                if(approved!=null)require(descriptor==approved){"Model metadata changed. Review the new download details."}
                 val revision = descriptor.revision
+                val resumeRecord=File(directory,"${selected.file}.resume")
+                val identity="$revision:${descriptor.sha256}:${descriptor.size}"
+                if(!resumeRecord.isFile || resumeRecord.readText()!=identity || temporary.length()>descriptor.size){temporary.delete();resumeRecord.writeText(identity)}
+                if(temporary.length()==descriptor.size)temporary.delete()
+                val offset=temporary.length()
                 val expectedSize = descriptor.size
                 val free = StatFs(directory.absolutePath).availableBytes
-                require(free > expectedSize + 150L * 1024 * 1024) { "Free at least 600 MB of phone storage and try again." }
-                val url = "https://huggingface.co/$MODEL_REPOSITORY/resolve/$revision/$MODEL_FILENAME?download=true"
-                val call = http.newCall(Request.Builder().url(url).build())
+                require(free > expectedSize - offset + 150L * 1024 * 1024) { "Free sufficient storage for the remaining verified download plus 150 MiB, then retry." }
+                val url = "https://huggingface.co/${selected.repository}/resolve/$revision/${selected.file}?download=true"
+                val call = http.newCall(Request.Builder().url(url).apply{if(offset>0)header("Range","bytes=$offset-")}.build())
                 activeDownload = call
                 call.execute().use { response ->
                     if (!response.isSuccessful) throw IOException("Model download failed (${response.code}). Try again on Wi-Fi.")
                     require(response.request.url.isHttps) { "Insecure model redirect refused." }
                     val body = response.body ?: throw IOException("Empty model response.")
-                    val contentLength = body.contentLength()
-                    require(contentLength < 0 || contentLength == expectedSize) { "Unexpected model response size." }
+                    val initial=com.jarvis.assistant.neural.DownloadResumePolicy.initialBytes(offset,expectedSize,response.code,response.header("Content-Range"),body.contentLength())
+                    val resumed=initial>0
                     val digest = MessageDigest.getInstance("SHA-256")
-                    var total = 0L
+                    if(resumed)temporary.inputStream().use{input->val bytes=ByteArray(131072);while(true){currentCoroutineContext().ensureActive();val n=input.read(bytes);if(n<0)break;digest.update(bytes,0,n)}}
+                    var total = initial
                     var previousPercent = -1
                     body.byteStream().use { input ->
-                        temporary.outputStream().use { output ->
+                        java.io.FileOutputStream(temporary,resumed).use { output ->
                             val buffer = ByteArray(128 * 1024)
                             while (true) {
                                 currentCoroutineContext().ensureActive()
@@ -122,24 +153,24 @@ class LocalBrain(context: Context) {
                         }
                     }
                     val actualHash = digest.digest().joinToString("") { "%02x".format(it) }
-                    ModelDownloadPolicy.verifyDownloaded(descriptor, total, actualHash)
+                    try{ModelDownloadPolicy.verifyDownloaded(descriptor, total, actualHash)}catch(e:IllegalArgumentException){temporary.delete();resumeRecord.delete();throw e}
                     currentCoroutineContext().ensureActive()
                     if (downloadCancelled) throw CancellationException("Model download cancelled")
                     temporaryManifest.writeText(JSONObject().apply {
-                        put("repository", MODEL_REPOSITORY)
+                        put("repository", selected.repository)
                         put("revision", revision)
-                        put("file", MODEL_FILENAME)
+                        put("file", selected.file)
                         put("sha256", actualHash)
                         put("size", total)
                         put("license", "Apache-2.0 (official Qwen2.5-0.5B model)")
                     }.toString())
                     check(temporary.renameTo(modelFile)) { "Could not install verified model." }
                     check(temporaryManifest.renameTo(manifestFile)) { "Could not save model integrity record." }
+                    resumeRecord.delete()
                     onProgress(1f)
                 }
             } finally {
                 activeDownload = null
-                temporary.delete()
                 temporaryManifest.delete()
                 cancellationWatcher.cancelAndJoin()
             }
@@ -147,7 +178,7 @@ class LocalBrain(context: Context) {
     }
 
     private fun fetchMetadata(url: String): String {
-        val call = http.newCall(Request.Builder().url(url).build())
+        val call = http.newBuilder().callTimeout(30,TimeUnit.SECONDS).readTimeout(25,TimeUnit.SECONDS).build().newCall(Request.Builder().url(url).build())
         activeDownload = call
         return call.execute().use { response ->
             if (!response.isSuccessful) throw IOException("Cannot verify the official model (${response.code}).")
@@ -166,12 +197,29 @@ class LocalBrain(context: Context) {
         history: List<ChatMessage>,
         onChunk: (String) -> Unit,
         concise:Boolean=true,
+        benchmark:Boolean=false,
+        baselinePrompt:Boolean=false,
     ): String = withContext(Dispatchers.IO) {
         inferenceMutex.withLock {
-            check(modelReady()) { "Download the on-device model in Settings first. No API key is needed." }
+            if(!modelReady())throw LocalModelUnavailable(profile.title)
             check(nativeAvailable) { "The local AI runtime is unavailable on this phone architecture." }
-            val prompt = LocalPromptBuilder.build(text, language, history, concise).toByteArray(Charsets.UTF_8)
-            if (handle == 0L) handle = nativeCreate(modelFile.absolutePath)
+            hardwareError()?.let{error(it)}
+            val selected=profile
+            val started=android.os.SystemClock.elapsedRealtime()
+            var firstToken:Long?=null
+            var peakPss=android.os.Debug.getPss()
+            stopReason=null
+            progressState.value="Loading ${selected.title}"
+            try {
+            val prompt = (if(baselinePrompt)com.jarvis.assistant.neural.BaselinePromptBuilder.build(text,language,emptyList(),concise) else LocalPromptBuilder.build(text, language, history, concise)).toByteArray(Charsets.UTF_8)
+            if(handle==0L){
+                val expected=JSONObject(manifestFile.readText()).getString("sha256")
+                val digest=MessageDigest.getInstance("SHA-256")
+                modelFile.inputStream().use{input->val b=ByteArray(131072);while(true){currentCoroutineContext().ensureActive();val n=input.read(b);if(n<0)break;digest.update(b,0,n)}}
+                require(digest.digest().joinToString(""){"%02x".format(it)}==expected){"Model integrity check failed. Keep the other profile and redownload this one."}
+            }
+            if(handle!=0L && loadedProfile!=selected.id){nativeDestroy(handle);handle=0L}
+            if (handle == 0L){ handle = nativeCreate(modelFile.absolutePath,selected.context,if(preferences.state.value.eco)1 else 2);loadedProfile=selected.id}
             check(handle != 0L) { "Could not initialize the local AI runtime." }
             currentCoroutineContext().ensureActive()
             nativePrepare(handle)
@@ -180,18 +228,36 @@ class LocalBrain(context: Context) {
                 val cancellationWatcher = launch(Dispatchers.Default, start = CoroutineStart.UNDISPATCHED) {
                     try { awaitCancellation() } finally { nativeCancel(activeHandle) }
                 }
+                val monitor=launch(Dispatchers.Default){
+                    while(true){kotlinx.coroutines.delay(if(benchmark)500 else 2000)
+                        if(benchmark)peakPss=maxOf(peakPss,android.os.Debug.getPss())
+                        val info=android.app.ActivityManager.MemoryInfo();context.getSystemService(android.app.ActivityManager::class.java).getMemoryInfo(info)
+                        if(info.lowMemory || context.getSystemService(android.os.PowerManager::class.java).currentThermalStatus>=3){stopReason="Local inference stopped for memory pressure or thermal protection.";nativeCancel(activeHandle);break}
+                    }
+                }
                 try {
                     nativeGenerate(activeHandle, prompt, if(concise)256 else 512, object : TokenReceiver {
                         override fun onToken(bytes: ByteArray) {
+                            if(firstToken==null)firstToken=android.os.SystemClock.elapsedRealtime()-started
+                            progressState.value="Generating locally"
                             onChunk(bytes.toString(Charsets.UTF_8))
                         }
                     }).toString(Charsets.UTF_8).trim().also {
+                        val stats=nativeStatistics(activeHandle)
+                        lastMetrics=com.jarvis.assistant.neural.InferenceMetrics(selected.id,modelFile.length(),stats.getOrElse(0){0},stats.getOrElse(1){0},stats.getOrElse(2){0}/1000,firstToken,android.os.SystemClock.elapsedRealtime()-started,peakPss,context.getSystemService(android.os.PowerManager::class.java).currentThermalStatus,stats.getOrElse(4){0}/1000,mapOf("training_context_tokens" to stats.getOrElse(5){0},"vocabulary_size" to stats.getOrElse(6){0},"parameter_count" to stats.getOrElse(7){0},"tensor_bytes" to stats.getOrElse(8){0},"llama_vocab_type" to stats.getOrElse(9){0}))
+                        if(benchmark)File(root,"benchmark-last.json").writeText(lastMetrics!!.json())
                         check(it.isNotBlank()) { "The small local model returned no answer. Please try a shorter question." }
                     }
+                } catch(e:java.util.concurrent.CancellationException){
+                    if(stopReason!=null)throw IllegalStateException(stopReason)
+                    throw e
                 } finally {
+                    monitor.cancelAndJoin()
+                    progressState.value="Idle"
                     cancellationWatcher.cancelAndJoin()
                 }
             }
+            } finally {progressState.value="Idle"}
         }
     }
 
@@ -211,7 +277,8 @@ class LocalBrain(context: Context) {
         }
     }
 
-    private external fun nativeCreate(path: String): Long
+    private external fun nativeCreate(path: String, contextTokens:Int,threads:Int): Long
+    private external fun nativeStatistics(handle:Long):LongArray
     private external fun nativePrepare(handle: Long)
     private external fun nativeGenerate(handle: Long, prompt: ByteArray, maxTokens: Int, receiver: TokenReceiver): ByteArray
     private external fun nativeCancel(handle: Long)
@@ -234,3 +301,5 @@ private fun java.io.InputStream.readBytesLimited(maximum: Int): ByteArray {
         result.write(buffer, 0, count)
     }
 }
+
+class LocalModelUnavailable(profile:String):IllegalStateException("Install $profile through Neural Core first; no API key is required.")

@@ -1,0 +1,26 @@
+{
+  "id": "science",
+  "title": "Science starter",
+  "version": "1",
+  "publication": "2026-11-02",
+  "license": "CC0-1.0",
+  "source": "Original Jarvis educational reference notes",
+  "entries": [
+    {
+      "title": "Mathematics: right triangles",
+      "text": "For a right triangle, a² + b² = c², where c is the hypotenuse. This theorem does not apply to arbitrary triangles. A 3–4–5 triangle is a right triangle. Units must be consistent. To find a missing length, solve for its square and take the nonnegative square root."
+    },
+    {
+      "title": "Physics: energy and power",
+      "text": "Energy is measured in joules. Power is the rate of energy transfer, measured in watts: one watt equals one joule per second. In a closed accounting system, energy is conserved; useful energy can be dispersed as heat. Electrical energy in watt-hours is power in watts multiplied by elapsed hours."
+    },
+    {
+      "title": "Chemistry: atoms and reactions",
+      "text": "An element is defined by its proton count. An isotope has a different neutron count. A chemical reaction rearranges atoms; it does not ordinarily change their nuclei. Balance reaction equations by conserving each element. Oxygen has symbol O, hydrogen H, and carbon C. This reference is educational and provides no hazardous experiment instructions."
+    },
+    {
+      "title": "Biology: cells and inheritance",
+      "text": "Cells are the basic units of living organisms. DNA stores inherited information. Genes influence traits together with development and environment; one gene does not explain every complex trait. This is general education, not a diagnosis or personalized medical guidance."
+    }
+  ]
+}

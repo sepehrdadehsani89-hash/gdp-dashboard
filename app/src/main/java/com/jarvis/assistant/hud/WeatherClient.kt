@@ -16,7 +16,8 @@ internal class WeatherClient(
     private val forecastBase:String="https://api.open-meteo.com/v1/forecast",
     private val client:OkHttpClient=OkHttpClient.Builder().connectTimeout(12,TimeUnit.SECONDS).readTimeout(15,TimeUnit.SECONDS).callTimeout(25,TimeUnit.SECONDS).followRedirects(false).build()
 ) {
-    suspend fun fetch(city:String,latitude:Double?,longitude:Double?):WeatherPayload {
+    suspend fun fetch(city:String,latitude:Double?,longitude:Double?,forecastDays:Int=1):WeatherPayload {
+        require(forecastDays in 1..8)
         val coordinates=if(latitude!=null && longitude!=null){
             require(latitude in -90.0..90.0 && longitude in -180.0..180.0)
             Triple(latitude,longitude,"Approximate location")
@@ -29,8 +30,8 @@ internal class WeatherClient(
         }
         val url=forecastBase.toHttpUrl().newBuilder().addQueryParameter("latitude",coordinates.first.toString()).addQueryParameter("longitude",coordinates.second.toString())
             .addQueryParameter("current","temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m")
-            .addQueryParameter("hourly","precipitation_probability").addQueryParameter("daily","sunrise,sunset")
-            .addQueryParameter("forecast_days","1").addQueryParameter("timezone","auto").build()
+            .addQueryParameter("hourly","precipitation_probability").addQueryParameter("daily",if(forecastDays==1)"sunrise,sunset" else "sunrise,sunset,temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code")
+            .addQueryParameter("forecast_days",forecastDays.toString()).addQueryParameter("timezone","auto").build()
         return WeatherPayload(get(url.toString()),coordinates.third)
     }
     private suspend fun get(url:String):JSONObject=suspendCancellableCoroutine { continuation ->

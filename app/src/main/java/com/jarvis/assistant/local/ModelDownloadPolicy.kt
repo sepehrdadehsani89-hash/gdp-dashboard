@@ -8,9 +8,9 @@ object ModelDownloadPolicy {
     private val revisionPattern = Regex("[a-f0-9]{40}")
     private val checksumPattern = Regex("[a-f0-9]{64}")
 
-    fun parseOfficialMetadata(text: String): Descriptor {
+    fun parseOfficialMetadata(text: String, profile: com.jarvis.assistant.neural.BrainProfile = com.jarvis.assistant.neural.BrainProfiles.lite): Descriptor {
         val metadata = JSONObject(text)
-        require(metadata.getString("id") == LocalBrain.MODEL_REPOSITORY) { "Unexpected model repository." }
+        require(metadata.getString("id") == profile.repository) { "Unexpected model repository." }
         require(metadata.optJSONObject("cardData")?.optString("license")?.lowercase() == "apache-2.0") {
             "The official model license could not be verified. Download was not started."
         }
@@ -18,13 +18,13 @@ object ModelDownloadPolicy {
         require(revision.matches(revisionPattern)) { "Missing immutable model revision." }
         val siblings = metadata.getJSONArray("siblings")
         val entry = (0 until siblings.length()).asSequence().map { siblings.getJSONObject(it) }
-            .firstOrNull { it.optString("rfilename") == LocalBrain.MODEL_FILENAME }
+            .firstOrNull { it.optString("rfilename") == profile.file }
         val lfs = entry?.optJSONObject("lfs")
             ?: throw IllegalArgumentException("Model integrity metadata is unavailable.")
         val hash = lfs.optString("sha256").lowercase()
         val size = lfs.optLong("size", -1)
         require(hash.matches(checksumPattern)) { "Missing model SHA-256." }
-        require(size in 1_000_000..(1024L * 1024 * 1024)) { "Unsupported model download size." }
+        require(size in 1_000_000..profile.maximumBytes) { "Unsupported model download size." }
         return Descriptor(revision, hash, size)
     }
 
