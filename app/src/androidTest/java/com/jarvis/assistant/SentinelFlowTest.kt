@@ -96,11 +96,19 @@ class SentinelFlowTest {
         shell("dumpsys battery set ac 0");shell("dumpsys battery set usb 0");shell("dumpsys battery set level 37");shell("dumpsys battery set status 3")
         compose.waitUntil(30_000){runtime.state.value.hud.telemetry.battery.percent==37 && JarvisWallpaperService.renderedFrames>before}
         assertFalse(WakeListenerService.state.value.running)
+        // Let the four explicit battery broadcasts and preview surface replacement settle.
+        var stableSince=SystemClock.elapsedRealtime();var previousFrames=JarvisWallpaperService.renderedFrames
+        val settleUntil=stableSince+10_000
+        while(SystemClock.elapsedRealtime()<settleUntil && SystemClock.elapsedRealtime()-stableSince<600){
+            Thread.sleep(100)
+            val frames=JarvisWallpaperService.renderedFrames
+            if(frames!=previousFrames){previousFrames=frames;stableSince=SystemClock.elapsedRealtime()}
+        }
         val sampleStart=SystemClock.elapsedRealtime();val staticFrames=JarvisWallpaperService.renderedFrames
         Thread.sleep(1000)
         val staticDelta=JarvisWallpaperService.renderedFrames-staticFrames
-        assertTrue("Reduced-motion wallpaper must not run a continuous renderer",staticDelta<=2)
         File(context.cacheDir,"sentinel-emulator-performance.json").writeText(org.json.JSONObject().put("sample_ms",SystemClock.elapsedRealtime()-sampleStart).put("submitted_static_frames",staticDelta).put("app_pss_kib",android.os.Debug.getPss()).put("device","API 29 software emulator; reduced motion").toString())
+        assertTrue("Reduced-motion wallpaper must not run a continuous renderer: $staticDelta submitted frames",staticDelta<=2)
         assertEquals(launcher,context.packageManager.resolveActivity(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME),android.content.pm.PackageManager.MATCH_DEFAULT_ONLY)?.activityInfo?.packageName)
         instrumentation.uiAutomation.takeScreenshot()?.let{image->File(context.cacheDir,"sentinel-home-tested.png").outputStream().use{image.compress(Bitmap.CompressFormat.PNG,100,it)};image.recycle()}
         shell("input keyevent KEYCODE_SLEEP")

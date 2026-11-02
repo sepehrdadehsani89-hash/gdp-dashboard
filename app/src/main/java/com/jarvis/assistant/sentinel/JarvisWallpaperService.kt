@@ -75,9 +75,17 @@ class JarvisWallpaperService:WallpaperService() {
             if(!registered){ContextCompat.registerReceiver(this@JarvisWallpaperService,screenReceiver,IntentFilter().apply{addAction(Intent.ACTION_SCREEN_OFF);addAction(Intent.ACTION_SCREEN_ON)},ContextCompat.RECEIVER_EXPORTED);registered=true}
             observation?.cancel()
             observation=scope.launch{runtime.state.collect{state->
-                frame=WallpaperFrame(state.hud,state.audio,state.sentinelVisual,state.settings.language,state.playback,state.followUpArming,state.voiceWindowDeadline)
-                runtime.hud.weatherInterest(this@SentinelEngine,state.hud.settings.sentinel.wallpaperWeather)
-                requestFrame()
+                val hud=state.hud
+                // Observe only visible artwork. Memory/network/PCM wake-only updates and
+                // sub-minute timestamps must not wake a static wallpaper renderer.
+                val telemetry=hud.telemetry.copy(epochMillis=hud.telemetry.epochMillis/60_000*60_000,
+                    network="Unavailable",internetValidated=false,systemAvailableBytes=null,systemTotalBytes=null,appPssKiB=null)
+                val mode=state.sentinelVisual.mode
+                val audio=if(mode in listOf(SentinelMode.LISTENING,SentinelMode.ACTIVATING))state.audio else com.jarvis.assistant.hud.AudioReading()
+                val playback=if(mode==SentinelMode.SPEAKING)state.playback else PlaybackReading()
+                val next=WallpaperFrame(hud.copy(telemetry=telemetry,weather=if(hud.settings.sentinel.wallpaperWeather)hud.weather else com.jarvis.assistant.hud.WeatherState()),audio,state.sentinelVisual,state.settings.language,playback,state.followUpArming,state.voiceWindowDeadline)
+                runtime.hud.weatherInterest(this@SentinelEngine,hud.settings.sentinel.wallpaperWeather)
+                if(next!=frame){frame=next;requestFrame()}
             }}
             requestFrame()
         }
