@@ -1,0 +1,242 @@
+{
+  "app": "Jarvis",
+  "version": "3.0.0",
+  "version_code": 3,
+  "application_id": "com.jarvis.next",
+  "separate_from_original_jarvis": true,
+  "updates_jarvis_next": true,
+  "source_commit": "fcb489512034b7efee784fc6622cd1ba63e772e1",
+  "apk": "Jarvis-3.0.0-arm64.apk",
+  "bytes": 78717872,
+  "sha256": "9bd1bc1d31a39602df4ad74ffe7f74bfb6ed32bc5be6eecd32a6146eba3f82ab",
+  "signing_certificate_sha256": "56188545a9204a61153d5bfcb7c6fe230d0b024d0f2b457256da2827523b6719",
+  "abi": "arm64-v8a",
+  "min_sdk": 29,
+  "target_sdk": 35,
+  "debuggable": false,
+  "minified": false,
+  "apk_v2_signature_verified": true,
+  "zip_alignment_verified": true,
+  "signing_backup_restore_verified": true,
+  "unit_tests": {
+    "tests": 144,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "android_tests": {
+    "passed": 28,
+    "skipped": 1,
+    "failed": 0,
+    "device": "API 29 x86_64 software emulator, 480x800",
+    "method": "Complete 29-case sweep on final production source; emulator APKs built in separate output directories",
+    "cases": [
+      {
+        "class": "com.jarvis.assistant.ConnectedFolderFlowTest",
+        "test": "persistedReadGrantBrowseReadReconnectAndRevoke",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.ConnectedFolderFlowTest",
+        "test": "rejectsNonTreeUris",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.GeminiSettingsTest",
+        "test": "stalledCheckCanBeCancelledWithoutClaimingSuccess",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.GeminiSettingsTest",
+        "test": "compatibleModelCanBeSelectedTestedAndSaved",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.GeminiSettingsTest",
+        "test": "failedTestIsShownWithoutClaimingConnectionSuccess",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.HudFlowTest",
+        "test": "codexCancelNeverExecutesProtectedAction",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.HudFlowTest",
+        "test": "navigationSearchExplicitMemorySaveAndCategoryPersist",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.HudFlowTest",
+        "test": "batteryAndWeatherPermissionDenialDoNotCreateMeasurements",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.HudFlowTest",
+        "test": "rtlAndHudPreferencesSurviveActivityRecreation",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.HudFlowTest",
+        "test": "batteryEventsChargingFullAndForegroundReentryUseSystemValues",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.HudFlowTest",
+        "test": "startupBatteryIsRealAndHudCanRenderOnSmallScreen",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.HudFlowTest",
+        "test": "overlappingVisibleActivitiesRetainTelemetryUntilLastOwnerStops",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.JarvisFlowTest",
+        "test": "explicitLocalChoiceKeepsQuotaSeparateAndDisablesCloudVoice",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.JarvisFlowTest",
+        "test": "privateMemorySpeechStaysOnDeviceWhenCloudVoiceIsEnabled",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.JarvisFlowTest",
+        "test": "firstLaunchCanFinishWithoutAKeyOrOptionalPermission",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.JarvisFlowTest",
+        "test": "youtubeProposalWaitsForApprovalAndCanBeCancelled",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.JarvisFlowTest",
+        "test": "explicitMemoryRequestIsPersistedAndVisible",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.JarvisFlowTest",
+        "test": "typedTimeQuestionUsesTheActualKeylessTool",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.JarvisFlowTest",
+        "test": "persianSelectionLocalizesHomeAndMemoryNavigation",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.LiveControlFlowTest",
+        "test": "currentTargetTapDraftAndStaleTargetGuard",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.NativeEngineTest",
+        "test": "bundledEnglishOcrReadsActualRenderedPixels",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.NativeEngineTest",
+        "test": "installedNeuralVoicesGenerateNonSilentAudioInAllThreeLanguages",
+        "code": -4,
+        "status": "skipped"
+      },
+      {
+        "class": "com.jarvis.assistant.ScreenCaptureFlowTest",
+        "test": "realAndroidProjectionCapturesOneReadableFrameAndClearRemovesIt",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.SentinelFlowTest",
+        "test": "landscapeAndPersianArtworkRenderWithoutReplacingTheLauncher",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.SentinelFlowTest",
+        "test": "allOriginalSoundAssetsDecodeAndPlaybackQueuesWithoutMic",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.SentinelFlowTest",
+        "test": "nativeRendererDrawsFixtureBatteryAsTextRatherThanACannedImage",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.SentinelFlowTest",
+        "test": "neuralPlaybackMeterFollowsRealAudioTrackCursor",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.SentinelFlowTest",
+        "test": "realWallpaperPreviewSelectionBatteryAndHiddenEngineLifecycle",
+        "code": 0,
+        "status": "passed"
+      },
+      {
+        "class": "com.jarvis.assistant.SentinelFlowTest",
+        "test": "sentinelPreferencesDoNotOverwriteExistingMemoryOrProviderKeys",
+        "code": 0,
+        "status": "passed"
+      }
+    ]
+  },
+  "emulator_static_wallpaper_sample": {
+    "sample_ms": 1001,
+    "submitted_static_frames": 0,
+    "app_pss_kib": 165549,
+    "device": "API 29 software emulator; reduced motion"
+  },
+  "lint": {
+    "debug": {
+      "Error": 0,
+      "Fatal": 0,
+      "Warning": 21
+    },
+    "release": {
+      "Error": 0,
+      "Fatal": 0,
+      "Warning": 21
+    }
+  },
+  "original_sound_assets": 26,
+  "checked_at_utc": "2026-11-02T15:26:54.219456+00:00",
+  "limits": [
+    "Physical Redmi 9 performance/battery/thermals, noisy wake recognition, background launch, calls, Bluetooth and long sessions are not physically tested.",
+    "Optional neural language models are absent: three-language synthesis is skipped. Actual AudioTrack PCM cursor metering passes; no acoustic-quality claim.",
+    "Live Open-Meteo cloud egress is blocked by network policy. HTTP parsing/errors/cancellation/cache use controlled tests.",
+    "Actual Qwen generation, enrolled biometric success and real WhatsApp/photo sending are not exercised.",
+    "System/cloud speech motion is labelled decorative when measured PCM is unavailable.",
+    "ZIP alignment passes; bundled libvosk retains 4KiB ELF LOAD alignment. Native 16KiB-page Android compatibility is not established."
+  ],
+  "preserved_refs": {
+    "main": "0fbe7c5a40b2ec7ad70f156c77608bc1ec93cc1d",
+    "jarvis-android-download": "994ee8ace41e604fb51d1da31687bd2186c18333"
+  }
+}
