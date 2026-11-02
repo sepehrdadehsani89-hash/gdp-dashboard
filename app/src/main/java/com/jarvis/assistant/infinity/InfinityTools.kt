@@ -17,7 +17,7 @@ class InfinityTools(private val context:Context){
     fun clearContext(){listed=emptyList();selected=null;listedAt=0}
     suspend fun route(input:String,lang:AppLanguage,proposal:(String,String,String)->AssistantReply):AssistantReply? {
         val n=AppMatching.normalize(input).removePrefix("jarvis ")
-        if(Regex("^(remember|remember that|do not|dont|don t|never|no quiero|recuerda|یادت باشد|نکن) ").containsMatchIn(n))return null
+        if(DevicePolicy.informationalRequest(n) || Regex("^(remember|remember that|do not|dont|don t|never|no quiero|no muestres|no leas|no abras|no conectes|recuerda|یادت باشد|نکن) ").containsMatchIn(n) || Regex("(?:نکن|نخوان|نشان نده)$").containsMatchIn(n))return null
         val bluetooth=Regex("bluetooth|بلوتوث").containsMatchIn(n)
         val network=Regex("\\b(wifi|wi fi|internet|network|red)\\b|وای فای|اینترنت|شبکه").containsMatchIn(n)
         if(com.jarvis.assistant.neural.ContextPrivacyPolicy.localOnly(input) && network && Regex("speed|test|velocidad|سرعت|تست").containsMatchIn(n))return AssistantReply("An internet speed test needs an online transfer. Local-only mode did not start one.")
