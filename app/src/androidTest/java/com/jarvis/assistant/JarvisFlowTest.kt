@@ -10,6 +10,7 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performImeAction
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -149,7 +150,8 @@ class JarvisFlowTest {
         seedReady()
         compose.runOnUiThread { runtime.store.updateSettings(runtime.store.settings.value.copy(provider = "gemini", model = "gemini-fixture", useCloudVoice = true)) }
         compose.waitUntil(15_000) { runtime.state.value.settings.provider == "gemini" }
-        compose.onNodeWithText("Use free on-device AI").performScrollTo().performClick()
+        compose.onNode(androidx.compose.ui.test.hasScrollToIndexAction()).performScrollToNode(hasText("Use free on-device AI"))
+        compose.onNodeWithText("Use free on-device AI").performClick()
         compose.waitUntil(15_000) { runtime.state.value.settings.provider == "local" }
         assertFalse(runtime.state.value.settings.useCloudVoice)
         assertEquals("qwen2.5-0.5b", runtime.state.value.settings.model)
