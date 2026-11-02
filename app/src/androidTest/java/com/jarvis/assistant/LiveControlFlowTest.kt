@@ -38,8 +38,8 @@ class LiveControlFlowTest {
         val runtime = (i.targetContext.applicationContext as JarvisApplication).runtime
         i.runOnMainSync { runtime.submit("open Jarvis Next Test Controls") }
         val openedDeadline = System.currentTimeMillis() + 20_000
-        while (System.currentTimeMillis() < openedDeadline && !runtime.state.value.messages.any { it.text == "Opened Jarvis Next Test Controls." }) Thread.sleep(200)
-        assertTrue(runtime.state.value.messages.any { it.text == "Opened Jarvis Next Test Controls." })
+        while (System.currentTimeMillis() < openedDeadline && !runtime.state.value.messages.any { it.text == "Opening request sent to Android for Jarvis Next Test Controls." }) Thread.sleep(200)
+        assertTrue(runtime.state.value.messages.any { it.text == "Opening request sent to Android for Jarvis Next Test Controls." })
         assertNull(runtime.state.value.pendingAction)
         val deadline = System.currentTimeMillis() + 20_000
         while (System.currentTimeMillis() < deadline && !JarvisAccessibilityService.snapshot(i.targetContext).text.orEmpty().contains("Search", ignoreCase = true)) Thread.sleep(200)
