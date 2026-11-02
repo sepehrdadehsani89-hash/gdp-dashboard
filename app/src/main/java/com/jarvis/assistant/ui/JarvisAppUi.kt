@@ -8,6 +8,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -141,17 +142,17 @@ import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
-private val Ink = Color(0xFF07111F)
-private val Panel = Color(0xFF102033)
-private val PanelLight = Color(0xFF14283D)
-private val Mint = Color(0xFF7CE7CF)
+private val Ink = Color(0xFF000000)
+private val Panel = Color(0xFF050C14)
+private val PanelLight = Color(0xFF081923)
+private val Mint = Color(0xFF00E5FF)
 private val Muted = Color(0xFF91A7BB)
-private val Lavender = Color(0xFFB7B5F5)
+private val Lavender = Color(0xFFAA7CFF)
 private val Warm = Color(0xFFF0C8A9)
 private val Line = Color(0xFF263A50)
 
 @Composable
-fun JarvisAppUi(state: JarvisUiState, actions: JarvisUiActions) {
+fun JarvisAppUi(state: JarvisUiState, actions: JarvisUiActions, settingsRequest:Int=0) {
     val language = state.settings.language
     CompositionLocalProvider(LocalLayoutDirection provides if (language == AppLanguage.FA) LayoutDirection.Rtl else LayoutDirection.Ltr) {
         MaterialTheme(
@@ -164,7 +165,14 @@ fun JarvisAppUi(state: JarvisUiState, actions: JarvisUiActions) {
         ) {
             Surface(color = Ink, modifier = Modifier.fillMaxSize()) {
                 if (!state.settings.onboardingComplete) Onboarding(state, actions)
-                else MainShell(state, actions)
+                else MainShell(state, actions, settingsRequest)
+                state.authorization?.takeIf { it.status in listOf(com.jarvis.assistant.hud.AuthorizationStatus.AUTHORIZATION_REQUIRED,com.jarvis.assistant.hud.AuthorizationStatus.AWAITING_CODEX) }?.let { request ->
+                    AlertDialog(onDismissRequest=actions.onCancelAuthorization,
+                        title={Text("Codex · authorization required")},
+                        text={Text("${request.action}\n\nVerify using Android's device credential or biometric. This approval is for one action and expires after 90 seconds.")},
+                        confirmButton={Button(onClick=actions.onCodex){Text("Verify identity")}},
+                        dismissButton={TextButton(onClick=actions.onCancelAuthorization){Text("Cancel")}})
+                }
                 state.pendingAction?.let { action ->
                     AlertDialog(
                         onDismissRequest = actions.onCancelAction,
@@ -184,8 +192,9 @@ fun JarvisAppUi(state: JarvisUiState, actions: JarvisUiActions) {
 }
 
 @Composable
-private fun MainShell(state: JarvisUiState, actions: JarvisUiActions) {
+private fun MainShell(state: JarvisUiState, actions: JarvisUiActions, settingsRequest:Int) {
     var tab by rememberSaveable { mutableIntStateOf(0) }
+    LaunchedEffect(settingsRequest){if(settingsRequest>0)tab=2}
     val l = state.settings.language
     val labels = listOf(l.choose("Assistant", "Asistente", "دستیار"), l.choose("Memory", "Memoria", "حافظه"), l.choose("Settings", "Ajustes", "تنظیمات"))
     val icons = listOf(Icons.Rounded.Forum, Icons.Rounded.Memory, Icons.Rounded.Settings)
@@ -239,7 +248,7 @@ private fun Home(state: JarvisUiState, actions: JarvisUiActions, onOpenSettings:
     }
     Column(Modifier.fillMaxSize().imePadding()) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 18.dp), verticalAlignment = Alignment.CenterVertically) {
-            BrandMark()
+            Text("JARVIS · HUD",color=Mint,fontSize=9.sp,letterSpacing=2.sp)
             Spacer(Modifier.weight(1f))
             Surface(shape = CircleShape, color = PanelLight) {
                 Text(l.label, Modifier.padding(horizontal = 13.dp, vertical = 8.dp), color = Muted, style = MaterialTheme.typography.labelMedium)
@@ -253,17 +262,9 @@ private fun Home(state: JarvisUiState, actions: JarvisUiActions, onOpenSettings:
         }
         LazyColumn(state = scroll, modifier = Modifier.weight(1f), contentPadding = PaddingValues(horizontal = 24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             item {
-                Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                    AssistantOrb(state.phase, l, Modifier.size(180.dp))
-                    Text(phaseText(state.phase, l), color = Mint, style = MaterialTheme.typography.labelLarge, letterSpacing = 1.sp)
-                    Spacer(Modifier.height(15.dp))
-                    val greeting = if (state.settings.name.isBlank()) l.choose("At your service.", "A tu servicio.", "در خدمت شما هستم.")
-                    else l.choose("Hello, ${state.settings.name}.", "Hola, ${state.settings.name}.", "سلام ${state.settings.name}.")
-                    Text(greeting, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Light, textAlign = TextAlign.Center)
-                    Spacer(Modifier.height(8.dp))
-                    Text(l.choose("A little less effort. A little more possibility.", "Menos esfuerzo. Más posibilidades.", "کمی آسان‌تر. با فرصت‌های بیشتر."), color = Muted, textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyMedium)
-                    Spacer(Modifier.height(24.dp))
-                }
+                HudDashboard(state, actions, onOpenSettings)
+                Text(if (state.settings.name.isBlank()) l.choose("At your service.","A tu servicio.","در خدمت شما هستم.") else "${state.settings.name} · JARVIS", color=Muted)
+
             }
             if (state.messages.isEmpty()) item {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -290,7 +291,7 @@ private fun Home(state: JarvisUiState, actions: JarvisUiActions, onOpenSettings:
                 }
             } }
             item {
-                Text("Jarvis Next · separate installation", color = Mint, style = MaterialTheme.typography.labelSmall)
+                Text("Jarvis · separate installation", color = Mint, style = MaterialTheme.typography.labelSmall)
                 Text("Live controls: enable Screen access, start wake listening, then say open [app], tap [exact label], or type [draft]. Confirm taps/drafts by voice on the same screen. Send actions stay manual.", color = Muted, style = MaterialTheme.typography.bodySmall)
                 TextButton(onClick = actions.onUseLocal) { Text("Use free on-device AI") }
                 Text("Local inference needs a one-time ~400 MB model download in Settings. It does not reset Google quota.", color = Muted, style = MaterialTheme.typography.bodySmall)
@@ -315,15 +316,15 @@ private fun Home(state: JarvisUiState, actions: JarvisUiActions, onOpenSettings:
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 OutlinedTextField(value = input, onValueChange = { input = it },
                     modifier = Modifier.weight(1f), shape = RoundedCornerShape(24.dp),
-                    placeholder = { Text(l.choose("Ask Jarvis Next…", "Pregúntale a Jarvis…", "از جارویس بپرسید…")) },
+                    placeholder = { Text(l.choose("Ask Jarvis…", "Pregúntale a Jarvis…", "از جارویس بپرسید…")) },
                     maxLines = 4, keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
                     keyboardActions = KeyboardActions(onSend = { sendInput() }),
                     trailingIcon = { if (input.isNotBlank()) IconButton(onClick = sendInput) { Icon(Icons.AutoMirrored.Rounded.Send, l.choose("Send", "Enviar", "ارسال"), tint = Mint) } },
                 )
-                Button(onClick = if (busy) actions.onStop else actions.onMic,
+                Button(onClick = if (busy && state.phase != AssistantPhase.SPEAKING) actions.onStop else actions.onMic,
                     shape = CircleShape, contentPadding = PaddingValues(0.dp), modifier = Modifier.size(60.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = if (busy) Warm else Mint)) {
-                    Icon(if (busy) Icons.Rounded.Stop else Icons.Rounded.Mic, l.choose(if (busy) "Stop" else "Speak", if (busy) "Detener" else "Hablar", if (busy) "توقف" else "صحبت کنید"), Modifier.size(25.dp))
+                    Icon(if (busy && state.phase != AssistantPhase.SPEAKING) Icons.Rounded.Stop else Icons.Rounded.Mic, l.choose(if (state.phase==AssistantPhase.SPEAKING) "Interrupt and speak" else if (busy) "Stop" else "Speak", if (state.phase==AssistantPhase.SPEAKING) "Interrumpir y hablar" else if (busy) "Detener" else "Hablar", if (state.phase==AssistantPhase.SPEAKING) "قطع پاسخ و صحبت" else if (busy) "توقف" else "صحبت کنید"), Modifier.size(25.dp))
                 }
             }
         }
@@ -344,45 +345,10 @@ private fun BrandMark() {
         Box(Modifier.size(29.dp).border(1.dp, Mint.copy(alpha = .6f), RoundedCornerShape(9.dp)), contentAlignment = Alignment.Center) {
             Icon(Icons.Rounded.GraphicEq, null, Modifier.size(18.dp), tint = Mint)
         }
-        Text("JARVIS NEXT", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold, letterSpacing = 4.sp)
+        Text("JARVIS", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold, letterSpacing = 4.sp)
     }
 }
 
-@Composable
-private fun AssistantOrb(phase: AssistantPhase, language: AppLanguage, modifier: Modifier = Modifier) {
-    val transition = rememberInfiniteTransition(label = "orb")
-    val rotation by transition.animateFloat(0f, 360f, infiniteRepeatable(tween(18000, easing = LinearEasing)), label = "rotation")
-    val breath by transition.animateFloat(.86f, 1f, infiniteRepeatable(tween(1800), RepeatMode.Reverse), label = "breath")
-    val tint by animateColorAsState(if (phase == AssistantPhase.ERROR) Warm else if (phase == AssistantPhase.THINKING) Lavender else Mint, label = "orb color")
-    Canvas(modifier.semantics { contentDescription = phaseText(phase, language) }) {
-        val center = Offset(size.width / 2, size.height / 2)
-        val radius = size.minDimension * .34f
-        drawCircle(Brush.radialGradient(listOf(tint.copy(alpha = .12f * breath), tint.copy(alpha = .015f), Color.Transparent), center, radius * 1.5f), radius * 1.5f, center)
-        drawCircle(tint.copy(alpha = .11f), radius * 1.2f, center, style = Stroke(1.dp.toPx()))
-        drawCircle(tint.copy(alpha = .24f), radius, center, style = Stroke(1.dp.toPx()))
-        drawCircle(Brush.radialGradient(listOf(PanelLight, Ink), center, radius * .9f), radius * .89f, center)
-        for (index in 0..2) {
-            val angle = rotation + index * 120f
-            drawArc(tint.copy(alpha = .8f), angle, 55f, false,
-                topLeft = Offset(center.x - radius, center.y - radius), size = Size(radius * 2, radius * 2), style = Stroke(2.dp.toPx(), cap = StrokeCap.Round))
-        }
-        val active = phase in setOf(AssistantPhase.LISTENING, AssistantPhase.SPEAKING)
-        for (index in -4..4) {
-            val height = if (active) (10 + 28 * kotlin.math.abs(sin(rotation / 18 + index))).dp.toPx() * breath else (7 + 19 * cos(index * .35)).dp.toPx()
-            val x = center.x + index * 7.dp.toPx()
-            drawLine(tint.copy(alpha = if (index % 2 == 0) .95f else .5f), Offset(x, center.y - height / 2), Offset(x, center.y + height / 2), 2.5.dp.toPx(), StrokeCap.Round)
-        }
-    }
-}
-
-private fun phaseText(phase: AssistantPhase, l: AppLanguage): String = when (phase) {
-    AssistantPhase.READY -> l.choose("READY WHEN YOU ARE", "LISTO PARA TI", "آماده‌ام")
-    AssistantPhase.LISTENING -> l.choose("LISTENING", "ESCUCHANDO", "گوش می‌دهم")
-    AssistantPhase.THINKING -> l.choose("THINKING", "PENSANDO", "در حال فکر کردن")
-    AssistantPhase.SPEAKING -> l.choose("SPEAKING", "HABLANDO", "در حال پاسخ دادن")
-    AssistantPhase.PAUSED -> l.choose("PAUSED", "EN PAUSA", "متوقف شده")
-    AssistantPhase.ERROR -> l.choose("NEEDS YOUR ATTENTION", "REQUIERE TU ATENCIÓN", "به توجه شما نیاز دارم")
-}
 
 @Composable
 private fun Suggestion(title: String, subtitle: String, icon: ImageVector, onClick: () -> Unit) {
@@ -403,7 +369,7 @@ private fun Suggestion(title: String, subtitle: String, icon: ImageVector, onCli
 private fun MessageCard(message: ChatMessage, l: AppLanguage, actions: JarvisUiActions) {
     val fromUser = message.role == MessageRole.USER
     Column(Modifier.fillMaxWidth(), horizontalAlignment = if (fromUser) Alignment.End else Alignment.Start) {
-        Text(if (fromUser) l.choose("YOU", "TÚ", "شما") else "JARVIS NEXT", color = if (fromUser) Muted else Mint, modifier = Modifier.padding(horizontal = 4.dp, vertical = 7.dp), style = MaterialTheme.typography.labelSmall, letterSpacing = 1.2.sp)
+        Text(if (fromUser) l.choose("YOU", "TÚ", "شما") else "JARVIS", color = if (fromUser) Muted else Mint, modifier = Modifier.padding(horizontal = 4.dp, vertical = 7.dp), style = MaterialTheme.typography.labelSmall, letterSpacing = 1.2.sp)
         Surface(shape = RoundedCornerShape(20.dp), color = if (fromUser) PanelLight else Panel, modifier = Modifier.widthIn(max = 640.dp)) {
             Column(Modifier.padding(17.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text(message.text, style = MaterialTheme.typography.bodyLarge, lineHeight = 25.sp)
@@ -425,16 +391,30 @@ private fun MessageCard(message: ChatMessage, l: AppLanguage, actions: JarvisUiA
 private fun MemoryScreen(state: JarvisUiState, actions: JarvisUiActions) {
     val l = state.settings.language
     var deleteId by remember { mutableStateOf<Long?>(null) }
+    var query by rememberSaveable { mutableStateOf("") }
+    var note by rememberSaveable { mutableStateOf("") }
+    var category by rememberSaveable { mutableStateOf("All") }
+    val visible = state.memories.filter { it.text.contains(query,true) && (category=="All" || state.memoryCategories[it.id]==category) }
     LazyColumn(contentPadding = PaddingValues(24.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
         item { PageTitle(l.choose("A place for what matters.", "Lo importante, contigo.", "جایی برای چیزهای مهم."), l.choose("MEMORY", "MEMORIA", "حافظه")) }
         item { Text(l.choose("Say “remember that…” to save a note. Your memories stay on this phone. You can remove them whenever you like.", "Di “recuerda que…” para guardar una nota. Tus recuerdos se guardan en este teléfono y puedes borrarlos cuando quieras.", "برای ذخیرهٔ یادداشت بگویید «یادت بماند که…». یادداشت‌ها روی همین گوشی می‌مانند و هر زمان بخواهید می‌توانید حذفشان کنید."), color = Muted, lineHeight = 23.sp) }
+        item { OutlinedTextField(query,{query=it},label={Text(l.choose("Search memory","Buscar memoria","جست‌وجوی حافظه"))},modifier=Modifier.fillMaxWidth()) }
+        item { Row(Modifier.horizontalScroll(androidx.compose.foundation.rememberScrollState()),horizontalArrangement=Arrangement.spacedBy(8.dp)) { listOf("All","Notes","Personal","Work","Tasks").forEach { c->FilterChip(category==c,{category=c},label={Text(c)}) } } }
+        item { SectionCard {
+            OutlinedTextField(note,{note=it},label={Text(l.choose("New memory","Nueva nota","یادداشت جدید"))},modifier=Modifier.fillMaxWidth())
+            Button(onClick={actions.onSaveMemory(note,if(category=="All")"Notes" else category);note=""},enabled=note.isNotBlank()){Text(l.choose("Save memory","Guardar nota","ذخیرهٔ یادداشت"))}
+            Text("Stored on this phone. Cloud sharing follows your explicit memory-sharing setting.",color=Muted,style=MaterialTheme.typography.bodySmall)
+        } }
+        item { if(state.authorization!=null)AuthorizationPanel(state,actions) }
         if (state.memories.isEmpty()) item {
             SectionCard { Icon(Icons.Rounded.Memory, null, Modifier.size(32.dp), tint = Mint); Text(l.choose("Room for your first thought.", "Un lugar para tu primera idea.", "منتظر اولین یادداشت شما هستم."), style = MaterialTheme.typography.titleMedium); Text(l.choose("Nothing is saved here without your request.", "Nada se guarda sin que tú lo pidas.", "بدون درخواست شما چیزی ذخیره نمی‌شود."), color = Muted) }
         }
-        items(state.memories, key = { it.id }) { memory ->
+        items(visible, key = { it.id }) { memory ->
             SectionCard {
+                Text(state.memoryCategories[memory.id] ?: "Notes",color=Mint,style=MaterialTheme.typography.labelSmall)
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(memory.text, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+                    TextButton(onClick = { val options=listOf("Notes","Personal","Work","Tasks");val current=options.indexOf(state.memoryCategories[memory.id]);actions.onCategory(memory.id,options[(current+1)%options.size]) }) { Text("Category",fontSize=10.sp) }
                     IconButton(onClick = { deleteId = memory.id }) { Icon(Icons.Rounded.DeleteOutline, l.choose("Delete memory", "Borrar recuerdo", "حذف یادداشت"), tint = Muted) }
                 }
             }
@@ -457,7 +437,7 @@ private fun Onboarding(state: JarvisUiState, actions: JarvisUiActions) {
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
         Column(Modifier.widthIn(max = 640.dp).fillMaxSize().verticalScroll(rememberScrollState()).padding(28.dp), verticalArrangement = Arrangement.spacedBy(22.dp)) {
             BrandMark()
-            AssistantOrb(AssistantPhase.READY, l, Modifier.size(150.dp).align(Alignment.CenterHorizontally))
+            HudCore(state, Modifier.size(220.dp).align(Alignment.CenterHorizontally))
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text(l.choose("Meet your\nquiet advantage.", "Tu nueva\nventaja personal.", "دستیار شما،\nهمیشه در کنارتان."), style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Light, lineHeight = 42.sp)
                 Text(l.choose("A voice for your questions. A home for your thoughts. Built around your control.", "Una voz para tus preguntas. Un lugar para tus ideas. Tú tienes el control.", "صدایی برای پرسش‌هایتان، جایی برای یادداشت‌هایتان؛ با اختیار کامل شما."), color = Muted, lineHeight = 24.sp)
@@ -494,7 +474,7 @@ private fun Onboarding(state: JarvisUiState, actions: JarvisUiActions) {
                 Text(l.choose("Start without an API key: news, app shortcuts, and memories are ready. An optional on-device model adds private conversations after a download. You choose which files and photos to share.", "Empieza sin clave API: noticias, atajos y recuerdos están listos. Un modelo opcional añade conversaciones locales tras descargarlo. Tú eliges qué archivos y fotos compartir.", "بدون کلید API شروع کنید: خبرها، میان‌بر برنامه‌ها و یادداشت‌ها آماده‌اند. با دانلود مدل اختیاری روی گوشی، گفت‌وگوی خصوصی هم اضافه می‌شود. انتخاب فایل و عکس با شماست."), color = Muted, style = MaterialTheme.typography.bodySmall)
             }
             Button(onClick = { actions.onSaveSettings(state.settings.copy(name = name.trim(), onboardingComplete = true), "") }, modifier = Modifier.fillMaxWidth().height(56.dp), shape = RoundedCornerShape(18.dp)) {
-                Text(l.choose("Meet Jarvis Next", "Conocer a Jarvis", "شروع با جارویس"), fontWeight = FontWeight.SemiBold)
+                Text(l.choose("Meet Jarvis", "Conocer a Jarvis", "شروع با جارویس"), fontWeight = FontWeight.SemiBold)
                 Spacer(Modifier.width(12.dp)); Icon(Icons.AutoMirrored.Rounded.ArrowForward, null)
             }
             Spacer(Modifier.height(8.dp))
@@ -587,6 +567,8 @@ private fun SettingsScreen(state: JarvisUiState, actions: JarvisUiActions) {
     LaunchedEffect(state.settings.provider, state.settings.model, state.settings.language) { clearConnectionCheck() }
     LaunchedEffect(checking) { connectionElapsed = 0; while (checking) { delay(1000); connectionElapsed++ } }
     LazyColumn(contentPadding = PaddingValues(24.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
+        item { HudSettingsCard(state, actions) }
+        item { if(state.authorization!=null) AuthorizationPanel(state,actions) }
         item { PageTitle(l.choose("Made to feel like yours.", "Hecho a tu manera.", "همان‌طور که شما می‌خواهید."), l.choose("SETTINGS", "AJUSTES", "تنظیمات")) }
         item { SectionCard {
             Text(l.choose("Identity & language", "Identidad e idioma", "نام و زبان"), style = MaterialTheme.typography.titleMedium)
@@ -683,7 +665,7 @@ private fun SettingsScreen(state: JarvisUiState, actions: JarvisUiActions) {
             TextButton(onClick = { showClearConversation = true }) { Text(l.choose("Clear conversation", "Borrar conversación", "پاک کردن گفت‌وگو")) }
             TextButton(onClick = { showWipe = true }) { Text(l.choose("Erase Jarvis data & keys", "Borrar datos y claves de Jarvis", "حذف داده‌ها و کلیدهای جارویس"), color = MaterialTheme.colorScheme.error) }
             TextButton(onClick = { actions.onOpenPermission("licenses") }) { Text(l.choose("Open-source licenses", "Licencias de código abierto", "مجوزهای متن‌باز")) }
-            Text("JARVIS NEXT 0.1.0 · SEPARATE APP", color = Muted, style = MaterialTheme.typography.labelSmall, letterSpacing = 1.5.sp)
+            Text("JARVIS ${com.jarvis.assistant.BuildConfig.VERSION_NAME} · SEPARATE APP", color = Muted, style = MaterialTheme.typography.labelSmall, letterSpacing = 1.5.sp)
         } }
         item { Spacer(Modifier.height(12.dp)) }
     }

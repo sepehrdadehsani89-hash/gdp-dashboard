@@ -39,12 +39,21 @@ internal class OfflineSpeechSession(
                         check(minimum > 0) { "This microphone does not support 16 kHz recording." }
                         val audio = AudioRecord(MediaRecorder.AudioSource.VOICE_RECOGNITION, 16000, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, maxOf(minimum * 2, 8192))
                         recorder = audio
+                        audio.registerAudioRecordingCallback(context.mainExecutor,object:android.media.AudioManager.AudioRecordingCallback(){
+                            override fun onRecordingConfigChanged(configs:MutableList<android.media.AudioRecordingConfiguration>){
+                                if(configs.any { it.clientAudioSessionId==audio.audioSessionId && it.isClientSilenced }){
+                                    emitError("Android silenced this microphone. Check calls and other recording apps.")
+                                    runCatching { audio.stop() }
+                                }
+                            }
+                        })
                         check(audio.state == AudioRecord.STATE_INITIALIZED) { "The microphone is unavailable." }
                         try {
                             synchronized(audioLock) {
                                 if (closed.get()) return@Thread
                                 audio.startRecording()
                             }
+                            com.jarvis.assistant.hud.AudioSignals.start(this, "Offline microphone · PCM RMS")
                             val bytes = ByteArray(4096)
                             val deadline = System.currentTimeMillis() + 25_000
                             var previousPartial = ""
@@ -52,6 +61,7 @@ internal class OfflineSpeechSession(
                                 val count = audio.read(bytes, 0, bytes.size)
                                 check(count >= 0) { "Microphone capture interrupted." }
                                 if (count == 0) continue
+                                com.jarvis.assistant.hud.AudioSignals.level(this, com.jarvis.assistant.hud.PcmLevel.pcm16(bytes,count))
                                 if (recognizer.acceptWaveForm(bytes, count)) {
                                     val text = JSONObject(recognizer.result).optString("text")
                                     if (text.isNotBlank()) { emitResult(text); return@Thread }
@@ -67,7 +77,7 @@ internal class OfflineSpeechSession(
                                 val final = JSONObject(recognizer.finalResult).optString("text")
                                 if (final.isNotBlank()) emitResult(final) else emitError("No speech was recognized. Please try again.")
                             }
-                        } finally { runCatching { audio.stop() }; audio.release(); recorder = null }
+                        } finally { com.jarvis.assistant.hud.AudioSignals.stop(this); runCatching { audio.stop() }; audio.release(); recorder = null }
                     }
                 }
             } catch (error: Throwable) {

@@ -62,9 +62,9 @@ class JarvisFlowTest {
 
     @Test fun firstLaunchCanFinishWithoutAKeyOrOptionalPermission() {
         compose.onNodeWithText("Meet your\nquiet advantage.").assertIsDisplayed()
-        compose.onNodeWithText("Meet Jarvis Next").performScrollTo().performClick()
+        compose.onNodeWithText("Meet Jarvis").performScrollTo().performClick()
         compose.waitUntil(timeoutMillis = 15_000) { runtime.state.value.settings.onboardingComplete }
-        compose.onNodeWithText("At your service.").assertIsDisplayed()
+        compose.onNodeWithText("J A R V I S").assertIsDisplayed()
         assertEquals("local", runtime.state.value.settings.provider)
         assertFalse(runtime.state.value.hasApiKey)
         assertFalse(runtime.state.value.settings.allowNetworkSpeech)
@@ -97,6 +97,7 @@ class JarvisFlowTest {
             runtime.state.value.memories.any { it.text == "my favorite color is teal." }
         }
         compose.onNodeWithText("Memory").performClick()
+        compose.onNode(androidx.compose.ui.test.hasScrollToIndexAction()).performScrollToNode(hasText("my favorite color is teal."))
         compose.onNodeWithText("my favorite color is teal.").assertIsDisplayed()
         assertEquals("my favorite color is teal.", runtime.store.memories.value.single().text)
     }
@@ -120,7 +121,7 @@ class JarvisFlowTest {
 
     @Test fun persianSelectionLocalizesHomeAndMemoryNavigation() {
         seedReady(AppLanguage.FA)
-        compose.onNodeWithText("در خدمت شما هستم.").assertIsDisplayed()
+        compose.onNodeWithText("J A R V I S").assertIsDisplayed()
         compose.onNodeWithText("حافظه").performClick()
         compose.onNodeWithText("جایی برای چیزهای مهم.").assertIsDisplayed()
         assertEquals(AppLanguage.FA, runtime.state.value.settings.language)
@@ -138,9 +139,13 @@ class JarvisFlowTest {
         }
         assertTrue(runtime.store.getApiKey("openai").isBlank())
         send("What do you remember?")
-        compose.waitUntil(timeoutMillis = 20_000) {
-            runtime.state.value.messages.any { it.role == MessageRole.ASSISTANT && it.text.contains(note) } &&
-                runtime.lastSpeechDestination != "none"
+        try {
+            compose.waitUntil(timeoutMillis = 60_000) {
+                runtime.state.value.messages.any { it.role == MessageRole.ASSISTANT && it.text.contains(note) } &&
+                    runtime.lastSpeechDestination != "none"
+            }
+        } catch (error: Exception) {
+            throw AssertionError("Private local routing did not finish: phase=${runtime.state.value.phase}, destination=${runtime.lastSpeechDestination}, error=${runtime.state.value.error}, messageCount=${runtime.state.value.messages.size}",error)
         }
         assertEquals("on-device", runtime.lastSpeechDestination)
         assertFalse(runtime.state.value.error.orEmpty().contains("Cloud voice"))

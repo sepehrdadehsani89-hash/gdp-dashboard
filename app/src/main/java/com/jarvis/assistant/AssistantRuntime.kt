@@ -63,6 +63,11 @@ import android.os.SystemClock
 /** Process-scoped session owner: no hidden microphone start, no LLM-authorized actions. */
 class AssistantRuntime(private val context: Context) {
     val store = JarvisStore(context)
+    val hud = com.jarvis.assistant.hud.HudRepository(context)
+    private val authorization = com.jarvis.assistant.hud.AuthorizationCoordinator(now = { SystemClock.elapsedRealtime() })
+    private var authorizedAction: (() -> Unit)? = null
+    private var authorizationExpiry: Job? = null
+    private val categories = context.getSharedPreferences("jarvis_memory_categories", Context.MODE_PRIVATE)
     private val mutableState = MutableStateFlow(JarvisUiState())
     val state = mutableState.asStateFlow()
     /** Safe routing diagnostic: provider ID only, never speech text or credentials. */
@@ -104,14 +109,16 @@ class AssistantRuntime(private val context: Context) {
     fun initialize() {
         if (initialized) return
         initialized = true
+        scope.launch { hud.state.collectLatest { h -> mutableState.update { it.copy(hud=h) } } }
+        scope.launch { com.jarvis.assistant.hud.AudioSignals.state.collectLatest { a -> mutableState.update { it.copy(audio=a) } } }
         scope.launch { store.settings.collectLatest { settings ->
             if (settings.provider != mutableState.value.settings.provider || settings.shareSavedMemories != mutableState.value.settings.shareSavedMemories) conversation.clear()
             mutableState.update { it.copy(settings = settings, hasApiKey = store.getApiKey(settings.provider).isNotBlank()) }
             refreshCapabilities()
         } }
         scope.launch { store.messages.collectLatest { messages -> mutableState.update { it.copy(messages = messages) } } }
-        scope.launch { store.memories.collectLatest { memories -> mutableState.update { it.copy(memories = memories) } } }
-        scope.launch { WakeListenerService.state.collectLatest { wake -> mutableState.update { it.copy(wakeStatus = wake.status) } } }
+        scope.launch { store.memories.collectLatest { memories -> mutableState.update { it.copy(memories = memories, memoryCategories=memories.associate { m -> m.id to categories.getString(m.id.toString(), "Notes").orEmpty() }) } } }
+        scope.launch { WakeListenerService.state.collectLatest { wake -> mutableState.update { it.copy(wakeStatus = wake.status, phase=if(wake.awaitingCommand && it.phase==AssistantPhase.READY) AssistantPhase.LISTENING else if(!wake.awaitingCommand && it.phase==AssistantPhase.LISTENING && wake.listening) AssistantPhase.READY else it.phase) } } }
         ContextCompat.registerReceiver(context, object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 when (intent?.action) {
@@ -143,7 +150,7 @@ class AssistantRuntime(private val context: Context) {
             brainStatus = runCatching {
                 if (brain.modelReady()) brain.modelStatus() else lang.choose("Local brain not installed · optional ~400 MB download", "Cerebro local no instalado · descarga opcional de ~400 MB", "مدل محلی نصب نشده · دانلود اختیاری حدود ۴۰۰ مگابایت")
             }.getOrElse { lang.choose("Local brain not installed", "Cerebro local no instalado", "مدل محلی نصب نشده است") },
-            voiceStatus = speech.voiceStatus(lang),
+            voiceStatus = speech.voiceStatus(lang), voices = speech.availableVoices(lang),
         ) }
     }
 
@@ -202,10 +209,16 @@ class AssistantRuntime(private val context: Context) {
     fun submit(input: String, voiced: Boolean = false) {
         val text = input.trim().take(8000)
         if (text.isBlank()) return
+        if (com.jarvis.assistant.hud.AuthorizationCoordinator.isCodex(text)) { requestIdentity(); return }
+        if (Regex("^(?:please )?(?:change|open)(?: your)? (?:security|privacy) settings[.!]?$",RegexOption.IGNORE_CASE).matches(text) || text.lowercase() in listOf("cambiar ajustes de seguridad", "تغییر تنظیمات امنیتی")) {
+            protect("Open security settings") { context.startActivity(Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP).putExtra("open_settings",true)) }; return
+        }
         if (LanguageRules.isStop(text)) { stopEverything(); return }
         val isLocked = locked()
+        if (isLocked && com.jarvis.assistant.core.LockedChatPolicy.requiresUnlock(text)) {
+            protect("Continue protected command after unlocking") { submit(text, voiced) }; fail(unlockMessage()); resumeWake(); return
+        }
         if (isLocked && !store.settings.value.allowLockedChat) { fail(unlockMessage()); resumeWake(); return }
-        if (isLocked && com.jarvis.assistant.core.LockedChatPolicy.requiresUnlock(text)) { fail(unlockMessage()); resumeWake(); return }
         val pending = state.value.pendingAction
         if (pending != null) {
             when (LanguageRules.confirmation(text)) {
@@ -407,7 +420,7 @@ class AssistantRuntime(private val context: Context) {
     private fun resumeWake() {
         if (screenCapturePending()) return
         if (WakeListenerService.state.value.running) runCatching {
-            context.startService(Intent(context, WakeListenerService::class.java).setAction(WakeListenerService.ACTION_RESUME).putExtra("follow_up", awaitScreenQuestion))
+            context.startService(Intent(context, WakeListenerService::class.java).setAction(WakeListenerService.ACTION_RESUME).putExtra("follow_up", awaitScreenQuestion || (lastRequestWasVoice && !locked()) || state.value.authorization?.status==com.jarvis.assistant.hud.AuthorizationStatus.AWAITING_CODEX))
         }
     }
 
@@ -445,6 +458,7 @@ class AssistantRuntime(private val context: Context) {
     }
     fun screenCaptureFailed(message: String) {
         if (captureStarted == 0L) return
+        cancelAuthorization(false)
         captureStarted = 0; clearScreenContext(); awaitScreenQuestion = false
         fail(message); resumeWake()
     }
@@ -522,7 +536,34 @@ class AssistantRuntime(private val context: Context) {
         mutableState.update { it.copy(attachedFiles = selectedUris.map { uri -> attachments.displayName(uri) }, error = null) }
     }
     fun clearAttachments() { selectedUris.clear(); mutableState.update { it.copy(attachedFiles = emptyList()) } }
-    fun deleteMemory(id: Long) { conversation.clear(); scope.launch { store.forget(id) } }
+    fun protect(description:String, action:()->Unit) {
+        if (!hud.state.value.settings.codexEnabled && !locked()) { action(); return }
+        cancelAuthorization(false); cancelSession(); pauseWake()
+        authorization.begin(description); authorizedAction=action
+        mutableState.update { it.copy(authorization=authorization.awaiting(), phase=AssistantPhase.READY, pendingAction=null, error=null) }
+        resumeWake()
+        authorizationExpiry=scope.launch { delay(90_000); mutableState.update { it.copy(authorization=authorization.current()) }; authorizedAction=null }
+    }
+    fun requestIdentity() {
+        pauseWake(); speech.stop()
+        mutableState.update { it.copy(authorization=authorization.codex()) }
+        if (authorization.current()==null) { fail("Codex needs a pending protected action. It is not identity proof."); resumeWake() }
+    }
+    fun completeIdentity(id:String,success:Boolean) {
+        val accepted=authorization.complete(id,success)
+        mutableState.update { it.copy(authorization=authorization.current()) }
+        if (accepted) { val action=authorizedAction; authorizedAction=null; authorizationExpiry?.cancel(); action?.invoke() }
+        else if (authorization.current()?.id==id) authorizedAction=null
+        if(state.value.phase !in setOf(AssistantPhase.THINKING,AssistantPhase.SPEAKING))resumeWake()
+    }
+    fun cancelAuthorization(resume:Boolean=true) { authorization.cancel(); authorizedAction=null; authorizationExpiry?.cancel(); mutableState.update { it.copy(authorization=authorization.current()) }; if(resume)resumeWake() }
+    fun saveHud(value:com.jarvis.assistant.hud.HudSettings) {
+        if(value.codexEnabled!=hud.state.value.settings.codexEnabled) protect("Change Codex protection") { hud.save(value) } else hud.save(value)
+    }
+    fun saveMemory(text:String, category:String) { if(text.isBlank())return; scope.launch { val id=store.remember(text); setCategory(id,category) } }
+    fun setCategory(id:Long, category:String) { val value=category.takeIf { it in listOf("Notes","Personal","Work","Tasks") } ?: "Notes"; categories.edit().putString(id.toString(),value).apply(); mutableState.update { it.copy(memoryCategories=it.memoryCategories+(id to value)) } }
+
+    fun deleteMemory(id: Long) { conversation.clear(); scope.launch { store.forget(id); categories.edit().remove(id.toString()).apply() } }
     fun clearConversation() { cancelSession(); conversation.clear(); clearScreenContext(); scope.launch { store.clearConversation() } }
 
     fun wipe() {
@@ -535,11 +576,13 @@ class AssistantRuntime(private val context: Context) {
             brain.release()
             com.jarvis.assistant.core.ConnectedFolders(context).disconnect()
             store.clearAll()
+            categories.edit().clear().apply()
+            hud.clear()
             withContext(Dispatchers.IO) {
                 listOf("wake-models", "voice-models", "local-brain", "ocr").forEach { File(context.filesDir, it).deleteRecursively() }
                 context.cacheDir.listFiles()?.forEach { it.deleteRecursively() }
             }
-            mutableState.value = JarvisUiState()
+            mutableState.value = JarvisUiState(hud=hud.state.value)
             refreshCapabilities()
         }
     }

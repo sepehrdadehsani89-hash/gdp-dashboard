@@ -9,6 +9,11 @@ import com.jarvis.assistant.core.PendingAction
 import com.jarvis.assistant.core.ConnectionCheck
 
 data class JarvisUiState(
+    val hud: com.jarvis.assistant.hud.HudState = com.jarvis.assistant.hud.HudState(),
+    val audio: com.jarvis.assistant.hud.AudioReading = com.jarvis.assistant.hud.AudioReading(),
+    val authorization: com.jarvis.assistant.hud.AuthorizationRequest? = null,
+    val voices: List<String> = emptyList(),
+    val memoryCategories: Map<Long,String> = emptyMap(),
     val settings: AssistantSettings = AssistantSettings(),
     val messages: List<ChatMessage> = emptyList(),
     val memories: List<MemoryItem> = emptyList(),
@@ -31,6 +36,14 @@ data class JarvisUiState(
 )
 
 data class JarvisUiActions(
+    val onSaveHud: (com.jarvis.assistant.hud.HudSettings) -> Unit = {},
+    val onWeatherRefresh: () -> Unit = {},
+    val onApproximateWeather: () -> Unit = {},
+    val onCodex: () -> Unit = {},
+    val onCancelAuthorization: () -> Unit = {},
+    val onDismiss: () -> Unit = {},
+    val onSaveMemory: (String, String) -> Unit = { _, _ -> },
+    val onCategory: (Long,String) -> Unit = { _, _ -> },
     val onSend: (String) -> Unit = {},
     val onMic: () -> Unit = {},
     val onStop: () -> Unit = {},

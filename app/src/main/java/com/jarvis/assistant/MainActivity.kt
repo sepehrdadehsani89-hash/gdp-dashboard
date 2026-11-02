@@ -19,6 +19,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.SystemBarStyle
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
@@ -33,7 +34,41 @@ import com.jarvis.assistant.core.choose
 
 class MainActivity : ComponentActivity() {
     private val runtime get() = (application as JarvisApplication).runtime
+    private var settingsRequest by androidx.compose.runtime.mutableIntStateOf(0)
     private var micAfterGrant = false
+    private var authentication: android.os.CancellationSignal? = null
+    private var authenticatedRequest: String? = null
+    private var lastInteraction = android.os.SystemClock.elapsedRealtime()
+    private val locationPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if(granted) runtime.hud.refreshWeather(true)
+        else android.widget.Toast.makeText(this,"Location permission denied. Enter a weather city instead.",android.widget.Toast.LENGTH_LONG).show()
+    }
+    private fun approximateWeather() {
+        if(ContextCompat.checkSelfPermission(this,Manifest.permission.ACCESS_COARSE_LOCATION)==PackageManager.PERMISSION_GRANTED)runtime.hud.refreshWeather(true)
+        else locationPermission.launch(Manifest.permission.ACCESS_COARSE_LOCATION)
+    }
+    private fun authenticate(request:com.jarvis.assistant.hud.AuthorizationRequest) {
+        if(authenticatedRequest==request.id)return
+        authenticatedRequest=request.id
+        if(!getSystemService(android.app.KeyguardManager::class.java).isDeviceSecure){
+            runtime.completeIdentity(request.id,false)
+            AlertDialog.Builder(this).setTitle("Set a device screen lock")
+                .setMessage("Codex requires Android's secure device credential or an enrolled biometric.")
+                .setPositiveButton("Security settings"){_,_->openSettings(Intent(Settings.ACTION_SECURITY_SETTINGS))}.setNegativeButton("Cancel",null).show()
+            return
+        }
+        val signal=android.os.CancellationSignal(); authentication=signal
+        android.hardware.biometrics.BiometricPrompt.Builder(this).setTitle("Jarvis · Codex")
+            .setSubtitle(request.action).setDescription("Authorize this action only. Your credential stays with Android.")
+            .setDeviceCredentialAllowed(true).build().authenticate(signal,mainExecutor,object:android.hardware.biometrics.BiometricPrompt.AuthenticationCallback(){
+                override fun onAuthenticationSucceeded(result:android.hardware.biometrics.BiometricPrompt.AuthenticationResult){authentication=null;runtime.completeIdentity(request.id,true)}
+                override fun onAuthenticationError(code:Int,message:CharSequence){authentication=null;runtime.completeIdentity(request.id,false)}
+            })
+    }
+    override fun onUserInteraction(){super.onUserInteraction();lastInteraction=android.os.SystemClock.elapsedRealtime()}
+    override fun onStart(){super.onStart(); runtime.hud.startVisible(this)}
+    override fun onStop(){runtime.hud.stopVisible(this);super.onStop()}
+    override fun onDestroy(){authentication?.cancel();super.onDestroy()}
     private val microphone = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         runtime.refreshCapabilities()
         if (granted && micAfterGrant) runtime.listen()
@@ -86,13 +121,35 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if(intent.getBooleanExtra("open_settings",false))settingsRequest++
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
             navigationBarStyle = SystemBarStyle.dark(Color.rgb(8, 15, 25)),
         )
         setContent {
             val state by runtime.state.collectAsStateWithLifecycle()
+            androidx.compose.runtime.LaunchedEffect(state.authorization) {
+                state.authorization?.let {
+                    if(it.status==com.jarvis.assistant.hud.AuthorizationStatus.IDENTITY_CONFIRMATION)authenticate(it)
+                    else { authentication?.cancel();authentication=null }
+                }
+            }
+            androidx.compose.runtime.LaunchedEffect(state.hud.settings.autoDismissSeconds,state.phase,state.authorization) {
+                val seconds=state.hud.settings.autoDismissSeconds
+                if(seconds>0 && state.phase==com.jarvis.assistant.core.AssistantPhase.READY && state.pendingAction==null && state.authorization?.status !in listOf(com.jarvis.assistant.hud.AuthorizationStatus.AWAITING_CODEX,com.jarvis.assistant.hud.AuthorizationStatus.IDENTITY_CONFIRMATION)) {
+                    lastInteraction=android.os.SystemClock.elapsedRealtime()
+                    while(true){kotlinx.coroutines.delay(1000);if(lifecycle.currentState.isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED) && android.os.SystemClock.elapsedRealtime()-lastInteraction>seconds*1000){finish();break}}
+                }
+            }
             JarvisAppUi(state, JarvisUiActions(
+                onSaveHud = runtime::saveHud,
+                onWeatherRefresh = { runtime.hud.refreshWeather() },
+                onApproximateWeather = ::approximateWeather,
+                onCodex = runtime::requestIdentity,
+                onCancelAuthorization = { authentication?.cancel(); runtime.cancelAuthorization() },
+                onDismiss = ::finish,
+                onSaveMemory = runtime::saveMemory,
+                onCategory = runtime::setCategory,
                 onSend = { runtime.submit(it) },
                 onMic = {
                     if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) runtime.listen()
@@ -100,14 +157,18 @@ class MainActivity : ComponentActivity() {
                 },
                 onStop = runtime::stopEverything,
                 onLanguage = runtime::setLanguage,
-                onSaveSettings = runtime::saveSettings,
+                onSaveSettings = { value, key ->
+                    val old=runtime.state.value.settings
+                    if(old.onboardingComplete && (key.isNotBlank() || value.allowLockedChat!=old.allowLockedChat || value.shareSavedMemories!=old.shareSavedMemories || value.useCloudVoice!=old.useCloudVoice))runtime.protect("Change privacy or provider credentials") { runtime.saveSettings(value,key) }
+                    else runtime.saveSettings(value,key)
+                },
                 onListGeminiModels = runtime::listGeminiModels,
                 onTestProvider = runtime::testProvider,
                 onPlayConnectionTest = runtime::playConnectionSample,
-                onRememberDelete = runtime::deleteMemory,
-                onClearConversation = runtime::clearConversation,
+                onRememberDelete = { id -> runtime.protect("Delete saved memory") { runtime.deleteMemory(id) } },
+                onClearConversation = { runtime.protect("Delete conversation history") { runtime.clearConversation() } },
                 onClearScreen = runtime::clearScreenContext,
-                onWipe = runtime::wipe,
+                onWipe = { runtime.protect("Delete all Jarvis data and models") { runtime.wipe() } },
                 onStartWake = {
                     if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) microphone.launch(Manifest.permission.RECORD_AUDIO)
                     else runtime.startWake()
@@ -127,9 +188,11 @@ class MainActivity : ComponentActivity() {
                 onConfirmAction = runtime::confirmAction,
                 onCancelAction = runtime::cancelAction,
                 onOpenSource = ::openSource,
-            ))
+            ), settingsRequest)
         }
     }
+
+    override fun onNewIntent(intent:Intent){super.onNewIntent(intent);setIntent(intent);if(intent.getBooleanExtra("open_settings",false))settingsRequest++}
 
     override fun onResume() { super.onResume(); runtime.refreshCapabilities() }
 

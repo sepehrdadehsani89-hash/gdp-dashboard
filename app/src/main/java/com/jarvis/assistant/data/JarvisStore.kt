@@ -71,7 +71,7 @@ interface JarvisDao {
     suspend fun deleteMessages()
 
     @Insert
-    suspend fun insertMemory(memory: MemoryEntity)
+    suspend fun insertMemory(memory: MemoryEntity): Long
 
     @Query("DELETE FROM memories WHERE id = :id")
     suspend fun deleteMemory(id: Long)
@@ -127,9 +127,9 @@ class JarvisStore(context: Context) {
     suspend fun clearConversation() = dao.deleteMessages()
 
     /** Called only after the user's explicit remember request or memory-screen action. */
-    suspend fun remember(text: String) {
+    suspend fun remember(text: String): Long {
         val value = text.trim().take(4_000)
-        if (value.isNotBlank()) dao.insertMemory(MemoryEntity(text = value, createdAt = System.currentTimeMillis()))
+        return if (value.isNotBlank()) dao.insertMemory(MemoryEntity(text = value, createdAt = System.currentTimeMillis())) else -1L
     }
 
     suspend fun forget(id: Long) = dao.deleteMemory(id)

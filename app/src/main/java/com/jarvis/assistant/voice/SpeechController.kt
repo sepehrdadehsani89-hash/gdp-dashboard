@@ -105,23 +105,23 @@ class SpeechController(context: Context) {
                     else SpeechRecognizer.createSpeechRecognizer(context)
                 recognizer = instance
                 instance.setRecognitionListener(object : RecognitionListener {
-                    override fun onReadyForSpeech(params: Bundle?) = Unit
+                    override fun onReadyForSpeech(params: Bundle?) { com.jarvis.assistant.hud.AudioSignals.start(instance,"Android recognizer · RMS level") }
                     override fun onBeginningOfSpeech() = Unit
-                    override fun onRmsChanged(rmsdB: Float) = Unit
+                    override fun onRmsChanged(rmsdB: Float) { if(token==generation) com.jarvis.assistant.hud.AudioSignals.level(instance, ((rmsdB+2)/12).coerceIn(0f,1f)) }
                     override fun onBufferReceived(buffer: ByteArray?) = Unit
                     override fun onEndOfSpeech() = Unit
                     override fun onEvent(eventType: Int, params: Bundle?) = Unit
                     override fun onError(error: Int) {
                         if (token != generation || completed) return
                         completed = true
-                        instance.destroy(); recognizer = null
+                        com.jarvis.assistant.hud.AudioSignals.stop(instance); instance.destroy(); recognizer = null
                         onError(recognitionError(error, language))
                     }
                     override fun onResults(results: Bundle?) {
                         if (token != generation || completed) return
                         completed = true
                         val text = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull().orEmpty()
-                        instance.destroy(); recognizer = null
+                        com.jarvis.assistant.hud.AudioSignals.stop(instance); instance.destroy(); recognizer = null
                         if (text.isBlank()) onError(recognitionError(SpeechRecognizer.ERROR_NO_MATCH, language)) else onResult(text)
                     }
                     override fun onPartialResults(partialResults: Bundle?) {
@@ -138,7 +138,7 @@ class SpeechController(context: Context) {
                 instance.startListening(intent)
                 main.postDelayed({
                     if (token == generation && !completed) {
-                        completed = true; instance.cancel(); instance.destroy(); recognizer = null
+                        completed = true; instance.cancel(); com.jarvis.assistant.hud.AudioSignals.stop(instance); instance.destroy(); recognizer = null
                         onError(recognitionError(SpeechRecognizer.ERROR_SPEECH_TIMEOUT, language))
                     }
                 }, 30_000)
@@ -148,6 +148,8 @@ class SpeechController(context: Context) {
             }
         }
     }
+
+    fun availableVoices(language: AppLanguage): List<String> = if (!ttsReady) emptyList() else tts.voices.orEmpty().filter { it.locale.language == language.code && !it.isNetworkConnectionRequired && !it.features.orEmpty().contains(TextToSpeech.Engine.KEY_FEATURE_NOT_INSTALLED) }.map { it.name }.sorted()
 
     fun voiceStatus(language: AppLanguage): String {
         if (offlineVoice.modelPath(language) != null && systemVoice(language) == null) {
@@ -164,8 +166,10 @@ class SpeechController(context: Context) {
 
     fun speak(text: String, language: AppLanguage, onDone: () -> Unit, onError: (String) -> Unit) {
         main.post {
-            val hasSystemVoice = systemVoice(language) != null
-            if (!hasSystemVoice && offlineVoice.modelPath(language) != null) {
+            val engine = com.jarvis.assistant.hud.HudPreferences(context).read().voiceEngine
+            if (engine == "neural" && offlineVoice.modelPath(language) == null) { onError("Download the selected language's neural voice in Settings first."); return@post }
+            val hasSystemVoice = systemVoice(language) != null && com.jarvis.assistant.hud.HudPreferences(context).read().voiceEngine != "neural"
+            if (engine != "system" && !hasSystemVoice && offlineVoice.modelPath(language) != null) {
                 if (isQuietMode()) { onError(language.choose("Voice reply paused by Silent or Do Not Disturb mode.", "Respuesta silenciada por Silencio o No molestar.", "پاسخ صوتی به‌دلیل حالت بی‌صدا یا مزاحم نشوید پخش نشد.")); return@post }
                 stopInternal(); speakingDone = onDone; speakingError = onError
                 if (!requestFocus()) { failSpeaking(language.choose("Audio is in use by another app.", "Otra aplicación está usando el audio.", "صدا در اختیار برنامهٔ دیگری است.")); return@post }
@@ -190,7 +194,9 @@ class SpeechController(context: Context) {
             stopInternal()
             speakingDone = onDone; speakingError = onError
             tts.voice = voice
-            tts.setSpeechRate(0.98f)
+            val controls = com.jarvis.assistant.hud.HudPreferences(context).read()
+            tts.setSpeechRate(controls.voiceRate)
+            tts.setPitch(controls.voicePitch)
             tts.setAudioAttributes(speechAttributes())
             if (!requestFocus()) { failSpeaking(language.choose("Audio is in use by another app.", "Otra aplicación está usando el audio.", "صدا در اختیار برنامهٔ دیگری است.")); return@post }
             WakeListenerService.suppressFor(60_000)
@@ -200,7 +206,7 @@ class SpeechController(context: Context) {
             val prefix = UUID.randomUUID().toString()
             utterancePrefix = prefix; lastUtterance = "$prefix-${parts.lastIndex}"
             parts.forEachIndexed { index, part ->
-                val result = tts.speak(part, if (index == 0) TextToSpeech.QUEUE_FLUSH else TextToSpeech.QUEUE_ADD, Bundle(), "$prefix-$index")
+                val result = tts.speak(part, if (index == 0) TextToSpeech.QUEUE_FLUSH else TextToSpeech.QUEUE_ADD, Bundle().apply { putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME,controls.voiceVolume) }, "$prefix-$index")
                 if (result == TextToSpeech.ERROR) { failSpeaking(voiceStatus(language)); return@post }
             }
         }
@@ -219,7 +225,12 @@ class SpeechController(context: Context) {
                     setOnCompletionListener { finishSpeaking() }
                     setOnErrorListener { _, _, _ -> failSpeaking("Cloud voice playback failed."); true }
                     prepareAsync()
-                    setOnPreparedListener { it.start() }
+                    setOnPreparedListener { p ->
+                        val controls=com.jarvis.assistant.hud.HudPreferences(context).read()
+                        p.setVolume(controls.voiceVolume,controls.voiceVolume)
+                        runCatching { p.playbackParams = android.media.PlaybackParams().setSpeed(controls.voiceRate).setPitch(controls.voicePitch) }
+                        p.start()
+                    }
                 }
             } catch (_: Exception) { failSpeaking("Cloud voice playback failed.") }
         }
@@ -236,7 +247,7 @@ class SpeechController(context: Context) {
         utterancePrefix = null; lastUtterance = null
         offlineSpeech?.close(); offlineSpeech = null
         offlineVoice.stop()
-        recognizer?.cancel(); recognizer?.destroy(); recognizer = null
+        recognizer?.let { com.jarvis.assistant.hud.AudioSignals.stop(it); it.cancel(); it.destroy() }; recognizer = null
         tts.stop()
         player?.run { runCatching { stop() }; release() }; player = null
         focus?.let { audio.abandonAudioFocusRequest(it) }; focus = null
@@ -286,9 +297,10 @@ class SpeechController(context: Context) {
 
     private fun systemVoice(language: AppLanguage): Voice? {
         if (!ttsReady || runCatching { tts.isLanguageAvailable(Locale.forLanguageTag(language.tag)) < TextToSpeech.LANG_AVAILABLE }.getOrDefault(true)) return null
-        return runCatching { tts.voices }.getOrNull().orEmpty().firstOrNull {
-            it.locale.language == language.code && !it.isNetworkConnectionRequired && TextToSpeech.Engine.KEY_FEATURE_NOT_INSTALLED !in it.features
+        val voices = runCatching { tts.voices }.getOrNull().orEmpty().filter {
+            it.locale.language == language.code && !it.isNetworkConnectionRequired && TextToSpeech.Engine.KEY_FEATURE_NOT_INSTALLED !in it.features.orEmpty()
         }
+        return voices.firstOrNull { it.name == com.jarvis.assistant.hud.HudPreferences(context).read().voiceId } ?: voices.firstOrNull()
     }
 
     private fun recognitionError(code: Int, language: AppLanguage) = when (code) {

@@ -1,31 +1,30 @@
-# Jarvis Next for Android
+# Jarvis for Android
 
-**Separate installation:** Jarvis Next uses `com.jarvis.next` and a new signing identity. Keep your existing Jarvis installed; its data and permissions are untouched. This is based on published Jarvis 0.1.3, not recovered unfinished 0.1.4 work.
+Jarvis 2.0 adds the native cyan/purple HUD: a real battery reactor, phone clock, supported telemetry, optional Open-Meteo weather, audio-reactive listening, Codex device authentication, adjustable voice/motion settings, and searchable categorized memory. Existing conversation, local AI, connected folders, attachments and live controls remain.
 
-Jarvis Next adds explicit live tap/draft controls, direct installed-app opening, WhatsApp draft and selected-photo handoffs, persistent read-only connected folders, and a visible switch to free on-device AI. See [setup and limitations](docs/JARVIS_NEXT.md).
+**Separate installation:** this is the renamed **Jarvis Next** app, package `com.jarvis.next`. The signed 2.0.0 APK updates Jarvis Next 0.1.0 with the same key and preserves its data. Keep your original Jarvis installed and untouched. The unavailable original Jarvis key and unfinished 0.1.4 files were not recovered. `main` and `jarvis-android-download` are unchanged.
 
-A new app identity does not establish Play Protect approval or fix Google's HTTP 429 quota. Keep Play Protect enabled. Local AI is a separate provider with an optional ~400 MB model download, no API key, and small-model performance/quality limits.
+[**Download Jarvis 2.0.0 — signed ARM64 APK**](https://raw.githubusercontent.com/sepehrdadehsani89-hash/gdp-dashboard/jarvis-next/downloads/jarvis/Jarvis-2.0.0-arm64.apk)
 
-[**Download Jarvis Next 0.1.0 — signed ARM64 APK (~78 MB)**](https://raw.githubusercontent.com/sepehrdadehsani89-hash/gdp-dashboard/jarvis-next/downloads/Jarvis-Next-0.1.0-arm64.apk)
+[Full feature/setup guide](JARVIS_2.md) · [Verification and limits](docs/JARVIS_2_VERIFICATION.md) · [Build identity/checksum](downloads/jarvis/build-info.json) · [Public signing certificate](downloads/jarvis-next-signing-certificate.pem)
 
-[Build identity and checksum](downloads/jarvis-next-build-info.json) · [Verification](docs/JARVIS_NEXT_VERIFICATION.md) · [Public signing certificate](downloads/jarvis-next-signing-certificate.pem)
+## Phone setup
 
-## Phone workflow
+1. Install the signed release APK. Its launcher name is **Jarvis** and its icon is a cyan/purple reactor. The package remains `com.jarvis.next`; the original Jarvis app is separate. No uninstall is needed.
+2. Choose a language and complete onboarding. Microphone, notification and optional access permissions remain under your control. Download the matching speech model for offline wake listening: **Hey Jarvis**, **Oye Jarvis**, or **هی جارویس**.
+3. Configure clock, city/approximate weather location, voice, reduced motion, animation profile and auto-dismiss in Settings. Codex protection uses Android's official biometric/device-credential prompt for a pending action and requires a device screen lock.
+4. Tap **Use free on-device AI** and download the optional ~400 MB Qwen model for general answers without an API key. Local inference has small-model quality/performance limits. Renaming the app does not establish Play Protect approval or change Google's HTTP 429 quota. Keep Play Protect enabled.
+5. **Folders** connects a user-selected directory read-only. Attach documents/photos to a question. **Share selected photos…** opens Android's chooser; sending stays manual. `whatsapp draft +593991234567: Hello Sofia` opens a reviewed recipient draft.
+6. For live controls, enable Screen access, explicitly start local listening and open the target app. Say `tap Search` or `type Hello Sofia`, then confirm by voice on the same screen. Sending, payment, destructive and permission controls stay manual. `open WhatsApp` directly opens an unambiguous installed app.
 
-1. Install the signed ARM64 Jarvis Next APK after reviewing the build verification. Open **Jarvis Next**, not the original Jarvis.
-2. Complete onboarding. Optional permissions are separate from the original app; choose only what you need.
-3. Tap **Use free on-device AI** on Home and download the optional Qwen model in Settings for general answers without a cloud key. Initial model download requires Internet; inference runs locally.
-4. Use **Folders** to connect/browse a user-selected directory read-only. Choose documents/photos to attach to your next question. **Share selected photos…** opens Android's recipient chooser; sending stays manual.
-5. For live controls, enable Screen access in Settings, download offline speech, explicitly start listening, and open the target app. Say `tap Search` or `type Hello Sofia`, then confirm by voice while the same screen remains open. Sending, payment, destructive and permission controls stay manual. `open WhatsApp` directly opens an unambiguous installed app. `whatsapp draft +593991234567: Hello Sofia` proposes a recipient-owned draft, never a silent send.
+## Build and signing recovery
 
-[Full Jarvis Next guide and signing backup instructions](docs/JARVIS_NEXT.md) · [Pinned toolchain](docs/COMPATIBILITY.md) · [Local model](docs/LOCAL_MODEL.md) · [Third-party notices](THIRD_PARTY_NOTICES.md)
-
-## Build and updates
-
-Use the pinned JDK/SDK/NDK/CMake versions and Gradle wrapper. Set `JARVIS_NEXT_SIGNING_DIR` to your private signing directory outside the checkout, containing `jarvis-next.p12` and `store-password`. Never commit either file. Future updates need the same key. Save a private backup outside the cloud environment as described in the guide.
+Use the [pinned toolchain](docs/COMPATIBILITY.md). Set `JARVIS_NEXT_SIGNING_DIR` to the retained private directory outside the checkout, containing `jarvis-next.p12` and `store-password`. Do not generate a new key for an installed `com.jarvis.next` app. The encrypted backup and separate unlock file must be copied privately outside this cloud workspace; see [recovery instructions](JARVIS_2.md#signing-and-private-recovery).
 
 ```sh
-./gradlew :app:testDebugUnitTest :app:lintDebug :app:lintRelease :app:assembleRelease
+./gradlew :app:testDebugUnitTest :app:lintDebug :app:lintRelease :app:assembleDebug :app:assembleRelease
 ```
 
-Debug builds are for the dedicated test emulator only; the downloadable phone build is signed release ARM64. Older verification documents and existing `Jarvis-0.1.x` artifacts describe the original app and are historical, not verification of Jarvis Next.
+Debug APKs are for dedicated emulator tests. The phone download is signed release ARM64, Android 10+. [Local model](docs/LOCAL_MODEL.md) · [Licenses](THIRD_PARTY_NOTICES.md).
+
+Historical artifacts and verification remain available: [Jarvis Next 0.1.0](docs/JARVIS_NEXT.md), [its verification](docs/JARVIS_NEXT_VERIFICATION.md), and original `Jarvis-0.1.x` APKs. They describe their respective builds.

@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
 
 /** Real neural speech on the phone, using the pinned sherpa-onnx native runtime. */
-class OfflineVoiceManager(context: Context) {
+class OfflineVoiceManager(private val context: Context) {
     private val root = File(context.filesDir, "voice-models").apply { mkdirs() }
     private val client = OkHttpClient.Builder().connectTimeout(20, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).callTimeout(15, TimeUnit.MINUTES).build()
     private val downloadMutex = Mutex()
@@ -174,7 +174,8 @@ class OfflineVoiceManager(context: Context) {
                     check(audio.state == AudioTrack.STATE_INITIALIZED) { "Audio output could not initialize." }
                     audio.play()
                     var writtenSamples = 0L
-                    voice.generateWithCallback(text.take(6000), sid = 0, speed = 1f) { samples ->
+                    audio.setVolume(com.jarvis.assistant.hud.HudPreferences(context).read().voiceVolume)
+                    voice.generateWithCallback(text.take(6000), sid = 0, speed = com.jarvis.assistant.hud.HudPreferences(context).read().voiceRate) { samples ->
                         var offset = 0
                         while (offset < samples.size && token == generation.get()) {
                             val written = audio.write(samples, offset, samples.size - offset, AudioTrack.WRITE_BLOCKING)

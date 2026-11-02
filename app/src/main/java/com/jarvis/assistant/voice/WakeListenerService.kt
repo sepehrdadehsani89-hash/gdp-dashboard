@@ -39,6 +39,8 @@ class WakeListenerService : Service() {
     private var worker: Thread? = null
     private var language = AppLanguage.EN
     private var awakeUntil = 0L
+    private var lastActivation = -2000L
+    private val audioManager by lazy { getSystemService(android.media.AudioManager::class.java) }
     private var cpuLock: PowerManager.WakeLock? = null
     private val main = Handler(Looper.getMainLooper())
     private val renewCpu = object : Runnable {
@@ -72,7 +74,7 @@ class WakeListenerService : Service() {
                 if (running) {
                     paused = false
                     awakeUntil = if (intent.getBooleanExtra("follow_up", false)) SystemClock.elapsedRealtime() + 12_000 else 0
-                    publish(if (awakeUntil > 0) language.choose("Listening for your screen question", "Escucho tu pregunta sobre la pantalla", "در انتظار پرسش شما دربارهٔ صفحه") else listeningText(), true)
+                    publish(if (awakeUntil > 0) language.choose("Listening for your follow-up", "Escucho tu siguiente pregunta", "در انتظار پرسش بعدی شما") else listeningText(), true)
                 }
                 return if (running) START_STICKY else START_NOT_STICKY
             }
@@ -104,11 +106,22 @@ class WakeListenerService : Service() {
                 Model(modelDirectory.absolutePath).use { model ->
                     while (running) {
                         if (paused) { Thread.sleep(100); continue }
+                        if(audioManager.mode in listOf(android.media.AudioManager.MODE_IN_CALL,android.media.AudioManager.MODE_IN_COMMUNICATION)){
+                            publish("Microphone paused during a call",false);Thread.sleep(500);continue
+                        }
                         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) throw SecurityException("Microphone permission was revoked.")
                         val minimum = AudioRecord.getMinBufferSize(16000, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT)
                         check(minimum > 0) { "16 kHz microphone capture is not supported." }
                         val audio = AudioRecord(MediaRecorder.AudioSource.VOICE_RECOGNITION, 16000, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, maxOf(minimum * 2, 8192))
                         recorder = audio
+                        audio.registerAudioRecordingCallback(mainExecutor,object:android.media.AudioManager.AudioRecordingCallback(){
+                            override fun onRecordingConfigChanged(configs:MutableList<android.media.AudioRecordingConfiguration>){
+                                if(configs.any { it.clientAudioSessionId==audio.audioSessionId && it.isClientSilenced }){
+                                    publish("Android silenced microphone capture. Stop other recording or call apps, then reopen Jarvis to retry.",false)
+                                    stopSelf()
+                                }
+                            }
+                        })
                         check(audio.state == AudioRecord.STATE_INITIALIZED) { "Microphone is unavailable." }
                         try {
                             Recognizer(model, 16000f).use { recognizer ->
@@ -116,6 +129,7 @@ class WakeListenerService : Service() {
                                     if (running && !paused) { audio.startRecording(); true } else false
                                 }
                                 if (!started) return@use
+                                com.jarvis.assistant.hud.AudioSignals.start(audio,"Wake microphone · PCM RMS")
                                 publish(listeningText(), true)
                                 val bytes = ByteArray(4096)
                                 var suppressed = false
@@ -124,6 +138,8 @@ class WakeListenerService : Service() {
                                     if (paused || !running) break
                                     check(count >= 0) { "Microphone capture was interrupted." }
                                     if (count == 0) continue
+                                    if(audioManager.mode in listOf(android.media.AudioManager.MODE_IN_CALL,android.media.AudioManager.MODE_IN_COMMUNICATION)){publish("Microphone paused during a call",false);break}
+                                    com.jarvis.assistant.hud.AudioSignals.level(audio,com.jarvis.assistant.hud.PcmLevel.pcm16(bytes,count))
                                     if (SystemClock.elapsedRealtime() < suppressionUntil) {
                                         if (!suppressed) { recognizer.reset(); suppressed = true }
                                         continue
@@ -137,7 +153,7 @@ class WakeListenerService : Service() {
                                     handleTranscript(text, final)
                                 }
                             }
-                        } finally { runCatching { audio.stop() }; audio.release(); recorder = null }
+                        } finally { com.jarvis.assistant.hud.AudioSignals.stop(audio); runCatching { audio.stop() }; audio.release(); recorder = null }
                     }
                 }
             } catch (_: InterruptedException) {
@@ -157,6 +173,10 @@ class WakeListenerService : Service() {
         val afterWake = WakePhraseMatcher.extractCommand(text, language)
         if (afterWake != null) {
             if (awakeUntil == 0L) {
+                val now=SystemClock.elapsedRealtime()
+                if(now-lastActivation<1500)return
+                lastActivation=now
+                activateHud()
                 awakeUntil = SystemClock.elapsedRealtime() + 12_000
                 publish(language.choose("I'm listening to your command", "Escucho tu petición", "دستور شما را می‌شنوم"), true, awaitingCommand = true)
                 @Suppress("DEPRECATION")
@@ -168,7 +188,26 @@ class WakeListenerService : Service() {
         }
     }
 
+    private fun activateHud() {
+        val launch=Intent(this,com.jarvis.assistant.MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        val manager=getSystemService(NotificationManager::class.java)
+        manager.createNotificationChannel(NotificationChannel("jarvis_activation","Jarvis activation",NotificationManager.IMPORTANCE_DEFAULT))
+        val open=PendingIntent.getActivity(this,2,launch,PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+        manager.notify(3102,NotificationCompat.Builder(this,"jarvis_activation").setSmallIcon(android.R.drawable.ic_btn_speak_now)
+            .setContentTitle("Jarvis is listening").setContentText("Tap to open your HUD. Unlock normally for protected actions.")
+            .setContentIntent(open).setAutoCancel(true).setVisibility(NotificationCompat.VISIBILITY_PRIVATE).setSilent(true).build())
+        if(com.jarvis.assistant.hud.HudPreferences(this).read().soundEffects)runCatching {
+            val tone=android.media.ToneGenerator(android.media.AudioManager.STREAM_NOTIFICATION,25)
+            tone.startTone(android.media.ToneGenerator.TONE_PROP_BEEP,70);main.postDelayed({tone.release()},150)
+        }
+        // Android grants a background-activity exception to a user-enabled accessibility service.
+        // Always retain the notification fallback; never use a full-screen intent or keyguard bypass.
+        val locked=getSystemService(android.app.KeyguardManager::class.java).isKeyguardLocked
+        if(!locked && com.jarvis.assistant.tools.JarvisAccessibilityService.connected)runCatching{startActivity(launch)}
+    }
+
     private fun deliver(command: String) {
+        if(paused)return
         awakeUntil = 0; paused = true
         publish(language.choose("Processing your command · microphone paused", "Procesando tu petición · micrófono en pausa", "در حال پردازش دستور · میکروفن مکث شده"), false)
         sendBroadcast(Intent(ACTION_COMMAND).setPackage(packageName).putExtra(EXTRA_TEXT, command).putExtra(EXTRA_LANGUAGE, language.code))
@@ -192,7 +231,7 @@ class WakeListenerService : Service() {
             .setContentText(text)
             .setStyle(NotificationCompat.BigTextStyle().bigText(text))
             .setContentIntent(open)
-            .setOngoing(true).setSilent(true)
+            .setOngoing(true).setSilent(true).setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
             .addAction(android.R.drawable.ic_media_pause, language.choose("Stop everything", "Detener todo", "توقف همه‌چیز"), stop)
             .build()
     }

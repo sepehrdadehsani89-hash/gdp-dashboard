@@ -4,8 +4,8 @@ import java.util.UUID
 
 enum class AppLanguage(val code: String, val tag: String, val label: String, val wakePhrase: String) {
     EN("en", "en-US", "English", "Hey Jarvis"),
-    ES("es", "es-ES", "Español", "Hola Jarvis"),
-    FA("fa", "fa-IR", "فارسی", "سلام جارویس");
+    ES("es", "es-ES", "Español", "Oye Jarvis"),
+    FA("fa", "fa-IR", "فارسی", "هی جارویس");
     companion object { fun fromCode(code: String) = entries.firstOrNull { it.code == code } ?: EN }
 }
 

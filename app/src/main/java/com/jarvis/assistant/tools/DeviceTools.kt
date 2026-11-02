@@ -50,6 +50,12 @@ class DeviceTools(private val context: Context, private val store: JarvisStore) 
                 }, "live_control", payload)
             } catch (error: Exception) { AssistantReply(error.message ?: "Live control unavailable.") }
         }
+        if (Regex("^(calculate|compute|calcula|calcular|محاسبه کن|حساب کن)\\s+",RegexOption.IGNORE_CASE).containsMatchIn(text.trim())) {
+            return AssistantReply(runCatching { com.jarvis.assistant.core.Calculation.requested(text) ?: "Enter an arithmetic expression." }.getOrElse { it.message ?: "Invalid calculation." })
+        }
+        Regex("^(?:remind me|recuérdame|یادآوری کن)\\s+(.+)$",RegexOption.IGNORE_CASE).matchEntire(text.trim())?.let {
+            return proposal("Open a calendar draft for: ${it.groupValues[1]}? Choose the date and save it in your calendar.","reminder_draft",it.groupValues[1].take(300))
+        }
         val normalized = ToolPolicy.normalize(text)
         val remembered = LocalIntentParser.rememberedText(text)
         if (remembered != null) {
@@ -148,6 +154,11 @@ class DeviceTools(private val context: Context, private val store: JarvisStore) 
                 "nav_home", "nav_back" -> {
                     check(JarvisAccessibilityService.navigate(context, action.kind == "nav_home"))
                 }
+                "reminder_draft" -> {
+                    context.startActivity(Intent(Intent.ACTION_INSERT,android.provider.CalendarContract.Events.CONTENT_URI)
+                        .putExtra(android.provider.CalendarContract.Events.TITLE,action.payload).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                    return@withContext "Calendar draft opened. Choose the date and save it there; no reminder has been saved by Jarvis."
+                }
                 "set_timer" -> {
                     val seconds = action.payload.toInt().also { check(it in 1..86_400) }
                     context.startActivity(Intent(AlarmClock.ACTION_SET_TIMER)
@@ -164,7 +175,8 @@ class DeviceTools(private val context: Context, private val store: JarvisStore) 
                 }
                 else -> return@withContext language.choose("That action is not supported.", "Esa acción no es compatible.", "این کار پشتیبانی نمی‌شود.")
             }
-            language.choose("Done.", "Listo.", "انجام شد.")
+            if(action.kind in listOf("set_alarm","set_timer")) language.choose("Clock opened. Review and save the alarm or timer there.","Reloj abierto. Revisa y guarda la alarma o el temporizador allí.","ساعت باز شد. زنگ یا تایمر را آنجا بررسی و ذخیره کنید.")
+            else language.choose("Done.", "Listo.", "انجام شد.")
         } catch (cancelled: CancellationException) { throw cancelled }
         catch (_: Exception) {
             language.choose("Android couldn't complete that action. Check the app or optional permission and try again.", "Android no pudo completar la acción. Revisa la aplicación o el permiso opcional e inténtalo de nuevo.", "اندروید نتوانست این کار را انجام دهد. برنامه یا مجوز اختیاری را بررسی کنید و دوباره تلاش کنید.")
