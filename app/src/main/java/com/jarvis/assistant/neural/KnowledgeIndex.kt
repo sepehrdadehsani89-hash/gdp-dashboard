@@ -15,9 +15,20 @@ data class KnowledgeHit(val document:KnowledgeDocument,val text:String,val score
 object RetrievalPolicy {
     fun terms(text:String)=Regex("[\\p{L}\\p{N}]+").findAll(AppMatching.normalize(text)).map{it.value}.filter{it.length>1 && it !in setOf("the","what","this","that","with","from","please","and","que","los","las","una","por","para","این","است","را","برای","بگو")}.distinct().take(24).toList()
     fun chunks(text:String):List<String>{val clean=text.replace('\u0000',' ').take(150_000);return clean.chunked(700).take(220)}
+    fun relevantMemories(query:String,memories:List<com.jarvis.assistant.core.MemoryItem>):List<com.jarvis.assistant.core.MemoryItem>{
+        val q=terms(query).toSet();if(q.isEmpty())return emptyList()
+        return memories.map{memory->memory to Regex("[\\p{L}\\p{N}]+").findAll(AppMatching.normalize(memory.text)).map{it.value}.toSet().count{it in q}}
+            .filter{it.second>0}.sortedByDescending{it.second}.take(5).map{it.first}
+    }
     fun rank(query:String,candidates:List<Pair<KnowledgeDocument,String>>):List<KnowledgeHit>{
         val q=terms(query);if(q.isEmpty())return emptyList()
-        return candidates.map{(d,t)->val words=Regex("[\\p{L}\\p{N}]+").findAll(AppMatching.normalize(t)).map{it.value}.toList();val score=q.sumOf{term->val frequency=words.count{it==term};val df=candidates.count{AppMatching.normalize(it.second).contains(term)};if(frequency==0)0.0 else ln(1+(candidates.size-df+.5)/(df+.5))*frequency/(frequency+.7+words.size/100.0)}+q.count{AppMatching.normalize(d.title).contains(it)}*.7;KnowledgeHit(d,t,score)}.filter{it.score>0}.sortedByDescending{it.score}.take(5)
+        val counts=candidates.map{(_,text)->Regex("[\\p{L}\\p{N}]+").findAll(AppMatching.normalize(text)).map{it.value}.groupingBy{it}.eachCount()}
+        val frequencies=q.associateWith{term->counts.count{term in it}}
+        return candidates.mapIndexed{index,(d,t)->
+            val words=counts[index];val size=words.values.sum();val title=AppMatching.normalize(d.title)
+            val score=q.sumOf{term->val frequency=words[term] ?: 0;val df=frequencies.getValue(term);if(frequency==0)0.0 else ln(1+(candidates.size-df+.5)/(df+.5))*frequency/(frequency+.7+size/100.0)}+q.count{title.contains(it)}*.7
+            KnowledgeHit(d,t,score)
+        }.filter{it.score>0}.sortedByDescending{it.score}.take(5)
     }
     fun reference(hits:List<KnowledgeHit>,maximum:Int=2400)=hits.joinToString("\n\n"){"[${it.document.kind}: ${it.document.title}; ${it.document.source}; published ${it.document.publication}]\n${it.text}"}.take(maximum)
 }

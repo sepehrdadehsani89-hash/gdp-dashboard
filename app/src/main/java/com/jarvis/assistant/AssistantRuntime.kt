@@ -401,7 +401,7 @@ class AssistantRuntime(private val context: Context) {
         val settings = store.settings.value
         val localOnly=com.jarvis.assistant.neural.ContextPrivacyPolicy.localOnly(text)
         val useLocal=settings.provider=="local" || localOnly
-        val memory = if (!publicLocked && (useLocal || settings.shareSavedMemories)) store.memories.value.sortedByDescending{m->com.jarvis.assistant.neural.RetrievalPolicy.terms(text).count{com.jarvis.assistant.neural.AppMatching.normalize(m.text).contains(it)}}.take(5).joinToString("\n") { it.text }.take(5000) else ""
+        val memory = if (!publicLocked && (useLocal || settings.shareSavedMemories)) com.jarvis.assistant.neural.RetrievalPolicy.relevantMemories(text,store.memories.value).joinToString("\n") { it.text }.take(5000) else ""
         privateTurn = localOnly || !publicLocked && (screen != null || uris.isNotEmpty() || memory.isNotBlank())
         val generalHistoryAllowed = !publicLocked && screen == null && uris.isEmpty()
         val selectedText = if (uris.isEmpty()) "" else withContext(Dispatchers.IO) {
