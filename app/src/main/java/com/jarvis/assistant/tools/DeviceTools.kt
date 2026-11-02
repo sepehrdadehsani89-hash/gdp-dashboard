@@ -29,6 +29,7 @@ import okhttp3.Request
 
 /** Deterministic, user-requested tools. Model-generated prose cannot invoke these. */
 class DeviceTools(private val context: Context, private val store: JarvisStore) {
+    val infinity=com.jarvis.assistant.infinity.InfinityTools(context)
     val appRegistry=com.jarvis.assistant.neural.AppRegistry(context)
     private var recentNews:Pair<Long,List<NewsArticle>>?=null
     private val pending = ConcurrentHashMap<String, PendingAction>()
@@ -37,6 +38,7 @@ class DeviceTools(private val context: Context, private val store: JarvisStore) 
         .callTimeout(25, TimeUnit.SECONDS).followRedirects(false).build()
 
     suspend fun route(text: String, language: AppLanguage): AssistantReply? {
+        if(!locked())infinity.route(text,language,::proposal)?.let{return it}
         WhatsAppDraft.parse(text)?.let { draft ->
             if (locked()) return AssistantReply(unlockMessage(language))
             return proposal("Open WhatsApp draft for +${draft.number}: ${draft.text}\nReview the recipient and send manually in WhatsApp.",
@@ -95,9 +97,11 @@ class DeviceTools(private val context: Context, private val store: JarvisStore) 
         }
         if (UtilityIntentParser.isAlarm(text)) {
             if (locked()) return AssistantReply(unlockMessage(language))
-            val time = UtilityIntentParser.alarmTime(text) ?: return AssistantReply(language.choose("Say the alarm time with hour and minutes, for example “alarm at 07:30”.", "Di la hora y los minutos, por ejemplo «alarma a las 07:30».", "ساعت و دقیقه را بگویید، مثلاً «آلارم ۰۷:۳۰»."))
-            val value = String.format(Locale.ROOT, "%02d:%02d", time.first, time.second)
-            return proposal(language.choose("Set an alarm for $value?", "¿Poner una alarma a las $value?", "آلارم برای ساعت $value تنظیم شود؟"), "set_alarm", value)
+            val schedule = com.jarvis.assistant.infinity.AlarmDatePolicy.parse(text,java.time.ZonedDateTime.now()) ?: return AssistantReply(language.choose("Specify an unambiguous time and date, for example ‘alarm tomorrow at 07:30’ or ‘alarm every Friday at 06:35’. Unsupported date phrases need clarification.","Indica hora y fecha claras, por ejemplo ‘alarma mañana a las 07:30’.","زمان و تاریخ روشن بگویید، مثلاً «آلارم فردا ۰۷:۳۰»."))
+            val value = String.format(Locale.ROOT, "%02d:%02d", schedule.hour,schedule.minute)
+            val payload=org.json.JSONObject().put("hour",schedule.hour).put("minute",schedule.minute).put("date",schedule.requestedDate?.toString().orEmpty()).put("days",org.json.JSONArray(schedule.repeatDays)).put("zone",schedule.zone).toString()
+            val detail=if(schedule.requestedDate!=null)"Requested date: ${schedule.requestedDate}. Android’s portable clock intent cannot set a one-off date: choose and verify it manually in your Clock app; this is not a repeating alarm." else if(schedule.repeatDays.isNotEmpty())"Explicit repeat days (Android Sunday=1): ${schedule.repeatDays}. Review in Clock." else "Review the next occurrence in Clock."
+            return proposal(language.choose("Open Clock for $value (${schedule.zone})?", "¿Abrir Reloj a las $value (${schedule.zone})?", "ساعت برای $value (${schedule.zone}) باز شود؟")+"\n"+detail, "set_alarm", payload)
         }
         UtilityIntentParser.mapQuery(text)?.let { query ->
             if (locked()) return AssistantReply(unlockMessage(language))
@@ -148,6 +152,14 @@ class DeviceTools(private val context: Context, private val store: JarvisStore) 
         if (locked()) return@withContext unlockMessage(language)
         try {
             when (action.kind) {
+                "infinity_controls" -> {
+                    context.startActivity(Intent(context,com.jarvis.assistant.infinity.InfinityControlsActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                    return@withContext "Device controls opening requested. Tests, scans and optional permissions require your action there."
+                }
+                "system_panel" -> {
+                    context.startActivity(com.jarvis.assistant.infinity.SystemPanels.intent(action.payload))
+                    return@withContext "AWAITING_USER: Android controls opening requested. Review the setting or accessory there; no change or connection has been verified."
+                }
                 "live_control" -> check(JarvisAccessibilityService.executeLive(context, action.payload)) { "The control did not accept the action." }
                 "open_url" -> {
                     check(ToolPolicy.allowedWebUrl(action.payload))
@@ -195,12 +207,15 @@ class DeviceTools(private val context: Context, private val store: JarvisStore) 
                         .putExtra(AlarmClock.EXTRA_SKIP_UI, false).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
                 }
                 "set_alarm" -> {
-                    val time = action.payload.split(':').map(String::toInt)
-                    check(time.size == 2 && time[0] in 0..23 && time[1] in 0..59)
-                    context.startActivity(Intent(AlarmClock.ACTION_SET_ALARM)
-                        .putExtra(AlarmClock.EXTRA_HOUR, time[0]).putExtra(AlarmClock.EXTRA_MINUTES, time[1])
-                        .putExtra(AlarmClock.EXTRA_MESSAGE, "Jarvis").putExtra(AlarmClock.EXTRA_SKIP_UI, false)
-                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                    val data=org.json.JSONObject(action.payload);val h=data.getInt("hour");val m=data.getInt("minute")
+                    check(h in 0..23 && m in 0..59 && data.getString("zone")==java.time.ZoneId.systemDefault().id){"The timezone changed; request the alarm again."}
+                    val date=data.getString("date");if(date.isNotEmpty())check(!java.time.LocalDate.parse(date).isBefore(java.time.LocalDate.now()))
+                    val days=data.getJSONArray("days");val repeating=ArrayList<Int>((0 until days.length()).map{days.getInt(it).also{d->check(d in 1..7)}})
+                    val intent=Intent(AlarmClock.ACTION_SET_ALARM).putExtra(AlarmClock.EXTRA_HOUR,h).putExtra(AlarmClock.EXTRA_MINUTES,m)
+                        .putExtra(AlarmClock.EXTRA_MESSAGE,if(date.isBlank())"Jarvis" else "Jarvis requested $date — choose date manually")
+                        .putExtra(AlarmClock.EXTRA_SKIP_UI,false).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    if(repeating.isNotEmpty())intent.putIntegerArrayListExtra(AlarmClock.EXTRA_DAYS,repeating)
+                    context.startActivity(intent)
                 }
                 else -> return@withContext language.choose("That action is not supported.", "Esa acción no es compatible.", "این کار پشتیبانی نمی‌شود.")
             }

@@ -1,6 +1,6 @@
-# Neural Core 4.0 model profiles
+# Jarvis 7.0 model profiles
 
-See the [current model, privacy, download and evaluation guide](../JARVIS_NEURAL_CORE.md) and [source baseline audit](neural/AUDIT.md). The following documents the original Lite bridge baseline; newer profile/context/output controls are described in the current guide.
+See the [current model, privacy, download and evaluation guide](../JARVIS_INFINITY.md) and [source baseline audit](neural/AUDIT.md). The optional near-1 GB Qwen2.5 1.5B Q4_K_M profile has separate approved installation and activation. RAM-based refusal and low-memory cancellation were removed at the user's request; estimates are information only. Thermal/architecture checks remain. The following documents the original Lite bridge baseline; newer profile/context/output controls are described in the current guide.
 
 # On-device conversation without an API key
 
@@ -11,7 +11,7 @@ Jarvis includes a real llama.cpp CPU inference bridge. After an explicit model d
 - llama.cpp: MIT, tag `b5046`, commit `74d4f5b041ad837153b0e90fc864b8290e01d8d5` from <https://github.com/ggml-org/llama.cpp>. Complete source and upstream license are retained in `app/src/main/cpp/vendor/llama.cpp`; no runtime code download is used.
 - Official model: [Qwen/Qwen2.5-0.5B-Instruct-GGUF](https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF), quantization `qwen2.5-0.5b-instruct-q4_k_m.gguf`, approximately 400 MB. The Qwen2.5-0.5B model is distributed under Apache-2.0; verify the model repository license when changing model variants. Do not assume larger Qwen model variants use identical terms.
 - Setup requests the official Hugging Face model metadata with blob records, obtains its immutable revision and LFS SHA-256/size, and downloads exactly that revision over HTTPS. It validates size and SHA-256 before installing the file atomically in private app storage. The verified revision/hash/size are saved alongside the model. Missing integrity metadata fails closed.
-- No model weights are bundled in the small APK. The first explicit download therefore needs Internet and sufficient phone storage. The download can be canceled; partial files are removed. Wi-Fi is recommended. Removing the app removes its private model file.
+- No model weights are bundled in the APK. The first explicit download therefore needs Internet and sufficient phone storage. Cancellation retains revision-bound partial bytes for a verified resume; an invalid final digest is rejected. Wi-Fi is recommended. Removing the app removes its private model files.
 
 ## Redmi 9 and other constrained devices
 

@@ -130,7 +130,7 @@ class AssistantRuntime(private val context: Context) {
             else if(stage=="Idle" && com.jarvis.assistant.neural.NeuralEvents.state.value.event in setOf(com.jarvis.assistant.neural.NeuralEvent.LOCAL_MODEL_LOADING,com.jarvis.assistant.neural.NeuralEvent.LOCAL_MODEL_GENERATING))com.jarvis.assistant.neural.NeuralEvents.emit(com.jarvis.assistant.neural.NeuralEvent.ASSISTANT_IDLE,"Idle")
         }}
         scope.launch{state.map{it.phase}.distinctUntilChanged().collectLatest{phase->
-            if(phase in listOf(AssistantPhase.READY,AssistantPhase.PAUSED)){delay(90_000);if(session?.isActive!=true && neuralOperation?.isActive!=true)brain.release()}
+            if(phase in listOf(AssistantPhase.READY,AssistantPhase.PAUSED)){delay(90_000);if(session?.isActive!=true && neuralOperation?.isActive!=true)brain.releaseIdle()}
         }}
         scope.launch{com.jarvis.assistant.neural.NeuralEvents.state.collectLatest{event->mutableState.update{it.copy(neuralStage=event.label)}}}
         ContextCompat.registerReceiver(context,object:BroadcastReceiver(){override fun onReceive(c:Context?,i:Intent?){appRegistry.invalidate()}},IntentFilter().apply{addAction(Intent.ACTION_PACKAGE_ADDED);addAction(Intent.ACTION_PACKAGE_REMOVED);addAction(Intent.ACTION_PACKAGE_CHANGED);addDataScheme("package")},ContextCompat.RECEIVER_EXPORTED)
@@ -216,7 +216,7 @@ class AssistantRuntime(private val context: Context) {
         }, ContextCompat.RECEIVER_NOT_EXPORTED)
         ContextCompat.registerReceiver(context, object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
-                clearScreenContext(); conversation.clear(); neural.conversation.clear(); captureStarted = 0; awaitScreenQuestion = false
+                clearScreenContext(); conversation.clear(); neural.conversation.clear(); tools.infinity.clearContext();captureStarted = 0; awaitScreenQuestion = false
                 mutableState.update { it.copy(pendingAction = null) }
                 if (privateTurn || !store.settings.value.allowLockedChat) {
                     cancelSession()
@@ -351,7 +351,7 @@ class AssistantRuntime(private val context: Context) {
         val lang = LanguageRules.languageRequest(text) ?: LanguageRules.detect(text, language())
         lastReplyLanguage = lang
         val generation = sessionGeneration
-        mutableState.update { it.copy(phase = AssistantPhase.THINKING, transcript = text, error = null, pendingAction = null) }
+        mutableState.update { it.copy(phase = AssistantPhase.THINKING, transcript = text, liveReply="",error = null, pendingAction = null) }
         val uris = selectedUris.toList()
         session = scope.launch {
             try {
@@ -457,7 +457,7 @@ class AssistantRuntime(private val context: Context) {
         var streamed = ""
         val onChunk: (String) -> Unit = { delta ->
             streamed = (streamed + delta).take(32_000)
-            if (generation == sessionGeneration) mutableState.update { it.copy(transcript = streamed) }
+            if (generation == sessionGeneration) mutableState.update { it.copy(liveReply = streamed) }
             if (streamingSpeech) chunks.add(delta).forEach { audioQueue.trySend(it) }
         }
         try {
@@ -488,7 +488,7 @@ class AssistantRuntime(private val context: Context) {
         val speakReply=!reply.speechHandled && (voiced || store.settings.value.speakReplies)
         if(reply.speechHandled)resumeWake(followUp=lastRequestWasVoice && !locked() || awaitScreenQuestion)
         else if(!speakReply)resumeWake(followUp=awaitScreenQuestion)
-        mutableState.update{it.copy(transcript="",pendingAction=reply.action,phase=if(speakReply)AssistantPhase.SPEAKING else AssistantPhase.READY)}
+        mutableState.update{it.copy(transcript="",liveReply="",pendingAction=reply.action,phase=if(speakReply)AssistantPhase.SPEAKING else AssistantPhase.READY)}
         if(speakReply)speak(reply.text,lang,generation,reply.allowCloudSpeech,followUpOnDone=voiced || awaitScreenQuestion)
     }
 
@@ -631,14 +631,8 @@ class AssistantRuntime(private val context: Context) {
     }
 
     fun downloadBrain() {
-        if (brainDownload?.isActive == true) return
-        brainDownload = scope.launch {
-            mutableState.update { it.copy(brainProgress = 0f, error = null) }
-            try { brain.download { progress -> mutableState.update { it.copy(brainProgress = progress) } } }
-            catch (cancelled: CancellationException) { throw cancelled }
-            catch (_: Exception) { fail(language().choose("Brain download failed. Use Wi-Fi and allow at least 1 GB free storage before retrying.", "Falló la descarga. Usa Wi-Fi y al menos 1 GB de espacio libre.", "دانلود مدل ناموفق بود. از وای‌فای استفاده کنید و حداقل یک گیگابایت فضای خالی داشته باشید.")) }
-            finally { mutableState.update { it.copy(brainProgress = null) }; refreshCapabilities() }
-        }
+        if(locked()){fail(unlockMessage());return}
+        context.startActivity(Intent(context,com.jarvis.assistant.neural.NeuralSettingsActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
     }
 
     fun downloadVoice() {
@@ -663,9 +657,9 @@ class AssistantRuntime(private val context: Context) {
         cancelSession()
         conversation.clear(); neural.conversation.clear()
         clearScreenContext()
-        store.updateSettings(store.settings.value.copy(provider = "local", model = "qwen2.5-0.5b", useCloudVoice = false))
+        store.updateSettings(store.settings.value.copy(provider = "local", model = if(brain.profile.id=="balanced")"qwen2.5-1.5b" else "qwen2.5-0.5b", useCloudVoice = false))
         refreshCapabilities()
-        mutableState.update { it.copy(error = if (brain.modelReady()) "On-device AI selected. Send your question again." else "On-device AI selected. Open Settings and download the optional model (~400 MB); no API key or paid account is needed.") }
+        mutableState.update { it.copy(error = if (brain.modelReady()) "On-device AI selected. Send your question again." else "On-device AI selected. Open Settings → Neural Core to install Lite or the optional near-1 GB brain; exact size is shown before download. No API key required.") }
     }
 
     fun sharePhotos() {
@@ -719,7 +713,7 @@ class AssistantRuntime(private val context: Context) {
     fun setCategory(id:Long, category:String) { val value=category.takeIf { it in listOf("Notes","Personal","Work","Tasks") } ?: "Notes"; categories.edit().putString(id.toString(),value).apply(); mutableState.update { it.copy(memoryCategories=it.memoryCategories+(id to value)) } }
 
     fun deleteMemory(id: Long) { conversation.clear(); neural.conversation.clear(); scope.launch { store.forget(id); categories.edit().remove(id.toString()).apply() } }
-    fun clearConversation() { cancelSession(); conversation.clear(); neural.conversation.clear(); clearScreenContext(); scope.launch { store.clearConversation() } }
+    fun clearConversation() { cancelSession(); tools.infinity.clearContext();conversation.clear(); neural.conversation.clear(); clearScreenContext(); scope.launch { store.clearConversation() } }
 
     fun wipe() {
         conversation.clear(); neural.conversation.clear()
@@ -763,9 +757,10 @@ class AssistantRuntime(private val context: Context) {
         runCatching { brain.cancel() }
         speech.stop()
         tools.cancelPendingActions()
+        mutableState.update{it.copy(liveReply="")}
     }
     fun trimMemory() {
-        if (session?.isActive != true) scope.launch { runCatching { brain.release() } }
+        if (session?.isActive != true && neuralOperation?.isActive != true) scope.launch { runCatching { brain.releaseIdle() } }
     }
     private fun fail(message: String) { mutableState.update { it.copy(error = message, phase = AssistantPhase.ERROR) } }
     private fun language() = store.settings.value.language

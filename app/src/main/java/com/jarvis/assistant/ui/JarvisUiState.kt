@@ -22,6 +22,7 @@ data class JarvisUiState(
     val memories: List<MemoryItem> = emptyList(),
     val phase: AssistantPhase = AssistantPhase.READY,
     val transcript: String = "",
+    val liveReply:String = "",
     val error: String? = null,
     val wakeStatus: String = "",
     val wakeEnabled:Boolean=false,

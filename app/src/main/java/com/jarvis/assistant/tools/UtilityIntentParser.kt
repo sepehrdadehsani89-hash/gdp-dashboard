@@ -36,6 +36,7 @@ object UtilityIntentParser {
         val value = digits(ToolPolicy.normalize(text))
         val match = Regex("(?<!\\d)([01]?\\d|2[0-3])[:：]([0-5]\\d)(?!\\d)").find(value) ?: return null
         var hour = match.groupValues[1].toInt()
+        if(Regex("\\b(?:am|pm)\\b|صبح|بعد از ظهر|عصر|شب").containsMatchIn(value) && hour !in 1..12)return null
         if (Regex("\\bpm\\b|بعد از ظهر|عصر|شب").containsMatchIn(value) && hour in 1..11) hour += 12
         if (Regex("\\bam\\b|صبح").containsMatchIn(value) && hour == 12) hour = 0
         return hour to match.groupValues[2].toInt()

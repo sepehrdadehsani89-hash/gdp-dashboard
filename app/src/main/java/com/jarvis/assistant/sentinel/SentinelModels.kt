@@ -17,9 +17,10 @@ data class SentinelSettings(
     val wallpaperWeather:Boolean=false, val chargingEffects:Boolean=true, val effectsVolume:Float=.35f,
     val activationSound:String="chime", val shutdownSound:String="sweep", val conciseReplies:Boolean=true,
     val returnOnTimeout:Boolean=true,
+    val activationVolume:Float=.35f,
 ) {
     fun sanitized()=copy(reactorScale=reactorScale.safe(.65f,1.1f,1f),animationSpeed=animationSpeed.safe(0f,2f,1f),
-        particleDensity=particleDensity.safe(0f,1f,.45f),brightness=brightness.safe(.15f,1f,.65f),ambientGlow=ambientGlow.safe(0f,1f,.45f),effectsVolume=effectsVolume.safe(0f,1f,.35f),
+        particleDensity=particleDensity.safe(0f,1f,.45f),brightness=brightness.safe(.15f,1f,.65f),ambientGlow=ambientGlow.safe(0f,1f,.45f),effectsVolume=effectsVolume.safe(0f,1f,.35f),activationVolume=activationVolume.safe(0f,1f,.35f),
         detail=detail.takeIf { it in listOf("minimal","balanced","cinematic") } ?: "balanced",
         activationSound=activationSound.takeIf { it in listOf("chime","soft","deep") } ?: "chime",
         shutdownSound=shutdownSound.takeIf { it in listOf("sweep","soft","silent") } ?: "sweep")

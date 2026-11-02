@@ -32,14 +32,7 @@ class WallpaperRenderer {
         val activation=if(mode==SentinelMode.ACTIVATING && motion)ReactorGeometry.awakening(now-frame.visual.activatedAt) else Awakening(1f,1f,1f,0f,true)
         val energy=if(frame.audio.recording && mode in listOf(SentinelMode.LISTENING,SentinelMode.ACTIVATING))frame.audio.level else if(frame.playback.active)frame.playback.level else 0f
         val active=if(dormant){if(v.cinematicWallpaper).35f else .2f} else (1-returning*.8f)
-        val color=when {
-            mode==SentinelMode.AUTHORIZATION_REQUIRED->Color.rgb(170,124,255)
-            mode==SentinelMode.ERROR || (battery.percent ?:100)<10->Color.rgb(255,83,104)
-            (battery.percent ?:100)<20->Color.rgb(255,191,85)
-            s.accent=="purple"->Color.rgb(170,124,255)
-            s.accent=="blue"->Color.rgb(56,189,248)
-            else->Color.rgb(0,229,255)
-        }
+        val color=ReactorPalette.core(mode,s.accent)
         val scale=v.reactorScale
         if(w!=canvas.width || h!=canvas.height || scale!=lastScale || color!=glowColor){
             w=canvas.width;h=canvas.height;cx=w*.5f;cy=h*.46f
@@ -55,7 +48,7 @@ class WallpaperRenderer {
         var x=0f;while(x<w){canvas.drawLine(x,0f,x,h.toFloat(),line);x+=grid}
         var y=0f;while(y<h){canvas.drawLine(0f,y,w.toFloat(),y,line);y+=grid}
         if(v.ambientGlow>0 && active>.2f){fill.shader=glow;fill.alpha=(v.ambientGlow*brightness*active*255).toInt();canvas.drawCircle(cx,cy,radius*1.1f,fill);fill.shader=null;fill.alpha=255}
-        val charging=battery.charging && !battery.full && v.chargingEffects
+        val charging=(battery.charging || battery.full && battery.source!="Battery") && v.chargingEffects
         val detail=when(v.detail){"minimal"->1;"cinematic"->3;else->2}
         val ringAlpha=(brightness*(45+active*150)*activation.rings).toInt()
         line.color=colorWithAlpha(color,ringAlpha);line.strokeWidth=max(1f,w/600f)
@@ -98,7 +91,7 @@ class WallpaperRenderer {
             }
         }
         if(charging){
-            line.color=colorWithAlpha(color,(brightness*140).toInt());line.strokeWidth=radius*.014f
+            line.color=colorWithAlpha(ReactorPalette.green,(brightness*210).toInt());line.strokeWidth=radius*.014f
             ring.set(cx-radius*1.025f,cy-radius*1.025f,cx+radius*1.025f,cy+radius*1.025f)
             canvas.drawArc(ring,ReactorGeometry.angle(time,v.animationSpeed*1.3f,0),36f,false,line)
         }
@@ -132,11 +125,12 @@ class WallpaperRenderer {
             val key="${t.epochMillis/60000}|${t.timezone}|${s.clockFormat}|${t.system24Hour}|${frame.language.code}"
             if(key!=clockKey){clockKey=key;val locale=Locale.forLanguageTag(frame.language.tag);clock=ClockDisplay.time(t.epochMillis,t.timezone,locale,s.clockFormat,t.system24Hour);date=ClockDisplay.date(t.epochMillis,t.timezone,locale)}
             val short=min(w,h).toFloat();val landscape=w>h
-            val clockX=if(landscape)w*.17f else cx
+            val clockX=if(landscape)w*.17f else if(v.wallpaperWeather)w*.26f else cx
             val clockY=if(landscape)h*.30f else cy-radius*1.32f
             val dateY=if(landscape)clockY+short*.055f else cy-radius*1.16f
             text.color=colorWithAlpha(Color.rgb(221,248,255),(brightness*200).toInt());text.textSize=short*.058f
-            drawText(canvas,clock,clockX,clockY,text,frame.language);text.textSize=short*.023f;drawText(canvas,date,clockX,dateY,text,frame.language)
+            val clockWidth=if(!landscape && v.wallpaperWeather).43f else if(landscape).28f else .92f
+            drawText(canvas,clock,clockX,clockY,text,frame.language,clockWidth);text.textSize=short*.023f;drawText(canvas,date,clockX,dateY,text,frame.language,clockWidth)
         }
         if(v.wallpaperWeather){
             val weather=frame.hud.weather;val r=weather.reading
@@ -145,14 +139,15 @@ class WallpaperRenderer {
                 "${r.place} · ${temp?.let{"$it°${if(s.fahrenheit)"F" else "C"}"} ?: "—"}${if(weather.stale)" · STALE" else ""}"
             }
             val short=min(w,h).toFloat();val landscape=w>h
-            val weatherX=if(landscape)w*.83f else cx;val weatherY=if(landscape)h*.60f else cy+radius*1.23f
-            text.textSize=short*.023f;text.color=colorWithAlpha(color,(brightness*180).toInt());drawText(canvas,label,weatherX,weatherY,text,frame.language)
-            text.textSize=short*.019f;drawText(canvas,"Open-Meteo.com · ${r?.observationTime?.replace('T',' ') ?: "no reading"}",weatherX,weatherY+short*.04f,text,frame.language)
+            val weatherX=if(landscape)w*.83f else if(v.wallpaperClock)w*.75f else cx;val weatherY=if(landscape)h*.30f else cy-radius*1.32f
+            val weatherWidth=if(landscape).28f else if(v.wallpaperClock).43f else .92f
+            text.textSize=short*.023f;text.color=colorWithAlpha(color,(brightness*180).toInt());drawText(canvas,label,weatherX,weatherY,text,frame.language,weatherWidth)
+            text.textSize=short*.019f;drawText(canvas,"Open-Meteo.com · ${r?.observationTime?.replace('T',' ') ?: "no reading"}",weatherX,weatherY+short*.07f,text,frame.language,weatherWidth)
         }
     }
-    private fun drawText(canvas:Canvas,value:String,x:Float,baseline:Float,paint:Paint,language:AppLanguage){
+    private fun drawText(canvas:Canvas,value:String,x:Float,baseline:Float,paint:Paint,language:AppLanguage,widthFraction:Float=if(w>h).28f else .92f){
         // StaticLayout handles native shaping and bidirectional runs; cache bounded labels.
-        val width=(w*(if(w>h).28f else .92f)).toInt().coerceAtLeast(1)
+        val width=(w*widthFraction).toInt().coerceAtLeast(1)
         val key="$value|${paint.textSize}|$width|${language.code}"
         val layout=labelCache.getOrPut(key){
             val copy=android.text.TextPaint(paint).apply{textAlign=Paint.Align.LEFT}

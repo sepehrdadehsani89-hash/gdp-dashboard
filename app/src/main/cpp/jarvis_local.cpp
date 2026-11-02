@@ -76,7 +76,7 @@ void load(Engine &engine) {
         engine.model = nullptr;
         checkCancelled(engine);
     }
-    if (!engine.model) throw std::runtime_error("Could not load the verified model. Free memory and try again.");
+    if (!engine.model) throw std::runtime_error("The local runtime could not load the verified model. Try Lite or check model compatibility.");
     auto contextParams = llama_context_default_params();
     contextParams.n_ctx = engine.contextTokens;
     contextParams.n_batch = 128;
@@ -93,7 +93,7 @@ void load(Engine &engine) {
     if (!engine.context) {
         llama_model_free(engine.model);
         engine.model = nullptr;
-        throw std::runtime_error("Not enough memory for the local AI. Close other apps and try again.");
+        throw std::runtime_error("The local runtime could not create an inference context. Try Lite; no answer was generated.");
     }
 }
 
@@ -178,7 +178,7 @@ Java_com_jarvis_assistant_local_LocalBrain_nativeGenerate(JNIEnv *env, jobject, 
             auto batch = llama_batch_get_one(tokens.data() + offset, std::min(128, count - offset));
             int status = llama_decode(engine->context, batch);
             checkCancelled(*engine);
-            if (status != 0) throw std::runtime_error("Local AI prompt evaluation failed. Free memory and retry.");
+            if (status != 0) throw std::runtime_error("Local AI prompt evaluation failed (backend code " + std::to_string(status) + "). Try a shorter request or Lite.");
         }
         engine->stats[3]=clock()-promptStarted;auto generationStarted=clock();
         auto params = llama_sampler_chain_default_params();

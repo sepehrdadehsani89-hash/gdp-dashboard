@@ -25,6 +25,11 @@ object ToolRegistry {
         ,ToolDefinition("set_alarm","Reviewed clock alarm",setOf("time"),emptyList(),ToolRisk.EXTERNAL,5000,"Clock UI dispatch; user saves",true)
         ,ToolDefinition("nav_home","Approved home navigation",emptySet(),listOf("user-enabled accessibility"),ToolRisk.EXTERNAL,5000,"Android accessibility navigation return value",true)
         ,ToolDefinition("nav_back","Approved back navigation",emptySet(),listOf("user-enabled accessibility"),ToolRisk.EXTERNAL,5000,"Android accessibility navigation return value",true)
+        ,ToolDefinition("infinity_controls","Reviewed foreground device diagnostics",emptySet(),emptyList(),ToolRisk.PRIVATE,5000,"Activity dispatch only; scan, GATT and transfers need a tap",true)
+        ,ToolDefinition("system_panel","Android settings panel",setOf("panel_id"),emptyList(),ToolRisk.EXTERNAL,5000,"AWAITING_USER; dispatch does not verify settings changes",true)
+        ,ToolDefinition("wifi_status","On-demand network and redaction-aware Wi-Fi reading",emptySet(),listOf("ACCESS_NETWORK_STATE","ACCESS_WIFI_STATE","optional ACCESS_FINE_LOCATION for SSID"),ToolRisk.PRIVATE,5000,"Android network capabilities and WifiInfo; link speed is not throughput",false)
+        ,ToolDefinition("battery_health","Android battery classification and available measurements",emptySet(),emptyList(),ToolRisk.READ_ONLY,5000,"BatteryManager and sticky battery broadcast; no capacity estimate",false)
+        ,ToolDefinition("bluetooth_devices","User-requested paired device and profile query",emptySet(),listOf("BLUETOOTH_CONNECT on Android 12+"),ToolRisk.PRIVATE,5000,"Bonded devices and A2DP/headset/GATT profiles; absent status stays unknown",false)
     ).associateBy{it.id}
     val modelToolIds=setOf("time","battery","weather","news","open_app","knowledge")
     fun parse(json:String):List<ToolRequest>{

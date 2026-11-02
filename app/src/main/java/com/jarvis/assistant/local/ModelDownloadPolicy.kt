@@ -24,7 +24,7 @@ object ModelDownloadPolicy {
         val hash = lfs.optString("sha256").lowercase()
         val size = lfs.optLong("size", -1)
         require(hash.matches(checksumPattern)) { "Missing model SHA-256." }
-        require(size in 1_000_000..profile.maximumBytes) { "Unsupported model download size." }
+        require(size in profile.minimumBytes..profile.maximumBytes) { "Unsupported model download size. No weights were installed." }
         return Descriptor(revision, hash, size)
     }
 

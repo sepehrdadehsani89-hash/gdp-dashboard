@@ -1,0 +1,18 @@
+package com.jarvis.assistant.infinity
+
+import com.jarvis.assistant.sentinel.*
+import org.junit.Test
+import org.junit.Assert.*
+import java.time.*
+
+class InfinityPolicyTest {
+    private val now=ZonedDateTime.of(2026,11,2,8,0,0,0,ZoneId.of("America/Guayaquil"))
+    @Test fun deviceNameMatchingUsesOnlyRealCandidatesWithSpokenNumbers(){val devices=listOf(Accessory("actual-a","Pro7","BLE",true),Accessory("actual-b","Pro8","BLE",true));assertEquals("actual-a",DevicePolicy.matches("Pro Seven",devices).first().address);assertEquals("actual-a",DevicePolicy.matches("Pro siete",devices).first().address);assertEquals("actual-a",DevicePolicy.matches("Pro ۷",devices).first().address);assertTrue(DevicePolicy.matches("imaginary speaker",devices).isEmpty())}
+    @Test fun aliasesAndOrdinalReferencesAreBoundToTheActualList(){val d=Accessory("actual-a","Pro7","BLE",true);assertEquals(d,DevicePolicy.matches("my headphones",listOf(d),mapOf("my headphones" to d.address)).single());assertEquals(d,DevicePolicy.reference("the first one",listOf(d)));assertNull(DevicePolicy.reference("the second one",listOf(d)));assertTrue(DevicePolicy.matches("my headphones",emptyList(),mapOf("my headphones" to d.address)).isEmpty())}
+    @Test fun ssidRedactionAndUnavailableMeasurementsStayUnavailable(){assertNull(DevicePolicy.usableSsid("<unknown ssid>"));assertNull(DevicePolicy.usableSsid("\"\""));assertEquals("Home Wi-Fi",DevicePolicy.usableSsid("\"Home Wi-Fi\""));assertNull(DevicePolicy.knownProperty(Long.MIN_VALUE));assertNull(DevicePolicy.knownProperty(Int.MIN_VALUE.toLong()));assertEquals(0L,DevicePolicy.knownProperty(0))}
+    @Test fun measuredThroughputHasCorrectUnitsAndRejectsMissingTime(){assertEquals(8.0,DevicePolicy.throughputMbps(1_000_000,1_000_000_000),.0001);assertTrue(runCatching{DevicePolicy.throughputMbps(100,0)}.isFailure)}
+    @Test fun reactorSpeakingListeningAndChargingColorsRemainIndependent(){assertEquals(ReactorPalette.cyan,ReactorPalette.core(SentinelMode.SPEAKING,"purple"));assertEquals(ReactorPalette.purple,ReactorPalette.core(SentinelMode.LISTENING,"cyan"));assertEquals(ReactorPalette.thinking,ReactorPalette.core(SentinelMode.PROCESSING));assertNotEquals(ReactorPalette.green,ReactorPalette.core(SentinelMode.SPEAKING));assertNotEquals(ReactorPalette.green,ReactorPalette.core(SentinelMode.LISTENING));assertEquals(0f,SentinelSettings(activationVolume=-1f).sanitized().activationVolume)}
+    @Test fun fridayOneOffNeverBecomesAWeeklyAlarm(){val s=AlarmDatePolicy.parse("alarm Friday at 6:35 AM",now)!!;assertEquals(LocalDate.of(2026,11,6),s.requestedDate);assertTrue(s.repeatDays.isEmpty());assertEquals("America/Guayaquil",s.zone);assertEquals(6,s.hour)}
+    @Test fun repeatingDaysRequireExplicitRecurrence(){assertEquals(listOf(6),AlarmDatePolicy.parse("alarm every Friday at 06:35",now)!!.repeatDays);assertEquals((1..7).toList(),AlarmDatePolicy.parse("alarm every day at 07:30",now)!!.repeatDays);assertTrue(AlarmDatePolicy.parse("alarm tomorrow at 07:30",now)!!.repeatDays.isEmpty())}
+    @Test fun dateAndLanguageAreParsedWithoutGuessingAnUnsupportedDate(){assertEquals(LocalDate.of(2026,11,3),AlarmDatePolicy.parse("alarma mañana a las 07:30",now)!!.requestedDate);assertEquals(LocalDate.of(2026,11,3),AlarmDatePolicy.parse("آلارم فردا ۰۷:۳۰",now)!!.requestedDate);assertEquals(LocalDate.of(2026,11,6),AlarmDatePolicy.parse("alarm on 2026-11-06 at 06:35",now)!!.requestedDate);listOf("alarm next week at 07:30","alarm day after tomorrow at 07:30","alarm January 6 at 07:30","alarm at 18:30 AM","alarm Friday and Monday at 07:30","alarm 2026-02-31 at 07:30","alarm today at 07:30").forEach{assertNull(it,AlarmDatePolicy.parse(it,now))}}
+}

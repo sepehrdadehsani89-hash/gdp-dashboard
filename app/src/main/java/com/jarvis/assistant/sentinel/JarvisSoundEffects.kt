@@ -64,7 +64,8 @@ class JarvisSoundEffects(private val context:Context,private val settings:()->Hu
         val mic=AudioSignals.state.value
         val speaking=phase()==AssistantPhase.SPEAKING
         val commandMic=mic.recording && (phase()==AssistantPhase.LISTENING || com.jarvis.assistant.voice.WakeListenerService.state.value.awaitingCommand || !mic.source.startsWith("Wake microphone"))
-        val volume=SoundMixPolicy.volume(s.soundEffects,w.effectsVolume,quiet,audio.mode!=AudioManager.MODE_NORMAL,commandMic,mic.level,speaking,event)*(if(mic.recording && !commandMic).25f else 1f)
+        val configuredVolume=if(request in listOf(SentinelSound.WAKE,SentinelSound.REACTOR))w.activationVolume else w.effectsVolume
+        val volume=SoundMixPolicy.volume(s.soundEffects,configuredVolume,quiet,audio.mode!=AudioManager.MODE_NORMAL,commandMic,mic.level,speaking,event)*(if(mic.recording && !commandMic).25f else 1f)
         if(volume==0f)return
         val now=SystemClock.elapsedRealtime();if(now-lastAt<80 && event.priority<3)return
         warm();val target=pool ?: return;val id=ids[event] ?: return;if(id !in ready)return

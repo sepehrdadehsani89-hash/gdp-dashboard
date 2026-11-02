@@ -85,9 +85,14 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
             IconButton(onClick={actions.onInteraction(SentinelSound.PANEL_OPEN);onSettings()}){Icon(Icons.Rounded.Settings,"HUD settings",tint=color)}
             IconButton(onClick=actions.onDismiss){Icon(Icons.Rounded.Close,"Dismiss Jarvis",tint=Dim)}
         }
-        Text(ClockDisplay.time(t.epochMillis,t.timezone,locale,s.clockFormat,t.system24Hour),color=Ice,fontSize=38.sp,fontWeight=FontWeight.Light)
-        Text(ClockDisplay.date(t.epochMillis,t.timezone,locale),color=Dim,fontSize=12.sp,textAlign=TextAlign.Center)
-        Text(t.timezone,color=Dim,fontSize=10.sp)
+        Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(10.dp)){
+            Column(Modifier.weight(1f)){
+                Text(ClockDisplay.time(t.epochMillis,t.timezone,locale,s.clockFormat,t.system24Hour),color=Ice,fontSize=30.sp,fontWeight=FontWeight.Light)
+                Text(ClockDisplay.date(t.epochMillis,t.timezone,locale),color=Dim,fontSize=11.sp)
+                Text(t.timezone,color=Dim,fontSize=9.sp)
+            }
+            WeatherPanel(state,actions,Modifier.weight(1f),compact=true)
+        }
         CommandCountdown(state)
         val hour=java.time.Instant.ofEpochMilli(t.epochMillis).atZone(java.time.ZoneId.of(t.timezone)).hour
         Text(when(hour){in 5..11->l.choose("Good morning","Buenos días","صبح بخیر");in 12..17->l.choose("Good afternoon","Buenas tardes","عصر بخیر");else->l.choose("Good evening","Buenas noches","شب بخیر")}+state.settings.name.takeIf(String::isNotBlank)?.let {", $it"}.orEmpty(),color=Dim,fontSize=11.sp)
@@ -100,28 +105,30 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
                 HudCore(state,Modifier.fillMaxWidth(),actions)
             }
         }
-        Row(Modifier.fillMaxWidth().then(panelMotion),horizontalArrangement=Arrangement.spacedBy(10.dp)) {
-            WeatherPanel(state,actions,Modifier.weight(1f))
-            HudPanel(l.choose("Quick info","Información","اطلاعات"),Modifier.weight(1f)) {
+        val userCaption=state.transcript.ifBlank{state.messages.lastOrNull{it.role==MessageRole.USER}?.text.orEmpty()}
+        val assistantCaption=state.liveReply.ifBlank{state.messages.lastOrNull{it.role==MessageRole.ASSISTANT}?.text.orEmpty()}
+        val captions=rememberScrollState()
+        LaunchedEffect(userCaption,assistantCaption,captions.maxValue){if(s.reducedMotion || !t.systemMotion)captions.scrollTo(captions.maxValue) else captions.animateScrollTo(captions.maxValue)}
+        HudPanel(l.choose("Live captions · tap to expand","Subtítulos · toca para ampliar","زیرنویس زنده · لمس برای نمایش کامل"),Modifier.fillMaxWidth().clickable(role=Role.Button){actions.onInteraction(SentinelSound.PANEL_OPEN);conversation=true}){
+            Column(Modifier.fillMaxWidth().heightIn(max=112.dp).verticalScroll(captions),verticalArrangement=Arrangement.spacedBy(6.dp)){
+                Text(l.choose("YOU: ","TÚ: ","شما: ")+userCaption.ifBlank{l.choose("Tap the microphone or use your enabled wake phrase.","Toca el micrófono o usa la frase de activación.","میکروفن یا عبارت بیدارباش را فعال کنید.")},color=Purple,fontSize=13.sp)
+                if(assistantCaption.isNotBlank())Text("JARVIS: $assistantCaption",color=Ice,fontSize=13.sp)
+            }
+        }
+        HudPanel(l.choose("Quick info","Información","اطلاعات"),Modifier.fillMaxWidth().then(panelMotion)) {
                 Reading("MEMORIES",state.memories.size.toString())
                 Reading("FILES",state.attachedFiles.size.toString())
                 Reading("PROVIDER",state.settings.provider.uppercase())
                 Text(if(state.settings.provider=="local")state.brainStatus else if(state.hasApiKey)"Key saved · use Test connection to verify" else "API key missing",color=Dim,fontSize=10.sp)
                 Text(state.voiceStatus,color=Dim,fontSize=10.sp)
-            }
         }
         if(state.authorization!=null) AuthorizationPanel(state,actions)
-        HudPanel(l.choose("Live transcript","Transcripción","رونویسی زنده"),Modifier.fillMaxWidth().clickable(role=Role.Button){actions.onInteraction(SentinelSound.PANEL_OPEN);conversation=true}) {
-            Text(state.transcript.ifBlank { l.choose("Tap the microphone or use your enabled wake phrase.","Toca el micrófono o usa la frase de activación.","میکروفن را لمس کنید یا عبارت بیدارباش فعال را بگویید.") },color=Ice,fontSize=15.sp)
-        }
-        state.messages.lastOrNull { it.role==MessageRole.ASSISTANT }?.let { message ->
-            HudPanel("JARVIS",Modifier.fillMaxWidth()){Text(l.choose("Response: ","Respuesta: ","پاسخ: ")+message.text,color=Ice,fontSize=15.sp)}
-        }
     }
     if(conversation)AlertDialog(onDismissRequest={conversation=false},title={Text(l.choose("Conversation","Conversación","گفت‌وگو"))},text={
         androidx.compose.foundation.lazy.LazyColumn(Modifier.heightIn(max=420.dp)){
             state.messages.takeLast(30).forEach{message->item{Text("${message.role}: ${message.text}",Modifier.padding(vertical=8.dp))}}
             item{Text(state.transcript.ifBlank{"No active transcript"})}
+            if(state.liveReply.isNotBlank())item{Text("JARVIS: ${state.liveReply}")}
         }
     },confirmButton={TextButton(onClick={conversation=false;actions.onInteraction(SentinelSound.PANEL_CLOSE)}){Text("Close")}})
 }
@@ -164,7 +171,8 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
     val boot=if(state.sentinelVisual.mode==SentinelMode.ACTIVATING && fps>0)ReactorGeometry.awakening(frameNow-state.sentinelVisual.activatedAt) else Awakening(1f,1f,1f,0f,true)
     val auth=state.authorization?.status
     val authorizing=auth in listOf(AuthorizationStatus.AUTHORIZATION_REQUIRED,AuthorizationStatus.AWAITING_CODEX,AuthorizationStatus.IDENTITY_CONFIRMATION)
-    val color=when { authorizing->Purple; state.phase==AssistantPhase.ERROR->Color(0xFFFF5368); (b.percent ?: 100)<10->Color(0xFFFF5368);(b.percent ?: 100)<20->Color(0xFFFFBF55);s.accent=="purple"->Purple;s.accent=="blue"->Color(0xFF38BDF8);else->Cyan }
+    val mode=if(authorizing)SentinelMode.AUTHORIZATION_REQUIRED else when(state.phase){AssistantPhase.LISTENING->SentinelMode.LISTENING;AssistantPhase.SPEAKING->SentinelMode.SPEAKING;AssistantPhase.THINKING->SentinelMode.PROCESSING;AssistantPhase.ERROR->SentinelMode.ERROR;else->state.sentinelVisual.mode}
+    val color=Color(ReactorPalette.core(mode,s.accent))
     val ticks=remember { ReactorGeometry.ticks.map{Offset(it.x,it.y)} }
     Box(modifier.aspectRatio(1f).sizeIn(maxWidth=450.dp,maxHeight=450.dp).clickable(enabled=actions!=null,role=Role.Button,onClickLabel="Activate voice"){actions?.onMic?.invoke()},contentAlignment=Alignment.Center) {
         Canvas(Modifier.fillMaxSize().semantics { contentDescription="Battery reactor ${b.percent?.toString() ?: "unavailable"} percent" }) {
@@ -179,7 +187,7 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
                 rotate(spin,center){for(i in 0..2){ drawArc(if(i==1)Purple.copy(alpha=.85f) else color.copy(alpha=.8f),i*120f+12,(if(ring==0)40f else 64f)*boot.rings,false,Offset(center.x-rr,center.y-rr),Size(rr*2,rr*2),style=Stroke(if(ring==0)5.dp.toPx() else 2.dp.toPx()))}}
             }
             if(boot.pulse>0)drawCircle(color.copy(alpha=boot.pulse*.5f),r*(.5f+boot.pulse*.6f),center,style=Stroke(1.5.dp.toPx()))
-            if(b.charging && !b.full && s.sentinel.chargingEffects){val rr=r*1.025f;drawArc(color.copy(alpha=.7f),angle*2,36f,false,Offset(center.x-rr,center.y-rr),Size(rr*2,rr*2),style=Stroke(2.dp.toPx()))}
+            if((b.charging || b.full && b.source!="Battery") && s.sentinel.chargingEffects){val rr=r*1.025f;drawArc(Color(ReactorPalette.green).copy(alpha=.9f),angle*2,36f,false,Offset(center.x-rr,center.y-rr),Size(rr*2,rr*2),style=Stroke(2.dp.toPx()))}
             val core=r*.49f
             drawCircle(Brush.radialGradient(listOf(Back,color.copy(alpha=.18f)),center,core),core,center)
             drawCircle(color,core,center,style=Stroke(1.4.dp.toPx()))
@@ -203,7 +211,7 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
     }
     if(batteryDetails)AlertDialog(onDismissRequest={batteryDetails=false},title={Text("Battery details")},text={Text("Charge: ${b.percent?.let{"$it%"} ?: "Unavailable"}\nCharging: ${b.charging}\nFull: ${b.full}\nSource: ${b.source}\nTemperature: ${b.temperatureC?.let{"$it °C"} ?: "Unavailable"}\nHealth: ${b.health}\nAndroid power saver: ${t.powerSaver}",Modifier.heightIn(max=420.dp).verticalScroll(rememberScrollState()))},confirmButton={TextButton(onClick={batteryDetails=false}){Text("Close")}})
 }
-@Composable private fun WeatherPanel(state:JarvisUiState,actions:JarvisUiActions,modifier:Modifier) {
+@Composable private fun WeatherPanel(state:JarvisUiState,actions:JarvisUiActions,modifier:Modifier,compact:Boolean=false) {
     val w=state.hud.weather;val r=w.reading;val f=state.hud.settings.fahrenheit
     var details by remember{mutableStateOf(false)}
     fun temp(v:Double?)=v?.let {"${if(f)(it*9/5+32).roundToInt() else it.roundToInt()}°${if(f)"F" else "C"}"} ?: "Unavailable"
@@ -212,12 +220,15 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
         else {
             Text(r.place,color=Ice,fontSize=12.sp)
             Text(when(r.code){0->"Clear";1,2->"Partly cloudy";3->"Overcast";45,48->"Fog";51,53,55,56,57->"Drizzle";61,63,65,66,67,80,81,82->"Rain";71,73,75,77,85,86->"Snow";95,96,99->"Thunderstorm";else->"Conditions unavailable"},color=Ice,fontSize=11.sp)
+            if(compact)Text(temp(r.temperatureC),color=Ice,fontSize=18.sp)
+            if(!compact){
             Reading("TEMP / FEELS", "${temp(r.temperatureC)} / ${temp(r.feelsLikeC)}")
             Reading("HUMIDITY",r.humidity?.let {"$it%"} ?: "Unavailable")
             Reading("WIND",r.windKmh?.let {"$it km/h"} ?: "Unavailable")
             Reading("RAIN CHANCE",r.precipitationProbability?.let {"$it%"} ?: "Unavailable")
             Reading("SUNRISE",r.sunrise?.substringAfter('T') ?: "Unavailable")
             Reading("SUNSET",r.sunset?.substringAfter('T') ?: "Unavailable")
+            }
             Text("${if(w.stale)"STALE · " else ""}${r.observationTime.replace('T',' ')} · place local time",color=Dim,fontSize=9.sp)
         }
         w.error?.let {Text(it,color=Color(0xFFFFBF55),fontSize=10.sp)}

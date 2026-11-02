@@ -295,7 +295,7 @@ private fun Home(state: JarvisUiState, actions: JarvisUiActions, onOpenSettings:
                 Text("Jarvis · separate installation", color = Mint, style = MaterialTheme.typography.labelSmall)
                 Text("Live controls: enable Screen access, start wake listening, then say open [app], tap [exact label], or type [draft]. Confirm taps/drafts by voice on the same screen. Send actions stay manual.", color = Muted, style = MaterialTheme.typography.bodySmall)
                 TextButton(onClick = actions.onUseLocal) { Text("Use free on-device AI") }
-                Text("Local inference needs a one-time ~400 MB model download in Settings. It does not reset Google quota.", color = Muted, style = MaterialTheme.typography.bodySmall)
+                Text(l.choose("Choose Lite or the optional near-1 GB brain in Settings → Neural Core. Exact size is shown before download. Local AI does not reset Google quota.","Elige Lite o el cerebro opcional de casi 1 GB en Ajustes → Neural Core. Verás el tamaño exacto antes de descargar. La IA local no reinicia la cuota de Google.","در تنظیمات ← هستهٔ عصبی، مدل سبک یا مغز اختیاری نزدیک ۱ گیگابایت را انتخاب کنید. اندازهٔ دقیق پیش از دانلود نمایش داده می‌شود. هوش محلی سهمیهٔ گوگل را بازنشانی نمی‌کند."), color = Muted, style = MaterialTheme.typography.bodySmall)
                 if (state.attachedFiles.isNotEmpty()) TextButton(onClick = actions.onSharePhotos) { Text("Share selected photos…") }
             }
             if (state.attachedFiles.isNotEmpty()) item {
@@ -593,7 +593,7 @@ private fun SettingsScreen(state: JarvisUiState, actions: JarvisUiActions, senti
                 }, label = { Text(title) }) }
             }
             if (draft.provider == "local") {
-                Text(l.choose("The optional model is roughly 400 MB; use Wi-Fi. On a Redmi 9, answers can be slow and Persian quality is limited. It is a small local model, not a cloud-level assistant.", "El modelo opcional ocupa unos 400 MB; usa Wi-Fi. En un Redmi 9 puede ser lento y el persa es limitado. Es un modelo local pequeño, con capacidades limitadas.", "مدل اختیاری حدود ۴۰۰ مگابایت است؛ از وای‌فای استفاده کنید. روی ردمی ۹ پاسخ‌ها ممکن است کند باشند و کیفیت فارسی محدود است. این یک مدل کوچک روی گوشی است و توانایی سرویس‌های بزرگ آنلاین را ندارد."), color = Muted, style = MaterialTheme.typography.bodySmall)
+                Text(l.choose("Settings → Neural Core offers Lite (~400 MB) and an optional near-1 GB Qwen2.5 1.5B brain. Review exact bytes and license before download, then activate separately. RAM-based refusals are off. Phone performance and language quality still need on-device evaluation.","Neural Core ofrece Lite (~400 MB) y un cerebro Qwen2.5 1.5B opcional de casi 1 GB. Revisa tamaño y licencia antes de descargar; actívalo por separado. El bloqueo por RAM está desactivado. Aún se debe evaluar rendimiento e idiomas en el teléfono.","هستهٔ عصبی مدل سبک حدود ۴۰۰ مگابایت و مغز اختیاری Qwen2.5 1.5B نزدیک ۱ گیگابایت دارد. اندازه و مجوز را بررسی و دانلود کنید؛ فعال‌سازی جداست. محدودیت رم حذف شده است. عملکرد و کیفیت زبان‌ها هنوز باید روی گوشی ارزیابی شوند."), color = Muted, style = MaterialTheme.typography.bodySmall)
                 if (state.brainStatus.isNotBlank()) Text(state.brainStatus, color = Warm)
                 if(state.neuralStage!="Idle")Text(state.neuralStage,color=Warm)
                 state.brainProgress?.let { LinearProgressIndicator(progress = { it.coerceIn(0f, 1f) }, modifier = Modifier.fillMaxWidth()) }

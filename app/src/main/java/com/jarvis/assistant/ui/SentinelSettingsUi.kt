@@ -53,6 +53,8 @@ import kotlin.math.roundToInt
         HudPanel("Original sound design",Modifier.fillMaxWidth()){
             Toggle("Cinematic sound effects",s.soundEffects){actions.onSaveHud(s.copy(soundEffects=it))}
             SettingSlider("Effects volume",v.effectsVolume){save(v.copy(effectsVolume=it))}
+            SettingSlider("Activation volume",v.activationVolume){save(v.copy(activationVolume=it))}
+            Text("Reply volume is controlled independently in Voice settings. All three respect Android volume, silent mode and Do Not Disturb.",fontSize=12.sp)
             Text("Activation sound")
             FlowRow(horizontalArrangement=Arrangement.spacedBy(8.dp)){listOf("chime","soft","deep").forEach{sound->FilterChip(v.activationSound==sound,{save(v.copy(activationSound=sound))},label={Text(sound)})}}
             Text("Shutdown sound")
