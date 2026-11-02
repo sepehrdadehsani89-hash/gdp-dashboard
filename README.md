@@ -4,7 +4,7 @@ Jarvis 3.0 — Sentinel adds a native live wallpaper, coordinated reactor activa
 
 **Separate installation:** this is the renamed **Jarvis Next** app, package `com.jarvis.next`. The signed 3.0.0 APK updates Jarvis Next 0.1.0 and Jarvis 2.0 with the same key and preserves its data. Keep your original Jarvis installed and untouched. The unavailable original Jarvis key and unfinished 0.1.4 files were not recovered. `main` and `jarvis-android-download` are unchanged.
 
-[**Download Jarvis 3.0.0 — signed ARM64 APK**](https://raw.githubusercontent.com/sepehrdadehsani89-hash/gdp-dashboard/jarvis-next/downloads/sentinel/Jarvis-3.0.0-arm64.apk)
+[**Download Jarvis 3.0.0 — signed ARM64 APK**](https://raw.githubusercontent.com/sepehrdadehsani89-hash/gdp-dashboard/478c7e43a021689fe05d7be11e34b751a38d1bbd/downloads/sentinel/Jarvis-3.0.0-arm64.apk)
 
 [Sentinel feature/setup guide](JARVIS_SENTINEL.md) · [Verification and limits](docs/JARVIS_SENTINEL_VERIFICATION.md) · [Build identity/checksum](downloads/sentinel/build-info.json) · [Public signing certificate](downloads/jarvis-next-signing-certificate.pem)
 

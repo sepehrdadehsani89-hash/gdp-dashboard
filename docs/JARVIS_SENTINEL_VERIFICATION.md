@@ -15,7 +15,7 @@ Phone artifact: `downloads/sentinel/Jarvis-3.0.0-arm64.apk`, Android 10+ ARM64, 
 | ZIP/native packaging alignment | `zipalign -c -P 16 4` passed; see Vosk ELF limit below |
 | Original sound resources | All 26 packaged and decoded by SoundPool; queued playback exercised |
 | Private signing backup | Decrypted and byte-compared against retained key/password; no secrets published |
-| Public APK retrieval | Pending publication and immutable-URL byte comparison |
+| Public APK retrieval | Passed: 78,717,872 bytes, SHA-256 matches signed local artifact |
 
 ## What was exercised
 
@@ -50,3 +50,5 @@ The release remains intentionally unminified to preserve existing JNI bindings. 
 No claim is made that the app identity clears Play Protect or changes Google quota. Remote `main` and `jarvis-android-download` are preserved.
 
 Emulator evidence: [selected home wallpaper](images/sentinel-home-emulator.png) · [synthetic Persian landscape renderer fixture](images/sentinel-rtl-landscape-fixture.png).
+
+Immutable verified [phone download](https://raw.githubusercontent.com/sepehrdadehsani89-hash/gdp-dashboard/478c7e43a021689fe05d7be11e34b751a38d1bbd/downloads/sentinel/Jarvis-3.0.0-arm64.apk). SHA-256: `9bd1bc1d31a39602df4ad74ffe7f74bfb6ed32bc5be6eecd32a6146eba3f82ab`. Public retrieval matched the signed local APK byte for byte.

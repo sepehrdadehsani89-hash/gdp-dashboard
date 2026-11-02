@@ -238,5 +238,11 @@
   "preserved_refs": {
     "main": "0fbe7c5a40b2ec7ad70f156c77608bc1ec93cc1d",
     "jarvis-android-download": "994ee8ace41e604fb51d1da31687bd2186c18333"
+  },
+  "public_download": {
+    "url": "https://raw.githubusercontent.com/sepehrdadehsani89-hash/gdp-dashboard/478c7e43a021689fe05d7be11e34b751a38d1bbd/downloads/sentinel/Jarvis-3.0.0-arm64.apk",
+    "artifact_commit": "478c7e43a021689fe05d7be11e34b751a38d1bbd",
+    "bytes_and_sha256_verified": true,
+    "checked_at_utc": "2026-11-02T15:28:15.696410+00:00"
   }
 }

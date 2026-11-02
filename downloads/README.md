@@ -1,6 +1,6 @@
 # Current release: Jarvis 3.0 — Sentinel
 
-[Download the signed ARM64 APK](sentinel/Jarvis-3.0.0-arm64.apk) · [Sentinel setup](../JARVIS_SENTINEL.md) · [Verification](../docs/JARVIS_SENTINEL_VERIFICATION.md). Package `com.jarvis.next` updates the separate Jarvis Next/Jarvis 2.0 app; keep the original Jarvis installed.
+[Download the signed ARM64 APK](https://raw.githubusercontent.com/sepehrdadehsani89-hash/gdp-dashboard/478c7e43a021689fe05d7be11e34b751a38d1bbd/downloads/sentinel/Jarvis-3.0.0-arm64.apk) · [Sentinel setup](../JARVIS_SENTINEL.md) · [Verification](../docs/JARVIS_SENTINEL_VERIFICATION.md). Package `com.jarvis.next` updates the separate Jarvis Next/Jarvis 2.0 app; keep the original Jarvis installed.
 
 The following files describe the historical original Jarvis 0.1.3 release.
 
