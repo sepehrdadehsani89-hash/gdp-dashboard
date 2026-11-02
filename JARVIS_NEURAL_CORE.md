@@ -82,3 +82,5 @@ Tests include the original suite plus new policy/transport cases and actual Andr
 The retained signing key stays in `/workspace/private/jarvis-next/`. Its private encrypted backup remains `/workspace/private/jarvis-next-signing.tar.enc`, with separate unlock file `/workspace/private/jarvis-next-backup-password`. Copy both privately outside the cloud workspace, store separately, and retain this same certificate for future updates. See [recovery instructions](JARVIS_2.md#signing-and-private-recovery). Do not generate a replacement key for the installed separate app.
 
 No app identity change is claimed to clear Play Protect or change Google's HTTP 429 quota.
+
+Signed [Jarvis 4.0 ARM64 download](downloads/neural/Jarvis-4.0.0-arm64.apk) · [Build identity/checksum](downloads/neural/build-info.json).

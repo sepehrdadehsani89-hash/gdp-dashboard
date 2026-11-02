@@ -1,3 +1,7 @@
+# Neural Core 4.0 model profiles
+
+See the [current model, privacy, download and evaluation guide](../JARVIS_NEURAL_CORE.md) and [source baseline audit](neural/AUDIT.md). The following documents the original Lite bridge baseline; newer profile/context/output controls are described in the current guide.
+
 # On-device conversation without an API key
 
 Jarvis includes a real llama.cpp CPU inference bridge. After an explicit model download, `LocalBrain.answer` generates text on the phone. Prompts and conversation text are not sent to a provider by this implementation. Other features such as live news still need the Internet, and speech recognition/TTS privacy depends on the selected voice engines.
