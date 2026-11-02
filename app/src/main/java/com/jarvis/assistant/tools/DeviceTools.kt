@@ -124,7 +124,7 @@ class DeviceTools(private val context: Context, private val store: JarvisStore) 
         if (youtube != null) {
             if (locked()) return AssistantReply(unlockMessage(language))
             if (youtube.isBlank() && context.packageManager.getLaunchIntentForPackage("com.google.android.youtube") != null) {
-                return try { withLaunch("com.google.android.youtube"); AssistantReply("Opened YouTube.") }
+                return try { withLaunch("com.google.android.youtube"); AssistantReply("YouTube opening requested through Android.") }
                 catch (_: Exception) { AssistantReply("Android could not open YouTube.") }
             }
             val url = if (youtube.isBlank()) "https://www.youtube.com" else "https://www.youtube.com/results?search_query=${encode(youtube)}"
@@ -155,6 +155,9 @@ class DeviceTools(private val context: Context, private val store: JarvisStore) 
                     val resolved = context.packageManager.resolveActivity(intent, 0)?.activityInfo?.packageName
                     check(resolved == null || !ToolPolicy.protectedPackage(resolved))
                     context.startActivity(intent)
+                    val draft=Uri.parse(action.payload).host=="wa.me"
+                    return@withContext if(draft)language.choose("WhatsApp draft opening requested. Review the recipient and send manually; Jarvis did not send a message.","Se solicitó abrir el borrador de WhatsApp. Revisa el destinatario y envía manualmente; Jarvis no envió ningún mensaje.","باز کردن پیش‌نویس واتساپ درخواست شد؛ گیرنده را بررسی و خودتان ارسال کنید. جارویس پیامی نفرستاده است.")
+                    else language.choose("Opening request sent to Android. Check the target app; completion is not verified.","Solicitud de apertura enviada a Android. Comprueba la aplicación; no se verificó su finalización.","درخواست باز کردن به اندروید ارسال شد؛ نتیجه را در برنامه بررسی کنید. تکمیل آن تأیید نشده است.")
                 }
                 "app_alias" -> {
                     val value=org.json.JSONObject(action.payload)
@@ -183,7 +186,7 @@ class DeviceTools(private val context: Context, private val store: JarvisStore) 
                 "reminder_draft" -> {
                     context.startActivity(Intent(Intent.ACTION_INSERT,android.provider.CalendarContract.Events.CONTENT_URI)
                         .putExtra(android.provider.CalendarContract.Events.TITLE,action.payload).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-                    return@withContext "Calendar draft opened. Choose the date and save it there; no reminder has been saved by Jarvis."
+                    return@withContext "Calendar draft opening requested. Choose the date and save it there; no reminder has been saved by Jarvis."
                 }
                 "set_timer" -> {
                     val seconds = action.payload.toInt().also { check(it in 1..86_400) }
@@ -201,7 +204,7 @@ class DeviceTools(private val context: Context, private val store: JarvisStore) 
                 }
                 else -> return@withContext language.choose("That action is not supported.", "Esa acción no es compatible.", "این کار پشتیبانی نمی‌شود.")
             }
-            if(action.kind in listOf("set_alarm","set_timer")) language.choose("Clock opened. Review and save the alarm or timer there.","Reloj abierto. Revisa y guarda la alarma o el temporizador allí.","ساعت باز شد. زنگ یا تایمر را آنجا بررسی و ذخیره کنید.")
+            if(action.kind in listOf("set_alarm","set_timer")) language.choose("Clock opening requested. Review and save the alarm or timer there.","Reloj abierto. Revisa y guarda la alarma o el temporizador allí.","ساعت باز شد. زنگ یا تایمر را آنجا بررسی و ذخیره کنید.")
             else language.choose("Done.", "Listo.", "انجام شد.")
         } catch (cancelled: CancellationException) { throw cancelled }
         catch (_: Exception) {
