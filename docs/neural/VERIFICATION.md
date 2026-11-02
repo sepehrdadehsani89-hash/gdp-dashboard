@@ -16,7 +16,7 @@ Signed phone artifact: `downloads/neural/Jarvis-4.0.0-arm64.apk`, package `com.j
 | No private signing files or model weight GGUFs inside APK | Verified |
 | Existing 26 original Sentinel sound resources | Retained in signed APK |
 | Private signing backup | Retained outside Git; previously restored/byte-compared against this same retained key |
-| Public APK retrieval | Pending immutable public-download verification |
+| Public APK retrieval | Passed: 79,713,252 bytes; full SHA-256 matches signed local APK |
 
 Production source: `fd373b7cc377c6220fcb617f1a1d5ec169156d1a`. The focused live-control recheck changes only its outdated app-opening caption assertion; actual target-window, tap, draft-edit, stale-target and Send-refusal checks remain intact. The phone runtime is unchanged for the recheck. The complete sweep's original failure and the focused result remain in the machine-readable record; its final per-case results supersede that stale-caption failure.
 
@@ -54,3 +54,5 @@ The release is intentionally unminified to retain JNI ABI. ZIP alignment passes,
 Certificate SHA-256: `56188545a9204a61153d5bfcb7c6fe230d0b024d0f2b457256da2827523b6719`. The retained private key and encrypted backup stay outside Git. [Private recovery instructions](../../JARVIS_NEURAL_CORE.md#components-and-delivery).
 
 Merged manifest comparison against Jarvis 3.0 found one new normal permission, `RECEIVE_BOOT_COMPLETED`, for WorkManager scheduling. No new dangerous runtime permission, broad package visibility, overlay or exact-alarm permission is declared.
+
+Immutable verified [phone download](https://raw.githubusercontent.com/sepehrdadehsani89-hash/gdp-dashboard/1b854d8584be588232be13df723c1dc3f981579d/downloads/neural/Jarvis-4.0.0-arm64.apk). SHA-256: `2621ed8d0ab8f6e717183ce5aade0fde3d6129430e566d4adfdf9a3035abc134`. All five public knowledge-pack files also match the hashes pinned in the signed app catalog. Remote `main` and `jarvis-android-download` were verified unchanged after publication.

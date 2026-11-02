@@ -83,4 +83,4 @@ The retained signing key stays in `/workspace/private/jarvis-next/`. Its private
 
 No app identity change is claimed to clear Play Protect or change Google's HTTP 429 quota.
 
-Signed [Jarvis 4.0 ARM64 download](downloads/neural/Jarvis-4.0.0-arm64.apk) · [Build identity/checksum](downloads/neural/build-info.json).
+Signed [Jarvis 4.0 ARM64 download](https://raw.githubusercontent.com/sepehrdadehsani89-hash/gdp-dashboard/1b854d8584be588232be13df723c1dc3f981579d/downloads/neural/Jarvis-4.0.0-arm64.apk) · [Build identity/checksum](downloads/neural/build-info.json).

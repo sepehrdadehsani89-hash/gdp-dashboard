@@ -4,7 +4,7 @@ Jarvis 4.0 — Neural Core adds approved offline document retrieval, app-name ma
 
 **Separate installation:** this is the renamed **Jarvis Next** app, package `com.jarvis.next`. The signed 4.0.0 APK updates Jarvis Next 0.1.0 and Jarvis 2.0/3.0 with the same key and preserves its data. Keep your original Jarvis installed and untouched. The unavailable original Jarvis key and unfinished 0.1.4 files were not recovered. `main` and `jarvis-android-download` are unchanged.
 
-[**Download Jarvis 4.0.0 — signed ARM64 APK**](https://raw.githubusercontent.com/sepehrdadehsani89-hash/gdp-dashboard/jarvis-next/downloads/neural/Jarvis-4.0.0-arm64.apk)
+[**Download Jarvis 4.0.0 — signed ARM64 APK**](https://raw.githubusercontent.com/sepehrdadehsani89-hash/gdp-dashboard/1b854d8584be588232be13df723c1dc3f981579d/downloads/neural/Jarvis-4.0.0-arm64.apk)
 
 [Neural Core guide/report](JARVIS_NEURAL_CORE.md) · [Verification and limits](docs/neural/VERIFICATION.md) · [Build identity/checksum](downloads/neural/build-info.json) · [Public signing certificate](downloads/jarvis-next-signing-certificate.pem)
 

@@ -596,5 +596,47 @@
   "new_normal_permissions": [
     "android.permission.RECEIVE_BOOT_COMPLETED"
   ],
-  "new_dangerous_permissions": []
+  "new_dangerous_permissions": [],
+  "public_download": {
+    "url": "https://raw.githubusercontent.com/sepehrdadehsani89-hash/gdp-dashboard/1b854d8584be588232be13df723c1dc3f981579d/downloads/neural/Jarvis-4.0.0-arm64.apk",
+    "artifact_commit": "1b854d8584be588232be13df723c1dc3f981579d",
+    "bytes_and_sha256_verified": true,
+    "checked_at_utc": "2026-11-02T20:38:09.254456+00:00"
+  },
+  "knowledge_pack_public_verification": {
+    "method": "Host HTTPS retrieval of the five app-facing URLs; full bytes/SHA256 match the signed app catalog. Android integrity/installation exercised separately with the pinned fixture.",
+    "files": [
+      {
+        "name": "science",
+        "url": "https://raw.githubusercontent.com/sepehrdadehsani89-hash/gdp-dashboard/jarvis-next/downloads/neural-packs/science-v1.json",
+        "bytes": 1696,
+        "sha256_verified": true
+      },
+      {
+        "name": "programming",
+        "url": "https://raw.githubusercontent.com/sepehrdadehsani89-hash/gdp-dashboard/jarvis-next/downloads/neural-packs/programming-v1.json",
+        "bytes": 1340,
+        "sha256_verified": true
+      },
+      {
+        "name": "education",
+        "url": "https://raw.githubusercontent.com/sepehrdadehsani89-hash/gdp-dashboard/jarvis-next/downloads/neural-packs/education-v1.json",
+        "bytes": 1268,
+        "sha256_verified": true
+      },
+      {
+        "name": "language",
+        "url": "https://raw.githubusercontent.com/sepehrdadehsani89-hash/gdp-dashboard/jarvis-next/downloads/neural-packs/language-v1.json",
+        "bytes": 1426,
+        "sha256_verified": true
+      },
+      {
+        "name": "general",
+        "url": "https://raw.githubusercontent.com/sepehrdadehsani89-hash/gdp-dashboard/jarvis-next/downloads/neural-packs/general-v1.json",
+        "bytes": 1335,
+        "sha256_verified": true
+      }
+    ]
+  },
+  "preserved_refs_verified_after_publication": true
 }

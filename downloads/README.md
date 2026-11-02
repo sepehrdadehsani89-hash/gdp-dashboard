@@ -1,6 +1,6 @@
 # Current release: Jarvis 4.0 — Neural Core
 
-[Download the signed ARM64 APK](neural/Jarvis-4.0.0-arm64.apk) · [Setup and implementation report](../JARVIS_NEURAL_CORE.md) · [Verification](../docs/neural/VERIFICATION.md). Package `com.jarvis.next` updates Jarvis Next/Jarvis 2.0/3.0 with the retained key. Original Jarvis remains separate; no uninstall is needed.
+[Download the signed ARM64 APK](https://raw.githubusercontent.com/sepehrdadehsani89-hash/gdp-dashboard/1b854d8584be588232be13df723c1dc3f981579d/downloads/neural/Jarvis-4.0.0-arm64.apk) · [Setup and implementation report](../JARVIS_NEURAL_CORE.md) · [Verification](../docs/neural/VERIFICATION.md). Package `com.jarvis.next` updates Jarvis Next/Jarvis 2.0/3.0 with the retained key. Original Jarvis remains separate; no uninstall is needed.
 
 [Historical Jarvis 3.0 Sentinel](../JARVIS_SENTINEL.md).
 
