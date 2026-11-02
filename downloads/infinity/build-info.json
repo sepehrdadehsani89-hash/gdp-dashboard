@@ -684,5 +684,6 @@
     "jarvis-android-download": "994ee8ace41e604fb51d1da31687bd2186c18333"
   },
   "verified_at_utc": "2026-11-02T22:01:13.079284+00:00",
-  "download_url": "https://raw.githubusercontent.com/sepehrdadehsani89-hash/gdp-dashboard/jarvis-next/downloads/infinity/Jarvis-7.0.0-arm64.apk"
+  "download_url": "https://raw.githubusercontent.com/sepehrdadehsani89-hash/gdp-dashboard/c31e649f60110351cdaf4ae7c9893835bcbd2e0b/downloads/infinity/Jarvis-7.0.0-arm64.apk",
+  "artifact_commit": "c31e649f60110351cdaf4ae7c9893835bcbd2e0b"
 }
