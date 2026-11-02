@@ -59,6 +59,7 @@ class NeuralOrchestrator(private val context:Context,private val hud:HudReposito
     }
     suspend fun executePlan(input:String,plan:List<ToolRequest>,lang:AppLanguage):AssistantReply{
         check(!locked());require(plan.size in 1..3)
+        require(plan.all{ToolRegistry.authorizedByInput(it,input) && ToolRegistry.publicArgumentsBound(it,input,hud.state.value.settings.weatherCity)}){"A proposed argument did not match your request."}
         val results=mutableListOf<AssistantReply>()
         for(step in plan){
             require(ToolRegistry.authorizedByInput(step,input));val definition=ToolRegistry.definitions.getValue(step.id)
@@ -66,7 +67,7 @@ class NeuralOrchestrator(private val context:Context,private val hud:HudReposito
             val result=withTimeout(definition.timeoutMs){when(step.id){
                 "time"->tools.route("what time is it",lang)!!
                 "battery"->tools.route("battery",lang)!!
-                "weather"->{val city=step.arguments["city"]?.takeIf{it.isNotBlank()} ?: hud.state.value.settings.weatherCity;require(city.isNotBlank());forecast.reply(city,step.arguments["day"]?.toIntOrNull() ?: 0,lang)}
+                "weather"->{val (city,day)=ToolRegistry.weatherArguments(step,input,hud.state.value.settings.weatherCity);forecast.reply(city,day,lang)}
                 "news"->tools.news("news about ${step.arguments["topic"].orEmpty()}",lang)
                 "calendar"->PhoneContext(context).route("my calendar today",lang)!!
                 "open_app"->{val target=step.arguments["name"] ?: error("Explicit app target required");tools.requestApp(target,lang,alwaysConfirm=true)}

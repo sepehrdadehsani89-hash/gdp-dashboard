@@ -42,6 +42,21 @@ object ToolRegistry {
             ToolRequest(id,values)
         }
     }
+    fun weatherArguments(request:ToolRequest,input:String,configuredCity:String):Pair<String,Int>{
+        val proposed=request.arguments["city"]?.takeIf{it.isNotBlank()}
+        val clauses=input.split(Regex(" then | después | despues | سپس ",RegexOption.IGNORE_CASE)).filter(ForecastPolicy::request)
+        val clause=clauses.firstOrNull{part->val explicit=ForecastPolicy.city(part);proposed==null || AppMatching.normalize(explicit ?: configuredCity)==AppMatching.normalize(proposed)} ?: throw IllegalArgumentException("The proposed weather city does not match your request.")
+        val city=ForecastPolicy.city(clause) ?: configuredCity
+        require(city.isNotBlank()){"Which city? Configure a city or include its name."}
+        val day=ForecastPolicy.day(clause)
+        require(request.arguments["day"]?.toIntOrNull()?.let{it==day} ?: (request.arguments["day"]==null)){"The proposed forecast date does not match your request."}
+        return city to day
+    }
+    fun publicArgumentsBound(request:ToolRequest,input:String,configuredCity:String):Boolean=when(request.id){
+        "weather"->runCatching{weatherArguments(request,input,configuredCity)}.isSuccess
+        "news"->request.arguments["topic"].isNullOrBlank() || AppMatching.normalize(input).contains(AppMatching.normalize(request.arguments.getValue("topic")))
+        else->true
+    }
     fun directPlan(input:String):List<ToolRequest>? {
         val clauses=input.split(Regex("(?:,? +then +| +después +| +despues +| +سپس +)",RegexOption.IGNORE_CASE))
         if(clauses.size !in 2..3)return null
