@@ -10,7 +10,7 @@ import kotlinx.coroutines.*
 /** Only validated requests from the current user's input enter tools. Indexed text never does. */
 class NeuralOrchestrator(private val context:Context,private val hud:HudRepository,private val tools:DeviceTools,private val index:KnowledgeIndex,private val brain:LocalBrain,private val preferences:NeuralPreferences,private val briefing:BriefingService){
     val conversation=ConversationState()
-    private val forecast=ForecastService()
+    private val forecast=ForecastService(hud::acceptWeatherReading)
     private val research=WebResearch()
     private fun locked()=context.getSystemService(android.app.KeyguardManager::class.java).isDeviceLocked
     suspend fun route(text:String,lang:AppLanguage):AssistantReply?{

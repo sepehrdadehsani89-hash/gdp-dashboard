@@ -29,13 +29,14 @@ object ForecastPolicy {
         return "$base\n$advice"
     }
 }
-class ForecastService {
+class ForecastService(private val onCurrent:((com.jarvis.assistant.hud.WeatherReading)->Unit)?=null) {
     private val client=WeatherClient()
     private val cache=mutableMapOf<String,Triple<Long,String,JSONObject>>()
     suspend fun reply(city:String,day:Int,lang:AppLanguage,umbrella:Boolean=false):AssistantReply{
         require(city.isNotBlank() && city.length<=80)
         val now=System.currentTimeMillis();val prior=cache[city]
         val value=if(prior!=null && now-prior.first in 0..900_000)prior else client.fetch(city,null,null,8).let{Triple(now,it.place,it.json).also{v->if(cache.size>=8)cache.clear();cache[city]=v}}
+        runCatching{com.jarvis.assistant.hud.WeatherRepository.parse(value.third,value.second,value.first)}.getOrNull()?.let{onCurrent?.invoke(it)}
         val reading=ForecastPolicy.parse(value.third,day)
         val observed=value.third.optString("timezone","source timezone")
         return AssistantReply(ForecastPolicy.describe(reading,value.second,lang,umbrella)+"\nOpen-Meteo · $observed · ${java.time.Instant.ofEpochMilli(value.first)}",listOf(SourceLink("Open-Meteo forecast","https://open-meteo.com/")))

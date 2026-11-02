@@ -121,6 +121,7 @@ class HudRepository(private val context:Context) {
             }catch(e:CancellationException){throw e}catch(e:Exception){ if(token==generation)mutable.update { it.copy(weather=it.weather.copy(loading=false,error=e.message ?: "Weather unavailable",stale=true)) } }
         }
     }
+    fun acceptWeatherReading(reading:WeatherReading){mutable.update{it.copy(weather=WeatherState(reading=reading,stale=WeatherRepository.stale(reading,System.currentTimeMillis())))}}
     suspend fun weatherForQuestion(city:String?=null):WeatherReading {
         weatherJob?.join()
         val current=state.value.weather.reading
