@@ -337,5 +337,15 @@
     "Live Open-Meteo egress denied by this cloud network policy; real HTTP transport covered by MockWebServer tests.",
     "Optional neural language models absent: neural synthesis test skipped. Actual Qwen inference and real WhatsApp/photo sending not exercised.",
     "Speaking visual motion is explicitly decorative; live mic levels are measured."
-  ]
+  ],
+  "public_download": {
+    "url": "https://raw.githubusercontent.com/sepehrdadehsani89-hash/gdp-dashboard/2227668a8bbb8db2b0c89de8376a607f404ad171/downloads/jarvis/Jarvis-2.0.0-arm64.apk",
+    "artifact_commit": "2227668a8bbb8db2b0c89de8376a607f404ad171",
+    "bytes_and_sha256_verified": true,
+    "checked_at_utc": "2026-11-02T04:33:08.248991+00:00"
+  },
+  "preserved_refs": {
+    "main": "0fbe7c5a40b2ec7ad70f156c77608bc1ec93cc1d",
+    "jarvis-android-download": "994ee8ace41e604fb51d1da31687bd2186c18333"
+  }
 }

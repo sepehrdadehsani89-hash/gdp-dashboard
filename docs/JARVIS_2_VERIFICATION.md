@@ -14,7 +14,7 @@ Final machine-readable results and checksum are in [build-info.json](../download
 | ARM64-only native libraries, non-debuggable release, Jarvis locale labels | Verified |
 | ZIP/native alignment | Verified |
 | Private encrypted signing backup decrypt/compare | Verified; secrets remain outside Git |
-| Public download byte-for-byte check | Awaiting publication |
+| Public download byte-for-byte check | Passed: 78,271,819 bytes, SHA-256 matches signed local artifact |
 
 Android checks exercise real Room/runtime flows, provider settings with explicit test fixtures, native OCR, actual MediaProjection capture, target-bound accessibility tap/edit with Send refusal, connected SAF folder grants/read/reconnect/revoke, actual system battery overrides and foreground re-entry, overlapping visibility owners, startup telemetry, memory search/category/save, navigation, RTL/recreation, reduced-motion preferences, location denial, and Codex cancellation. Test battery overrides are always reset. UI tests run on a dedicated 480×800 API 29 emulator; screenshots use synthetic test data.
 
@@ -32,3 +32,5 @@ The release is intentionally unminified to preserve the proven native JNI field/
 - System/cloud speaking animation is expressly decorative. The visualizer reports real captured microphone levels when available. CPU load, network bandwidth and battery-time estimates are not invented.
 
 No claim is made that renaming the app clears Play Protect or fixes Google's HTTP 429 quota.
+
+Immutable verified [phone download](https://raw.githubusercontent.com/sepehrdadehsani89-hash/gdp-dashboard/2227668a8bbb8db2b0c89de8376a607f404ad171/downloads/jarvis/Jarvis-2.0.0-arm64.apk). Public retrieval matched SHA-256 `cc0951f90ceaeb0dbb009afe40e00cd41b28d4bac903e7425d0b34d48abadf65`. Remote `main` and `jarvis-android-download` were verified unchanged after publication.
