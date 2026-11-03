@@ -111,7 +111,7 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
         LaunchedEffect(userCaption,assistantCaption,captions.maxValue){if(s.reducedMotion || !t.systemMotion)captions.scrollTo(captions.maxValue) else captions.animateScrollTo(captions.maxValue)}
         HudPanel(l.choose("Live captions · tap to expand","Subtítulos · toca para ampliar","زیرنویس زنده · لمس برای نمایش کامل"),Modifier.fillMaxWidth().clickable(role=Role.Button){actions.onInteraction(SentinelSound.PANEL_OPEN);conversation=true}){
             Column(Modifier.fillMaxWidth().heightIn(max=112.dp).verticalScroll(captions),verticalArrangement=Arrangement.spacedBy(6.dp)){
-                Text(l.choose("YOU: ","TÚ: ","شما: ")+userCaption.ifBlank{l.choose("Tap the microphone or use your enabled wake phrase.","Toca el micrófono o usa la frase de activación.","میکروفن یا عبارت بیدارباش را فعال کنید.")},color=Purple,fontSize=13.sp)
+                Text(confirmedCaption(l.choose("YOU: ","TÚ: ","شما: ")+userCaption.ifBlank{l.choose("Tap the microphone or use your enabled wake phrase.","Toca el micrófono o usa la frase de activación.","میکروفن یا عبارت بیدارباش را فعال کنید.")},state.confirmedEntity),color=Purple,fontSize=13.sp)
                 if(assistantCaption.isNotBlank())Text("JARVIS: $assistantCaption",color=Ice,fontSize=13.sp)
             }
         }

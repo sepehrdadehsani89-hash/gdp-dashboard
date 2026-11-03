@@ -1,0 +1,48 @@
+{
+  "package": "com.jarvis.next",
+  "version_code": 12,
+  "version_name": "10.4.0-beta1-reinstall",
+  "abi": [
+    "arm64-v8a"
+  ],
+  "min_sdk": 29,
+  "target_sdk": 35,
+  "debuggable": false,
+  "apk": "Jarvis-10.4.0-beta1-arm64-reinstall.apk",
+  "bytes": 83708901,
+  "sha256": "7660ce08e6662d4abdd133bfe9b976d86d3d8115a7c63d2d4f5d0ff74d9c6cd7",
+  "certificate_sha256": "1094ecc1e01dfb873a8e63689b09dc156fff9d41f77ffdfae27e702991711bda",
+  "signature_v2_verified": true,
+  "zip_alignment_4_verified": true,
+  "private_material_or_weights_packaged": false,
+  "source_base_commit": "5ffbb8f4deefc6748a8d075676450ebef9c79ccb",
+  "source_manifest_sha256": "ff9e62aec3d53479e30ece7abbd21a76f16befacb689985e2635c2b9c5701b21",
+  "unit_tests": {
+    "tests": 280,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "lint": {
+    "reinstall": {
+      "Warning": 34
+    }
+  },
+  "new_android_runtime_cases_executed": 0,
+  "android_runtime_blocked": "Preserved API29 test AVD booted but package commands and logcat timed out; system_server stalled. No instrumentation ran. Emulator stopped without wiping userdata.",
+  "original_jarvis_7_in_place_update": false,
+  "physical_redmi9_verified": false,
+  "live_optional_provider_accounts_verified": false,
+  "full_master_directive_complete": false,
+  "signing_key_generated_this_upgrade": false,
+  "off_cloud_signing_backup_confirmed": false,
+  "new_android_runtime_cases_passed": 0,
+  "final_android_test_compilation": "sentinel104-frozen-debug.log BUILD SUCCESSFUL in 2m39s; no runtime pass claimed",
+  "final_signed_build_log": "sentinel104-final-signed.log",
+  "final_signed_build_duration": "6m 26s",
+  "output_voice_reference_id": "05b36da8574341d0803391491850db20",
+  "output_voice_id_editable": true,
+  "output_voice_adapter": "Fish Audio, explicit service confirmation and successful real preview required before enabling",
+  "output_voice_account_and_audio_verified": false,
+  "source_frozen_during_final_build": true
+}

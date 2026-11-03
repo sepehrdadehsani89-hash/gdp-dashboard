@@ -38,6 +38,13 @@ class DeviceTools(private val context: Context, private val store: JarvisStore) 
         .callTimeout(25, TimeUnit.SECONDS).followRedirects(false).build()
 
     suspend fun route(text: String, language: AppLanguage): AssistantReply? {
+        com.jarvis.assistant.contacts.ContactShortcutPolicy.target(text)?.let{target->
+            if(locked())return AssistantReply(unlockMessage(language))
+            val contacts=(context.applicationContext as com.jarvis.assistant.JarvisApplication).runtime.contacts
+            val c=withContext(Dispatchers.IO){contacts.resolve(target)} ?: return AssistantReply(language.choose("Choose and approve this nickname in Contact shortcuts first.","Elige y aprueba este alias en Atajos de contactos primero.","ابتدا این نام مستعار را در میانبر مخاطبین انتخاب و تأیید کنید."))
+            val payload=org.json.JSONObject().put("id",c.id).put("number",c.number).toString()
+            return proposal(language.choose("Open Android dialer for ${c.nickname}: ${c.number}? Review and press Call there. No call is placed automatically.","¿Abrir marcador Android para ${c.nickname}: ${c.number}? Revisa y pulsa Llamar allí. No se llama automáticamente.","شماره‌گیر اندروید برای ${c.nickname}: ${c.number} باز شود؟ شماره را بررسی و تماس را آنجا تأیید کنید. تماس خودکار برقرار نمی‌شود."),"dial_contact",payload,confirmedEntity=target)
+        }
         if(!locked())infinity.route(text,language,::proposal)?.let{return it}
         WhatsAppDraft.parse(text)?.let { draft ->
             if (locked()) return AssistantReply(unlockMessage(language))
@@ -152,6 +159,15 @@ class DeviceTools(private val context: Context, private val store: JarvisStore) 
         if (locked()) return@withContext unlockMessage(language)
         try {
             when (action.kind) {
+                "dial_contact" -> {
+                    val payload=org.json.JSONObject(action.payload)
+                    val runtime=(context.applicationContext as com.jarvis.assistant.JarvisApplication).runtime
+                    val c=withContext(Dispatchers.IO){runtime.contacts.validateForDial(payload.getString("id"),payload.getString("number"))}
+                    if(locked())return@withContext unlockMessage(language)
+                    context.startActivity(Intent(Intent.ACTION_DIAL,Uri.fromParts("tel",c.number,null)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                    runtime.offerContactFollowUp()
+                    return@withContext language.choose("Dialer opening requested. Review and press Call in Android. Call outcome is not verified.","Apertura del marcador solicitada. Revisa y pulsa Llamar en Android. Resultado no verificado.","باز شدن شماره‌گیر درخواست شد. شماره را بررسی و تماس را در اندروید تأیید کنید. نتیجهٔ تماس تأیید نشده است.")
+                }
                 "infinity_controls" -> {
                     context.startActivity(Intent(context,com.jarvis.assistant.infinity.InfinityControlsActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
                     return@withContext "Device controls opening requested. Tests, scans and optional permissions require your action there."
@@ -229,12 +245,12 @@ class DeviceTools(private val context: Context, private val store: JarvisStore) 
 
     fun cancelPendingActions() { pending.clear() }
 
-    private fun proposal(description: String, kind: String, payload: String): AssistantReply {
+    private fun proposal(description: String, kind: String, payload: String,confirmedEntity:String?=null): AssistantReply {
         require(kind in com.jarvis.assistant.neural.ToolRegistry.definitions){"Unregistered action"}
         pending.entries.removeAll { !ToolPolicy.confirmationCurrent(it.value.createdAt, System.currentTimeMillis()) }
         val action = PendingAction(description = description, kind = kind, payload = payload)
         pending[action.id] = action
-        return AssistantReply(description, action = action)
+        return AssistantReply(description, action = action,confirmedEntity=confirmedEntity)
     }
 
     fun requestApp(name:String,language:AppLanguage,alwaysConfirm:Boolean=false):AssistantReply {
@@ -263,7 +279,7 @@ class DeviceTools(private val context: Context, private val store: JarvisStore) 
         if(!best.exact)return proposal(language.choose("Do you mean $label?","¿Te refieres a $label?","منظورتان $label است؟"),"open_app",packageName)
         return try {
             withLaunch(packageName)
-            AssistantReply(language.choose("Opening request sent to Android for $label.","Solicitud de apertura enviada a Android para $label.","درخواست باز کردن $label به اندروید ارسال شد."))
+            AssistantReply(language.choose("Opening request sent to Android for $label.","Solicitud de apertura enviada a Android para $label.","درخواست باز کردن $label به اندروید ارسال شد."),confirmedEntity=name)
         } catch (_: Exception) { AssistantReply("Android could not open $label.") }
     }
 

@@ -42,6 +42,21 @@ class OmniPrivateFeatureTest {
             assertFalse(app.runtime.state.value.wakeEnabled)
         }
     }
+    @Test fun systemCredentialPrivacyPauseBlocksNewCaptureAndPersistsOnlyANonSecretFlag(){
+        val runtime=(context.applicationContext as JarvisApplication).runtime
+        androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().runOnMainSync{
+            val owner=Any()
+            try{
+                com.jarvis.assistant.security.SystemCredentialPrivacy.begin(context)
+                assertTrue(context.getSharedPreferences("jarvis_system_credential_privacy_v1",0).getBoolean("pending",false))
+                assertFalse(runtime.beginExclusiveCapture(owner));runtime.listen();assertFalse(runtime.state.value.audio.recording)
+                com.jarvis.assistant.security.SystemCredentialPrivacy.end(context)
+                assertTrue(runtime.beginExclusiveCapture(owner));assertTrue(runtime.captureIsCurrent(owner))
+                runtime.stopEverything();assertFalse(runtime.captureIsCurrent(owner));runtime.endExclusiveCapture(owner)
+                assertEquals(com.jarvis.assistant.core.AssistantPhase.PAUSED,runtime.state.value.phase)
+            }finally{com.jarvis.assistant.security.SystemCredentialPrivacy.end(context);runtime.abandonExclusiveCapture(owner)}
+        }
+    }
     @Test fun genuineOptionalSpeakerModelRunsThroughAndroidNativeApi()=runBlocking {
         val model=File(context.filesDir,"speaker-profiles/${SpeakerProfiles.FILE}")
         assumeTrue("Optional verified model must be provisioned explicitly on the test emulator",model.isFile)

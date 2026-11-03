@@ -214,6 +214,10 @@ private fun MainShell(state: JarvisUiState, actions: JarvisUiActions, settingsRe
             Box(Modifier.widthIn(max = 820.dp).fillMaxSize()) {
                 when (tab) {
                     0 -> Column {
+                        if(state.contactFollowUp)Column(Modifier.padding(12.dp)){
+                            Text(l.choose("After the dialer request: call outcome is unknown. Would you like to record a new personal memo?","Después de solicitar el marcador: resultado desconocido. ¿Quieres grabar una nota personal nueva?","پس از درخواست شماره‌گیر، نتیجهٔ تماس نامشخص است. پیام شخصی جدیدی ضبط می‌کنید؟"))
+                            Row{TextButton(onClick=actions.onOpenMemo){Text(l.choose("Review personal memo","Revisar nota personal","بررسی پیام شخصی"))};TextButton(onClick=actions.onDismissContactFollowUp){Text(l.choose("No thanks","No gracias","نه ممنون"))}}
+                        }
                         com.jarvis.assistant.omnisystem.ModuleTabs(state.module,l) { module -> actions.onModule(module) }
                         if(state.module==com.jarvis.assistant.omnisystem.HudModule.ASSISTANT)state.speakerProfileName?.let{name->Text(state.settings.language.choose("Possible voice profile: $name · not authentication","Perfil de voz posible: $name · no autentica","نمایهٔ صوتی احتمالی: $name · نه احراز هویت"),Modifier.padding(horizontal=16.dp))}
                         androidx.compose.animation.Crossfade(targetState=state.module,
@@ -639,6 +643,13 @@ private fun SettingsScreen(state: JarvisUiState, actions: JarvisUiActions, senti
             OutlinedButton(onClick = actions.onDownloadVoice, enabled = state.voiceProgress == null, modifier = Modifier.fillMaxWidth()) { Text(l.choose("Download offline ${l.label} voice", "Descargar voz local: ${l.label}", "دانلود صدای آفلاین ${l.label}")) }
             OutlinedButton(onClick = actions.onVoiceCheck) { Icon(Icons.Rounded.Headphones, null, Modifier.size(18.dp)); Spacer(Modifier.width(8.dp)); Text(l.choose("Check this language's voice", "Probar la voz de este idioma", "آزمایش صدای این زبان")) }
             TextButton(onClick = { actions.onOpenPermission("voices") }) { Text(l.choose("System voice settings", "Ajustes de voz del sistema", "تنظیمات صدای گوشی")) }
+        } }
+        item { SectionCard {
+            Text(l.choose("Screen Security & Voice Unlock","Seguridad y desbloqueo por voz","امنیت صفحه و درخواست بازکردن قفل با صدا"),style=MaterialTheme.typography.titleMedium)
+            Text(l.choose("Verify with Android. Jarvis never collects your system credential.","Verifica con Android. Jarvis no recoge tu credencial.","با اندروید تأیید کنید. جارویس رمز دستگاه را جمع‌آوری نمی‌کند."))
+            OutlinedButton(onClick=actions.onOpenContacts){Text(l.choose("Fifteen contact shortcuts & personal memos","Quince atajos de contactos y notas personales","پانزده میانبر مخاطب و پیام شخصی"))}
+            Button(onClick=actions.onOpenOutputVoice){Text(l.choose("Output voice · editable ID","Voz de salida · ID editable","صدای خروجی · شناسهٔ قابل ویرایش"))}
+            Button(onClick=actions.onOpenScreenSecurity){Text(l.choose("Open screen security","Abrir seguridad de pantalla","باز کردن امنیت صفحه"))}
         } }
         item { SectionCard {
             Text(l.choose("Memory & locked-phone replies", "Memoria y respuestas con bloqueo", "حافظه و پاسخ هنگام قفل"), style = MaterialTheme.typography.titleMedium)

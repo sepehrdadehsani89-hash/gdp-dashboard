@@ -1,5 +1,13 @@
 # Jarvis for Android
 
+Current development beta: [Jarvis 10.4 Sentinel Ascension · signed ARM64 APK](downloads/sentinel-10.4/Jarvis-10.4.0-beta1-arm64-reinstall.apk). [Download and compatibility notes](downloads/sentinel-10.4/README.md) · [Editable voice setup](docs/sentinel-10.4/VOICE_SETUP.md) · [Verification and limits](docs/sentinel-10.4/VERIFICATION.md).
+
+**The 10.4 APK uses the retained reinstall certificate. It updates that signing line only; it cannot update original Jarvis 7.0 in place. Keep the original app and its data installed. No replacement signing key was generated.** This is a beta with explicitly unfinished and unverified items, including live verification of the requested output voice.
+
+## Historical original-signature 7.0 release
+
+The 7.0 download and instructions below concern the original signing line, not the newer reinstall beta.
+
 Jarvis 7.0 — Infinity adds an explicit optional near-1 GB local-model installer, removes RAM-based refusals, and adds on-demand Wi-Fi/Bluetooth/battery diagnostics, approved HTTP speed testing and saved websites. The HUD places live captions under the reactor and weather beside the clock, with purple listening, cyan speaking and a separate green charging ring. Neural Core, Sentinel, live controls, folders, memory and ten-second voice follow-ups remain. The [implementation report](JARVIS_INFINITY.md) identifies unavailable and untested parts of the larger Infinity specification.
 
 **Existing app update:** this is the renamed **Jarvis Next** app, package `com.jarvis.next`. The signed 7.0.0 APK updates that installation, including Jarvis 2.0/3.0/4.0, with the same retained key. Keep your original Jarvis installed and untouched. The unavailable original Jarvis key and unfinished 0.1.4 files were not recovered. `main` and `jarvis-android-download` are unchanged.

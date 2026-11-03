@@ -46,6 +46,7 @@ data class AssistantReply(
     // Default deny: private tool/file content must not leak via an optional speech provider.
     val allowCloudSpeech: Boolean = false,
     val speechHandled: Boolean = false,
+    val confirmedEntity:String?=null,
 )
 
 data class ConnectionCheck(val model: String, val sample: String, val elapsedMs: Long)

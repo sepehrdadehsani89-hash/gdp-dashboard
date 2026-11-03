@@ -35,6 +35,7 @@ class SpeechController(context: Context) {
     private var recognizer: SpeechRecognizer? = null
     private var offlineSpeech: OfflineSpeechSession? = null
     private var player: MediaPlayer? = null
+    private var temporaryPlayback:File?=null
     private var ttsReady = false
     private var ttsFailed = false
     private var pendingSpeech: (() -> Unit)? = null
@@ -101,16 +102,17 @@ class SpeechController(context: Context) {
             try {
                 val token = generation
                 var completed = false
-                val captureDeadline=android.os.SystemClock.elapsedRealtime()+ConversationWindow.DURATION_MS
+                val captureTiming=SpeechInactivityClock(android.os.SystemClock::elapsedRealtime)
+                var speechDetected=false
                 val instance = if (onDevice && Build.VERSION.SDK_INT >= 31) SpeechRecognizer.createOnDeviceSpeechRecognizer(context)
                     else SpeechRecognizer.createSpeechRecognizer(context)
                 recognizer = instance
                 instance.setRecognitionListener(object : RecognitionListener {
                     override fun onReadyForSpeech(params: Bundle?) { com.jarvis.assistant.hud.AudioSignals.start(instance,"Android recognizer · RMS level") }
-                    override fun onBeginningOfSpeech() = Unit
-                    override fun onRmsChanged(rmsdB: Float) { if(token==generation) com.jarvis.assistant.hud.AudioSignals.level(instance, ((rmsdB+2)/12).coerceIn(0f,1f)) }
+                    override fun onBeginningOfSpeech() { speechDetected=true;captureTiming.progress("[Android speech started]") }
+                    override fun onRmsChanged(rmsdB: Float) { if(token==generation){val level=((rmsdB+2)/12).coerceIn(0f,1f);com.jarvis.assistant.hud.AudioSignals.level(instance,level);if(speechDetected)captureTiming.energy(level)} }
                     override fun onBufferReceived(buffer: ByteArray?) = Unit
-                    override fun onEndOfSpeech() { com.jarvis.assistant.hud.AudioSignals.stop(instance) }
+                    override fun onEndOfSpeech() { speechDetected=false;com.jarvis.assistant.hud.AudioSignals.stop(instance) }
                     override fun onEvent(eventType: Int, params: Bundle?) = Unit
                     override fun onError(error: Int) {
                         if (token != generation || completed) return
@@ -123,10 +125,10 @@ class SpeechController(context: Context) {
                         completed = true
                         val text = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull().orEmpty()
                         com.jarvis.assistant.hud.AudioSignals.stop(instance); instance.destroy(); recognizer = null
-                        if(android.os.SystemClock.elapsedRealtime()>=captureDeadline)onError("10-second command window closed.") else if (text.isBlank()) onError(recognitionError(SpeechRecognizer.ERROR_NO_MATCH, language)) else onResult(text)
+                        if(captureTiming.expired())onError("Speech inactivity or two-minute utterance limit reached.") else if (text.isBlank()) onError(recognitionError(SpeechRecognizer.ERROR_NO_MATCH, language)) else onResult(text)
                     }
                     override fun onPartialResults(partialResults: Bundle?) {
-                        if (token == generation && !completed) onPartial(partialResults?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull().orEmpty())
+                        if (token == generation && !completed){val text=partialResults?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull().orEmpty();captureTiming.progress(text);onPartial(text)}
                     }
                 })
                 val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
@@ -137,12 +139,13 @@ class SpeechController(context: Context) {
                     putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, !allowNetwork)
                 }
                 instance.startListening(intent)
-                main.postDelayed({
-                    if (token == generation && !completed) {
-                        completed = true; instance.cancel(); com.jarvis.assistant.hud.AudioSignals.stop(instance); instance.destroy(); recognizer = null
-                        onError(recognitionError(SpeechRecognizer.ERROR_SPEECH_TIMEOUT, language))
-                    }
-                }, ConversationWindow.DURATION_MS)
+                val timeout=object:Runnable{override fun run(){
+                    if(token!=generation || completed)return
+                    if(!captureTiming.expired()){main.postDelayed(this,(captureTiming.deadline()-android.os.SystemClock.elapsedRealtime()).coerceAtLeast(1));return}
+                    completed=true;instance.cancel();com.jarvis.assistant.hud.AudioSignals.stop(instance);instance.destroy();recognizer=null
+                    onError("Speech inactivity or two-minute utterance limit reached.")
+                }}
+                main.postDelayed(timeout,SpeechInactivityClock.IDLE_MS)
             } catch (_: Exception) {
                 recognizer?.destroy(); recognizer = null
                 onError(language.choose("Speech capture is unavailable. Check the microphone and speech service.", "No se puede escuchar. Revisa el micrófono y el servicio de voz.", "ضبط گفتار در دسترس نیست. میکروفن و سرویس گفتار را بررسی کنید."))
@@ -218,7 +221,7 @@ class SpeechController(context: Context) {
     fun playAudio(file: File, onDone: () -> Unit, onError: (String) -> Unit) {
         main.post {
             if (isQuietMode()) { onError("Voice reply paused by Silent or Do Not Disturb mode."); return@post }
-            stopInternal(); speakingDone = onDone; speakingError = onError
+            stopInternal(); temporaryPlayback=file; speakingDone = onDone; speakingError = onError
             if (!requestFocus()) { failSpeaking("Audio is in use by another app."); return@post }
             WakeListenerService.suppressFor(60_000)
             try {
@@ -253,6 +256,7 @@ class SpeechController(context: Context) {
         recognizer?.let { com.jarvis.assistant.hud.AudioSignals.stop(it); it.cancel(); it.destroy() }; recognizer = null
         tts.stop()
         player?.run { runCatching { stop() }; release() }; player = null
+        temporaryPlayback?.delete();temporaryPlayback=null
         focus?.let { audio.abandonAudioFocusRequest(it) }; focus = null
         WakeListenerService.setSpeechActive(false)
     }

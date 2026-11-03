@@ -36,9 +36,13 @@ abstract class PrivateModuleActivity:ComponentActivity() {
     protected var working by mutableStateOf(false)
     private var approvedAction:(()->Unit)?=null
     private var approvalAt=0L
+    private val credentialOwner=Any()
     private val authentication=registerForActivityResult(ActivityResultContracts.StartActivityForResult()){result->
         val action=approvedAction;approvedAction=null
-        if(result.resultCode==Activity.RESULT_OK && !locked() && SystemClock.elapsedRealtime()-approvalAt in 0..120_000)action?.let(::applyAuthorized)
+        val current=runtime.captureIsCurrent(credentialOwner)
+        runCatching{com.jarvis.assistant.security.SystemCredentialPrivacy.end(this)}
+        runtime.endExclusiveCapture(credentialOwner)
+        if(current && result.resultCode==Activity.RESULT_OK && !locked() && SystemClock.elapsedRealtime()-approvalAt in 0..120_000)action?.let(::applyAuthorized)
     }
     protected fun words(en:String,es:String,fa:String)=runtime.store.settings.value.language.choose(en,es,fa)
     protected fun locked()=getSystemService(KeyguardManager::class.java)?.isDeviceLocked!=false
@@ -58,8 +62,9 @@ abstract class PrivateModuleActivity:ComponentActivity() {
         if(!manager.isDeviceSecure){applyAuthorized(action);return}
         val intent=manager.createConfirmDeviceCredentialIntent("Jarvis",words("Confirm this private change","Confirma este cambio privado","این تغییر خصوصی را تأیید کنید"))
         if(intent==null){status=words("Android authentication unavailable","Autenticación no disponible","احراز هویت در دسترس نیست");return}
+        if(!runtime.beginExclusiveCapture(credentialOwner)){status=words("Finish the current capture before authenticating.","Termina la captura antes de autenticar.","پیش از احراز هویت، ضبط فعلی را پایان دهید.");return}
         approvedAction=action;approvalAt=SystemClock.elapsedRealtime()
-        try{authentication.launch(intent)}catch(_:Exception){approvedAction=null;status=words("Android authentication unavailable","Autenticación no disponible","احراز هویت در دسترس نیست")}
+        try{com.jarvis.assistant.security.SystemCredentialPrivacy.begin(this);authentication.launch(intent)}catch(_:Exception){approvedAction=null;runCatching{com.jarvis.assistant.security.SystemCredentialPrivacy.end(this)};runtime.endExclusiveCapture(credentialOwner);status=words("Android authentication unavailable","Autenticación no disponible","احراز هویت در دسترس نیست")}
     }
     protected fun task(block:suspend ()->Unit){
         if(working || locked())return
@@ -110,5 +115,5 @@ abstract class PrivateModuleActivity:ComponentActivity() {
     override fun onResume(){super.onResume();if(locked())finish()}
     override fun onPause(){operation?.cancel();super.onPause()}
     override fun onStop(){operation?.cancel();runtime.hud.stopVisible(this);super.onStop()}
-    override fun onDestroy(){approvedAction=null;super.onDestroy()}
+    override fun onDestroy(){approvedAction=null;runtime.abandonExclusiveCapture(credentialOwner);super.onDestroy()}
 }

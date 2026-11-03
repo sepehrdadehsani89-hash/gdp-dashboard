@@ -10,6 +10,7 @@ data class ToolRequest(val id:String,val arguments:Map<String,String>)
 /** A model may propose only this bounded schema. It cannot authorize execution. */
 object ToolRegistry {
     val definitions=listOf(
+        ToolDefinition("dial_contact","Reviewed saved contact dialer request",setOf("id","number"),listOf("user-approved shortcut","optional READ_CONTACTS for linked number recheck"),ToolRisk.EXTERNAL,5000,"Dialer intent only; user presses Call; outcome unverified",true),
         ToolDefinition("time","Phone clock",emptySet(),emptyList(),ToolRisk.READ_ONLY,2000,"Android clock",false),
         ToolDefinition("battery","Battery reading",emptySet(),emptyList(),ToolRisk.READ_ONLY,2000,"Android BatteryManager",false),
         ToolDefinition("weather","Forecast for an explicit/configured city",setOf("city","day"),listOf("android.permission.INTERNET"),ToolRisk.READ_ONLY,30000,"Dated Open-Meteo fields",false),

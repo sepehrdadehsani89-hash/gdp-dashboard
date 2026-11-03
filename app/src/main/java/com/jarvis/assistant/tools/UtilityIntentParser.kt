@@ -10,6 +10,7 @@ object UtilityIntentParser {
         if (!isTimer(text)) return null
         var normalized = digits(ToolPolicy.normalize(text))
         val words = mapOf(
+            "twenty" to 20, "veinte" to 20, "بیست" to 20,
             "one" to 1, "two" to 2, "three" to 3, "four" to 4, "five" to 5, "ten" to 10, "fifteen" to 15, "thirty" to 30,
             "un" to 1, "uno" to 1, "dos" to 2, "tres" to 3, "cuatro" to 4, "cinco" to 5, "diez" to 10, "quince" to 15, "treinta" to 30,
             "یک" to 1, "دو" to 2, "سه" to 3, "چهار" to 4, "پنج" to 5, "ده" to 10, "پانزده" to 15, "سی" to 30,

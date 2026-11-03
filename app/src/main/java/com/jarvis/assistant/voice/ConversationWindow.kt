@@ -10,6 +10,7 @@ class ConversationWindow(private val now: () -> Long) {
     private var deadline = 0L
     private var resetSerial = 0L
     private var lastActivation: Long? = null
+    private val inactivity=SpeechInactivityClock(now)
 
     @Synchronized fun snapshot() = Snapshot(mode, deadline, resetSerial)
     @Synchronized fun enable() { change(Mode.WAKE_ONLY) }
@@ -23,7 +24,7 @@ class ConversationWindow(private val now: () -> Long) {
     @Synchronized fun captureReady(): Boolean {
         if (mode != Mode.WAITING_FOR_CAPTURE) return false
         mode = Mode.FOLLOW_UP
-        deadline = now() + DURATION_MS
+        inactivity.start();deadline = inactivity.deadline()
         return true
     }
     /** Partials and repeated phrases within an open window never restart its timer. */
@@ -33,8 +34,14 @@ class ConversationWindow(private val now: () -> Long) {
         if (lastActivation?.let { time - it < COOLDOWN_MS } == true) return false
         lastActivation = time
         mode = Mode.COMMAND
-        deadline = time + DURATION_MS
+        inactivity.start();deadline = inactivity.deadline()
         return true
+    }
+    @Synchronized fun speechProgress(text:String,level:Float?=null):Boolean {
+        if(mode !in listOf(Mode.COMMAND,Mode.FOLLOW_UP) || now()>=deadline)return false
+        val changed=if(level==null)inactivity.progress(text) else inactivity.energy(level)
+        if(changed)deadline=inactivity.deadline()
+        return changed
     }
     @Synchronized fun expire(): Boolean {
         if (mode !in listOf(Mode.COMMAND, Mode.FOLLOW_UP) || now() < deadline) return false

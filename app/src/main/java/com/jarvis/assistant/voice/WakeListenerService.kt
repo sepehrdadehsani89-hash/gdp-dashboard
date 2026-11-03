@@ -112,7 +112,7 @@ class WakeListenerService : Service() {
             try {
                 Model(modelDirectory.absolutePath).use { model ->
                     while (running) {
-                        if (paused) { Thread.sleep(100); continue }
+                        if (paused || com.jarvis.assistant.security.SystemCredentialPrivacy.pending(this)) { Thread.sleep(100); continue }
                         if(audioManager.mode in listOf(android.media.AudioManager.MODE_IN_CALL,android.media.AudioManager.MODE_IN_COMMUNICATION)){
                             if(window.snapshot().mode!=ConversationWindow.Mode.WAKE_ONLY){window.resume(false);main.removeCallbacks(windowTimeout)}
                             publish("Microphone paused during a call",false,interrupted=true);Thread.sleep(500);continue
@@ -144,9 +144,9 @@ class WakeListenerService : Service() {
                                 val bytes = ByteArray(4096)
                                 var suppressed = false
                                 var recognizerSerial = window.snapshot().resetSerial
-                                while (running && !paused) {
+                                while (running && !paused && !com.jarvis.assistant.security.SystemCredentialPrivacy.pending(this)) {
                                     val count = audio.read(bytes, 0, bytes.size)
-                                    if (paused || !running) break
+                                    if (paused || !running || com.jarvis.assistant.security.SystemCredentialPrivacy.pending(this)) break
                                     check(count >= 0) { "Microphone capture was interrupted." }
                                     if (count == 0) continue
                                     if(audioManager.mode in listOf(android.media.AudioManager.MODE_IN_CALL,android.media.AudioManager.MODE_IN_COMMUNICATION)){window.resume(false);main.removeCallbacks(windowTimeout);publish("Microphone paused during a call",false,interrupted=true);break}
@@ -163,12 +163,14 @@ class WakeListenerService : Service() {
                                     val serial = window.snapshot().resetSerial
                                     if (recognizerSerial != serial) { recognizer.reset(); recognizerSerial = serial; continue }
                                     if (window.captureReady()) {
-                                        publish(language.choose("Follow-up · listening for 10 seconds", "Siguiente pregunta · escucho durante 10 segundos", "پرسش بعدی · ۱۰ ثانیه گوش می‌دهم"), true, awaitingCommand = true)
+                                        publish(language.choose("Follow-up · 10 seconds of inactivity", "Siguiente pregunta · 10 segundos de inactividad", "پرسش بعدی · ۱۰ ثانیه گوش می‌دهم"), true, awaitingCommand = true)
                                         scheduleTimeout()
                                     }
+                                    if(window.speechProgress("",com.jarvis.assistant.hud.PcmLevel.pcm16(bytes,count)))scheduleTimeout()
                                     val final = recognizer.acceptWaveForm(bytes, count)
                                     val json=JSONObject(if(final)recognizer.result else recognizer.partialResult)
                                     val text=json.optString(if(final)"text" else "partial")
+                                    if(window.speechProgress(text))scheduleTimeout()
                                     if(!final && window.acceptsCommand(serial)){
                                         val partial=WakePhraseMatcher.extractCommand(text,language) ?: text
                                         sendBroadcast(Intent(ACTION_PARTIAL).setPackage(packageName).putExtra(EXTRA_TEXT,partial))
@@ -206,7 +208,7 @@ class WakeListenerService : Service() {
         if (afterWake != null) {
             if (window.wake()) {
                 activateHud()
-                publish(language.choose("Command window · listening for 10 seconds", "Tu petición · escucho durante 10 segundos", "فرصت دستور · ۱۰ ثانیه گوش می‌دهم"), true, awaitingCommand = true)
+                publish(language.choose("Command window · 10 seconds of inactivity", "Tu petición · 10 segundos de inactividad", "فرصت دستور · ۱۰ ثانیه بی‌گفتاری"), true, awaitingCommand = true)
                 scheduleTimeout()
                 @Suppress("DEPRECATION")
                 getSystemService(Vibrator::class.java)?.vibrate(VibrationEffect.createOneShot(45, VibrationEffect.DEFAULT_AMPLITUDE))
@@ -225,16 +227,9 @@ class WakeListenerService : Service() {
             .setContentTitle("Jarvis is listening").setContentText("Tap to open your HUD. Unlock normally for protected actions.")
             .setContentIntent(open).setAutoCancel(true).setVisibility(NotificationCompat.VISIBILITY_PRIVATE).setSilent(true).build())
         main.post { (application as com.jarvis.assistant.JarvisApplication).runtime.wakeActivated() }
-        // Android grants a background-activity exception to a user-enabled accessibility service.
-        // Always retain the notification fallback; never use a full-screen intent or keyguard bypass.
-        val locked=getSystemService(android.app.KeyguardManager::class.java).isKeyguardLocked
-        val launcher=packageManager.resolveActivity(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME),android.content.pm.PackageManager.MATCH_DEFAULT_ONLY)?.activityInfo?.packageName
-        val screenAccess=com.jarvis.assistant.tools.JarvisAccessibilityService.connected
-        // A wallpaper preview is not the launcher, and known foreign targets stay intact.
-        val allowed=com.jarvis.assistant.sentinel.ActivationPolicy.mayOpen(locked,com.jarvis.assistant.MainActivity.isVisible,
-            com.jarvis.assistant.sentinel.JarvisWallpaperService.homeVisible,screenAccess,
-            if(screenAccess)com.jarvis.assistant.tools.JarvisAccessibilityService.activePackage() else null,launcher)
-        if(allowed)runCatching{startActivity(launch)}
+        // Wake recognition updates the native reactor and notification only. It never
+        // opens generic Main before the user's actual command has been resolved.
+
     }
 
     private fun deliver(command: String, serial: Long) {
@@ -325,6 +320,10 @@ class WakeListenerService : Service() {
         private const val CHANNEL = "jarvis_wake"
         private const val NOTIFICATION_ID = 3101
         @Volatile private var suppressionUntil = 0L
+        fun pauseImmediately(){current.get()?.let{service->
+            synchronized(service.audioLock){service.paused=true;service.window.pause();service.main.removeCallbacks(service.windowTimeout);runCatching{service.recorder?.stop()}}
+            service.speakerBuffer.clear()
+        }}
         @Volatile private var speechActive=false
         fun setSpeechActive(value:Boolean){speechActive=value;if(!value)suppressFor(250)}
         private val mutableState = MutableStateFlow(WakeState())

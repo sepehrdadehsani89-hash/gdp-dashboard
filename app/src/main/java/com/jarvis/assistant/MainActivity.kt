@@ -60,12 +60,13 @@ class MainActivity : ComponentActivity() {
                 .setPositiveButton("Security settings"){_,_->openSettings(Intent(Settings.ACTION_SECURITY_SETTINGS))}.setNegativeButton("Cancel",null).show()
             return
         }
+        if(runCatching{com.jarvis.assistant.security.SystemCredentialPrivacy.begin(this)}.isFailure){runtime.completeIdentity(request.id,false);return}
         val signal=android.os.CancellationSignal(); authentication=signal
         android.hardware.biometrics.BiometricPrompt.Builder(this).setTitle("Jarvis · Codex")
             .setSubtitle(request.action).setDescription("Authorize this action only. Your credential stays with Android.")
             .setDeviceCredentialAllowed(true).build().authenticate(signal,mainExecutor,object:android.hardware.biometrics.BiometricPrompt.AuthenticationCallback(){
-                override fun onAuthenticationSucceeded(result:android.hardware.biometrics.BiometricPrompt.AuthenticationResult){authentication=null;runtime.completeIdentity(request.id,true)}
-                override fun onAuthenticationError(code:Int,message:CharSequence){authentication=null;runtime.completeIdentity(request.id,false)}
+                override fun onAuthenticationSucceeded(result:android.hardware.biometrics.BiometricPrompt.AuthenticationResult){authentication=null;runCatching{com.jarvis.assistant.security.SystemCredentialPrivacy.end(this@MainActivity)};runtime.completeIdentity(request.id,true)}
+                override fun onAuthenticationError(code:Int,message:CharSequence){authentication=null;runCatching{com.jarvis.assistant.security.SystemCredentialPrivacy.end(this@MainActivity)};runtime.completeIdentity(request.id,false)}
             })
     }
     override fun onUserInteraction(){super.onUserInteraction();lastInteraction=android.os.SystemClock.elapsedRealtime();if(wakeOpened)touchedAfterWake=true}
@@ -165,6 +166,11 @@ class MainActivity : ComponentActivity() {
                     else if(state.module==com.jarvis.assistant.omnisystem.HudModule.CLOCK)startActivity(Intent(this,com.jarvis.assistant.omnisystem.ClockHudActivity::class.java).putExtra("request",state.transcript))
                     else startActivity(Intent(this,com.jarvis.assistant.infinity.InfinityControlsActivity::class.java).putExtra("module",state.module.name))
                 },
+                onOpenMemo={runtime.dismissContactFollowUp();startActivity(Intent(this,com.jarvis.assistant.contacts.PersonalMemoActivity::class.java))},
+                onDismissContactFollowUp=runtime::dismissContactFollowUp,
+                onOpenContacts={startActivity(Intent(this,com.jarvis.assistant.contacts.ContactShortcutsActivity::class.java))},
+                onOpenOutputVoice={startActivity(Intent(this,com.jarvis.assistant.voice.VoiceSettingsActivity::class.java))},
+                onOpenScreenSecurity={startActivity(Intent(this,com.jarvis.assistant.security.SecuritySettingsActivity::class.java))},
                 onOpenNeural={startActivity(Intent(this,com.jarvis.assistant.neural.NeuralSettingsActivity::class.java))},
                 onInteraction = runtime.effects::userPlay,
                 onPreviewWallpaper = ::previewWallpaper,

@@ -22,6 +22,7 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.READ_CALENDAR" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
@@ -51,6 +52,7 @@
             <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/camera_paths" />
         </provider>
         <receiver android:name=".neural.BriefingTimeReceiver" android:exported="true"><intent-filter><action android:name="android.intent.action.TIMEZONE_CHANGED" /><action android:name="android.intent.action.TIME_SET" /></intent-filter></receiver>
+        <activity android:name=".voice.VoiceSettingsActivity" android:exported="false" />
         <activity android:name=".neural.SafeActivationActivity" android:exported="false" android:theme="@style/Theme.Jarvis" />
         <activity android:name=".neural.NeuralSettingsActivity" android:exported="false" android:theme="@style/Theme.Jarvis" />
         <activity android:name=".omnisystem.CameraHudActivity" android:exported="false" android:theme="@style/Theme.Jarvis" />
@@ -58,6 +60,14 @@
         <activity android:name=".omnisystem.LocationHudActivity" android:exported="false" android:theme="@style/Theme.Jarvis" />
         <activity android:name=".omnisystem.VisionHudActivity" android:exported="false" android:theme="@style/Theme.Jarvis" />
         <activity android:name=".omnisystem.SpeakerProfilesActivity" android:exported="false" android:theme="@style/Theme.Jarvis" />
+        <activity android:name=".contacts.ContactShortcutsActivity" android:exported="false" android:theme="@style/Theme.Jarvis" />
+        <activity android:name=".contacts.PersonalMemoActivity" android:exported="false" android:theme="@style/Theme.Jarvis" />
+        <activity android:name=".security.SecuritySettingsActivity" android:exported="false" android:theme="@style/Theme.Jarvis" />
+        <activity android:name=".security.ScreenUnlockActivity" android:exported="false" android:excludeFromRecents="true" android:theme="@style/Theme.Jarvis" />
+        <receiver android:name=".security.JarvisLockAdminReceiver" android:exported="true" android:permission="android.permission.BIND_DEVICE_ADMIN">
+            <meta-data android:name="android.app.device_admin" android:resource="@xml/jarvis_lock_admin" />
+            <intent-filter><action android:name="android.app.action.DEVICE_ADMIN_ENABLED" /></intent-filter>
+        </receiver>
         <activity android:name=".omnisystem.ClockHudActivity" android:exported="false" android:theme="@style/Theme.Jarvis" />
         <receiver android:name=".omnisystem.OwnedTimerReceiver" android:exported="false" />
         <activity android:name=".omnisystem.SpotifyCallbackActivity" android:exported="true" android:theme="@style/Theme.Jarvis">

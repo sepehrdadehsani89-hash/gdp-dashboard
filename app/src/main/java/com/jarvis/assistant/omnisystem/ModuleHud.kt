@@ -36,7 +36,7 @@ fun ModuleHud(state: JarvisUiState, actions: JarvisUiActions) {
         }
         Text(ClockDisplay.date(t.epochMillis,t.timezone,locale),style=MaterialTheme.typography.bodySmall)
         HudCore(state,Modifier.fillMaxWidth().height(210.dp),actions)
-        if(state.transcript.isNotBlank())Text(l.choose("YOU","TÚ","شما")+" · ${state.transcript}")
+        if(state.transcript.isNotBlank())Text(confirmedCaption(l.choose("YOU","TÚ","شما")+" · ${state.transcript}",state.confirmedEntity))
         if(state.liveReply.isNotBlank())Text("JARVIS · ${state.liveReply}")
         else if(state.moduleResponse.isNotBlank())Text("JARVIS · ${state.moduleResponse}")
         when(state.module) {

@@ -36,7 +36,7 @@ class OmnisystemFlowTest {
     }
     @Test fun moduleNavigationDoesNotStartCaptureOrFabricateMusic(){
         compose.runOnUiThread{runtime.selectModule(HudModule.MUSIC)}
-        compose.onNode(hasText("Unavailable: no licensed fingerprint provider",substring=true)).assertExists()
+        compose.onNode(hasText("AudD recognition uses an explicitly approved ten-second sample",substring=true)).assertExists()
         assertFalse(runtime.state.value.audio.recording)
         compose.runOnUiThread{runtime.selectModule(HudModule.CAMERA)}
         compose.onNodeWithText("Open front camera preview").assertExists()

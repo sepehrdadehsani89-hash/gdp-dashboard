@@ -28,7 +28,7 @@ class InfinityFlowTest {
     @Test fun optionalOneGigabyteBrainIsVisibleWithoutDownloadingOrSwitchingProviders(){
         val before=modelFiles();val profile=runtime.neuralPreferences.state.value.profile;val provider=runtime.store.settings.value.provider
         launch(NeuralSettingsActivity::class.java)
-        compose.waitUntil(30_000){runCatching{compose.onAllNodesWithText("JARVIS OMNISYSTEM 10.0 · BETA").fetchSemanticsNodes().isNotEmpty()}.getOrDefault(false)}
+        compose.waitUntil(30_000){runCatching{compose.onAllNodesWithText("JARVIS SENTINEL ASCENSION 10.4 · BETA").fetchSemanticsNodes().isNotEmpty()}.getOrDefault(false)}
         compose.onNodeWithText("Install optional near-1 GB brain").performScrollTo().assertIsDisplayed()
         compose.onNodeWithText("Inspect actual size & license before download").performScrollTo().assertIsDisplayed()
         assertEquals(before,modelFiles());assertEquals(profile,runtime.neuralPreferences.state.value.profile);assertEquals(provider,runtime.store.settings.value.provider);assertFalse(WakeListenerService.state.value.running)
