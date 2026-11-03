@@ -36,6 +36,16 @@ android {
     }
     kotlinOptions { jvmTarget = "17" }
     signingConfigs {
+        create("reinstall") {
+            val privateDir = providers.environmentVariable("JARVIS_REINSTALL_SIGNING_DIR").orNull
+            if (privateDir != null) {
+                storeFile = file("$privateDir/jarvis-reinstall.p12")
+                storePassword = file("$privateDir/store-password").readText().trim()
+                keyAlias = "jarvis-reinstall"
+                keyPassword = storePassword
+                storeType = "PKCS12"
+            }
+        }
         create("next") {
             val privateDir = providers.environmentVariable("JARVIS_NEXT_SIGNING_DIR").orNull
             if (privateDir != null) {
@@ -48,6 +58,14 @@ android {
         }
     }
     buildTypes {
+        create("reinstall") {
+            initWith(getByName("release"))
+            signingConfig = signingConfigs.getByName("reinstall")
+            isDebuggable = false
+            isMinifyEnabled = false
+            versionNameSuffix = "-reinstall"
+            matchingFallbacks += listOf("release")
+        }
         release {
             signingConfig = signingConfigs.getByName("next")
             // JNI libraries use named Kotlin/Java fields and callbacks. Preserve their ABI.
@@ -102,6 +120,7 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test:runner:1.6.2")
+    androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")
 }
 
 val checkNextSigning by tasks.registering {
@@ -123,3 +142,22 @@ val checkNextSigning by tasks.registering {
     }
 }
 tasks.matching { it.name == "preReleaseBuild" }.configureEach { dependsOn(checkNextSigning) }
+
+val checkReinstallSigning by tasks.registering {
+    doLast {
+        val privateDir = providers.environmentVariable("JARVIS_REINSTALL_SIGNING_DIR").orNull
+            ?: error("Set JARVIS_REINSTALL_SIGNING_DIR. Reinstall builds cannot update the old Jarvis installation.")
+        val password = file("$privateDir/store-password").readText().trim().toCharArray()
+        try {
+            val keys = KeyStore.getInstance("PKCS12")
+            file("$privateDir/jarvis-reinstall.p12").inputStream().use { keys.load(it, password) }
+            check(keys.isKeyEntry("jarvis-reinstall")) { "Retained reinstall signing alias is unavailable." }
+            val certificate = keys.getCertificate("jarvis-reinstall") ?: error("Signing certificate is missing.")
+            val fingerprint = MessageDigest.getInstance("SHA-256").digest(certificate.encoded).joinToString("") { "%02x".format(it) }
+            check(fingerprint == "1094ecc1e01dfb873a8e63689b09dc156fff9d41f77ffdfae27e702991711bda") {
+                "Wrong reinstall identity. Refusing to sign."
+            }
+        } finally { password.fill('\u0000') }
+    }
+}
+tasks.matching { it.name == "preReinstallBuild" }.configureEach { dependsOn(checkReinstallSigning) }

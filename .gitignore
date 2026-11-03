@@ -3,6 +3,12 @@
 local.properties
 *.jks
 *.keystore
+
+# Private data exports and signing backups never belong in Git.
+**/store-password
+**/*backup-password
+**/*signing*.tar.enc
+**/*Jarvis-private-memory*.json
 *.hprof
 .idea/
 **/.cxx/

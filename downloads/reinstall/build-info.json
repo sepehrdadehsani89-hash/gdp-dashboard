@@ -1,0 +1,35 @@
+{
+  "applicationId": "com.jarvis.next",
+  "versionCode": 10,
+  "versionName": "10.0.0-dev-reinstall",
+  "abi": [
+    "arm64-v8a"
+  ],
+  "debuggable": false,
+  "apk": "Jarvis-10.0.0-dev-arm64-reinstall.apk",
+  "bytes": 83020316,
+  "sha256": "5fe47b1e37785bc212ae0ad251b17371af78ec4889c8c6cac49e41c808b511ad",
+  "certificateSha256": "1094ecc1e01dfb873a8e63689b09dc156fff9d41f77ffdfae27e702991711bda",
+  "signatureVerified": "APK Signature Scheme v2",
+  "zipAlignmentVerified": 4,
+  "requiresReinstallFromOriginalSigningLine": true,
+  "compatibleWithOriginalInstalledCertificate": false,
+  "developmentCheckpoint": true,
+  "commercialReadinessEstablished": false,
+  "privateDataOrSigningKeyBundled": false,
+  "modelWeightsBundled": false,
+  "importUiValidation": "pending; prior attempts failed due to emulator system UI and test-driver navigation; do not uninstall before migration preparation",
+  "unitTests": {
+    "passed": 220,
+    "failed": 0,
+    "skipped": 0
+  },
+  "androidDatabaseRestoreTests": {
+    "passed": 4
+  },
+  "lintReinstall": {
+    "errors": 0,
+    "warnings": 28
+  },
+  "physicalPhoneReinstallTested": false
+}

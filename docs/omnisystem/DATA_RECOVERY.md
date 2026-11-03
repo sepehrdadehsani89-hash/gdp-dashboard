@@ -17,7 +17,7 @@ Neural Core now offers **Import memories & approved documents** beside the exist
 
 The old export is not a full application backup. It excludes conversation history, API credentials, settings, permission grants, model files, signing identity and original document binary files. Imported document text is not automatically sent to an AI provider; existing user-controlled knowledge-sharing settings continue to apply.
 
-No original signing key has been recovered. This source change cannot update the installed signed application until that key is restored. No replacement release key, new package ID, phone uninstall or data clearing is authorized by this import preparation. A reinstall would require separate explicit authorization after validation and a clear account of data that cannot be restored.
+No original signing key has been recovered. This source change cannot update the original signed application until that key is restored. A separate reinstall signing line was subsequently selected; see [reinstall requirements and retained identity](REINSTALL.md). No package ID change, phone uninstall or data clearing has been performed. A reinstall loses old data outside this export and must wait until backup transfer and import checks are complete.
 
 ## Validation of this development change
 
