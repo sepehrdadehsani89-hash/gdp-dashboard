@@ -1,0 +1,510 @@
+{
+  "development_version": "10.0.0-dev",
+  "application_id": "com.jarvis.next",
+  "baseline_commit": "f110e56d30dfcc3c1a6153f19888be10fa2bb79b",
+  "jvm": {
+    "tests": 209,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "lint_debug": {
+    "Warning": 28
+  },
+  "arm64_debug": {
+    "artifact": "/workspace/android-toolchain/artifacts/Jarvis-10.0.0-dev-arm64-debug.apk",
+    "bytes": 104749256,
+    "sha256": "b0a0d03ce77e089d4dca3b5bba09190ba6138a7ef0f682b89e3eccaca1689293",
+    "kind": "debug only; cannot update installed signed release"
+  },
+  "signed_production_release": false,
+  "original_signing_key_available": false,
+  "android_unique_selected_cases": 25,
+  "android_latest_counts": {
+    "passed": 24,
+    "expected-assumption-skip": 1
+  },
+  "android_latest_cases": [
+    {
+      "class": "com.jarvis.assistant.CameraHudFlowTest",
+      "test": "cameraCaptureDecodesAndRequiresExplicitAttachment",
+      "code": 0,
+      "status": "passed",
+      "run": "navigation-rechecks"
+    },
+    {
+      "class": "com.jarvis.assistant.OmnisystemFlowTest",
+      "test": "batteryModuleUsesSameActualReadingAsHome",
+      "code": 0,
+      "status": "passed",
+      "run": "final-rechecks"
+    },
+    {
+      "class": "com.jarvis.assistant.OmnisystemFlowTest",
+      "test": "moduleNavigationDoesNotStartCaptureOrFabricateMusic",
+      "code": 0,
+      "status": "passed",
+      "run": "final-rechecks"
+    },
+    {
+      "class": "com.jarvis.assistant.OmnisystemFlowTest",
+      "test": "weatherPanelShowsReceivedForecastAndKeepsMemoriesAndProvider",
+      "code": 0,
+      "status": "passed",
+      "run": "final-rechecks"
+    },
+    {
+      "class": "com.jarvis.assistant.HudFlowTest",
+      "test": "codexCancelNeverExecutesProtectedAction",
+      "code": 0,
+      "status": "passed",
+      "run": "instrumentation"
+    },
+    {
+      "class": "com.jarvis.assistant.HudFlowTest",
+      "test": "navigationSearchExplicitMemorySaveAndCategoryPersist",
+      "code": 0,
+      "status": "passed",
+      "run": "instrumentation"
+    },
+    {
+      "class": "com.jarvis.assistant.HudFlowTest",
+      "test": "batteryAndWeatherPermissionDenialDoNotCreateMeasurements",
+      "code": 0,
+      "status": "passed",
+      "run": "instrumentation"
+    },
+    {
+      "class": "com.jarvis.assistant.HudFlowTest",
+      "test": "rtlAndHudPreferencesSurviveActivityRecreation",
+      "code": 0,
+      "status": "passed",
+      "run": "instrumentation"
+    },
+    {
+      "class": "com.jarvis.assistant.HudFlowTest",
+      "test": "batteryEventsChargingFullAndForegroundReentryUseSystemValues",
+      "code": 0,
+      "status": "passed",
+      "run": "instrumentation"
+    },
+    {
+      "class": "com.jarvis.assistant.HudFlowTest",
+      "test": "startupBatteryIsRealAndHudCanRenderOnSmallScreen",
+      "code": 0,
+      "status": "passed",
+      "run": "instrumentation"
+    },
+    {
+      "class": "com.jarvis.assistant.HudFlowTest",
+      "test": "overlappingVisibleActivitiesRetainTelemetryUntilLastOwnerStops",
+      "code": 0,
+      "status": "passed",
+      "run": "instrumentation"
+    },
+    {
+      "class": "com.jarvis.assistant.InfinityFlowTest",
+      "test": "unavailableBrainCannotDisplaceTheSelectedProfileOrMemories",
+      "code": 0,
+      "status": "passed",
+      "run": "instrumentation"
+    },
+    {
+      "class": "com.jarvis.assistant.InfinityFlowTest",
+      "test": "optionalOneGigabyteBrainIsVisibleWithoutDownloadingOrSwitchingProviders",
+      "code": 0,
+      "status": "passed",
+      "run": "instrumentation"
+    },
+    {
+      "class": "com.jarvis.assistant.InfinityFlowTest",
+      "test": "savedSitesAreExplicitEditableAndOnlyPrepareReviewedOpening",
+      "code": 0,
+      "status": "passed",
+      "run": "instrumentation"
+    },
+    {
+      "class": "com.jarvis.assistant.InfinityFlowTest",
+      "test": "deviceControlsReadActualBatteryAndNetworkWithoutStartingTheMicrophone",
+      "code": 0,
+      "status": "passed",
+      "run": "instrumentation"
+    },
+    {
+      "class": "com.jarvis.assistant.InfinityEngineTest",
+      "test": "actualCanvasKeepsChargingGreenWhileSpeakingCyanOrListeningPurple",
+      "code": 0,
+      "status": "passed",
+      "run": "instrumentation"
+    },
+    {
+      "class": "com.jarvis.assistant.InfinityEngineTest",
+      "test": "idleCleanupCannotDestroyAnInUseHandleAndReleasesAnIdleOne",
+      "code": 0,
+      "status": "passed",
+      "run": "instrumentation"
+    },
+    {
+      "class": "com.jarvis.assistant.SentinelFlowTest",
+      "test": "landscapeAndPersianArtworkRenderWithoutReplacingTheLauncher",
+      "code": 0,
+      "status": "passed",
+      "run": "instrumentation"
+    },
+    {
+      "class": "com.jarvis.assistant.SentinelFlowTest",
+      "test": "allOriginalSoundAssetsDecodeAndPlaybackQueuesWithoutMic",
+      "code": 0,
+      "status": "passed",
+      "run": "instrumentation"
+    },
+    {
+      "class": "com.jarvis.assistant.SentinelFlowTest",
+      "test": "nativeRendererDrawsFixtureBatteryAsTextRatherThanACannedImage",
+      "code": 0,
+      "status": "passed",
+      "run": "instrumentation"
+    },
+    {
+      "class": "com.jarvis.assistant.SentinelFlowTest",
+      "test": "neuralPlaybackMeterFollowsRealAudioTrackCursor",
+      "code": 0,
+      "status": "passed",
+      "run": "instrumentation"
+    },
+    {
+      "class": "com.jarvis.assistant.SentinelFlowTest",
+      "test": "realWallpaperPreviewSelectionBatteryAndHiddenEngineLifecycle",
+      "code": 0,
+      "status": "passed",
+      "run": "wallpaper-final"
+    },
+    {
+      "class": "com.jarvis.assistant.SentinelFlowTest",
+      "test": "sentinelPreferencesDoNotOverwriteExistingMemoryOrProviderKeys",
+      "code": 0,
+      "status": "passed",
+      "run": "instrumentation"
+    },
+    {
+      "class": "com.jarvis.assistant.NativeEngineTest",
+      "test": "bundledEnglishOcrReadsActualRenderedPixels",
+      "code": 0,
+      "status": "passed",
+      "run": "instrumentation"
+    },
+    {
+      "class": "com.jarvis.assistant.NativeEngineTest",
+      "test": "installedNeuralVoicesGenerateNonSilentAudioInAllThreeLanguages",
+      "code": -4,
+      "status": "expected-assumption-skip",
+      "run": "instrumentation"
+    }
+  ],
+  "android_runs": {
+    "instrumentation": {
+      "expected_tests": 25,
+      "runner_crashed": false,
+      "runner_ok": false,
+      "cases": [
+        {
+          "class": "com.jarvis.assistant.CameraHudFlowTest",
+          "test": "cameraCaptureDecodesAndRequiresExplicitAttachment",
+          "code": -2,
+          "status": "failed"
+        },
+        {
+          "class": "com.jarvis.assistant.OmnisystemFlowTest",
+          "test": "batteryModuleUsesSameActualReadingAsHome",
+          "code": 0,
+          "status": "passed"
+        },
+        {
+          "class": "com.jarvis.assistant.OmnisystemFlowTest",
+          "test": "moduleNavigationDoesNotStartCaptureOrFabricateMusic",
+          "code": 0,
+          "status": "passed"
+        },
+        {
+          "class": "com.jarvis.assistant.OmnisystemFlowTest",
+          "test": "weatherPanelShowsReceivedForecastAndKeepsMemoriesAndProvider",
+          "code": -2,
+          "status": "failed"
+        },
+        {
+          "class": "com.jarvis.assistant.HudFlowTest",
+          "test": "codexCancelNeverExecutesProtectedAction",
+          "code": 0,
+          "status": "passed"
+        },
+        {
+          "class": "com.jarvis.assistant.HudFlowTest",
+          "test": "navigationSearchExplicitMemorySaveAndCategoryPersist",
+          "code": 0,
+          "status": "passed"
+        },
+        {
+          "class": "com.jarvis.assistant.HudFlowTest",
+          "test": "batteryAndWeatherPermissionDenialDoNotCreateMeasurements",
+          "code": 0,
+          "status": "passed"
+        },
+        {
+          "class": "com.jarvis.assistant.HudFlowTest",
+          "test": "rtlAndHudPreferencesSurviveActivityRecreation",
+          "code": 0,
+          "status": "passed"
+        },
+        {
+          "class": "com.jarvis.assistant.HudFlowTest",
+          "test": "batteryEventsChargingFullAndForegroundReentryUseSystemValues",
+          "code": 0,
+          "status": "passed"
+        },
+        {
+          "class": "com.jarvis.assistant.HudFlowTest",
+          "test": "startupBatteryIsRealAndHudCanRenderOnSmallScreen",
+          "code": 0,
+          "status": "passed"
+        },
+        {
+          "class": "com.jarvis.assistant.HudFlowTest",
+          "test": "overlappingVisibleActivitiesRetainTelemetryUntilLastOwnerStops",
+          "code": 0,
+          "status": "passed"
+        },
+        {
+          "class": "com.jarvis.assistant.InfinityFlowTest",
+          "test": "unavailableBrainCannotDisplaceTheSelectedProfileOrMemories",
+          "code": 0,
+          "status": "passed"
+        },
+        {
+          "class": "com.jarvis.assistant.InfinityFlowTest",
+          "test": "optionalOneGigabyteBrainIsVisibleWithoutDownloadingOrSwitchingProviders",
+          "code": 0,
+          "status": "passed"
+        },
+        {
+          "class": "com.jarvis.assistant.InfinityFlowTest",
+          "test": "savedSitesAreExplicitEditableAndOnlyPrepareReviewedOpening",
+          "code": 0,
+          "status": "passed"
+        },
+        {
+          "class": "com.jarvis.assistant.InfinityFlowTest",
+          "test": "deviceControlsReadActualBatteryAndNetworkWithoutStartingTheMicrophone",
+          "code": 0,
+          "status": "passed"
+        },
+        {
+          "class": "com.jarvis.assistant.InfinityEngineTest",
+          "test": "actualCanvasKeepsChargingGreenWhileSpeakingCyanOrListeningPurple",
+          "code": 0,
+          "status": "passed"
+        },
+        {
+          "class": "com.jarvis.assistant.InfinityEngineTest",
+          "test": "idleCleanupCannotDestroyAnInUseHandleAndReleasesAnIdleOne",
+          "code": 0,
+          "status": "passed"
+        },
+        {
+          "class": "com.jarvis.assistant.SentinelFlowTest",
+          "test": "landscapeAndPersianArtworkRenderWithoutReplacingTheLauncher",
+          "code": 0,
+          "status": "passed"
+        },
+        {
+          "class": "com.jarvis.assistant.SentinelFlowTest",
+          "test": "allOriginalSoundAssetsDecodeAndPlaybackQueuesWithoutMic",
+          "code": 0,
+          "status": "passed"
+        },
+        {
+          "class": "com.jarvis.assistant.SentinelFlowTest",
+          "test": "nativeRendererDrawsFixtureBatteryAsTextRatherThanACannedImage",
+          "code": 0,
+          "status": "passed"
+        },
+        {
+          "class": "com.jarvis.assistant.SentinelFlowTest",
+          "test": "neuralPlaybackMeterFollowsRealAudioTrackCursor",
+          "code": 0,
+          "status": "passed"
+        },
+        {
+          "class": "com.jarvis.assistant.SentinelFlowTest",
+          "test": "realWallpaperPreviewSelectionBatteryAndHiddenEngineLifecycle",
+          "code": -2,
+          "status": "failed"
+        },
+        {
+          "class": "com.jarvis.assistant.SentinelFlowTest",
+          "test": "sentinelPreferencesDoNotOverwriteExistingMemoryOrProviderKeys",
+          "code": 0,
+          "status": "passed"
+        },
+        {
+          "class": "com.jarvis.assistant.NativeEngineTest",
+          "test": "bundledEnglishOcrReadsActualRenderedPixels",
+          "code": 0,
+          "status": "passed"
+        },
+        {
+          "class": "com.jarvis.assistant.NativeEngineTest",
+          "test": "installedNeuralVoicesGenerateNonSilentAudioInAllThreeLanguages",
+          "code": -4,
+          "status": "expected-assumption-skip"
+        }
+      ],
+      "counts": {
+        "passed": 21,
+        "failed": 3,
+        "error": 0,
+        "skipped": 0,
+        "expected-assumption-skip": 1,
+        "aborted": 0,
+        "unknown": 0
+      },
+      "runner_finished": true
+    },
+    "final-rechecks": {
+      "expected_tests": 5,
+      "runner_crashed": true,
+      "runner_ok": false,
+      "cases": [
+        {
+          "class": "com.jarvis.assistant.CameraHudFlowTest",
+          "test": "cameraCaptureDecodesAndRequiresExplicitAttachment",
+          "code": -2,
+          "status": "failed"
+        },
+        {
+          "class": "com.jarvis.assistant.OmnisystemFlowTest",
+          "test": "batteryModuleUsesSameActualReadingAsHome",
+          "code": 0,
+          "status": "passed"
+        },
+        {
+          "class": "com.jarvis.assistant.OmnisystemFlowTest",
+          "test": "moduleNavigationDoesNotStartCaptureOrFabricateMusic",
+          "code": 0,
+          "status": "passed"
+        },
+        {
+          "class": "com.jarvis.assistant.OmnisystemFlowTest",
+          "test": "weatherPanelShowsReceivedForecastAndKeepsMemoriesAndProvider",
+          "code": 0,
+          "status": "passed"
+        },
+        {
+          "class": "com.jarvis.assistant.SentinelFlowTest",
+          "test": "realWallpaperPreviewSelectionBatteryAndHiddenEngineLifecycle",
+          "code": null,
+          "status": "aborted"
+        }
+      ],
+      "counts": {
+        "passed": 3,
+        "failed": 1,
+        "error": 0,
+        "skipped": 0,
+        "expected-assumption-skip": 0,
+        "aborted": 1,
+        "unknown": 0
+      },
+      "runner_finished": true
+    },
+    "navigation-rechecks": {
+      "expected_tests": 2,
+      "runner_crashed": false,
+      "runner_ok": false,
+      "cases": [
+        {
+          "class": "com.jarvis.assistant.CameraHudFlowTest",
+          "test": "cameraCaptureDecodesAndRequiresExplicitAttachment",
+          "code": 0,
+          "status": "passed"
+        },
+        {
+          "class": "com.jarvis.assistant.SentinelFlowTest",
+          "test": "realWallpaperPreviewSelectionBatteryAndHiddenEngineLifecycle",
+          "code": -2,
+          "status": "failed"
+        }
+      ],
+      "counts": {
+        "passed": 1,
+        "failed": 1,
+        "error": 0,
+        "skipped": 0,
+        "expected-assumption-skip": 0,
+        "aborted": 0,
+        "unknown": 0
+      },
+      "runner_finished": true
+    },
+    "wallpaper-final": {
+      "expected_tests": 1,
+      "runner_crashed": false,
+      "runner_ok": true,
+      "cases": [
+        {
+          "class": "com.jarvis.assistant.SentinelFlowTest",
+          "test": "realWallpaperPreviewSelectionBatteryAndHiddenEngineLifecycle",
+          "code": 0,
+          "status": "passed"
+        }
+      ],
+      "counts": {
+        "passed": 1,
+        "failed": 0,
+        "error": 0,
+        "skipped": 0,
+        "expected-assumption-skip": 0,
+        "aborted": 0,
+        "unknown": 0
+      },
+      "runner_finished": true
+    }
+  },
+  "coverage_note": "Results span the initial application and focused later rechecks. The final application differs from the five-case recheck only in camera return navigation. Only wallpaper system-picker synchronization changed after the final camera run. This is not a full 48-case sweep on one APK.",
+  "unverified": [
+    "physical Redmi 9",
+    "actual local-model weights/inference quality/speed",
+    "acoustic and accessory behavior",
+    "production signing/upgrade installation",
+    "live public provider availability"
+  ],
+  "final_source_hashes": {
+    "app/build.gradle.kts": "110aed233e159d6f6961abd4f0deac40f41a42e7a08da713147ecba8e5f14d91",
+    "app/src/androidTest/java/com/jarvis/assistant/CameraHudFlowTest.kt": "e4998308050a7ca4bcb68186b73f1aa8cb165dfe2800f051f6fb420f3f247bf7",
+    "app/src/androidTest/java/com/jarvis/assistant/OmnisystemFlowTest.kt": "438a75a8976e2f64834681768ef193bccdc763e92076be13259de0a33243e7bd",
+    "app/src/androidTest/java/com/jarvis/assistant/SentinelFlowTest.kt": "83ae6f4326999ee10152dc4413ea160161c74e5dbb0c8a3761e2c9ba4fce5841",
+    "app/src/main/AndroidManifest.xml": "9a3f3d2ce36a84dbff988b421b02504bc056c24677d2266280e56204a45b9cac",
+    "app/src/main/java/com/jarvis/assistant/AssistantRuntime.kt": "5f9597b5f00267d480d637fa2b3727d8e35d89a531d980d7c1e5cab764978d45",
+    "app/src/main/java/com/jarvis/assistant/MainActivity.kt": "58049af054390e480c5c5f20ab573a9e952504cb34d058cfa5dcc6da9d5f4786",
+    "app/src/main/java/com/jarvis/assistant/core/PhoneContext.kt": "163cc56f1d517c85ac0550778dde86dbe298600947b4d3e01981106d592a9274",
+    "app/src/main/java/com/jarvis/assistant/hud/HudModels.kt": "3e4faef79800b088f6f79880eb5e517f784d619c5a24515add82a0ed4f2c8048",
+    "app/src/main/java/com/jarvis/assistant/hud/HudRepository.kt": "22ce25450c7ba0d0a80d47bf91ef31582a8c344421b459a2745b9945b4ebe06d",
+    "app/src/main/java/com/jarvis/assistant/hud/WeatherClient.kt": "a9f4bc02d2bd483bf3f702ae0bf45a379feb913481f22ab5f5e15030ab199dad",
+    "app/src/main/java/com/jarvis/assistant/hud/WeatherRepository.kt": "41597372da83331fdbd6df8b80eabffd3f7d74e00b1dc388b576ee15b0958d0a",
+    "app/src/main/java/com/jarvis/assistant/infinity/InfinityControlsActivity.kt": "3043652fae82357da34a1175d0975b98ce20a7c1ca1c404f51ac6f321c6a7c99",
+    "app/src/main/java/com/jarvis/assistant/infinity/InternetSpeedTest.kt": "638162c980a2426a2771c978c4b6d87c010a560d300205e2bb1024b84940d4b8",
+    "app/src/main/java/com/jarvis/assistant/omnisystem/CameraHudActivity.kt": "9d6ea7bd6e3bff2dc93711335e1c2704d560a8b7f360e740e7d23d3cd859d083",
+    "app/src/main/java/com/jarvis/assistant/omnisystem/LocationFix.kt": "52b24d4780da27b0afa1ea233dc15b8bbcb7ae7aa69aaf5cfad7dd748769cf58",
+    "app/src/main/java/com/jarvis/assistant/omnisystem/ModuleHud.kt": "c86beade2dd958c5fcf5c41014aeff158ef9a9311447d67b2a5ba540b93052fe",
+    "app/src/main/java/com/jarvis/assistant/omnisystem/ModuleRoute.kt": "60abb323e8ed8cf6dddb25ccd2a5497f339f5ddf9c69752c5add7e4a295e64a9",
+    "app/src/main/java/com/jarvis/assistant/omnisystem/ModuleVisuals.kt": "1f72a465db8b5a1c308791c7d16823640af056d9c222d1ff1ac2ed1009c25081",
+    "app/src/main/java/com/jarvis/assistant/sentinel/WeatherQuestion.kt": "74bf9722e856cbc9bfb493bc2541785eedaf4ea4db00cbe93cba94871a71b15e",
+    "app/src/main/java/com/jarvis/assistant/ui/JarvisAppUi.kt": "afa13afa33473fb58655211a2ba23d20309c8f77b9c910efa1a1d69948567466",
+    "app/src/main/java/com/jarvis/assistant/ui/JarvisHud.kt": "43f72e3023a16716992c55bb0a869d428d85bbc5cba767ba8f37524c7e90a54b",
+    "app/src/main/java/com/jarvis/assistant/ui/JarvisUiState.kt": "876047a7cb547502b4c0fa5581c60d21b82c916cca912bb8ca84f6de93afdfce",
+    "app/src/main/res/xml/camera_paths.xml": "0a02243e498bab81a8c86e67311208164b22ea8f047f7c55a84d53eb99737ec3",
+    "app/src/test/java/com/jarvis/assistant/infinity/InternetSpeedTestTest.kt": "d62a6bfe20b28b47aa57ccb0d73ca0648ee76a84710842769741f044d90254c4",
+    "app/src/test/java/com/jarvis/assistant/omnisystem/LocationFixPolicyTest.kt": "2fc6c312ee91b63705b9c091cb3e8de49e2798909791190638a74be32dc10ec7",
+    "app/src/test/java/com/jarvis/assistant/omnisystem/ModuleRouteTest.kt": "30ac7287045481458d4a176bf5e8e83a56e2abb9bd4eabab440f7e614c96200f",
+    "app/src/test/java/com/jarvis/assistant/omnisystem/WeatherPanelTest.kt": "80cc60b6b91ec5d4ef5654841ccad1928b00038978147fab8742ce3a9fba9dfe"
+  }
+}

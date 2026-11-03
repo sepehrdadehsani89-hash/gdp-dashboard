@@ -23,12 +23,14 @@ import kotlinx.coroutines.*
 
 /** Foreground-only device diagnostics. Starting a scan, GATT read or transfer always requires a tap. */
 class InfinityControlsActivity:ComponentActivity(){
+    private val selectedModule by lazy{intent.getStringExtra("module")?.takeIf{it in setOf("WIFI","BATTERY","BLUETOOTH","NETWORK")} ?: "ALL"}
     private val repository by lazy{ConnectivityRepository(this)}
     private val preferences by lazy{InfinityPreferences(this)}
     private var devices by mutableStateOf(emptyList<Accessory>())
     private var nearby by mutableStateOf(emptyList<Accessory>())
     private var status by mutableStateOf("")
     private var busy by mutableStateOf(false)
+    private var samples by mutableStateOf(emptyList<InternetSpeedTest.Sample>())
     private var revision by mutableIntStateOf(0)
     private var operation:Job?=null
     private val bluetooth=registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()){grants->status=if(grants.values.all{it})"Bluetooth permission allowed. Press Refresh or Discover to continue." else "Bluetooth permission denied. Android settings remain available."}
@@ -48,20 +50,27 @@ class InfinityControlsActivity:ComponentActivity(){
             CompositionLocalProvider(androidx.compose.ui.platform.LocalLayoutDirection provides if(lang==com.jarvis.assistant.core.AppLanguage.FA)androidx.compose.ui.unit.LayoutDirection.Rtl else androidx.compose.ui.unit.LayoutDirection.Ltr){Surface(Modifier.fillMaxSize()){
                 Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),verticalArrangement=Arrangement.spacedBy(12.dp)){
                     TextButton(onClick={finish()}){Text(lang.choose("Back to Jarvis","Volver a Jarvis","بازگشت به جارویس"))}
-                    Text(lang.choose("INFINITY DEVICE CONTROLS","CONTROLES INFINITY","کنترل‌های دستگاه اینفینیتی"),style=MaterialTheme.typography.headlineSmall)
+                    Text(if(selectedModule=="ALL")lang.choose("INFINITY DEVICE CONTROLS","CONTROLES INFINITY","کنترل‌های دستگاه اینفینیتی") else "J.A.R.V.I.S. · $selectedModule",style=MaterialTheme.typography.headlineSmall)
                     Text(lang.choose("On-demand readings from Android. Permission denial and missing hardware are reported, never replaced with example data.","Lecturas reales bajo demanda. Los datos o permisos ausentes se indican sin inventarlos.","خوانش واقعی و درخواستی از اندروید؛ نبود مجوز یا سخت‌افزار با دادهٔ ساختگی جایگزین نمی‌شود."))
                     if(status.isNotBlank())Text(status,color=MaterialTheme.colorScheme.primary)
                     if(busy)OutlinedButton(onClick={operation?.cancel()}){Text(lang.choose("Cancel operation","Cancelar operación","لغو عملیات"))}
+                    if(selectedModule in setOf("ALL","WIFI","BATTERY")){
                     Text("Wi-Fi & battery",style=MaterialTheme.typography.titleLarge)
                     OutlinedButton(enabled=!busy,onClick={location.launch(arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION,Manifest.permission.ACCESS_FINE_LOCATION))}){Text("Allow optional Wi-Fi name access")}
                     Button(enabled=!busy,onClick={runOperation{status=withContext(Dispatchers.IO){repository.wifi()}}}){Text("Read Wi-Fi status")}
                     Button(enabled=!busy,onClick={runOperation{status=withContext(Dispatchers.IO){repository.battery()}}}){Text("Read battery health & charging")}
+                    }
+                    if(selectedModule in setOf("ALL","NETWORK")){
                     Text("Real internet speed test",style=MaterialTheme.typography.titleLarge)
+                    com.jarvis.assistant.omnisystem.DownloadChart(samples)
                     Text("Cloudflare receives about 1 MiB generated random upload data; about 4 MiB is downloaded, plus HTTP overhead. No documents, microphone audio or memories are uploaded. This is a short observed HTTP transfer, not your ISP’s guaranteed capacity. Latency includes HTTP/TLS/server overhead; packet loss is not measured. Mobile data charges may apply.")
                     Button(enabled=!busy,onClick={AlertDialog.Builder(this@InfinityControlsActivity).setTitle("Start a real network transfer?").setMessage("Download 4 MiB and upload 1 MiB to speed.cloudflare.com, plus overhead. Use Wi-Fi if you want to avoid mobile data charges. You can cancel; leaving this screen cancels the test.").setNegativeButton("Cancel",null).setPositiveButton("Start test"){_,_->runOperation{
-                        val result=InternetSpeedTest().run{update->lifecycleScope.launch(Dispatchers.Main){status=update}}
+                        samples=emptyList()
+                        val result=InternetSpeedTest().run(sample={point->lifecycleScope.launch(Dispatchers.Main){samples=(samples+point).takeLast(120)}}){update->lifecycleScope.launch(Dispatchers.Main){status=update}}
                         status=java.lang.String.format(java.util.Locale.ROOT,"Cloudflare HTTP test · %s\nDownload %.2f Mbps (%d bytes)\nUpload %.2f Mbps (%d bytes sent, HTTP success)\nMean HTTP response time %.1f ms\nSuccessive HTTP latency variation %.1f ms\nNo packet-loss measurement. Results describe this transfer only.",java.time.ZonedDateTime.now(),result.downMbps,result.downloaded,result.upMbps,result.uploaded,result.httpLatencyMs,result.httpJitterMs)
                     }}.show()}){Text("Start speed test · about 5 MiB")}
+                    }
+                    if(selectedModule in setOf("ALL","BLUETOOTH")){
                     Text("Bluetooth",style=MaterialTheme.typography.titleLarge)
                     OutlinedButton(enabled=!busy,onClick={bluetooth.launch(repository.scanPermissions())}){Text("Allow optional Nearby devices access")}
                     Button(enabled=!busy,onClick={runOperation{devices=repository.paired();status="${devices.size} paired accessories reported. A2DP/headset/GATT connection results are queried afresh. A missing result does not prove disconnection for every possible profile."}}){Text("Refresh paired devices & connection state")}
@@ -72,11 +81,14 @@ class InfinityControlsActivity:ComponentActivity(){
                         OutlinedButton(enabled=!busy,onClick={AlertDialog.Builder(this@InfinityControlsActivity).setTitle("Read ${d.name} BLE battery?").setMessage("This temporarily opens a BLE GATT connection to a paired device and reads the standard Battery Service, then disconnects. Many accessories, earbuds and cases do not expose it. No hidden API is used.").setNegativeButton("Cancel",null).setPositiveButton("Read battery"){_,_->runOperation{val percent=repository.readBleBattery(d.address);status="${d.name}: ${percent?.let{"$it% reported by BLE Battery Service at ${java.time.LocalTime.now()}"} ?: "Battery Service unavailable, read failed or timed out. No percentage is inferred."}"}}.show()}){Text("Read BLE battery: ${d.name}")}
                         TextButton(enabled=!busy && alias.isNotBlank(),onClick={runCatching{preferences.alias(alias,d.address,devices);alias="";revision++}.onFailure{status=it.message.orEmpty()}}){Text("Save nickname for ${d.name}")}
                     }
+                    com.jarvis.assistant.omnisystem.AccessorySignals(nearby)
                     nearby.forEach{d->Text("Nearby: ${d.name} · ${d.type} · RSSI ${d.rssi?.let{"$it dBm"} ?: "unavailable"} · ${if(d.paired)"paired" else "not paired"}. Discovery does not mean connected.")}
                     aliases.forEach{(name,address)->TextButton(onClick={preferences.removeAlias(name);revision++}){Text("Delete nickname: $name → ${devices.firstOrNull{it.address==address}?.name ?: "not in current list"}")}}
+                    }
                     Text("Supported Android controls",style=MaterialTheme.typography.titleLarge)
                     Text("These open Android’s documented controls. You make protected changes there. Returning to Jarvis does not itself verify a change; refresh the relevant reading.")
                     SystemPanels.actions.keys.forEach{id->OutlinedButton(enabled=!busy,onClick={panel(id)}){Text("Open Android $id controls")}}
+                    if(selectedModule=="ALL"){
                     Text("Saved HTTPS websites · ${sites.size}/10",style=MaterialTheme.typography.titleLarge)
                     Text("Save explicitly approved sites. Say ‘open NAME’ or ‘read NAME’. Reading retrieves an attributed excerpt; site content cannot authorize tools. Private exports and documents are never sent to these sites.")
                     OutlinedTextField(siteName,{siteName=it.take(60)},label={Text("Website name")},modifier=Modifier.fillMaxWidth())
@@ -88,6 +100,7 @@ class InfinityControlsActivity:ComponentActivity(){
                         TextButton(enabled=!busy,onClick={runOperation{status=WebResearch().read(site.url,lang).text}}){Text("Read source")}
                         TextButton(enabled=!busy,onClick={preferences.removeWebsite(site.name);revision++}){Text("Delete")}
                     }}
+                    }
                     Text("Music matching and speaker identification need separately licensed and tested recognition engines. This build does not claim song identification or voice identity, and voice never bypasses Android authentication.",style=MaterialTheme.typography.bodySmall)
                 }
             }}

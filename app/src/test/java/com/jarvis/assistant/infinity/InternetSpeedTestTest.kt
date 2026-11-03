@@ -14,7 +14,11 @@ class InternetSpeedTestTest {
             repeat(3){server.enqueue(MockResponse().setBody(""))}
             server.enqueue(MockResponse().setBody(Buffer().write(ByteArray(4*1024*1024){7})))
             server.enqueue(MockResponse().setBody("ok"))
-            val result=InternetSpeedTest(baseUrl=server.url("/").toString().trimEnd('/')).run{}
+            val samples=mutableListOf<InternetSpeedTest.Sample>()
+            val result=InternetSpeedTest(baseUrl=server.url("/").toString().trimEnd('/')).run(sample={samples+=it}){}
+            assertTrue(samples.isNotEmpty());assertEquals(4L*1024*1024,samples.last().bytes)
+            assertTrue(samples.all{it.mbps.isFinite() && it.mbps>0 && it.bytes in 1..result.downloaded})
+            assertTrue(samples.zipWithNext().all{(a,b)->b.bytes>a.bytes && b.elapsedMillis>=a.elapsedMillis})
             assertEquals(4L*1024*1024,result.downloaded);assertEquals(1024L*1024,result.uploaded)
             assertTrue(result.downMbps>0 && result.upMbps>0 && result.httpLatencyMs>0 && result.httpJitterMs>=0)
             val requests=(0..4).map{server.takeRequest(2,TimeUnit.SECONDS)!!};assertEquals("POST",requests.last().method);assertEquals(1024L*1024,requests.last().bodySize);assertEquals(3,requests.take(3).map{it.requestUrl!!.queryParameter("jarvis")}.distinct().size)

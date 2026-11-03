@@ -87,7 +87,12 @@ class SentinelFlowTest {
         assertFalse("Preview never starts microphone service",WakeListenerService.state.value.running)
         assertEquals("Preview is not silent wallpaper installation",original,manager.wallpaperInfo?.component)
         clickSystem("Set wallpaper")
-        clickSystem("Home screen",required=false)
+        // The system chooser can arrive after a slow preview transition on software emulators.
+        // Wait for that real user confirmation or actual application; never infer success from a tap.
+        val choiceDeadline=SystemClock.elapsedRealtime()+30_000
+        while(manager.wallpaperInfo?.component!=expected && SystemClock.elapsedRealtime()<choiceDeadline){
+            if(clickSystem("Home screen",required=false))break
+        }
         wallpaperChanged=true
         compose.waitUntil(30_000){manager.wallpaperInfo?.component==expected}
         shell("input keyevent KEYCODE_HOME")
@@ -117,7 +122,7 @@ class SentinelFlowTest {
         Thread.sleep(800)
         assertTrue("Display-off surface must not keep drawing",JarvisWallpaperService.renderedFrames-asleep<=1)
         shell("input keyevent KEYCODE_WAKEUP");shell("wm dismiss-keyguard")
-        shell("am start -n com.jarvis.next/com.jarvis.assistant.MainActivity")
+        shell("am start -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -n com.jarvis.next/com.jarvis.assistant.MainActivity")
         compose.waitUntil(30_000){JarvisWallpaperService.visibleEngineCount==0}
         val hidden=JarvisWallpaperService.renderedFrames
         Thread.sleep(800)

@@ -16,7 +16,7 @@ data class BatteryReading(val percent: Int? = null, val charging: Boolean = fals
 data class Telemetry(val battery: BatteryReading = BatteryReading(), val epochMillis: Long = System.currentTimeMillis(),
     val timezone: String = ZoneId.systemDefault().id, val system24Hour: Boolean = false, val systemMotion:Boolean=true,
     val network: String = "Unavailable", val internetValidated: Boolean = false, val powerSaver: Boolean = false,
-    val systemAvailableBytes: Long? = null, val systemTotalBytes: Long? = null, val appPssKiB: Int? = null)
+    val systemAvailableBytes: Long? = null, val systemTotalBytes: Long? = null, val appPssKiB: Int? = null, val storageAvailableBytes:Long? = null, val thermalStatus:Int? = null)
 
 data class HudSettings(val sentinel:com.jarvis.assistant.sentinel.SentinelSettings = com.jarvis.assistant.sentinel.SentinelSettings(), val weatherCity: String = "", val fahrenheit: Boolean = false, val clockFormat: String = "system",
     val animationProfile: String = "balanced", val reducedMotion: Boolean = false, val autoBatterySaver: Boolean = true,
@@ -25,9 +25,12 @@ data class HudSettings(val sentinel:com.jarvis.assistant.sentinel.SentinelSettin
     val voiceEngine: String = "auto", val voiceId: String = "", val voicePitch: Float = .9f,
     val voiceRate: Float = .98f, val voiceVolume: Float = .9f)
 
+data class WeatherHour(val time:String,val temperatureC:Double?,val rain:Int?)
+data class WeatherDay(val date:String,val high:Double?,val low:Double?,val rain:Int?)
 data class WeatherReading(val place: String, val temperatureC: Double?, val feelsLikeC: Double?, val humidity: Int?,
     val windKmh: Double?, val precipitationProbability: Int?, val sunrise: String?, val sunset: String?,
-    val code: Int?, val observationTime: String, val fetchedAt: Long)
+    val code: Int?, val observationTime: String, val fetchedAt: Long,
+    val hourly:List<WeatherHour> = emptyList(), val daily:List<WeatherDay> = emptyList(), val sourceTimezone:String = "Unavailable")
 data class WeatherState(val reading: WeatherReading? = null, val loading: Boolean = false, val error: String? = null,
     val stale: Boolean = true, val locationNotice: String? = null)
 data class HudState(val settings: HudSettings = HudSettings(), val telemetry: Telemetry = Telemetry(), val weather: WeatherState = WeatherState())

@@ -30,7 +30,7 @@ internal class WeatherClient(
         }
         val url=forecastBase.toHttpUrl().newBuilder().addQueryParameter("latitude",coordinates.first.toString()).addQueryParameter("longitude",coordinates.second.toString())
             .addQueryParameter("current","temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m")
-            .addQueryParameter("hourly","precipitation_probability").addQueryParameter("daily",if(forecastDays==1)"sunrise,sunset" else "sunrise,sunset,temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code")
+            .addQueryParameter("hourly","temperature_2m,precipitation_probability").addQueryParameter("daily",if(forecastDays==1)"sunrise,sunset" else "sunrise,sunset,temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code")
             .addQueryParameter("forecast_days",forecastDays.toString()).addQueryParameter("timezone","auto").build()
         return WeatherPayload(get(url.toString()),coordinates.third)
     }

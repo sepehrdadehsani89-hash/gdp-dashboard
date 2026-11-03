@@ -2,6 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.USE_BIOMETRIC" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.camera.front" android:required="false" />
+    <uses-feature android:name="android.hardware.camera.any" android:required="false" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -42,9 +46,13 @@
         android:supportsRtl="true"
         android:usesCleartextTraffic="false"
         android:theme="@style/Theme.Jarvis">
+        <provider android:name="androidx.core.content.FileProvider" android:authorities="${applicationId}.camera-files" android:exported="false" android:grantUriPermissions="true">
+            <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/camera_paths" />
+        </provider>
         <receiver android:name=".neural.BriefingTimeReceiver" android:exported="true"><intent-filter><action android:name="android.intent.action.TIMEZONE_CHANGED" /><action android:name="android.intent.action.TIME_SET" /></intent-filter></receiver>
         <activity android:name=".neural.SafeActivationActivity" android:exported="false" android:theme="@style/Theme.Jarvis" />
         <activity android:name=".neural.NeuralSettingsActivity" android:exported="false" android:theme="@style/Theme.Jarvis" />
+        <activity android:name=".omnisystem.CameraHudActivity" android:exported="false" android:theme="@style/Theme.Jarvis" />
         <activity android:name=".infinity.InfinityControlsActivity" android:exported="false" android:theme="@style/Theme.Jarvis" />
         <activity android:name=".MainActivity" android:exported="true" android:windowSoftInputMode="adjustResize">
             <intent-filter>

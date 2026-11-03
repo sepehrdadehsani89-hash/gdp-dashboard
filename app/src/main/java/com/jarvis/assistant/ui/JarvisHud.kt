@@ -147,11 +147,10 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
 }
 @Composable private fun TelemetryPanel(state:JarvisUiState,modifier:Modifier) {
     val t=state.hud.telemetry;val b=t.battery
-    fun mib(bytes:Long?)=bytes?.let { "${it/(1024*1024)} MB" } ?: "Unavailable"
     HudPanel("Telemetry",modifier) {
-        Reading("SYSTEM FREE",mib(t.systemAvailableBytes))
-        Reading("SYSTEM TOTAL",mib(t.systemTotalBytes))
-        Reading("APP PSS",t.appPssKiB?.let {"${it/1024} MB"} ?: "Unavailable")
+        Reading("NETWORK",t.network)
+        Reading("AI ENGINE",state.settings.provider.toString())
+        Reading("MICROPHONE",if(state.audio.recording) "Recording" else "Inactive")
         Reading("BATTERY °C",b.temperatureC?.let {String.format(Locale.ROOT,"%.1f",it)} ?: "Unavailable")
         Reading("HEALTH",b.health)
     }

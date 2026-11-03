@@ -50,6 +50,8 @@ class PhoneContext(context: Context) {
                     permission != null && !hasPermission(permission) -> permissionReply(request, language)
                     else -> reply
                 }
+            } catch (cancelled: kotlinx.coroutines.CancellationException) {
+                throw cancelled
             } catch (_: SecurityException) {
                 permissionReply(request, language)
             } catch (_: Exception) {
@@ -146,25 +148,14 @@ class PhoneContext(context: Context) {
         return AssistantReply("$heading • ${now.zone.id}\n" + results.joinToString("\n"))
     }
 
-    private fun location(language: AppLanguage): AssistantReply {
-        val manager = app.getSystemService(LocationManager::class.java)
-            ?: return AssistantReply(language.choose("Location is unavailable on this device.", "La ubicación no está disponible en este dispositivo.", "موقعیت مکانی در این دستگاه در دسترس نیست."))
-        val candidates = mutableListOf<Location>()
-        for (provider in manager.getProviders(true)) {
-            try { manager.getLastKnownLocation(provider)?.let(candidates::add) } catch (_: SecurityException) { /* GPS may require fine permission; coarse providers remain eligible. */ }
-        }
-        val last = candidates.maxByOrNull { it.time } ?: return AssistantReply(language.choose(
-            "There is no saved location available. Enable Location or open Maps, then ask again. I do not track your location in the background.",
-            "No hay una ubicación guardada. Activa Ubicación o abre Mapas y pregunta de nuevo. No rastreo tu ubicación en segundo plano.",
-            "موقعیت ذخیره‌شده‌ای در دسترس نیست. موقعیت مکانی را روشن کن یا نقشه را باز کن، سپس دوباره بپرس. در پس‌زمینه موقعیت تو را دنبال نمی‌کنم.",
-        ))
-        val coordinates = String.format(Locale.ROOT, "%.2f, %.2f", last.latitude, last.longitude)
-        val updated = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT)
-            .withLocale(Locale.forLanguageTag(language.tag)).withZone(ZoneId.systemDefault()).format(Instant.ofEpochMilli(last.time))
+    private suspend fun location(language: AppLanguage): AssistantReply {
+        val fix=com.jarvis.assistant.omnisystem.LocationFix(app).current()
+        val coordinates=String.format(Locale.ROOT, "%.2f, %.2f", fix.latitude, fix.longitude)
+        val accuracy=String.format(Locale.ROOT, "%.0f",fix.accuracy)
         return AssistantReply(language.choose(
-            "Last saved approximate location: $coordinates. Updated: $updated. This is a saved location, not a live fix.",
-            "Última ubicación aproximada guardada: $coordinates. Actualizada: $updated. Es una ubicación guardada, no una lectura en vivo.",
-            "آخرین موقعیت تقریبی ذخیره‌شده: $coordinates. زمان به‌روزرسانی: $updated. این موقعیت ذخیره‌شده است، نه موقعیت زنده.",
+            "Fresh approximate location: $coordinates. Android-reported accuracy: $accuracy metres. Updated: ${Instant.ofEpochMilli(fix.time)}. No separate location history is recorded; conversation-history settings still apply. Address/map lookup has not been performed.",
+            "Ubicación aproximada reciente: $coordinates. Precisión indicada por Android: $accuracy metros. Actualizada: ${Instant.ofEpochMilli(fix.time)}. No se guarda un historial separado; se aplica la configuración del historial de conversación. No se consultaron dirección ni mapa.",
+            "موقعیت تقریبی تازه: $coordinates. دقت گزارش‌شدهٔ اندروید: $accuracy متر. زمان: ${Instant.ofEpochMilli(fix.time)}. سابقهٔ جداگانهٔ موقعیت ذخیره نمی‌شود؛ تنظیمات سابقهٔ گفتگو اعمال می‌شود. نشانی یا نقشه دریافت نشده است."
         ))
     }
 

@@ -70,7 +70,7 @@ class HudRepository(private val context:Context) {
         val cached=weather.cached(s.weatherCity)
         mutable.update { it.copy(weather=it.weather.copy(reading=cached,stale=WeatherRepository.stale(cached,System.currentTimeMillis()))) }
         if(weatherOwners.isNotEmpty() && s.weatherCity.isNotBlank() && state.value.weather.stale) refreshWeather()
-        job=scope.launch { var ticks=0; while(isActive){ delay(30_000); memory(); ticks++; if(ticks%30==0 && weatherOwners.isNotEmpty() && state.value.settings.weatherCity.isNotBlank()) refreshWeather() } }
+        job=scope.launch { var ticks=0; while(isActive){ delay(30_000); refresh(); memory(); ticks++; if(ticks%30==0 && weatherOwners.isNotEmpty() && state.value.settings.weatherCity.isNotBlank()) refreshWeather() } }
     }
     fun stopVisible(owner:Any=this){
         visibleOwners.remove(owner)
@@ -103,7 +103,7 @@ class HudRepository(private val context:Context) {
     private fun refresh(){
         val caps=cm.getNetworkCapabilities(cm.activeNetwork)
         val network=when { caps==null->"Offline"; caps.hasTransport(NetworkCapabilities.TRANSPORT_VPN)->"VPN"; caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)->"Wi-Fi";caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)->"Mobile";caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)->"Ethernet";else->"Network" }
-        mutable.update { it.copy(telemetry=it.telemetry.copy(epochMillis=System.currentTimeMillis(),timezone=ZoneId.systemDefault().id,system24Hour=DateFormat.is24HourFormat(context),systemMotion=android.animation.ValueAnimator.areAnimatorsEnabled(),network=network,internetValidated=caps?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)==true,powerSaver=context.getSystemService(PowerManager::class.java).isPowerSaveMode),weather=it.weather.copy(stale=WeatherRepository.stale(it.weather.reading,System.currentTimeMillis()))) }
+        mutable.update { it.copy(telemetry=it.telemetry.copy(storageAvailableBytes=runCatching{StatFs(context.filesDir.path).availableBytes}.getOrNull(),thermalStatus=runCatching{context.getSystemService(PowerManager::class.java).currentThermalStatus}.getOrNull(),epochMillis=System.currentTimeMillis(),timezone=ZoneId.systemDefault().id,system24Hour=DateFormat.is24HourFormat(context),systemMotion=android.animation.ValueAnimator.areAnimatorsEnabled(),network=network,internetValidated=caps?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)==true,powerSaver=context.getSystemService(PowerManager::class.java).isPowerSaveMode),weather=it.weather.copy(stale=WeatherRepository.stale(it.weather.reading,System.currentTimeMillis()))) }
     }
     private fun memory(){
         val info=ActivityManager.MemoryInfo(); context.getSystemService(ActivityManager::class.java).getMemoryInfo(info)
@@ -117,7 +117,7 @@ class HudRepository(private val context:Context) {
             try {
                 val location=if(approximate) approximateLocation() else null
                 val result=weather.fetch(state.value.settings.weatherCity,location?.first,location?.second)
-                if(token==generation)mutable.update { it.copy(weather=WeatherState(reading=result,stale=false,locationNotice=if(approximate)"Approximate coordinates sent to Open-Meteo for this request; not saved." else null)) }
+                if(token==generation)mutable.update { it.copy(weather=WeatherState(reading=result,stale=WeatherRepository.stale(result,System.currentTimeMillis()),locationNotice=if(approximate)"Approximate coordinates sent to Open-Meteo for this request; not saved." else null)) }
             }catch(e:CancellationException){throw e}catch(e:Exception){ if(token==generation)mutable.update { it.copy(weather=it.weather.copy(loading=false,error=e.message ?: "Weather unavailable",stale=true)) } }
         }
     }
@@ -132,7 +132,7 @@ class HudRepository(private val context:Context) {
         mutable.update{it.copy(weather=it.weather.copy(loading=true,error=null))}
         try{
             val result=weather.fetch(chosen)
-            if(token==generation)mutable.update{it.copy(weather=WeatherState(reading=result,stale=false))}
+            if(token==generation)mutable.update{it.copy(weather=WeatherState(reading=result,stale=WeatherRepository.stale(result,System.currentTimeMillis())))}
             return result
         }catch(e:CancellationException){if(token==generation)mutable.update{it.copy(weather=it.weather.copy(loading=false))};throw e}
         catch(e:Exception){if(token==generation)mutable.update{it.copy(weather=it.weather.copy(loading=false,error=e.message,stale=true))};throw e}

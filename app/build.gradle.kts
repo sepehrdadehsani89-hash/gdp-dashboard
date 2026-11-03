@@ -1,3 +1,6 @@
+import java.security.KeyStore
+import java.security.MessageDigest
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -14,8 +17,8 @@ android {
         applicationId = "com.jarvis.next"
         minSdk = 29
         targetSdk = 35
-        versionCode = 7
-        versionName = "7.0.0"
+        versionCode = 10
+        versionName = "10.0.0-dev"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
         ndk { abiFilters += providers.gradleProperty("jarvisAbis").getOrElse("arm64-v8a").split(",") }
@@ -63,6 +66,9 @@ android {
 }
 
 dependencies {
+    implementation("androidx.camera:camera-camera2:1.4.1")
+    implementation("androidx.camera:camera-lifecycle:1.4.1")
+    implementation("androidx.camera:camera-view:1.4.1")
     implementation("androidx.work:work-runtime-ktx:2.10.0")
     implementation("androidx.documentfile:documentfile:1.0.1")
     implementation(libs.androidx.core)
@@ -103,6 +109,17 @@ val checkNextSigning by tasks.registering {
         val privateDir = providers.environmentVariable("JARVIS_NEXT_SIGNING_DIR").orNull
             ?: error("Set JARVIS_NEXT_SIGNING_DIR to the private signing directory. Never generate a replacement key for an existing Jarvis Next installation.")
         check(file("$privateDir/jarvis-next.p12").isFile && file("$privateDir/store-password").isFile) { "Original Jarvis Next signing files are missing." }
+        val password = file("$privateDir/store-password").readText().trim().toCharArray()
+        try {
+            val keys = KeyStore.getInstance("PKCS12")
+            file("$privateDir/jarvis-next.p12").inputStream().use { keys.load(it, password) }
+            check(keys.isKeyEntry("jarvis-next")) { "The original signing alias is unavailable." }
+            val certificate = keys.getCertificate("jarvis-next") ?: error("Signing certificate is missing.")
+            val fingerprint = MessageDigest.getInstance("SHA-256").digest(certificate.encoded).joinToString("") { "%02x".format(it) }
+            check(fingerprint == "56188545a9204a61153d5bfcb7c6fe230d0b024d0f2b457256da2827523b6719") {
+                "Signing certificate does not match the installed Jarvis identity. Refusing to sign."
+            }
+        } finally { password.fill('\u0000') }
     }
 }
 tasks.matching { it.name == "preReleaseBuild" }.configureEach { dependsOn(checkNextSigning) }

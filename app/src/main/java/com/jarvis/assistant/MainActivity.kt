@@ -135,6 +135,7 @@ class MainActivity : ComponentActivity() {
         onBackPressedDispatcher.addCallback(this,object:androidx.activity.OnBackPressedCallback(true){override fun handleOnBackPressed(){dismissHud()}})
         setContent {
             val state by runtime.state.collectAsStateWithLifecycle()
+            androidx.compose.runtime.LaunchedEffect(state.module){updateImmersive()}
             androidx.compose.runtime.LaunchedEffect(state.authorization) {
                 state.authorization?.let {
                     if(it.status==com.jarvis.assistant.hud.AuthorizationStatus.IDENTITY_CONFIRMATION)authenticate(it)
@@ -155,6 +156,9 @@ class MainActivity : ComponentActivity() {
                 }
             }
             JarvisAppUi(state, JarvisUiActions(
+                onOpenCamera={startActivity(Intent(this,com.jarvis.assistant.omnisystem.CameraHudActivity::class.java))},
+                onModule=runtime::selectModule,
+                onOpenDeviceControls={startActivity(Intent(this,com.jarvis.assistant.infinity.InfinityControlsActivity::class.java).putExtra("module",state.module.name))},
                 onOpenNeural={startActivity(Intent(this,com.jarvis.assistant.neural.NeuralSettingsActivity::class.java))},
                 onInteraction = runtime.effects::userPlay,
                 onPreviewWallpaper = ::previewWallpaper,
@@ -218,7 +222,7 @@ class MainActivity : ComponentActivity() {
     }
     private fun updateImmersive(){
         val controller=androidx.core.view.WindowCompat.getInsetsController(window,window.decorView)
-        if(wakeOpened){controller.systemBarsBehavior=androidx.core.view.WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE;controller.hide(androidx.core.view.WindowInsetsCompat.Type.systemBars())}
+        if(wakeOpened || runtime.state.value.module!=com.jarvis.assistant.omnisystem.HudModule.ASSISTANT){controller.systemBarsBehavior=androidx.core.view.WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE;controller.hide(androidx.core.view.WindowInsetsCompat.Type.systemBars())}
         else controller.show(androidx.core.view.WindowInsetsCompat.Type.systemBars())
     }
     private fun dismissHud(){runtime.dismissHud();finish()}

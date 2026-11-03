@@ -22,7 +22,8 @@ object WeatherQuestion {
     fun describe(r:WeatherReading,language:AppLanguage,fahrenheit:Boolean):String {
         val units=if(fahrenheit)"°F" else "°C"
         fun temp(v:Double?)=v?.let{(if(fahrenheit)it*9/5+32 else it).roundToInt().toString()+units} ?: language.choose("unavailable","no disponible","نامشخص")
-        return language.choose(
+        val freshness=if(com.jarvis.assistant.hud.WeatherRepository.stale(r,System.currentTimeMillis()))language.choose("Cached/stale observation; current conditions are not verified.\n","Observación en caché/desactualizada; no se verificaron las condiciones actuales.\n","مشاهدهٔ ذخیره‌شده یا قدیمی؛ وضعیت کنونی تأیید نشده است.\n") else ""
+        return freshness+language.choose(
             "Current weather in ${r.place}: ${temp(r.temperatureC)}, feels like ${temp(r.feelsLikeC)}. Humidity ${r.humidity?.let{"$it%"} ?: "unavailable"}; wind ${r.windKmh?.let{"$it km/h"} ?: "unavailable"}. Rain probability for this hour: ${r.precipitationProbability?.let{"$it%"} ?: "unavailable"}. Observed ${r.observationTime.replace('T',' ')} local time. Source: Open-Meteo.",
             "Clima actual en ${r.place}: ${temp(r.temperatureC)}, sensación ${temp(r.feelsLikeC)}. Humedad ${r.humidity?.let{"$it%"} ?: "no disponible"}; viento ${r.windKmh?.let{"$it km/h"} ?: "no disponible"}. Probabilidad de lluvia esta hora: ${r.precipitationProbability?.let{"$it%"} ?: "no disponible"}. Observado ${r.observationTime.replace('T',' ')} hora local. Fuente: Open-Meteo.",
             "هوای کنونی ${r.place}: ${temp(r.temperatureC)}، دمای احساس‌شده ${temp(r.feelsLikeC)}. رطوبت ${r.humidity?.let{"$it%"} ?: "نامشخص"}؛ باد ${r.windKmh?.let{"$it km/h"} ?: "نامشخص"}. احتمال بارش این ساعت: ${r.precipitationProbability?.let{"$it%"} ?: "نامشخص"}. زمان مشاهده ${r.observationTime.replace('T',' ')} به وقت همان مکان. منبع: Open-Meteo.")

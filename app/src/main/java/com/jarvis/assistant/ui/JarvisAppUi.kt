@@ -195,6 +195,7 @@ fun JarvisAppUi(state: JarvisUiState, actions: JarvisUiActions, settingsRequest:
 private fun MainShell(state: JarvisUiState, actions: JarvisUiActions, settingsRequest:Int, sentinelRequest:Int) {
     var tab by rememberSaveable { mutableIntStateOf(0) }
     LaunchedEffect(settingsRequest){if(settingsRequest>0)tab=2}
+    LaunchedEffect(state.moduleSequence){if(state.moduleSequence>0)tab=0}
     val l = state.settings.language
     val labels = listOf(l.choose("Assistant", "Asistente", "دستیار"), l.choose("Memory", "Memoria", "حافظه"), l.choose("Settings", "Ajustes", "تنظیمات"))
     val icons = listOf(Icons.Rounded.Forum, Icons.Rounded.Memory, Icons.Rounded.Settings)
@@ -212,7 +213,11 @@ private fun MainShell(state: JarvisUiState, actions: JarvisUiActions, settingsRe
         Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.TopCenter) {
             Box(Modifier.widthIn(max = 820.dp).fillMaxSize()) {
                 when (tab) {
-                    0 -> Home(state, actions) { tab = 2 }
+                    0 -> Column {
+                        com.jarvis.assistant.omnisystem.ModuleTabs(state.module) { module -> actions.onInteraction(com.jarvis.assistant.sentinel.SentinelSound.PANEL_OPEN); actions.onModule(module) }
+                        if(state.module==com.jarvis.assistant.omnisystem.HudModule.ASSISTANT) Home(state, actions) { tab = 2 }
+                        else com.jarvis.assistant.omnisystem.ModuleHud(state, actions)
+                    }
                     1 -> MemoryScreen(state, actions)
                     else -> SettingsScreen(state, actions, sentinelRequest)
                 }
