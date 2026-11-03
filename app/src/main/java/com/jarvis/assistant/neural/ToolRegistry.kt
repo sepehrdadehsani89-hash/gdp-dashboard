@@ -2,6 +2,7 @@ package com.jarvis.assistant.neural
 
 import org.json.JSONObject
 import org.json.JSONArray
+import com.jarvis.assistant.tools.UtilityIntentParser
 
 enum class ToolRisk { READ_ONLY, EXTERNAL, PRIVATE }
 data class ToolDefinition(val id:String,val description:String,val fields:Set<String>,val permissions:List<String>,val risk:ToolRisk,val timeoutMs:Long,val verification:String,val confirmation:Boolean)
@@ -57,7 +58,17 @@ object ToolRegistry {
         require(request.arguments["day"]?.toIntOrNull()?.let{it==day} ?: (request.arguments["day"]==null)){"The proposed forecast date does not match your request."}
         return city to day
     }
+    private val separator=Regex("(?:,? +then +| +después +| +despues +| +سپس +)",RegexOption.IGNORE_CASE)
+    private fun negated(text:String)=Regex("^(do not|don t|dont|never|no |نکن|نخوان)").containsMatchIn(AppMatching.normalize(text))
+    private fun bluetoothQuery(text:String)=AppMatching.normalize(text) in setOf("show my bluetooth devices","list bluetooth devices","check bluetooth devices","show bluetooth devices","muestra mis dispositivos bluetooth","lista dispositivos bluetooth","دستگاه های بلوتوث را نشان بده")
+    fun boundDeviceClause(request:ToolRequest,input:String):String?=input.split(separator).firstOrNull{part->!negated(part) && when(request.id){
+        "bluetooth_devices"->bluetoothQuery(part) && request.arguments.isEmpty()
+        "set_timer"->UtilityIntentParser.timerSeconds(part)?.let{it.toString()==request.arguments["seconds"]}==true
+        "set_alarm"->UtilityIntentParser.isAlarm(part) && part.trim()==request.arguments["time"]
+        else->false
+    }}?.trim()
     fun publicArgumentsBound(request:ToolRequest,input:String,configuredCity:String):Boolean=when(request.id){
+        "bluetooth_devices","set_timer","set_alarm"->boundDeviceClause(request,input)!=null
         "weather"->runCatching{weatherArguments(request,input,configuredCity)}.isSuccess
         "news"->request.arguments["topic"].isNullOrBlank() || AppMatching.normalize(input).contains(AppMatching.normalize(request.arguments.getValue("topic")))
         else->true
@@ -66,9 +77,12 @@ object ToolRegistry {
         plan.isNotEmpty() && plan.all{it.id=="weather"} && Regex("umbrella|paraguas|چتر",RegexOption.IGNORE_CASE).containsMatchIn(input) &&
             plan.mapNotNull{it.arguments["city"]?.takeIf(String::isNotBlank)?.let(AppMatching::normalize)}.distinct().size<=1 && plan.map{it.arguments["day"] ?: "0"}.distinct().size<=1
     fun directPlan(input:String):List<ToolRequest>? {
-        val clauses=input.split(Regex("(?:,? +then +| +después +| +despues +| +سپس +)",RegexOption.IGNORE_CASE))
-        if(clauses.size !in 2..3)return null
+        val clauses=input.split(separator)
+        if(clauses.size !in 2..3 || clauses.any(::negated))return null
         return clauses.map{part->when{
+            bluetoothQuery(part)->ToolRequest("bluetooth_devices",emptyMap())
+            UtilityIntentParser.timerSeconds(part)!=null->ToolRequest("set_timer",mapOf("seconds" to UtilityIntentParser.timerSeconds(part).toString()))
+            UtilityIntentParser.isAlarm(part) && part.trim().length<=160->ToolRequest("set_alarm",mapOf("time" to part.trim()))
             AppMatching.commandTarget(part)!=null->ToolRequest("open_app",mapOf("name" to AppMatching.commandTarget(part)!!))
             ForecastPolicy.request(part)->ToolRequest("weather",mapOf("city" to (ForecastPolicy.city(part) ?: ""),"day" to ForecastPolicy.day(part).toString()))
             Regex("battery|batería|باتری",RegexOption.IGNORE_CASE).containsMatchIn(part)->ToolRequest("battery",emptyMap())
@@ -82,6 +96,7 @@ object ToolRegistry {
         if(request.id!="knowledge" && Regex("^(do not|don’t|don\'t|never|no quiero|no leas|نخوان|نکن)",RegexOption.IGNORE_CASE).containsMatchIn(input.trim()))return false
         return when(request.id){
         "open_app"->input.split(Regex(" then | después | despues | سپس ",RegexOption.IGNORE_CASE)).mapNotNull(AppMatching::commandTarget).any{AppMatching.normalize(it)==AppMatching.normalize(request.arguments["name"].orEmpty())}
+        "bluetooth_devices","set_timer","set_alarm"->boundDeviceClause(request,input)!=null
         "calendar"->Regex("calendar|events|calendario|eventos|تقویم|رویداد",RegexOption.IGNORE_CASE).containsMatchIn(input)
         "news"->Regex("news|headline|noticias|titulares|اخبار|خبر",RegexOption.IGNORE_CASE).containsMatchIn(input)
         "weather"->Regex("weather|rain|umbrella|clima|lluvia|paraguas|هوا|باران|چتر",RegexOption.IGNORE_CASE).containsMatchIn(input)

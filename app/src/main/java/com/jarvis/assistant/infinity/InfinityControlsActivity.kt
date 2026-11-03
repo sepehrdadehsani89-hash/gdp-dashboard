@@ -101,7 +101,7 @@ class InfinityControlsActivity:ComponentActivity(){
                         TextButton(enabled=!busy,onClick={preferences.removeWebsite(site.name);revision++}){Text("Delete")}
                     }}
                     }
-                    Text("Music matching and speaker identification need separately licensed and tested recognition engines. This build does not claim song identification or voice identity, and voice never bypasses Android authentication.",style=MaterialTheme.typography.bodySmall)
+                    Text("Optional music recognition, image analysis, maps and voice profiles are available through their private module screens in Neural Core. Configure services/models and review consent there. Voice similarity never bypasses Android authentication.",style=MaterialTheme.typography.bodySmall)
                 }
             }}
         }}

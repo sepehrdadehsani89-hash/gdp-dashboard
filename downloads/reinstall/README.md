@@ -1,3 +1,5 @@
+> A later [code-11 beta](../beta1/README.md) is available. The artifact and checks below describe the older code-10 checkpoint. Both use the same retained reinstall certificate; neither can update the original Jarvis signature.
+
 # Jarvis development reinstall build
 
 [Download the ARM64 APK](Jarvis-10.0.0-dev-arm64-reinstall.apk) · [SHA-256](SHA256SUMS) · [Build identity](build-info.json) · [Public certificate](signing-certificate.pem)

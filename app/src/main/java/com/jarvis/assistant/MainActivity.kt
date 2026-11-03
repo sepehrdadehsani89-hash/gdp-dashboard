@@ -157,8 +157,14 @@ class MainActivity : ComponentActivity() {
             }
             JarvisAppUi(state, JarvisUiActions(
                 onOpenCamera={startActivity(Intent(this,com.jarvis.assistant.omnisystem.CameraHudActivity::class.java))},
+                onOpenVision={startActivity(Intent(this,com.jarvis.assistant.omnisystem.VisionHudActivity::class.java))},
                 onModule=runtime::selectModule,
-                onOpenDeviceControls={startActivity(Intent(this,com.jarvis.assistant.infinity.InfinityControlsActivity::class.java).putExtra("module",state.module.name))},
+                onOpenDeviceControls={
+                    if(state.module==com.jarvis.assistant.omnisystem.HudModule.MUSIC)startActivity(Intent(this,com.jarvis.assistant.omnisystem.MusicHudActivity::class.java))
+                    else if(state.module==com.jarvis.assistant.omnisystem.HudModule.LOCATION)startActivity(Intent(this,com.jarvis.assistant.omnisystem.LocationHudActivity::class.java))
+                    else if(state.module==com.jarvis.assistant.omnisystem.HudModule.CLOCK)startActivity(Intent(this,com.jarvis.assistant.omnisystem.ClockHudActivity::class.java).putExtra("request",state.transcript))
+                    else startActivity(Intent(this,com.jarvis.assistant.infinity.InfinityControlsActivity::class.java).putExtra("module",state.module.name))
+                },
                 onOpenNeural={startActivity(Intent(this,com.jarvis.assistant.neural.NeuralSettingsActivity::class.java))},
                 onInteraction = runtime.effects::userPlay,
                 onPreviewWallpaper = ::previewWallpaper,
@@ -263,7 +269,7 @@ class MainActivity : ComponentActivity() {
         val notices = assets.open("legal/THIRD_PARTY_NOTICES.md").bufferedReader().use { it.readText() }
         val license = assets.open("legal/LICENSE").bufferedReader().use { it.readText() }
         val text = TextView(this).apply {
-            this.text = "$notices\n\n$license\n\n" + assets.open("legal/SENTINEL_SOUND_LICENSE.txt").bufferedReader().use{it.readText()}
+            this.text = "$notices\n\n$license\n\n" + assets.open("legal/SENTINEL_SOUND_LICENSE.txt").bufferedReader().use{it.readText()} + "\n\n" + assets.open("legal/omnisystem-notices.txt").bufferedReader().use{it.readText()}
             textSize = 13f
             setPadding(32, 24, 32, 24)
             setTextIsSelectable(true)

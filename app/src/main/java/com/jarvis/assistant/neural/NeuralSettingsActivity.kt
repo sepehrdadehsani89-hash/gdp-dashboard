@@ -110,9 +110,13 @@ class NeuralSettingsActivity:ComponentActivity(){
             fun save(next:NeuralSettings){runtime.neuralPreferences.save(next);BriefingScheduler.sync(this@NeuralSettingsActivity)}
             CompositionLocalProvider(androidx.compose.ui.platform.LocalLayoutDirection provides if(lang==com.jarvis.assistant.core.AppLanguage.FA)androidx.compose.ui.unit.LayoutDirection.Rtl else androidx.compose.ui.unit.LayoutDirection.Ltr){Surface(Modifier.fillMaxSize()){Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),verticalArrangement=Arrangement.spacedBy(14.dp)){
                 TextButton(onClick={finish()}){Text(lang.choose("Back to Jarvis","Volver a Jarvis","بازگشت به جارویس"))}
-                Text("JARVIS INFINITY 7.0",style=MaterialTheme.typography.headlineMedium)
+                Text("JARVIS OMNISYSTEM 10.0 · BETA",style=MaterialTheme.typography.headlineMedium)
                 Text(lang.choose("Local intelligence, explicit sources and permissions.","Inteligencia local, fuentes y permisos explícitos.","هوش محلی با منابع و مجوزهای روشن."))
                 OutlinedButton(enabled=!busy,onClick={startActivity(Intent(this@NeuralSettingsActivity,com.jarvis.assistant.infinity.InfinityControlsActivity::class.java))}){Text(lang.choose("Infinity · Wi-Fi, Bluetooth, battery & websites","Infinity · Wi-Fi, Bluetooth, batería y sitios","اینفینیتی · وای‌فای، بلوتوث، باتری و وب‌سایت‌ها"))}
+                OutlinedButton(enabled=!busy,onClick={startActivity(Intent(this@NeuralSettingsActivity,com.jarvis.assistant.omnisystem.SpeakerProfilesActivity::class.java))}){Text(lang.choose("Six optional voice profiles","Seis perfiles de voz opcionales","شش نمایهٔ صوتی اختیاری"))}
+                OutlinedButton(enabled=!busy,onClick={startActivity(Intent(this@NeuralSettingsActivity,com.jarvis.assistant.omnisystem.MusicHudActivity::class.java))}){Text(lang.choose("Music recognition & Spotify","Reconocimiento musical y Spotify","شناسایی موسیقی و اسپاتیفای"))}
+                OutlinedButton(enabled=!busy,onClick={startActivity(Intent(this@NeuralSettingsActivity,com.jarvis.assistant.omnisystem.LocationHudActivity::class.java))}){Text(lang.choose("Location, maps & destinations","Ubicación, mapas y destinos","موقعیت، نقشه و مقصدها"))}
+                OutlinedButton(enabled=!busy,onClick={startActivity(Intent(this@NeuralSettingsActivity,com.jarvis.assistant.omnisystem.VisionHudActivity::class.java))}){Text(lang.choose("Image descriptions & comparisons","Describir y comparar imágenes","توضیح و مقایسهٔ تصاویر"))}
                 if(status.isNotBlank())Text(status,color=MaterialTheme.colorScheme.primary)
                 if(busy)OutlinedButton(onClick={operation?.cancel();runtime.brain.cancel()}){Text(lang.choose("Cancel operation","Cancelar operación","لغو عملیات"))}
                 Text(tr("Local brain"),style=MaterialTheme.typography.titleLarge)

@@ -66,9 +66,16 @@ import android.os.SystemClock
 /** Process-scoped session owner: no hidden microphone start, no LLM-authorized actions. */
 class AssistantRuntime(private val context: Context) {
     val store = JarvisStore(context)
+    val features = com.jarvis.assistant.omnisystem.FeatureVault(context)
+    val locations = com.jarvis.assistant.omnisystem.LocationIntelligence(context,features)
+    val speakers by lazy{com.jarvis.assistant.omnisystem.SpeakerProfiles(context,features)}
+    val timers by lazy{com.jarvis.assistant.omnisystem.OwnedTimers(context)}
     val hud = com.jarvis.assistant.hud.HudRepository(context)
     private val authorization = com.jarvis.assistant.hud.AuthorizationCoordinator(now = { SystemClock.elapsedRealtime() })
     private var cameraOwner:Any? = null
+    private var speakerJob:Job?=null
+    private var speakerExpiry:Job?=null
+    private val moduleOperations=java.util.concurrent.ConcurrentHashMap<Any,Job>()
     private var moduleRequestSequence:Long = -1
     private var authorizedAction: (() -> Unit)? = null
     private var authorizationExpiry: Job? = null
@@ -87,7 +94,7 @@ class AssistantRuntime(private val context: Context) {
     private val speech = SpeechController(context)
     private val models = WakeModelManager(context)
     private val tools = DeviceTools(context, store)
-    private val phone = PhoneContext(context)
+    private val phone = PhoneContext(context,locations::current)
     private val llm = LlmClient(store)
     val brain by lazy { LocalBrain(context,neuralPreferences) }
     val neuralPreferences=com.jarvis.assistant.neural.NeuralPreferences(context)
@@ -206,7 +213,7 @@ class AssistantRuntime(private val context: Context) {
                     }
                     WakeListenerService.ACTION_COMMAND -> {
                         val text = intent.getStringExtra(WakeListenerService.EXTRA_TEXT).orEmpty()
-                        if (text.isNotBlank() && WakeListenerService.state.value.running) submit(text, true)
+                        if (text.isNotBlank() && WakeListenerService.state.value.running) submit(text,true,intent.getLongExtra("speaker_sample_id",-1).takeIf{it>0})
                     }
                     WakeListenerService.ACTION_STOP -> stopEverything()
                 }
@@ -218,6 +225,8 @@ class AssistantRuntime(private val context: Context) {
         }, ContextCompat.RECEIVER_NOT_EXPORTED)
         ContextCompat.registerReceiver(context, object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
+                locations.clearTransient()
+                clearSpeakerSuggestion()
                 clearScreenContext(); conversation.clear(); neural.conversation.clear(); tools.infinity.clearContext();captureStarted = 0; awaitScreenQuestion = false
                 mutableState.update { it.copy(pendingAction = null,module=com.jarvis.assistant.omnisystem.HudModule.ASSISTANT,moduleResponse="") }
                 if (privateTurn || !store.settings.value.allowLockedChat) {
@@ -322,27 +331,61 @@ class AssistantRuntime(private val context: Context) {
         )
     }
 
+    private var captureVoiceGeneration=0L
     /** Foreground camera owns the voice pause; it never cancels model/voice downloads. */
     fun beginCamera(owner:Any):Boolean {
         if(locked() || cameraOwner!=null && cameraOwner!==owner)return false
         cameraOwner=owner
-        cancelSession();pauseWake()
+        cancelSession();pauseWake();captureVoiceGeneration=sessionGeneration
         mutableState.update{it.copy(phase=AssistantPhase.PAUSED,voiceInteraction=false,voiceWindowDeadline=0,followUpArming=false,transcript="",pendingAction=null)}
         return true
     }
     fun endCamera(owner:Any) {
         if(cameraOwner!==owner)return
         cameraOwner=null
-        mutableState.update{it.copy(phase=AssistantPhase.READY)}
-        resumeWake()
+        // A Stop, wipe, lock or newer session invalidates this capture's right to resume listening.
+        if(captureVoiceGeneration==sessionGeneration){
+            mutableState.update{it.copy(phase=AssistantPhase.READY)}
+            resumeWake()
+        }
+    }
+    /** Visible capture modules share the existing single microphone ownership gate. */
+    fun beginExclusiveCapture(owner:Any):Boolean=beginCamera(owner)
+    fun endExclusiveCapture(owner:Any)=endCamera(owner)
+    fun trackModuleOperation(owner:Any,job:Job){moduleOperations[owner]=job;job.invokeOnCompletion{moduleOperations.remove(owner,job)}}
+    fun clearSpeakerSuggestion(){
+        speakerJob?.cancel();speakerExpiry?.cancel()
+        com.jarvis.assistant.omnisystem.SpeakerSamples.clear()
+        mutableState.update{it.copy(speakerProfileName=null,speakerSimilarity=null)}
+    }
+    private fun suggestSpeaker(sampleId:Long?,generation:Long){
+        speakerJob?.cancel();speakerExpiry?.cancel()
+        mutableState.update{it.copy(speakerProfileName=null,speakerSimilarity=null)}
+        val audio=sampleId?.let{com.jarvis.assistant.omnisystem.SpeakerSamples.take(it)} ?: run{if(sampleId==null)com.jarvis.assistant.omnisystem.SpeakerSamples.clear();return}
+        if(locked() || !speakers.autoEnabled){audio.pcm.fill(0);return}
+        speakerJob=scope.launch{
+            try{
+                val vector=speakers.embedding(audio)
+                val match=try{com.jarvis.assistant.omnisystem.SpeakerProfilePolicy.suggest(vector,speakers.profiles())}finally{vector.fill(0f)}
+                if(generation==sessionGeneration && !locked() && speakers.autoEnabled && match.profile!=null){
+                    mutableState.update{it.copy(speakerProfileName=match.profile.name,speakerSimilarity=match.similarity)}
+                    speakerExpiry=scope.launch{delay(30_000);if(generation==sessionGeneration)mutableState.update{it.copy(speakerProfileName=null,speakerSimilarity=null)}}
+                }
+            }catch(e:CancellationException){throw e}catch(_:Exception){}catch(_:LinkageError){}catch(_:OutOfMemoryError){}
+            finally{audio.pcm.fill(0)}
+        }
     }
 
     fun selectModule(module: com.jarvis.assistant.omnisystem.HudModule) {
         if (locked()) return
+        if(state.value.module!=module){
+            val cue=runCatching{com.jarvis.assistant.sentinel.SentinelSound.valueOf(module.name)}.getOrDefault(com.jarvis.assistant.sentinel.SentinelSound.PANEL_OPEN)
+            effects.play(cue)
+        }
         mutableState.update { it.copy(module=module, moduleSequence=it.moduleSequence+1,moduleResponse="") }
     }
 
-    fun submit(input: String, voiced: Boolean = false) {
+    fun submit(input: String, voiced: Boolean = false, speakerSampleId:Long?=null) {
         if(cameraOwner!=null)return
         val text = input.trim().take(8000)
         if (text.isBlank()) return
@@ -376,6 +419,7 @@ class AssistantRuntime(private val context: Context) {
         val lang = LanguageRules.languageRequest(text) ?: LanguageRules.detect(text, language())
         lastReplyLanguage = lang
         val generation = sessionGeneration
+        suggestSpeaker(if(voiced && !isLocked)speakerSampleId else null,generation)
         mutableState.update { it.copy(phase = AssistantPhase.THINKING, transcript = text, liveReply="",error = null, pendingAction = null) }
         if (!isLocked && selectedUris.isEmpty()) {
             com.jarvis.assistant.omnisystem.ModuleRoute.fromUserInput(text)?.let(::selectModule)
@@ -398,7 +442,7 @@ class AssistantRuntime(private val context: Context) {
                     } else if (ScreenContextPolicy.isCaptureRequest(text)) requestScreenCapture(lang)
                     else if (screenSession.current(SystemClock.elapsedRealtime()) != null && ScreenContextPolicy.isFollowUp(text)) generate(text, lang, uris, generation)
                     else {
-                        val presentation = when(com.jarvis.assistant.neural.AppMatching.normalize(text)) {
+                        val presentation = if(com.jarvis.assistant.omnisystem.ModuleRoute.fromUserInput(text)==com.jarvis.assistant.omnisystem.HudModule.MUSIC)AssistantReply(lang.choose("The Music panel is selected. Open Music recognition & Spotify to configure AudD and approve a ten-second sample. Nothing has been recorded or uploaded.","El panel Música está seleccionado. Abre Reconocimiento musical y Spotify para configurar AudD y autorizar una muestra de diez segundos. No se grabó ni envió nada.","پنل موسیقی انتخاب شد. برای تنظیم AudD و تأیید نمونهٔ ده‌ثانیه‌ای، شناسایی موسیقی و اسپاتیفای را باز کنید. چیزی ضبط یا ارسال نشده است.")) else when(com.jarvis.assistant.neural.AppMatching.normalize(text)) {
                             "open selfie camera", "open front camera", "abre camara frontal", "abre camara selfie", "دوربین جلو را باز کن", "دوربین جلو باز کن", "دوربین سلفی را باز کن" -> AssistantReply(lang.choose("The Camera panel is selected. Tap Open front camera preview to grant permission and start the visible camera.","El panel Cámara está seleccionado. Pulsa Abrir cámara frontal para conceder permiso e iniciar la cámara visible.","پنل دوربین انتخاب شد. برای مجوز و شروع دوربین قابل مشاهده، دکمهٔ پیش‌نمایش را بزنید."))
                             "system telemetry", "show system status", "estado del sistema", "وضعیت سیستم" -> AssistantReply("Android transport: ${hud.state.value.telemetry.network}. Internet validated: ${hud.state.value.telemetry.internetValidated}. Battery: ${hud.state.value.telemetry.battery.percent?.let{"$it%"} ?: "Unavailable"}. Current stage: ${state.value.neuralStage}. CPU utilization is unavailable.")
                             else -> null
@@ -606,6 +650,7 @@ class AssistantRuntime(private val context: Context) {
         if (WakeListenerService.state.value.running) context.startService(Intent(context, WakeListenerService::class.java).setAction(WakeListenerService.ACTION_PAUSE))
     }
     private fun resumeWake(followUp: Boolean = false) {
+        if(cameraOwner!=null)return
         if (screenCapturePending()) return
         if (WakeListenerService.state.value.running) runCatching {
             mutableState.update{it.copy(followUpArming=followUp)}
@@ -750,16 +795,21 @@ class AssistantRuntime(private val context: Context) {
     fun clearConversation() { selectModule(com.jarvis.assistant.omnisystem.HudModule.ASSISTANT); cancelSession(); tools.infinity.clearContext();conversation.clear(); neural.conversation.clear(); clearScreenContext(); scope.launch { store.clearConversation() } }
 
     fun wipe() {
+        clearSpeakerSuggestion()
         conversation.clear(); neural.conversation.clear()
-        val cancelledJobs = listOfNotNull(session, cloudVoiceJob, wakeDownload, brainDownload, voiceDownload)
+        val cancelledJobs = listOfNotNull(session, cloudVoiceJob, wakeDownload, brainDownload, voiceDownload,neuralOperation,speakerJob)+moduleOperations.values.toList()
         stopEverything()
         clearAttachments()
         scope.launch {
             cancelledJobs.forEach { it.join() }
             brain.release()
+            speakers.resetOptions();speakers.removeModel()
+            timers.clear()
             com.jarvis.assistant.core.ConnectedFolders(context).disconnect()
             knowledge.clear();appRegistry.clear();neuralPreferences.clear();brain.preferences.clear();briefing.clear();com.jarvis.assistant.neural.BriefingScheduler.sync(context)
             store.clearAll()
+            features.clear()
+            locations.clearTransient()
             categories.edit().clear().apply()
             hud.clear()
             withContext(Dispatchers.IO) {
@@ -772,6 +822,8 @@ class AssistantRuntime(private val context: Context) {
     }
 
     fun stopEverything() {
+        clearSpeakerSuggestion()
+        moduleOperations.values.forEach{it.cancel()}
         neuralOperation?.cancel();neuralOperation=null
         captureStarted = 0; clearScreenContext(); awaitScreenQuestion = false
         context.stopService(Intent(context, ScreenCaptureService::class.java))

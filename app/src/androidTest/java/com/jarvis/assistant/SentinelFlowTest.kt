@@ -140,7 +140,7 @@ class SentinelFlowTest {
     }
     @Test fun allOriginalSoundAssetsDecodeAndPlaybackQueuesWithoutMic(){
         compose.runOnUiThread{runtime.hud.save(runtime.hud.state.value.settings.copy(soundEffects=true,sentinel=SentinelSettings(effectsVolume=.1f)));runtime.effects.warm()}
-        compose.waitUntil(30_000){runtime.effects.loadedCount==26}
+        compose.waitUntil(30_000){runtime.effects.loadedCount==com.jarvis.assistant.sentinel.SentinelSound.entries.size}
         val audio=context.getSystemService(android.media.AudioManager::class.java)
         val notification=context.getSystemService(android.app.NotificationManager::class.java)
         Assume.assumeTrue("Sound playback policy intentionally blocks quiet mode",audio.ringerMode==android.media.AudioManager.RINGER_MODE_NORMAL && notification.currentInterruptionFilter==android.app.NotificationManager.INTERRUPTION_FILTER_ALL)

@@ -22,7 +22,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /** Explicit, permission-gated, local-only phone information. This class makes no network calls. */
-class PhoneContext(context: Context) {
+class PhoneContext(context: Context,private val currentLocation:suspend ()->Location = {com.jarvis.assistant.omnisystem.LocationFix(context).current()}) {
     private val app = context.applicationContext
 
     fun requiredPermission(text: String): String? = when (PhoneRequestParser.parse(text)) {
@@ -149,7 +149,7 @@ class PhoneContext(context: Context) {
     }
 
     private suspend fun location(language: AppLanguage): AssistantReply {
-        val fix=com.jarvis.assistant.omnisystem.LocationFix(app).current()
+        val fix=currentLocation()
         val coordinates=String.format(Locale.ROOT, "%.2f, %.2f", fix.latitude, fix.longitude)
         val accuracy=String.format(Locale.ROOT, "%.0f",fix.accuracy)
         return AssistantReply(language.choose(

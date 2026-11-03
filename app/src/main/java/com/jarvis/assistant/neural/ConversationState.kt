@@ -17,6 +17,8 @@ class ConversationState {
             t in setOf("and the day after","the day after","y el dia siguiente","و روز بعد","پس فردا چی")->(weatherDay+1).coerceAtMost(7)
             t in setOf("what about tomorrow","and tomorrow","y manana","فردا چی")->1
             t in setOf("what about next week","and next week","y la proxima semana","هفته بعد چی")->7
+            t in setOf("will it rain","is it going to rain","how cold","how cold will it be","do i need an umbrella","should i take an umbrella","va a llover","hara frio","necesito paraguas","باران می بارد","هوا چقدر سرد است","چتر ببرم")->weatherDay
+            ForecastPolicy.weekday(t)!=null && Regex("^(what about|and|y|و|در مورد|پس) ").containsMatchIn(t)->ForecastPolicy.day(t)
             else->null
         }
     }

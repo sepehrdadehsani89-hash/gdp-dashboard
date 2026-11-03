@@ -258,7 +258,7 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
     var volume by remember(s.voiceVolume){mutableFloatStateOf(s.voiceVolume)}
     var intensity by remember(s.animationIntensity){mutableFloatStateOf(s.animationIntensity)}
     HudPanel("HUD · voice · privacy",Modifier.fillMaxWidth()) {
-        Text("Jarvis 2.0 · separate from your original Jarvis",color=Ice)
+        Text("JARVIS · "+com.jarvis.assistant.BuildConfig.VERSION_NAME,color=Ice)
         Text("Clock format",color=Dim)
         FlowRow(horizontalArrangement=Arrangement.spacedBy(8.dp)){ listOf("system","12","24").forEach { option->FilterChip(s.clockFormat==option,{actions.onSaveHud(s.copy(clockFormat=option))},label={Text(option)}) } }
         OutlinedTextField(city,{city=it},label={Text("Weather city")},modifier=Modifier.fillMaxWidth(),singleLine=true)

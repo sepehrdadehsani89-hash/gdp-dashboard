@@ -1,0 +1,34 @@
+JARVIS OMNISYSTEM optional integrations
+
+Speaker model (optional download; no weights bundled in APK)
+Model: wespeaker_en_voxceleb_resnet34_LM.onnx, English VoxCeleb ResNet34 LM
+Developed/trained by the WeSpeaker project contributors:
+https://github.com/wenet-e2e/wespeaker
+Model weights license: Creative Commons Attribution 4.0 International
+https://creativecommons.org/licenses/by/4.0/
+WeSpeaker pretrained-model license statement:
+https://github.com/wenet-e2e/wespeaker/blob/master/docs/pretrained.md
+ONNX conversion/distribution: Sherpa-ONNX project contributors
+https://github.com/k2-fsa/sherpa-onnx/releases/tag/speaker-recongition-models
+The WeSpeaker toolkit and Sherpa-ONNX runtime are separate Apache-2.0 software.
+The downloaded model has not been retrained by this app; ONNX conversion is upstream.
+Size: 26,530,550 bytes
+SHA-256: e9848563da86f263117134dfd7ad63c92355b37de492b55e325400c9d9c39012
+The hash pins the HTTPS-distributed artifact checked during development, not an
+independent upstream signature. Verify provenance and license for your distribution.
+Speaker similarities are uncalibrated personalization hints, never authentication.
+VoxCeleb/English-domain training does not establish accuracy for every voice or language.
+
+Maps: © OpenStreetMap contributors. https://www.openstreetmap.org/copyright
+OpenStreetMap data is available under the Open Database License (ODbL).
+Embedded maps are loaded from the official OpenStreetMap embed endpoint only after
+consent; attribution remains visible. Tile/usage policies and availability apply.
+
+Music: AudD and Spotify are external services, not bundled recognition engines.
+Account access, pricing, commercial approval, provider policies and retention terms
+apply. Returned album artwork and metadata remain subject to their rightsholders.
+Lyrics are opened at an external licensed-source search; no lyrics scraping occurs.
+
+Original module UI cues: CC0-1.0, created for this project using
+scripts/generate_module_cues.py. No third-party samples or copyrighted soundtrack.
+https://creativecommons.org/publicdomain/zero/1.0/

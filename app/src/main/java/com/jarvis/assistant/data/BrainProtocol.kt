@@ -57,7 +57,10 @@ object BrainProtocol {
         context: String,
         history: List<ChatMessage>,
         screenshot: ByteArray? = null,
+        pictures: List<ByteArray> = emptyList(),
     ): String {
+        val images=pictures+if(provider=="gemini")listOfNotNull(screenshot) else emptyList()
+        require(images.size<=2 && images.all{it.isNotEmpty() && it.size<=1_500_000}){"Image request exceeds its limit."}
         val recent = history.filter { it.role != MessageRole.STATUS }.takeLast(16).toMutableList()
         // Root may already have persisted the current utterance. Avoid sending it twice.
         if (recent.lastOrNull()?.let { it.role == MessageRole.USER && it.text == userText } == true) recent.removeAt(recent.lastIndex)
@@ -79,10 +82,7 @@ object BrainProtocol {
                     }
                     put(JSONObject().put("role", "user").put("parts", JSONArray().apply {
                         put(JSONObject().put("text", prompt))
-                        if (screenshot != null) {
-                            require(screenshot.size <= 1_500_000) { "Screenshot exceeds the request limit" }
-                            put(JSONObject().put("inlineData", JSONObject().put("mimeType", "image/jpeg").put("data", Base64.getEncoder().encodeToString(screenshot))))
-                        }
+                        images.forEach{image->put(JSONObject().put("inlineData", JSONObject().put("mimeType", "image/jpeg").put("data", Base64.getEncoder().encodeToString(image))))}
                     }))
                 })
                 put("generationConfig", JSONObject().put("maxOutputTokens", 768).put("temperature", 0.5).apply {
@@ -100,7 +100,15 @@ object BrainProtocol {
                     recent.forEach { message ->
                         put(JSONObject().put("role", if (message.role == MessageRole.USER) "user" else "assistant").put("content", message.text.take(6000)))
                     }
-                    put(JSONObject().put("role", "user").put("content", prompt))
+                    val content:Any=if(images.isEmpty())prompt else JSONArray().apply{
+                        put(JSONObject().put("type","text").put("text",prompt))
+                        images.forEach{image->
+                            val data=Base64.getEncoder().encodeToString(image)
+                            if(provider=="openai")put(JSONObject().put("type","image_url").put("image_url",JSONObject().put("url","data:image/jpeg;base64,$data")))
+                            else put(JSONObject().put("type","image").put("source",JSONObject().put("type","base64").put("media_type","image/jpeg").put("data",data)))
+                        }
+                    }
+                    put(JSONObject().put("role", "user").put("content", content))
                 })
             }.toString()
             else -> throw IllegalArgumentException("Unsupported AI provider")

@@ -73,6 +73,7 @@ class CameraHudActivity : ComponentActivity() {
                         } else Button(onClick = { permission.launch(Manifest.permission.CAMERA) }) { Text("Allow visible camera preview") }
                         image?.let { Image(it.asImageBitmap(), "Explicitly captured still", Modifier.fillMaxWidth().height(140.dp)) }
                         if (captured != null) Button(onClick = ::usePhoto) { Text("Use this photo in Assistant") }
+                        if (captured != null) OutlinedButton(onClick = ::analyzePhoto) { Text("Describe this photo · review sharing") }
                         if (retry && !capturing) OutlinedButton(onClick = ::retryPreview) { Text("Retake / retry preview") }
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             Button(onClick = ::takePhoto, enabled = ready && !capturing) { Text("Capture still") }
@@ -184,6 +185,14 @@ class CameraHudActivity : ComponentActivity() {
         }.onFailure { status = "Could not attach this photo. No upload was made." }
     }
     override fun onResume() { super.onResume(); if (locked()) { finish(); return }; revision++ }
+    private fun analyzePhoto(){
+        val file=captured ?: return
+        try {
+            val uri=FileProvider.getUriForFile(this,"$packageName.camera-files",file)
+            startActivity(android.content.Intent(this,VisionHudActivity::class.java).setData(uri).addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION))
+            retained=file
+        } catch(_:Exception){status="Image analysis is unavailable. Your captured still has not been uploaded."}
+    }
     override fun onStop() { clearTimeout(); captureGeneration++; capturing = false; stopPreview(); super.onStop(); finish() }
     override fun onDestroy() { clearTimeout(); stopPreview(); files.filter { it != retained }.forEach { it.delete() }; runtime.endCamera(this); super.onDestroy() }
 }

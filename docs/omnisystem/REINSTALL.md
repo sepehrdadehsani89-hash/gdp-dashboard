@@ -1,3 +1,5 @@
+> This records the earlier code-10 artifact and retained signing/migration process. The same private key is reused for the later [code-11 beta](../../downloads/beta1/README.md); see [current verification](BETA_VERIFICATION.md) for its actual evidence.
+
 # Reinstall signing line
 
 This development build keeps the application ID `com.jarvis.next`, but uses a new retained signing identity because the original private key remains unavailable. It cannot install over the original signed Jarvis. The original `release` build still requires the original certificate; its guard has not been weakened. The separate `reinstall` build type is non-debuggable and unminified for the existing JNI ABI, with version label `10.0.0-dev-reinstall` and version code 10.

@@ -55,7 +55,7 @@ class PrivateMemoryImportUiTest {
             runtime.stopEverything()
             runtime.store.updateSettings(original.copy(language=com.jarvis.assistant.core.AppLanguage.EN,onboardingComplete=true,speakReplies=false))
             compose.activityRule.scenario.onActivity{it.startActivity(Intent(it,NeuralSettingsActivity::class.java))}
-            assertTrue(device.wait(Until.hasObject(By.text("JARVIS INFINITY 7.0")),30_000))
+            assertTrue(device.wait(Until.hasObject(By.text("JARVIS OMNISYSTEM 10.0 · BETA")),30_000))
             importButton();device.pressBack()
             assertFalse(runtime.knowledge.list().any{it.id==id})
             importButton();chooseFile()

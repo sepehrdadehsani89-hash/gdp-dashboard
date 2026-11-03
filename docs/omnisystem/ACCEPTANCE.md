@@ -1,35 +1,35 @@
-# Master directive acceptance status
+# OMNISYSTEM beta acceptance status
 
-This matrix distinguishes source implementation from runtime evidence. It is not an acceptance sign-off. See `VERIFICATION.md` for current executed checks; historical delivery reports are separate.
+This is a development beta, not a commercial acceptance sign-off. The new master directive is retained in [MASTER_DIRECTIVE.md](MASTER_DIRECTIVE.md). Source presence, automated checks and live-device/provider evidence are different claims. See [BETA_VERIFICATION.md](BETA_VERIFICATION.md), [OPTIONAL_SERVICES.md](OPTIONAL_SERVICES.md) and the historical [VERIFICATION.md](VERIFICATION.md).
 
-| Directive items | Source status and boundary |
+| Directive items | Current implementation and remaining evidence |
 | --- | --- |
-| 1 Existing application | Same package ID; additive source changes; no database migration/reset. Phone upgrade blocked by missing original signing key. |
-| 2 Local AI | Existing real llama.cpp engine and verified optional profiles retained; ARM64 native compilation checked. No actual weights/inference benchmark in this machine. |
-| 3 Persistent memory | Existing Room/FTS/preference namespaces retained; no destructive migration. Current regression evidence is in VERIFICATION.md. |
-| 4 Direct apps | Existing installed-app registry, matching and approval path retained; module router explicitly avoids ordinary app-launch requests. |
-| 5 Wake word | Existing EN/ES/FA wake and ten-second command/follow-up implementation retained. No physical acoustic verification. |
-| 6–12 Wallpaper/reactor/charging/battery/clock | Existing real WallpaperService, visibility control, actual-state colors/levels, charging ring and adjacent weather/clock retained. Physical battery/performance behavior unmeasured. |
-| 13 Weather HUD | Implemented current/hourly/daily data, source timestamps/timezone/staleness and bounded condition-driven atmosphere. Mock transport/parser and UI checks do not establish live weather-provider availability. |
-| 14 Location HUD | Partial: dedicated panel and fresh permission-gated timed fix. No embedded map, geocoding or saved destinations. |
-| 15 Battery HUD | Implemented actual shared battery state and reviewed additional property reads. No capacity-health estimate is invented. |
-| 16 Wi-Fi HUD | Implemented shared network evidence and existing real SSID/RSSI/radio-link reader, with permission/redaction handling. |
-| 17 Bluetooth HUD | Implemented actual paired/profile/discovery controls, measured RSSI signals and explicit BLE reads; no inferred direction/range or universal accessory connection. Physical accessory tests unavailable. |
-| 18 Network HUD | Implemented consented fixed-size transfer, actual byte/time chart samples and complete/partial/error distinctions. Live Cloudflare service and ISP capacity not benchmarked. |
-| 19 Music HUD | Unavailable panel only. Licensed fingerprint engine/provider and Spotify authorization are not implemented. No audio recording or fake match. |
-| 20 Camera HUD | CameraX visible front/rear preview, explicit JPEG capture/review and opt-in Assistant attachment implemented. General visual-description/comparison engine remains unfinished. |
-| 21 Clock/alarm HUD | Partial: real clock dial and existing reviewed Android alarm/timer workflow. External Clock dispatch is awaiting-user, not proof of a saved alarm. No fabricated timer countdown. |
-| 22 System telemetry | Actual network/battery/microphone/provider/stage/storage/thermal readings. Normal HUD RAM meters removed. No invented CPU readings. |
-| 23 Actual sources | Real Android/provider APIs retained; absent values stay unavailable. Synthetic test fixtures are labelled tests, not real-world measurements. |
-| 24 Verified actions | Existing expiring, reviewed tool actions retained. System panels/intents remain pending until externally observable evidence exists. |
-| 25 Live captions | Existing actual transcripts/replies retained; module response text is bound to the current request/selection. No invented word-level speech alignment. |
-| 26 Languages | Existing EN/ES/FA processing/RTL retained. Some new technical labels are English; complete new-panel localization is unfinished. |
-| 27 Six voice profiles | Not implemented; no verified/licensed speaker model or enrollment workflow. Voice never substitutes for Android authentication. |
-| 28 Briefings | Existing opt-in WorkManager briefing and private notifications retained. No new phone scheduling guarantee. |
-| 29 Websites | Existing ten-site explicit save/edit/delete/read/open workflows retained. |
-| 30 Permissions | Contextual camera/location gates and cleanup added; existing Bluetooth/network/photo/provider controls preserved. Hardware permission UX needs handset tests. |
-| 31 Android authentication | Existing keyguard/Codex flow retained; private camera refuses locked entry and protects its window. No PIN storage/replay. |
-| 32 Background restrictions | Existing permitted activation/notification fallback retained. Camera opens only through explicit foreground interaction; no overlay or background-start bypass added. |
-| 33 Redmi 9 performance | Not benchmarked. Existing Eco/Balanced/Cinematic caps and invisible-surface cleanup retained; new atmosphere caps at 20 FPS and respects reduced motion. |
-| 34 Tests | See VERIFICATION.md for final counts, failures, skips and unrun checks. |
-| 35 Build/delivery | Debug development builds are separate from signed phone delivery. Original release key is missing; release signing/publication blocked. |
+| 1 Existing application | Same `com.jarvis.next`, additive namespaces, existing Room/FTS/settings retained. Original 7.0 remains installed on the user's phone. Original-signature in-place delivery is blocked by the unavailable original private key. The retained reinstall signer cannot bypass that. |
+| 2 Local AI | Existing real llama.cpp engine and optional integrity-checked profiles retained. No RAM admission/refusal gate added. Real handset model/language/performance measurements remain unverified. |
+| 3 Persistent memory | Existing stores and private v1 importer retained. New credentials/templates/destinations use an independent AES-GCM AndroidKeyStore vault. Legacy export does not include these new feature stores. No destructive migration. |
+| 4 Direct apps | Existing installed-app discovery/matching/review retained. Music/camera module routing preserves ordinary app-launch requests. |
+| 5 Wake word | Existing EN/ES/FA wake and ten-second command/fresh follow-up deadlines retained. Optional voice-profile buffer taps only an already-enabled wake recorder; default off. Physical acoustics unverified. |
+| 6–12 Wallpaper/reactor/charging/battery/clock | Existing actual-state shared HUD and wallpaper retained. New private screens reuse the shared reactor, actual clock/weather/audio/task state. Handset battery, wallpaper and visibility measurements unverified. |
+| 13 Weather HUD | Real current/hourly/daily fields, source timestamps/timezone/staleness retained. Added context-bound rain/cold/umbrella and weekday follow-ups; source-date and consecutive-date validation. Live service access and midnight edge cases need field testing. |
+| 14 Location HUD | Real timed current fix, explicit Android Geocoder lookup, consented official OSM interactive embed and encrypted explicitly saved destinations. Provider/device availability and tile delivery unverified. North-up is not a measured compass. |
+| 15 Battery HUD | Real shared Android battery diagnostics; no fabricated capacity-health percentage. Physical charging/accessory tests unverified. |
+| 16 Wi-Fi HUD | Existing real capabilities/SSID/RSSI/radio-link reader retained. Android redactions remain explicit; link rate is not throughput. |
+| 17 Bluetooth HUD | Existing actual paired/profile/discovery/RSSI and explicit BLE reads retained. New deterministic compound query is read-only and permission-gated. No inferred distance/direction, universal pairing, earbud/case battery or forced connection. |
+| 18 Network HUD | Existing consented fixed-size real transfer and actual time/byte samples retained. No fake ping/packet loss. Physical/live-provider performance unverified. |
+| 19 Music HUD | Real AudD consented ten-second request, provider match/no-match parsing, measured seven-band sample spectrum, optional approved CDN artwork. Spotify native PKCE/state/expiry, encrypted tokens, real save and membership readback. Lyrics open a licensed-source search; metadata-only AI interpretation is explicit. Credentials, current API access and commercial approval are required; no live account verification. |
+| 20 Camera HUD | Existing visible CameraX capture; new explicit selected/captured image description and two-image comparison through real Gemini/OpenAI/Anthropic image payloads. Local OCR remains separate. Images are bounded, resized and metadata stripped. No automatic upload or tools from images; no offline general vision claim. Physical/provider tests unverified. |
+| 21 Clock/alarm HUD | Real Jarvis-owned elapsed timers, exact-alarm/notification gates, explicit creation, real countdown and cancellation. Reboots interrupt them; notification requested is not proof of sound. External Clock handoff remains awaiting-user; one-off dates do not become weekly repeats. Actual OS scheduling/delivery tests unverified. |
+| 22 System telemetry | Actual battery/network/mic/provider/stage/storage/thermal state. No inferred CPU use or HUD RAM meter. |
+| 23 Actual sources | Provider/Android fields only; absent or invalid readings stay unavailable. Audio spectrum/progress are measured, not simulated. Test fixtures are not field readings. |
+| 24 Verified actions | Existing expiring reviews retained. Deterministic plans extend to requested Bluetooth lists and reviewed timer/alarm proposals. Model plans cannot invent these actions. Stops behind approval and reports unrun steps; no automatic continuation after approval. Provider/OS success is bounded to observable evidence. |
+| 25 Live captions | Actual transcript/reply state retained on main/module screens. No invented word-level timing. Private operations cancel on leave and Stop; wipe waits for tracked jobs before clearing new stores. |
+| 26 Languages | New private screens, module names/buttons and key consent/status text support EN/ES/FA and RTL. Some inherited technical diagnostics/settings and error text remain English; full localization is incomplete. |
+| 27 Six voice profiles | Real optional verified WeSpeaker/Sherpa embeddings; one owner and up to five consenting additional profiles, twenty-second enrollment, extra samples, encrypted templates, manual matching and optional bounded wake-buffer hints. Unknown/ambiguous allowed. No probability or identity/authentication guarantee. Real human/Spanish/Persian/Redmi 9 evaluation is unverified. |
+| 28 Briefings | Existing opt-in private WorkManager briefing retained. No new scheduler/device delivery guarantee. |
+| 29 Websites | Existing ten-site explicit save/edit/delete/read/open retained. |
+| 30 Permissions | Contextual mic/camera/location/exact-alarm/notification controls, consent, lifecycle cancellation and private windows. No new background recorder, scan or upload on selecting a panel. Hardware UX needs handset tests. |
+| 31 Android authentication | Keyguard/Codex flows retained; private edits use Android confirmation. Speaker hints never grant authority. No PIN storage/replay. |
+| 32 Background restrictions | Existing lawful activation/notification fallback retained. Timer receiver never starts a mic, foreground activity or bypass overlay. No policy bypass. |
+| 33 Redmi 9 performance | Unverified. Existing animation profiles/caps and motion settings retained; short module crossfade respects reduced motion. Optional speaker weights not bundled, native extractor released when idle/closed. No performance or commercial-readiness claim. |
+| 34 Tests | Unit regression suite, debug/reinstall compilation/lint and artifact checks reported in BETA_VERIFICATION.md. Physical devices, real accounts and unexecuted UI flows are not marked passed. |
+| 35 Build/delivery | Version code 11, `10.0.0-beta1-reinstall`, retained newer signer. This line can update the earlier code-10 reinstall build; it cannot update original Jarvis 7.0 in place. Save private export and independent signing backup before any separately chosen reinstall. |

@@ -15,6 +15,7 @@
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
@@ -53,6 +54,20 @@
         <activity android:name=".neural.SafeActivationActivity" android:exported="false" android:theme="@style/Theme.Jarvis" />
         <activity android:name=".neural.NeuralSettingsActivity" android:exported="false" android:theme="@style/Theme.Jarvis" />
         <activity android:name=".omnisystem.CameraHudActivity" android:exported="false" android:theme="@style/Theme.Jarvis" />
+        <activity android:name=".omnisystem.MusicHudActivity" android:exported="false" android:theme="@style/Theme.Jarvis" />
+        <activity android:name=".omnisystem.LocationHudActivity" android:exported="false" android:theme="@style/Theme.Jarvis" />
+        <activity android:name=".omnisystem.VisionHudActivity" android:exported="false" android:theme="@style/Theme.Jarvis" />
+        <activity android:name=".omnisystem.SpeakerProfilesActivity" android:exported="false" android:theme="@style/Theme.Jarvis" />
+        <activity android:name=".omnisystem.ClockHudActivity" android:exported="false" android:theme="@style/Theme.Jarvis" />
+        <receiver android:name=".omnisystem.OwnedTimerReceiver" android:exported="false" />
+        <activity android:name=".omnisystem.SpotifyCallbackActivity" android:exported="true" android:theme="@style/Theme.Jarvis">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="com.jarvis.next" android:host="spotify-callback" />
+            </intent-filter>
+        </activity>
         <activity android:name=".infinity.InfinityControlsActivity" android:exported="false" android:theme="@style/Theme.Jarvis" />
         <activity android:name=".MainActivity" android:exported="true" android:windowSoftInputMode="adjustResize">
             <intent-filter>

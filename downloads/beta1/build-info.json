@@ -1,0 +1,39 @@
+{
+  "package": "com.jarvis.next",
+  "version_code": 11,
+  "version_name": "10.0.0-beta1-reinstall",
+  "abi": [
+    "arm64-v8a"
+  ],
+  "min_sdk": 29,
+  "target_sdk": 35,
+  "debuggable": false,
+  "apk": "Jarvis-10.0.0-beta1-arm64-reinstall.apk",
+  "bytes": 83439601,
+  "sha256": "f9bcaf84b3a350772c5cf58898864d74aca6179452184df40eb60711997212b1",
+  "certificate_sha256": "1094ecc1e01dfb873a8e63689b09dc156fff9d41f77ffdfae27e702991711bda",
+  "signature_v2_verified": true,
+  "zip_alignment_4_verified": true,
+  "private_material_or_weights_packaged": false,
+  "source_base_commit": "1ed3365b5927610d16626cf8a19091fc2033fdb5",
+  "source_manifest_sha256": "03de2660b0ea8e04f2fee94e9a9fe83983dd571be9a85eb3fea32284052fdf92",
+  "unit_tests": {
+    "tests": 250,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "lint": {
+    "reinstall": {
+      "Warning": 33
+    }
+  },
+  "new_android_runtime_cases_executed": 0,
+  "android_runtime_blocked": "Emulator boot/package commands timed out; userdata retained",
+  "original_jarvis_7_in_place_update": false,
+  "physical_redmi9_verified": false,
+  "live_optional_provider_accounts_verified": false,
+  "full_master_directive_complete": false,
+  "signing_key_generated_this_upgrade": false,
+  "off_cloud_signing_backup_confirmed": false
+}

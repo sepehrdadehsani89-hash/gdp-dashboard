@@ -37,6 +37,7 @@ class WakeListenerService : Service() {
     @Volatile private var recorder: AudioRecord? = null
     private val audioLock = Any()
     private var worker: Thread? = null
+    private val speakerBuffer=com.jarvis.assistant.omnisystem.SpeakerSampleBuffer()
     @Volatile private var failureReason:String?=null
     private var language = AppLanguage.EN
     private val window = ConversationWindow { SystemClock.elapsedRealtime() }
@@ -151,10 +152,13 @@ class WakeListenerService : Service() {
                                     if(audioManager.mode in listOf(android.media.AudioManager.MODE_IN_CALL,android.media.AudioManager.MODE_IN_COMMUNICATION)){window.resume(false);main.removeCallbacks(windowTimeout);publish("Microphone paused during a call",false,interrupted=true);break}
                                     com.jarvis.assistant.hud.AudioSignals.level(audio,com.jarvis.assistant.hud.PcmLevel.pcm16(bytes,count))
                                     if (speechActive || SystemClock.elapsedRealtime() < suppressionUntil) {
+                                        speakerBuffer.clear()
                                         if (!suppressed) { recognizer.reset(); suppressed = true }
                                         continue
                                     }
                                     if (suppressed) { recognizer.reset(); suppressed = false }
+                                    // Opt-in tap of this existing authorized recorder; never a second microphone.
+                                    runCatching{speakerBuffer.feed(bytes,count,(application as com.jarvis.assistant.JarvisApplication).runtime.speakers.autoEnabled)}.onFailure{speakerBuffer.clear()}
                                     if (window.expire()) { recognizer.reset(); recognizerSerial = window.snapshot().resetSerial; publish(listeningText(), true); continue }
                                     val serial = window.snapshot().resetSerial
                                     if (recognizerSerial != serial) { recognizer.reset(); recognizerSerial = serial; continue }
@@ -172,7 +176,7 @@ class WakeListenerService : Service() {
                                     if(!final || RecognitionConfidence.acceptsFinal(json))handleTranscript(text,final,serial)
                                 }
                             }
-                        } finally { com.jarvis.assistant.hud.AudioSignals.stop(audio); runCatching { audio.stop() }; audio.release(); recorder = null }
+                        } finally { speakerBuffer.clear();com.jarvis.assistant.hud.AudioSignals.stop(audio); runCatching { audio.stop() }; audio.release(); recorder = null }
                     }
                 }
             } catch (_: InterruptedException) {
@@ -237,8 +241,9 @@ class WakeListenerService : Service() {
         if (paused || !window.accept(serial)) return
         main.removeCallbacks(windowTimeout)
         paused = true
+        val speakerId=runCatching{speakerBuffer.take()?.let(com.jarvis.assistant.omnisystem.SpeakerSamples::deposit)}.getOrNull()
         publish(language.choose("Processing your command · microphone paused", "Procesando tu petición · micrófono en pausa", "در حال پردازش دستور · میکروفن مکث شده"), false)
-        sendBroadcast(Intent(ACTION_COMMAND).setPackage(packageName).putExtra(EXTRA_TEXT, command).putExtra(EXTRA_LANGUAGE, language.code))
+        sendBroadcast(Intent(ACTION_COMMAND).setPackage(packageName).putExtra(EXTRA_TEXT, command).putExtra(EXTRA_LANGUAGE, language.code).putExtra("speaker_sample_id",speakerId ?: -1L))
     }
 
     private fun listeningText() = language.choose("Listening for “${language.wakePhrase}” · on-device", "Escuchando “${language.wakePhrase}” · local", "در انتظار «${language.wakePhrase}» · روی دستگاه")

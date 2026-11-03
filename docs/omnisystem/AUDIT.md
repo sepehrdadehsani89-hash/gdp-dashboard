@@ -1,3 +1,5 @@
+> Historical checkpoint. The later beta implementation and evidence are described in [ACCEPTANCE.md](ACCEPTANCE.md), [CURRENT_UPGRADE.md](CURRENT_UPGRADE.md) and [BETA_VERIFICATION.md](BETA_VERIFICATION.md). Earlier unavailable-feature statements are not the current source inventory.
+
 # OMNISYSTEM integration audit
 
 Baseline: jarvis-next f110e56d30dfcc3c1a6153f19888be10fa2bb79b (Jarvis 7.0).

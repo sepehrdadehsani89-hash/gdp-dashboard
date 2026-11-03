@@ -20,7 +20,10 @@ enum class SentinelSound(val resource:Int,val priority:Int=1,val duration:Long=2
     BUTTON(R.raw.sentinel_button,1,70),TAB(R.raw.sentinel_tab),PANEL_OPEN(R.raw.sentinel_panel_open),PANEL_CLOSE(R.raw.sentinel_panel_close),
     SUCCESS(R.raw.sentinel_success,2),PERMISSION(R.raw.sentinel_permission,3),CODEX(R.raw.sentinel_codex,3),IDENTITY(R.raw.sentinel_identity,3),
     AUTH_SUCCESS(R.raw.sentinel_auth_success,3),AUTH_DENIED(R.raw.sentinel_auth_denied,3),NETWORK_LOST(R.raw.sentinel_network_lost,2),NETWORK_RESTORED(R.raw.sentinel_network_restored),
-    LOW_BATTERY(R.raw.sentinel_low_battery,2),CHARGE(R.raw.sentinel_charge),UNPLUG(R.raw.sentinel_unplug),ERROR(R.raw.sentinel_error,3),SLEEP(R.raw.sentinel_sleep,2,400)
+    LOW_BATTERY(R.raw.sentinel_low_battery,2),CHARGE(R.raw.sentinel_charge),UNPLUG(R.raw.sentinel_unplug),ERROR(R.raw.sentinel_error,3),SLEEP(R.raw.sentinel_sleep,2,400),
+    WEATHER(R.raw.module_weather,1,180),LOCATION(R.raw.module_location,1,180),BATTERY(R.raw.module_battery,1,180),
+    WIFI(R.raw.module_wifi,1,180),BLUETOOTH(R.raw.module_bluetooth,1,180),NETWORK(R.raw.module_network,1,180),
+    MUSIC(R.raw.module_music,1,180),CAMERA(R.raw.module_camera,1,180),CLOCK(R.raw.module_clock,1,180),SYSTEM(R.raw.module_system,1,180)
 }
 object SoundMixPolicy {
     fun volume(enabled:Boolean,volume:Float,quiet:Boolean,inCall:Boolean,mic:Boolean,micLevel:Float,speaking:Boolean,event:SentinelSound):Float {

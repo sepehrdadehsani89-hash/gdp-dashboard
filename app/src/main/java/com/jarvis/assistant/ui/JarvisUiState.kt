@@ -12,6 +12,8 @@ data class JarvisUiState(
     val module: com.jarvis.assistant.omnisystem.HudModule = com.jarvis.assistant.omnisystem.HudModule.ASSISTANT,
     val moduleSequence: Long = 0,
     val moduleResponse: String = "",
+    val speakerProfileName:String?=null,
+    val speakerSimilarity:Float?=null,
     val neuralStage:String="Idle",
     val playback:com.jarvis.assistant.sentinel.PlaybackReading = com.jarvis.assistant.sentinel.PlaybackReading(),
     val sentinelVisual:com.jarvis.assistant.sentinel.SentinelVisualState = com.jarvis.assistant.sentinel.SentinelVisualState(),
@@ -48,6 +50,7 @@ data class JarvisUiState(
 
 data class JarvisUiActions(
     val onOpenCamera: ()->Unit = {},
+    val onOpenVision: ()->Unit = {},
     val onModule: (com.jarvis.assistant.omnisystem.HudModule)->Unit = {},
     val onOpenDeviceControls: ()->Unit = {},
     val onOpenNeural:()->Unit={},

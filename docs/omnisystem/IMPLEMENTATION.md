@@ -1,3 +1,5 @@
+> Historical checkpoint. The later beta implementation and evidence are described in [ACCEPTANCE.md](ACCEPTANCE.md), [CURRENT_UPGRADE.md](CURRENT_UPGRADE.md) and [BETA_VERIFICATION.md](BETA_VERIFICATION.md). Earlier unavailable-feature statements are not the current source inventory.
+
 # OMNISYSTEM development update (not a signed release)
 
 Baseline: `jarvis-next` at `f110e56d30dfcc3c1a6153f19888be10fa2bb79b`. Application ID remains `com.jarvis.next`; development version is `10.0.0-dev`, code 10. This is an incremental continuation of Jarvis 7.0. It is not a claim that the full master directive is complete.

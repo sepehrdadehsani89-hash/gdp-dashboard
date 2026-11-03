@@ -214,9 +214,13 @@ private fun MainShell(state: JarvisUiState, actions: JarvisUiActions, settingsRe
             Box(Modifier.widthIn(max = 820.dp).fillMaxSize()) {
                 when (tab) {
                     0 -> Column {
-                        com.jarvis.assistant.omnisystem.ModuleTabs(state.module) { module -> actions.onInteraction(com.jarvis.assistant.sentinel.SentinelSound.PANEL_OPEN); actions.onModule(module) }
-                        if(state.module==com.jarvis.assistant.omnisystem.HudModule.ASSISTANT) Home(state, actions) { tab = 2 }
-                        else com.jarvis.assistant.omnisystem.ModuleHud(state, actions)
+                        com.jarvis.assistant.omnisystem.ModuleTabs(state.module,l) { module -> actions.onModule(module) }
+                        if(state.module==com.jarvis.assistant.omnisystem.HudModule.ASSISTANT)state.speakerProfileName?.let{name->Text(state.settings.language.choose("Possible voice profile: $name · not authentication","Perfil de voz posible: $name · no autentica","نمایهٔ صوتی احتمالی: $name · نه احراز هویت"),Modifier.padding(horizontal=16.dp))}
+                        androidx.compose.animation.Crossfade(targetState=state.module,
+                            animationSpec=androidx.compose.animation.core.tween(if(state.hud.settings.reducedMotion)0 else 160),label="module") { module ->
+                            if(module==com.jarvis.assistant.omnisystem.HudModule.ASSISTANT) Home(state, actions) { tab = 2 }
+                            else com.jarvis.assistant.omnisystem.ModuleHud(state.copy(module=module), actions)
+                        }
                     }
                     1 -> MemoryScreen(state, actions)
                     else -> SettingsScreen(state, actions, sentinelRequest)

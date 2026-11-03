@@ -15,7 +15,7 @@ class NeuralOrchestrator(private val context:Context,private val hud:HudReposito
     private fun locked()=context.getSystemService(android.app.KeyguardManager::class.java).isDeviceLocked
     suspend fun route(text:String,lang:AppLanguage):AssistantReply?{
         if(locked())return null
-        if(ContextPrivacyPolicy.localOnly(text) && (ForecastPolicy.request(text) || Regex("news|headline|noticias|اخبار|research|investiga|خواندن منبع",RegexOption.IGNORE_CASE).containsMatchIn(text)))return AssistantReply(lang.choose("This request needs a live source. Local-only mode makes no network request; ask again with network access if you want fresh information.","La información actual requiere una fuente en línea. No hice una solicitud de red en modo local.","اطلاعات زنده به منبع آنلاین نیاز دارد؛ در حالت فقط محلی هیچ درخواست شبکه‌ای انجام نشد."))
+        if(ContextPrivacyPolicy.localOnly(text) && (conversation.weatherFollowUp(text,android.os.SystemClock.elapsedRealtime())!=null || ForecastPolicy.request(text) || Regex("news|headline|noticias|اخبار|research|investiga|خواندن منبع",RegexOption.IGNORE_CASE).containsMatchIn(text)))return AssistantReply(lang.choose("This request needs a live source. Local-only mode makes no network request; ask again with network access if you want fresh information.","La información actual requiere una fuente en línea. No hice una solicitud de red en modo local.","اطلاعات زنده به منبع آنلاین نیاز دارد؛ در حالت فقط محلی هیچ درخواست شبکه‌ای انجام نشد."))
         val researchUrl=Regex("^(?:research|read source|investiga|خواندن منبع) +(?<url>https://[^\\s]+)$",RegexOption.IGNORE_CASE).matchEntire(text.trim())?.groups?.get("url")?.value
         if(researchUrl!=null)return research.read(researchUrl,lang)
         val alias=Regex("^(?:jarvis[, ]+)?remember that when I say (.{2,80}?),? I mean (.{2,80})[.!]?$",RegexOption.IGNORE_CASE).matchEntire(text.trim())
@@ -33,9 +33,9 @@ class NeuralOrchestrator(private val context:Context,private val hud:HudReposito
         if(follow!=null || ForecastPolicy.request(text)){
             val city=ForecastPolicy.city(text) ?: if(follow!=null)conversation.weatherCity else hud.state.value.settings.weatherCity
             if(city.isNullOrBlank())return AssistantReply(lang.choose("Which city? Set one in Settings or say weather in Quito.","¿Qué ciudad? Configúrala o di clima en Quito.","کدام شهر؟ در تنظیمات شهر را مشخص کنید یا بگویید هوای تهران."))
-            val day=follow ?: ForecastPolicy.day(text)
+            var day=follow ?: ForecastPolicy.day(text)
             NeuralEvents.emit(NeuralEvent.TOOL_RUNNING,"Checking forecast")
-            val result=try{withTimeout(30_000){forecast.reply(city,day,lang,Regex("umbrella|paraguas|چتر",RegexOption.IGNORE_CASE).containsMatchIn(text))}}catch(e:CancellationException){throw e}catch(e:Exception){return AssistantReply(e.message?.take(240) ?: "Weather unavailable.")}
+            val result=try{withTimeout(30_000){forecast.reply(city,day,lang,Regex("umbrella|paraguas|چتر",RegexOption.IGNORE_CASE).containsMatchIn(text),text){day=it}}}catch(e:CancellationException){throw e}catch(e:Exception){return AssistantReply(e.message?.take(240) ?: "Weather unavailable.")}
             NeuralEvents.emit(NeuralEvent.TOOL_COMPLETED,"Forecast available")
             conversation.weather(city,day,android.os.SystemClock.elapsedRealtime());withContext(Dispatchers.IO){index.audit("weather","verified_source_fields")}
             return result
@@ -67,7 +67,8 @@ class NeuralOrchestrator(private val context:Context,private val hud:HudReposito
             val result=withTimeout(definition.timeoutMs){when(step.id){
                 "time"->tools.route("what time is it",lang)!!
                 "battery"->tools.route("battery",lang)!!
-                "weather"->{val (city,day)=ToolRegistry.weatherArguments(step,input,hud.state.value.settings.weatherCity);forecast.reply(city,day,lang,Regex("umbrella|paraguas|چتر",RegexOption.IGNORE_CASE).containsMatchIn(input))}
+                "bluetooth_devices","set_timer","set_alarm"->tools.route(requireNotNull(ToolRegistry.boundDeviceClause(step,input)),lang) ?: error("Requested device tool unavailable")
+                "weather"->{val (city,day)=ToolRegistry.weatherArguments(step,input,hud.state.value.settings.weatherCity);forecast.reply(city,day,lang,Regex("umbrella|paraguas|چتر",RegexOption.IGNORE_CASE).containsMatchIn(input),input)}
                 "news"->tools.news("news about ${step.arguments["topic"].orEmpty()}",lang)
                 "calendar"->PhoneContext(context).route("my calendar today",lang)!!
                 "open_app"->{val target=step.arguments["name"] ?: error("Explicit app target required");tools.requestApp(target,lang,alwaysConfirm=true)}
@@ -80,6 +81,8 @@ class NeuralOrchestrator(private val context:Context,private val hud:HudReposito
             results+=result
             if(result.action!=null)break // Never execute later steps behind a pending approval.
         }
-        return AssistantReply(results.joinToString("\n\n"){it.text},results.flatMap{it.sources},results.lastOrNull()?.action)
+        val remaining=plan.size-results.size
+        val paused=if(remaining>0)lang.choose("\n\n$remaining later step(s) were not run. After reviewing this action, request the remaining steps again.","\n\nNo se ejecutaron $remaining pasos posteriores. Tras revisar esta acción, solicítalos de nuevo.","\n\n$remaining گام بعدی اجرا نشد. پس از تأیید این اقدام، گام‌های باقی‌مانده را دوباره درخواست کنید.") else ""
+        return AssistantReply(results.joinToString("\n\n"){it.text}+paused,results.flatMap{it.sources},results.lastOrNull()?.action)
     }
 }

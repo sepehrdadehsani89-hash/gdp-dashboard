@@ -1,3 +1,5 @@
+> Historical original development checkpoint. For the newer code-11 beta, use [BETA_VERIFICATION.md](BETA_VERIFICATION.md) and [ACCEPTANCE.md](ACCEPTANCE.md). Counts, APK hashes and missing-feature statements below apply only to their described checkpoint.
+
 # Current-instance verification
 
 This is a development continuation, not a signed Jarvis 10.0 release. Historical 7.0 results are not counted as current checks.
