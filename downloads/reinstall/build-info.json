@@ -18,7 +18,7 @@
   "commercialReadinessEstablished": false,
   "privateDataOrSigningKeyBundled": false,
   "modelWeightsBundled": false,
-  "importUiValidation": "pending; prior attempts failed due to emulator system UI and test-driver navigation; do not uninstall before migration preparation",
+  "importUiValidation": "blocked: final corrected test driver could not execute because disposable emulator Android package service crashed during APK installation; end-to-end import UI has not passed",
   "unitTests": {
     "passed": 220,
     "failed": 0,
@@ -31,5 +31,6 @@
     "errors": 0,
     "warnings": 28
   },
-  "physicalPhoneReinstallTested": false
+  "physicalPhoneReinstallTested": false,
+  "importUiValidationEvidence": "/workspace/android-toolchain/reinstall-single-install.log"
 }

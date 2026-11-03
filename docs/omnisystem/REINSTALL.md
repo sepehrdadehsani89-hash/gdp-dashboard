@@ -8,7 +8,7 @@ This is a development checkpoint, not the completed OMNISYSTEM specification or 
 
 The ARM64 APK is 83,020,316 bytes, SHA-256 `5fe47b1e37785bc212ae0ad251b17371af78ec4889c8c6cac49e41c808b511ad`. APK Signature Scheme v2 verification and four-byte ZIP alignment passed. The package/version and ARM64-only native libraries were inspected; no private export, keystore, signing backup or GGUF weights are included. Reinstall lint passed with zero errors and 28 warnings. The unchanged importer application source passed 220 JVM tests and four actual Android database/preferences restore tests before the signing variant was added.
 
-The complete file-picker/confirmation/cancel/retry UI check is still pending. Earlier attempts were blocked by a System UI ANR and test-driver scrolling/navigation issues. The driver has been corrected; a separate software emulator is being used for the recheck. Do not treat this pending check as a pass or uninstall the phone app before migration preparation is complete. No physical Redmi 9 reinstall or update has been tested.
+The complete file-picker/confirmation/cancel/retry UI check has not passed. Earlier attempts encountered a System UI ANR and test-driver scrolling/navigation issues. The driver was corrected and compiled, but a separate disposable emulator's Android package service crashed during APK installation, preventing the final recheck (`/workspace/android-toolchain/reinstall-single-install.log`). Parser and database checks do not establish end-to-end UI correctness. Do not treat this blocked check as a pass or uninstall the phone app before migration preparation is complete. No physical Redmi 9 reinstall or update has been tested.
 
 ## Preserve data before migration
 
