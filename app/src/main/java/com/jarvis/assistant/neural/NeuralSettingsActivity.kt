@@ -55,10 +55,37 @@ class NeuralSettingsActivity:ComponentActivity(){
     private val benchmarkExport=registerForActivityResult(ActivityResultContracts.CreateDocument("application/json")){uri->if(uri!=null)runOperation{
         withContext(Dispatchers.IO){val source=File(filesDir,"neural-evaluation.json");check(source.isFile){"Run the evaluation first."};contentResolver.openOutputStream(uri,"wt")?.use{out->source.inputStream().use{it.copyTo(out)}} ?: error("Destination unavailable")};status="Synthetic evaluation exported."
     }}
-    private fun runOperation(block:suspend ()->Unit){
+    private val importBackup=registerForActivityResult(ActivityResultContracts.OpenDocument()){uri->
+        if(uri!=null)runOperation{
+            val backup=withContext(Dispatchers.IO){
+                try {contentResolver.openInputStream(uri)?.use{PrivateMemoryBackup.read(it)} ?: error("Unavailable")}
+                catch(e:CancellationException){throw e}
+                catch(e:Exception){throw IllegalArgumentException(tr("Cannot read this backup. Nothing was imported."))}
+            }
+            AlertDialog.Builder(this@NeuralSettingsActivity)
+                .setTitle(tr("Import private backup?"))
+                .setMessage("${tr("Documents / memories / tasks / aliases")}: ${backup.documents.size} / ${backup.memories.size} / ${backup.tasks.size} / ${backup.aliases.size}\n\n${tr("Adds local data without replacing existing entries. Missing apps and conflicting aliases are skipped. Credentials, settings, conversation history and model files are not restored. Imported documents are treated as user-provided references. Nothing is uploaded.")}")
+                .setNegativeButton(tr("Cancel"),null)
+                .setPositiveButton(tr("Import")){_,_->runOperation(cancelledStatus=tr("Import interrupted. Some entries may already be saved; retrying this backup will not duplicate them.")){
+                    try {
+                        val result=withContext(Dispatchers.IO){
+                            val knowledge=runtime.knowledge.restoreBackup(backup)
+                            ensureActive()
+                            val memories=runtime.store.restoreMemories(backup.memories)
+                            ensureActive()
+                            val aliases=runtime.appRegistry.restoreAliases(backup.aliases)
+                            listOf(knowledge.first,memories,knowledge.second,aliases.first,aliases.second)
+                        }
+                        status="${tr("Imported documents / memories / tasks / aliases")}: ${result.take(4).joinToString(" / ")}. ${tr("Aliases skipped")}: ${result[4]}."
+                    } catch(e:CancellationException){status=tr("Import interrupted. Some entries may already be saved; retrying this backup will not duplicate them.");throw e}
+                    catch(e:Exception){status=tr("Import interrupted. Some entries may already be saved; retrying this backup will not duplicate them.")}
+                }}.show()
+        }
+    }
+    private fun runOperation(cancelledStatus:String="Cancelled. Interrupted model downloads can resume.",block:suspend ()->Unit){
         if(busy)return
         busy=true
-        operation=lifecycleScope.launch{try{block()}catch(e:CancellationException){status="Cancelled. Interrupted model downloads can resume.";throw e}catch(e:Exception){status=e.message?.take(400) ?: "Operation unavailable."}finally{busy=false;revision++}}
+        operation=lifecycleScope.launch{try{block()}catch(e:CancellationException){status=cancelledStatus;throw e}catch(e:Exception){status=e.message?.take(400) ?: "Operation unavailable."}finally{busy=false;revision++}}
         runtime.neuralOperation=operation
     }
     override fun onCreate(savedInstanceState:Bundle?){
@@ -135,6 +162,7 @@ class NeuralSettingsActivity:ComponentActivity(){
                 Toggle(tr("Allow indexed excerpts in selected cloud AI requests"),settings.cloudKnowledge){enabled->if(!enabled)save(settings.copy(cloudKnowledge=false)) else AlertDialog.Builder(this@NeuralSettingsActivity).setTitle(tr("Allow cloud processing of relevant indexed excerpts?")).setMessage(tr("Relevant private document excerpts may be sent to your selected AI provider for your questions. API keys are never included. Turn this off at any time.")).setNegativeButton(tr("Cancel"),null).setPositiveButton(tr("Allow")){_,_->save(settings.copy(cloudKnowledge=true))}.show()}
                 Toggle(tr("Allow local fallback if configured cloud AI fails"),settings.cloudFallbackLocal){save(settings.copy(cloudFallbackLocal=it))}
                 OutlinedButton(enabled=!busy,onClick={AlertDialog.Builder(this@NeuralSettingsActivity).setTitle(tr("Export private memories and documents?")).setMessage(tr("Choose a private destination. The export includes approved facts, indexed text, app aliases and tasks; provider keys are excluded.")).setNegativeButton(tr("Cancel"),null).setPositiveButton(tr("Choose destination")){_,_->export.launch("Jarvis-private-memory.json")}.show()}){Text(tr("Export memories & approved documents"))}
+                OutlinedButton(enabled=!busy,onClick={importBackup.launch(arrayOf("application/json","text/plain","application/octet-stream"))}){Text(tr("Import memories & approved documents"))}
                 OutlinedButton(enabled=!busy,onClick={AlertDialog.Builder(this@NeuralSettingsActivity).setTitle(tr("Clear conversation history?")).setMessage(tr("This removes saved and ephemeral conversation, not long-term memories or indexed documents.")).setNegativeButton(tr("Cancel"),null).setPositiveButton(tr("Clear")){_,_->runtime.clearConversation();status="Conversation cleared."}.show()}){Text(tr("Delete conversation history"))}
                 Text(tr("App aliases"),style=MaterialTheme.typography.titleLarge)
                 Text(tr("Only launchable apps visible to Android are listed. Approximate speech matches ask before launching. Aliases are stored only when you press Save or approve a spoken proposal."))

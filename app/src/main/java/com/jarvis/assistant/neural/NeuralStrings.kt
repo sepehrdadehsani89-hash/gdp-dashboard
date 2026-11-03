@@ -5,6 +5,15 @@ import com.jarvis.assistant.core.AppLanguage
 /** Branded names, model identifiers and source text remain verbatim. Consent controls are localized. */
 object NeuralStrings {
     private val values=mapOf(
+        "Import memories & approved documents" to ("Importar recuerdos y documentos autorizados" to "ورود حافظه و اسناد مجاز"),
+        "Cannot read this backup. Nothing was imported." to ("No se puede leer esta copia. No se importó nada." to "این نسخهٔ پشتیبان خوانده نشد. چیزی وارد نشد."),
+        "Import private backup?" to ("¿Importar copia privada?" to "نسخهٔ پشتیبان خصوصی وارد شود؟"),
+        "Documents / memories / tasks / aliases" to ("Documentos / recuerdos / tareas / alias" to "اسناد / حافظه / کارها / نام‌های مستعار"),
+        "Import" to ("Importar" to "ورود"),
+        "Imported documents / memories / tasks / aliases" to ("Documentos / recuerdos / tareas / alias importados" to "اسناد / حافظه / کارها / نام‌های مستعار واردشده"),
+        "Aliases skipped" to ("Alias omitidos" to "نام‌های مستعار ردشده"),
+        "Import interrupted. Some entries may already be saved; retrying this backup will not duplicate them." to ("Importación interrumpida. Algunas entradas pueden estar guardadas; reintentar esta copia no las duplicará." to "ورود متوقف شد. ممکن است برخی موارد ذخیره شده باشند؛ تلاش دوباره با همین نسخه آن‌ها را تکرار نمی‌کند."),
+        "Adds local data without replacing existing entries. Missing apps and conflicting aliases are skipped. Credentials, settings, conversation history and model files are not restored. Imported documents are treated as user-provided references. Nothing is uploaded." to ("Añade datos locales sin reemplazar entradas existentes. Omite apps ausentes y alias en conflicto. No restaura credenciales, ajustes, conversaciones ni modelos. Los documentos se tratan como referencias del usuario. No se sube nada." to "داده‌های محلی را بدون جایگزینی موارد موجود اضافه می‌کند. برنامه‌های ناموجود و نام‌های متعارض رد می‌شوند. کلیدها، تنظیمات، تاریخچه و مدل‌ها بازیابی نمی‌شوند. اسناد ورودی منابع ارائه‌شده توسط کاربر هستند. چیزی بارگذاری نمی‌شود."),
         "Local brain" to ("Cerebro local" to "مدل محلی"),
         "Phone evaluation" to ("Evaluación en el teléfono" to "ارزیابی روی گوشی"),
         "Inspect actual size & license before download" to ("Revisar tamaño real y licencia antes de descargar" to "بررسی اندازهٔ واقعی و مجوز پیش از دانلود"),

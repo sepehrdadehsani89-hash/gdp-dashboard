@@ -72,5 +72,24 @@ class KnowledgeIndex(context:Context,name:String="jarvis_neural_v4.db"):SQLiteOp
     @Synchronized fun tasks():List<Pair<Long,String>> = readableDatabase.rawQuery("SELECT id,text FROM tasks WHERE done=0 ORDER BY id DESC LIMIT 30",null).use{c->buildList{while(c.moveToNext())add(c.getLong(0) to c.getString(1))}}
     @Synchronized fun completeTask(id:Long){writableDatabase.delete("tasks","id=?",arrayOf(id.toString()))}
     @Synchronized fun export():String=JSONObject().put("format","jarvis-neural-export-v1").put("documents",JSONArray().apply{list().forEach{d->put(JSONObject().put("id",d.id).put("title",d.title).put("kind",d.kind).put("source",d.source).put("license",d.license).put("version",d.version).put("publication",d.publication).put("text",readableDatabase.rawQuery("SELECT body FROM passages WHERE doc=? ORDER BY rowid",arrayOf(d.id)).use{c->buildString{while(c.moveToNext()){append(c.getString(0));append('\n')}}}))}}).put("tasks",JSONArray().apply{tasks().forEach{put(it.second)}}).toString(2)
+    /** Additive restore: imported data never replaces a document or grants pack provenance. */
+    @Synchronized fun restoreBackup(backup:PrivateMemoryBackup):Pair<Int,Int>{
+        val db=writableDatabase
+        db.beginTransaction()
+        try {
+            val existing=list().map{it.id}.toSet()
+            val pending=backup.documents.filter{it.id !in existing}
+            require(existing.size+pending.size<=200){"Not enough document slots. Nothing was imported into the knowledge index."}
+            pending.forEach{d->
+                db.insertOrThrow("documents",null,ContentValues().apply{put("id",d.id);put("title",d.title);put("kind","USER_DOCUMENT");put("source",d.source);put("version",d.version);put("publication",d.publication);put("license",d.license)})
+                d.text.chunked(700).forEach{chunk->db.insertOrThrow("passages",null,ContentValues().apply{put("doc",d.id);put("body",chunk);put("terms",AppMatching.normalize(chunk))})}
+            }
+            val knownTasks=db.rawQuery("SELECT text FROM tasks",null).use{c->buildSet{while(c.moveToNext())add(c.getString(0))}}
+            val pendingTasks=backup.tasks.filter{it !in knownTasks}
+            pendingTasks.forEach{addTask(it)}
+            db.setTransactionSuccessful()
+            return pending.size to pendingTasks.size
+        } finally { db.endTransaction() }
+    }
     @Synchronized fun clear(){writableDatabase.execSQL("DELETE FROM passages");writableDatabase.execSQL("DELETE FROM documents");writableDatabase.execSQL("DELETE FROM tasks");writableDatabase.execSQL("DELETE FROM audit")}
 }

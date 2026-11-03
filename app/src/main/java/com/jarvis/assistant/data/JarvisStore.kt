@@ -61,6 +61,9 @@ interface JarvisDao {
     @Query("SELECT * FROM memories ORDER BY createdAt DESC")
     fun observeMemories(): kotlinx.coroutines.flow.Flow<List<MemoryEntity>>
 
+    @Query("SELECT text FROM memories")
+    suspend fun memoryTexts(): List<String>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMessage(message: MessageEntity)
 
@@ -140,6 +143,16 @@ class JarvisStore(context: Context) {
     }
 
     suspend fun forget(id: Long) = dao.deleteMemory(id)
+
+    /** Explicit backup approval only; retries never duplicate the same memory text. */
+    suspend fun restoreMemories(items:List<com.jarvis.assistant.neural.RestoredMemory>):Int = database.withTransaction {
+        val existing=dao.memoryTexts().toMutableSet()
+        var added=0
+        items.forEach{item->if(existing.add(item.text)){
+            dao.insertMemory(MemoryEntity(text=item.text,createdAt=item.createdAt));added++
+        }}
+        added
+    }
 
     @Synchronized
     fun updateSettings(value: AssistantSettings) {
