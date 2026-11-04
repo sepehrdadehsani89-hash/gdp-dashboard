@@ -93,6 +93,19 @@ class LocationIntelligence(private val context:Context,private val vault:Feature
         val existing=destinations();require(existing.size<20 && existing.none{it.name.equals(clean,true)}){"Choose a new name or remove a destination."}
         persist(existing+SavedDestination(UUID.randomUUID().toString(),clean,point.latitude,point.longitude,System.currentTimeMillis()))
     }
+    @Synchronized fun saveHome(){
+        val point=usablePoint();val old=destinations()
+        val matches=old.filter{com.jarvis.assistant.neural.AppMatching.normalize(it.name) in setOf("home","casa","hogar","mi casa")}
+        require(matches.size<=1){"Choose one Home destination explicitly first."}
+        val existing=matches.singleOrNull()
+        require(existing!=null || old.size<20)
+        val home=SavedDestination(existing?.id ?: UUID.randomUUID().toString(),"Home",point.latitude,point.longitude,System.currentTimeMillis())
+        persist(old.filterNot{it.id==home.id}+home)
+    }
+    @Synchronized fun rename(id:String,name:String){
+        val items=destinations();val clean=name.trim();require(clean.length in 1..80 && clean.none(Char::isISOControl));require(items.any{it.id==id} && items.none{it.id!=id && it.name.equals(clean,true)})
+        persist(items.map{if(it.id==id)it.copy(name=clean) else it})
+    }
     @Synchronized fun remove(id:String){persist(destinations().filterNot{it.id==id})}
     @Synchronized fun removeAll(){check(unlocked());vault.remove("saved_destinations")}
     private fun persist(items:List<SavedDestination>){

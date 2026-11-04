@@ -170,8 +170,9 @@ class SpeechController(context: Context) {
         )
     }
 
-    fun speak(text: String, language: AppLanguage, onDone: () -> Unit, onError: (String) -> Unit) {
+    fun speak(text: String, language: AppLanguage, onDone: () -> Unit, onError: (String) -> Unit,volumeOverride:Float?=null) {
         main.post {
+            if(language!=AppLanguage.EN){onError("La voz española requiere la configuración exclusiva de Fish Audio; no se sustituyó otra voz.");return@post}
             val engine = com.jarvis.assistant.hud.HudPreferences(context).read().voiceEngine
             if (engine == "neural" && offlineVoice.modelPath(language) == null) { onError("Download the selected language's neural voice in Settings first."); return@post }
             val hasSystemVoice = systemVoice(language) != null && com.jarvis.assistant.hud.HudPreferences(context).read().voiceEngine != "neural"
@@ -181,12 +182,12 @@ class SpeechController(context: Context) {
                 if (!requestFocus()) { failSpeaking(language.choose("Audio is in use by another app.", "Otra aplicación está usando el audio.", "صدا در اختیار برنامهٔ دیگری است.")); return@post }
                 WakeListenerService.suppressFor(60_000)
                 val cleaned = cleanForSpeech(text)
-                offlineVoice.speak(cleaned, language, onDone = { finishSpeaking() }, onError = { failSpeaking(it) })
+                offlineVoice.speak(cleaned, language, onDone = { finishSpeaking() }, onError = { failSpeaking(it) },volumeOverride=volumeOverride)
                 return@post
             }
             if (!ttsReady && !ttsFailed) {
                 val token = generation
-                pendingSpeech = { if (token == generation) speak(text, language, onDone, onError) }
+                pendingSpeech = { if (token == generation) speak(text, language, onDone, onError,volumeOverride) }
                 main.postDelayed({ if (token == generation && pendingSpeech != null) { pendingSpeech = null; onError(voiceStatus(language)) } }, 6000)
                 return@post
             }
@@ -212,13 +213,13 @@ class SpeechController(context: Context) {
             val prefix = UUID.randomUUID().toString()
             utterancePrefix = prefix; lastUtterance = "$prefix-${parts.lastIndex}"
             parts.forEachIndexed { index, part ->
-                val result = tts.speak(part, if (index == 0) TextToSpeech.QUEUE_FLUSH else TextToSpeech.QUEUE_ADD, Bundle().apply { putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME,controls.voiceVolume) }, "$prefix-$index")
+                val result = tts.speak(part, if (index == 0) TextToSpeech.QUEUE_FLUSH else TextToSpeech.QUEUE_ADD, Bundle().apply { putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME,volumeOverride ?: controls.voiceVolume) }, "$prefix-$index")
                 if (result == TextToSpeech.ERROR) { failSpeaking(voiceStatus(language)); return@post }
             }
         }
     }
 
-    fun playAudio(file: File, onDone: () -> Unit, onError: (String) -> Unit) {
+    fun playAudio(file: File, onDone: () -> Unit, onError: (String) -> Unit,volumeOverride:Float?=null) {
         main.post {
             if (isQuietMode()) { onError("Voice reply paused by Silent or Do Not Disturb mode."); return@post }
             stopInternal(); temporaryPlayback=file; speakingDone = onDone; speakingError = onError
@@ -233,7 +234,7 @@ class SpeechController(context: Context) {
                     prepareAsync()
                     setOnPreparedListener { p ->
                         val controls=com.jarvis.assistant.hud.HudPreferences(context).read()
-                        p.setVolume(controls.voiceVolume,controls.voiceVolume)
+                        p.setVolume(volumeOverride ?: controls.voiceVolume,volumeOverride ?: controls.voiceVolume)
                         runCatching { p.playbackParams = android.media.PlaybackParams().setSpeed(controls.voiceRate).setPitch(controls.voicePitch) }
                         p.start()
                     }

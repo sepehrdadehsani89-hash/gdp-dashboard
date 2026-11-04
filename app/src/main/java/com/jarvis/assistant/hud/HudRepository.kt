@@ -91,6 +91,7 @@ class HudRepository(private val context:Context) {
     private fun cancelPassiveWeather(){
         if(weatherJob?.isActive==true){weatherJob?.cancel();generation++;mutable.update{it.copy(weather=it.weather.copy(loading=false))}}
     }
+    fun acceptBattery(intent:Intent){mutable.update{it.copy(telemetry=it.telemetry.copy(battery=battery(intent)))}}
     fun clear(){
         generation++;weatherJob?.cancel();weather.clear();prefs.save(HudSettings())
         mutable.update { HudState(settings=HudSettings(),telemetry=it.telemetry) }

@@ -22,21 +22,62 @@ import java.io.ByteArrayInputStream
 import java.util.Locale
 
 /** Real fix and real OSM map only after explicit permission/network consent. */
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 class LocationHudActivity:PrivateModuleActivity(){
+    private var pendingGoal by mutableStateOf<com.jarvis.assistant.titan.LocationGoal?>(null)
+    private var requestDeadline=0L
+    private var requestSerial=0L
+    private val locationSettings=registerForActivityResult(ActivityResultContracts.StartActivityForResult()){
+        if(validGoal() && getSystemService(android.location.LocationManager::class.java).isLocationEnabled)continueTitanGoal()
+        else{pendingGoal=null;status=words("Location is still off or the request expired; nothing resumed.","La ubicación sigue apagada o la solicitud caducó; no se continuó.","Unavailable")}
+    }
+    private fun validGoal()=pendingGoal!=null && android.os.SystemClock.elapsedRealtime()<requestDeadline && runtime.currentCommandSerial()==requestSerial && !locked()
+    private fun continueTitanGoal(){
+        if(!validGoal()){pendingGoal=null;return}
+        if(!getSystemService(android.location.LocationManager::class.java).isLocationEnabled || ContextCompat.checkSelfPermission(this,Manifest.permission.ACCESS_COARSE_LOCATION)!=PackageManager.PERMISSION_GRANTED)return
+        val goal=pendingGoal;pendingGoal=null
+        when(goal){
+            com.jarvis.assistant.titan.LocationGoal.NAV_HOME->{
+                val home=com.jarvis.assistant.titan.NavigationPolicy.home(saved)
+                if(home==null){status=words("Home is missing or ambiguous. Save or select one below.","Casa no existe o es ambigua. Guarda o elige una abajo.","Unavailable");return}
+                val mode=com.jarvis.assistant.titan.NavigationPreferences(this).mode
+                open(Intent(Intent.ACTION_VIEW,Uri.parse(com.jarvis.assistant.titan.NavigationPolicy.url(home,mode))))
+                status=words("Android directions launch requested. Maps may show a preview or require Start; navigation start is not verified.","Ruta solicitada a Android. Maps puede mostrar una vista previa o pedir Iniciar; el inicio no está verificado.","Unavailable")
+            }
+            com.jarvis.assistant.titan.LocationGoal.CURRENT,com.jarvis.assistant.titan.LocationGoal.ADDRESS,com.jarvis.assistant.titan.LocationGoal.SAVE_HOME,com.jarvis.assistant.titan.LocationGoal.EDIT_HOME->task{
+                runtime.locations.current()
+                if(goal==com.jarvis.assistant.titan.LocationGoal.ADDRESS)runtime.locations.address(Locale.forLanguageTag(runtime.store.settings.value.language.tag))
+                status=words("Location is enabled and a fresh fix was received. Review it before saving Home.","La ubicación está activa y se recibió una posición reciente. Revísala antes de guardar Casa.","Unavailable")
+            }
+            else->status=words("Review the saved Home destination below; edits and deletion require your explicit action.","Revisa Casa abajo; editar o borrar requiere tu acción explícita.","Unavailable")
+        }
+    }
     private var mapUrl by mutableStateOf<String?>(null)
     private var mapLabel by mutableStateOf("")
     private var saved by mutableStateOf(emptyList<SavedDestination>())
     private var destinationName by mutableStateOf("")
     private var web:WebView?=null
     private val permission=registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()){result->
+        if(result[Manifest.permission.ACCESS_COARSE_LOCATION]==true && validGoal())continueTitanGoal()
         status=if(result[Manifest.permission.ACCESS_COARSE_LOCATION]==true)words("Location permission granted. Request a fresh fix when ready.","Permiso concedido. Solicita una ubicación reciente.","مجوز موقعیت داده شد. برای دریافت موقعیت تازه درخواست دهید.") else words("Location permission denied.","Permiso de ubicación denegado.","مجوز موقعیت رد شد.")
     }
     override fun onCreate(savedInstanceState:Bundle?){
         super.onCreate(savedInstanceState);if(isFinishing)return
         loadSaved()
+        pendingGoal=com.jarvis.assistant.titan.LocationRequests.consume(intent.getStringExtra("titan_request"))
+        requestDeadline=android.os.SystemClock.elapsedRealtime()+120_000;requestSerial=runtime.currentCommandSerial()
         screen(words("JARVIS · LOCATION INTELLIGENCE","JARVIS · INTELIGENCIA DE UBICACIÓN","جارویس · موقعیت مکانی")){
             val snapshot by runtime.locations.state.collectAsStateWithLifecycle()
             Text(words("Current fixes are temporary. Destinations are saved only when you explicitly name and save one. There is no automatic location timeline.","Las ubicaciones actuales son temporales. Solo se guarda un destino cuando lo nombras y guardas. No hay historial automático.","موقعیت فعلی موقت است. مقصد فقط با نام‌گذاری و ذخیرهٔ صریح شما ثبت می‌شود. سابقهٔ خودکار موقعیت وجود ندارد."))
+            if(pendingGoal!=null){
+                Text(words("Requested task","Tarea solicitada","Task")+": "+pendingGoal)
+                Text(words("Enable Android location and grant permission to resume this exact request. It expires after two minutes and Stop cancels it.","Activa ubicación Android y concede permiso para continuar esta solicitud. Caduca en dos minutos y Detener la cancela.","Unavailable"))
+                Button(onClick={if(validGoal())locationSettings.launch(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))}){Text(words("Open Android location controls and resume","Abrir ubicación Android y continuar","Settings"))}
+                TextButton(onClick={pendingGoal=null}){Text(words("Cancel pending request","Cancelar solicitud pendiente","Cancel"))}
+            }
+            androidx.compose.foundation.layout.FlowRow{
+                com.jarvis.assistant.titan.NavigationPolicy.modes.forEach{mode->FilterChip(com.jarvis.assistant.titan.NavigationPreferences(this@LocationHudActivity).mode==mode,{com.jarvis.assistant.titan.NavigationPreferences(this@LocationHudActivity).mode=mode;status=mode},label={Text(mode)})}
+            }
             Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){
                 OutlinedButton(onClick={permission.launch(arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION))}){Text(words("Approximate permission","Permiso aproximado","مجوز تقریبی"))}
                 OutlinedButton(onClick={permission.launch(arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION,Manifest.permission.ACCESS_FINE_LOCATION))}){Text(words("Precise permission","Permiso preciso","مجوز دقیق"))}
@@ -53,6 +94,7 @@ class LocationHudActivity:PrivateModuleActivity(){
                     .setMessage(words("The Android geocoder may send these coordinates to its configured provider. Availability varies by device; no address is invented.","El geocodificador puede enviar las coordenadas a su proveedor. La disponibilidad depende del dispositivo; no se inventa una dirección.","ژئوکدر اندروید ممکن است مختصات را برای سرویس تنظیم‌شده ارسال کند. دسترسی به دستگاه بستگی دارد؛ نشانی ساخته نمی‌شود."))
                     .setNegativeButton(words("Cancel","Cancelar","لغو"),null).setPositiveButton(words("Look up address","Consultar dirección","دریافت نشانی")){_,_->task{runtime.locations.address(Locale.forLanguageTag(runtime.store.settings.value.language.tag));status=words("Address returned by Android","Android devolvió la dirección","نشانی توسط اندروید ارائه شد")}}.show()
                 }){Text(words("Resolve address · may use network","Obtener dirección · puede usar red","دریافت نشانی · ممکن است از شبکه استفاده کند"))}
+                Button(enabled=!working,onClick={val reviewed=p;authorize{check(runtime.locations.usablePoint()==reviewed);runtime.locations.saveHome();loadSaved();status=words("Reviewed Home saved privately","Casa revisada guardada en privado","Saved")}}){Text(words("Approve current fix as Home · replaces existing Home","Aprobar posición como Casa · reemplaza Casa existente","Home"))}
                 Button(enabled=!working,onClick={confirmMap(null)}){Text(words("Load real map · share selected area with OSM","Cargar mapa real · compartir zona con OSM","دریافت نقشهٔ واقعی · ارسال محدوده به OSM"))}
                 OutlinedButton(onClick={task{val fresh=runtime.locations.usablePoint();open(Intent(Intent.ACTION_VIEW,Uri.parse("geo:${fresh.latitude},${fresh.longitude}?q=${fresh.latitude},${fresh.longitude}")))}}){Text(words("Open installed map app","Abrir app de mapas instalada","باز کردن برنامهٔ نقشه"))}
                 OutlinedTextField(destinationName,{destinationName=it.take(80)},label={Text(words("Destination name","Nombre del destino","نام مقصد"))},modifier=Modifier.fillMaxWidth(),enabled=!working)
@@ -94,7 +136,7 @@ class LocationHudActivity:PrivateModuleActivity(){
                 Text(d.name);Text(String.format(Locale.ROOT,"%.6f, %.6f",d.latitude,d.longitude))
                 Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){
                     OutlinedButton(onClick={confirmMap(d)}){Text(words("Map","Mapa","نقشه"))}
-                    OutlinedButton(onClick={open(Intent(Intent.ACTION_VIEW,Uri.parse("https://www.google.com/maps/dir/?api=1&destination=${d.latitude},${d.longitude}")))}){Text(words("Directions · Google Maps","Ruta · Google Maps","مسیریابی · گوگل‌مپ"))}
+                    OutlinedButton(onClick={open(Intent(Intent.ACTION_VIEW,Uri.parse(com.jarvis.assistant.titan.NavigationPolicy.url(d,com.jarvis.assistant.titan.NavigationPreferences(this@LocationHudActivity).mode))))}){Text(words("Directions · Google Maps","Ruta · Google Maps","مسیریابی · گوگل‌مپ"))}
                     TextButton(onClick={authorize{runtime.locations.remove(d.id);loadSaved()}}){Text(words("Delete","Eliminar","حذف"))}
                 }
             }
@@ -113,6 +155,7 @@ class LocationHudActivity:PrivateModuleActivity(){
     }
     private fun open(intent:Intent){runCatching{startActivity(intent)}.onFailure{status=words("No app can handle this Android action.","Ninguna app puede realizar esta acción.","برنامه‌ای برای این اقدام اندروید وجود ندارد.")}}
     override fun onResume(){super.onResume();if(isFinishing)return
+        if(validGoal())continueTitanGoal()
         if(ContextCompat.checkSelfPermission(this,Manifest.permission.ACCESS_COARSE_LOCATION)!=PackageManager.PERMISSION_GRANTED)runtime.locations.clearTransient()
     }
     override fun onStop(){mapUrl=null;web?.apply{stopLoading();clearHistory();clearCache(true)};super.onStop()}

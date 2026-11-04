@@ -79,6 +79,9 @@ interface JarvisDao {
     @Insert
     suspend fun insertMemory(memory: MemoryEntity): Long
 
+    @Query("UPDATE memories SET text = :text WHERE id = :id")
+    suspend fun editMemory(id:Long,text:String):Int
+
     @Query("DELETE FROM memories WHERE id = :id")
     suspend fun deleteMemory(id: Long)
 
@@ -142,6 +145,8 @@ class JarvisStore(context: Context) {
         return if (value.isNotBlank()) dao.insertMemory(MemoryEntity(text = value, createdAt = System.currentTimeMillis())) else -1L
     }
 
+    suspend fun editMemory(id:Long,text:String){val clean=text.trim();require(clean.length in 1..4000);check(dao.editMemory(id,clean)==1){"Original memory no longer exists."}}
+
     suspend fun forget(id: Long) = dao.deleteMemory(id)
 
     /** Explicit backup approval only; retries never duplicate the same memory text. */
@@ -156,7 +161,7 @@ class JarvisStore(context: Context) {
 
     @Synchronized
     fun updateSettings(value: AssistantSettings) {
-        val safe = value.copy(name = value.name.trim().take(80), model = value.model.trim().take(120))
+        val safe = value.copy(language=if(value.language in AppLanguage.supported)value.language else AppLanguage.EN,name = value.name.trim().take(80), model = value.model.trim().take(120))
         preferences.edit()
             .putString("name", safe.name)
             .putString("language", safe.language.code)

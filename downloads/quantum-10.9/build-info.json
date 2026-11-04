@@ -1,0 +1,51 @@
+{
+  "package": "com.jarvis.next",
+  "version_code": 13,
+  "version_name": "10.9.0-beta1-reinstall",
+  "abi": [
+    "arm64-v8a"
+  ],
+  "min_sdk": 29,
+  "target_sdk": 35,
+  "debuggable": false,
+  "apk": "Jarvis-10.9.0-beta1-arm64-reinstall.apk",
+  "bytes": 84018725,
+  "sha256": "6578241326e2e7c678fb00cd22caa9601b60aab50af531c8c2423c5838d7dabc",
+  "certificate_sha256": "1094ecc1e01dfb873a8e63689b09dc156fff9d41f77ffdfae27e702991711bda",
+  "signature_v2_verified": true,
+  "zip_alignment_4_verified": true,
+  "private_material_or_weights_packaged": false,
+  "source_base_commit": "c773a88b0845b7646a82b8588f05bef1adf879bc",
+  "source_manifest_sha256": "8ab3ec6967c1e38c8e26102c7d80b861e3b19f8e783da77c62343155b2e3883e",
+  "unit_tests": {
+    "tests": 305,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "lint": {
+    "reinstall": {
+      "Warning": 39
+    }
+  },
+  "new_android_runtime_cases_executed": 0,
+  "android_runtime_blocked": "No instrumentation execution this upgrade: preserved API29 AVD previously stalled in system_server/package services. No physical handset or accessory connected.",
+  "original_jarvis_7_in_place_update": false,
+  "physical_redmi9_verified": false,
+  "live_optional_provider_accounts_verified": false,
+  "full_master_directive_complete": false,
+  "signing_key_generated_this_upgrade": false,
+  "off_cloud_signing_backup_confirmed": false,
+  "final_build_log": "quantum109-release.log",
+  "final_build_duration": "4m 50s",
+  "both_voice_providers_confirmed_by_user": "Fish Audio",
+  "english_voice_id": "05b36da8574341d0803391491850db20",
+  "spanish_voice_id": "ae74d1059517440aa6e5d2d50598d179",
+  "spanish_voice_exclusive": true,
+  "voice_account_and_acoustic_verification": false,
+  "new_android_runtime_cases_passed": 0,
+  "production_source_frozen_and_verified": true,
+  "complete_70_feature_acceptance": false,
+  "android_test_sources_compiled": true,
+  "android_test_compile_log": "quantum109-android-test-compile.log BUILD SUCCESSFUL in3m31s"
+}

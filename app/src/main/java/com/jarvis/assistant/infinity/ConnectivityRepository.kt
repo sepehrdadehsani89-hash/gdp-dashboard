@@ -26,11 +26,12 @@ class ConnectivityRepository(private val context:Context):Closeable {
         val a=adapter ?: error("Bluetooth hardware is unavailable on this device.")
         check(a.isEnabled){"Bluetooth is off. Turn it on in Android settings."}
         val connected=mutableSetOf<String>()
+        val observedDevices=mutableMapOf<String,BluetoothDevice>()
         for(profile in listOf(BluetoothProfile.A2DP,BluetoothProfile.HEADSET)) {
             connected+=withTimeoutOrNull(1500){withContext(Dispatchers.Main){suspendCancellableCoroutine<Set<String>>{continuation->
                 val listener=object:BluetoothProfile.ServiceListener {
                     override fun onServiceConnected(kind:Int,proxy:BluetoothProfile){
-                        val result=runCatching{proxy.connectedDevices.map{it.address}.toSet()}.getOrDefault(emptySet())
+                        val result=runCatching{proxy.connectedDevices.onEach{observedDevices[it.address]=it}.map{it.address}.toSet()}.getOrDefault(emptySet())
                         runCatching{a.closeProfileProxy(kind,proxy)}
                         if(continuation.isActive)continuation.resume(result)
                     }
@@ -39,8 +40,9 @@ class ConnectivityRepository(private val context:Context):Closeable {
                 if(!a.getProfileProxy(context,listener,profile) && continuation.isActive)continuation.resume(emptySet())
             }}} ?: emptySet()
         }
-        connected+=runCatching{context.getSystemService(BluetoothManager::class.java).getConnectedDevices(BluetoothProfile.GATT).map{it.address}}.getOrDefault(emptyList())
-        return a.bondedDevices.map{device->accessory(device,true).copy(connected=device.address in connected)}.sortedWith(compareBy<Accessory>{it.name.lowercase()}.thenBy{it.address})
+        connected+=runCatching{context.getSystemService(BluetoothManager::class.java).getConnectedDevices(BluetoothProfile.GATT).onEach{observedDevices[it.address]=it}.map{it.address}}.getOrDefault(emptyList())
+        val bonded=a.bondedDevices
+        return (bonded+observedDevices.values).distinctBy{it.address}.map{device->accessory(device,bonded.any{it.address==device.address}).copy(connected=device.address in connected)}.sortedWith(compareBy<Accessory>{it.name.lowercase()}.thenBy{it.address})
     }
     @Suppress("MissingPermission")
     private fun accessory(device:BluetoothDevice,paired:Boolean,rssi:Int?=null)=Accessory(device.address,device.name?.takeIf{it.isNotBlank()} ?: "Unnamed accessory",when(device.type){BluetoothDevice.DEVICE_TYPE_LE->"BLE";BluetoothDevice.DEVICE_TYPE_CLASSIC->"Classic";BluetoothDevice.DEVICE_TYPE_DUAL->"Dual";else->"Unknown type"},paired,rssi=rssi)

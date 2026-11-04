@@ -134,7 +134,7 @@ class OfflineVoiceManager(private val context: Context) {
         }
     }
 
-    fun speak(text: String, language: AppLanguage, onDone: () -> Unit, onError: (String) -> Unit) {
+    fun speak(text: String, language: AppLanguage, onDone: () -> Unit, onError: (String) -> Unit,volumeOverride:Float?=null) {
         stop()
         val token = generation.get()
         val directory = modelPath(language)
@@ -178,7 +178,7 @@ class OfflineVoiceManager(private val context: Context) {
                     var outputFailed=false
                     val meter=com.jarvis.assistant.sentinel.PlaybackCursorMeter(audio)
                     playbackMeter=meter
-                    audio.setVolume(com.jarvis.assistant.hud.HudPreferences(context).read().voiceVolume)
+                    audio.setVolume(volumeOverride ?: com.jarvis.assistant.hud.HudPreferences(context).read().voiceVolume)
                     voice.generateWithCallback(text.take(6000), sid = 0, speed = com.jarvis.assistant.hud.HudPreferences(context).read().voiceRate) { samples ->
                         var offset = 0
                         while (offset < samples.size && token == generation.get()) {

@@ -33,11 +33,13 @@ class WakeModelManager(context: Context) {
     }
 
     fun modelPath(language: AppLanguage): File? {
+        if(language !in AppLanguage.supported)return null
         val model = File(root, spec(language).name)
         return model.takeIf { File(it, ".complete").isFile && File(it, "am/final.mdl").isFile && File(it, "conf/mfcc.conf").isFile }
     }
 
     suspend fun download(language: AppLanguage, onProgress: (Float) -> Unit): File = mutex.withLock {
+        require(language in AppLanguage.supported)
         withContext(Dispatchers.IO) {
             modelPath(language)?.let { onProgress(1f); return@withContext it }
             require(root.usableSpace > 600L * 1024 * 1024) { "At least 600 MB of free storage is needed for the offline model." }

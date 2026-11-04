@@ -69,8 +69,8 @@ class NeuralFlowTest {
         compose.onNodeWithText("Settings",useUnmergedTree=true).performClick()
         compose.onNode(hasScrollToIndexAction()).performScrollToNode(hasText("Neural Core · brain, knowledge & briefings"))
         compose.onNodeWithText("Neural Core · brain, knowledge & briefings").performClick()
-        compose.waitUntil(30_000){runCatching{compose.onAllNodesWithText("JARVIS SENTINEL ASCENSION 10.4 · BETA").fetchSemanticsNodes().isNotEmpty()}.getOrDefault(false)}
-        compose.onNodeWithText("JARVIS SENTINEL ASCENSION 10.4 · BETA").assertIsDisplayed()
+        compose.waitUntil(30_000){runCatching{compose.onAllNodesWithText("JARVIS QUANTUM CORE 10.9 · BETA").fetchSemanticsNodes().isNotEmpty()}.getOrDefault(false)}
+        compose.onNodeWithText("JARVIS QUANTUM CORE 10.9 · BETA").assertIsDisplayed()
         assertFalse(WakeListenerService.state.value.running)
         compose.onNodeWithText("Back to Jarvis").performClick()
     }

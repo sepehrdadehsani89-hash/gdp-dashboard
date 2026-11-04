@@ -51,7 +51,7 @@ class WeatherRepository(context: Context) {
                 if(runCatching{java.time.LocalDate.parse(stamp)}.isFailure) null
                 else WeatherDay(stamp,arrayNumber(daily,"temperature_2m_max",i),arrayNumber(daily,"temperature_2m_min",i),probability(arrayNumber(daily,"precipitation_probability_max",i)))
             }
-            return WeatherReading(place,number("temperature_2m"),number("apparent_temperature"),number("relative_humidity_2m")?.toInt(),number("wind_speed_10m"),rain,first("sunrise"),first("sunset"),number("weather_code")?.toInt(),time,now,hours,days,json.optString("timezone").ifBlank{"Unavailable"})
+            return WeatherReading(place,number("temperature_2m"),number("apparent_temperature"),number("relative_humidity_2m")?.toInt(),number("wind_speed_10m"),rain,first("sunrise"),first("sunset"),number("weather_code")?.toInt(),time,now,hours,days,json.optString("timezone").ifBlank{"Unavailable"},json.optDouble("latitude",Double.NaN).takeIf{it.isFinite() && it in -90.0..90.0},json.optDouble("longitude",Double.NaN).takeIf{it.isFinite() && it in -180.0..180.0})
         }
     }
 }

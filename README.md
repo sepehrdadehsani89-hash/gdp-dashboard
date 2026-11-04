@@ -1,8 +1,10 @@
 # Jarvis for Android
 
-Current development beta: [Jarvis 10.4 Sentinel Ascension · signed ARM64 APK](downloads/sentinel-10.4/Jarvis-10.4.0-beta1-arm64-reinstall.apk). [Download and compatibility notes](downloads/sentinel-10.4/README.md) · [Editable voice setup](docs/sentinel-10.4/VOICE_SETUP.md) · [Verification and limits](docs/sentinel-10.4/VERIFICATION.md).
+Current development beta: [Jarvis10.9 Quantum Core · signed ARM64 APK](downloads/quantum-10.9/Jarvis-10.9.0-beta1-arm64-reinstall.apk). [Setup](docs/quantum-10.9/SETUP.md) · [20-feature implementation status](docs/quantum-10.9/STATUS.md) · [50-feature preservation boundaries](docs/quantum-10.9/PRESERVATION.md) · [Build evidence](downloads/quantum-10.9/build-info.json).
 
-**The 10.4 APK uses the retained reinstall certificate. It updates that signing line only; it cannot update original Jarvis 7.0 in place. Keep the original app and its data installed. No replacement signing key was generated.** This is a beta with explicitly unfinished and unverified items, including live verification of the requested output voice.
+**The10.9 APK uses the retained reinstall certificate and updates that signing line only. It cannot update original Jarvis7.0 in place. Keep the original app and its data installed. No replacement signing key was generated.** This beta contains explicitly partial and unimplemented capabilities; it is not a complete70-feature or commercial acceptance sign-off. Both configured voices are Fish Audio; actual account access and audible output require a real private key and successful preview. Spanish never substitutes another speaker.
+
+Previous beta: [Jarvis10.4](downloads/sentinel-10.4/README.md).
 
 ## Historical original-signature 7.0 release
 

@@ -6,7 +6,7 @@ enum class AppLanguage(val code: String, val tag: String, val label: String, val
     EN("en", "en-US", "English", "Hey Jarvis"),
     ES("es", "es-ES", "Español", "Oye Jarvis"),
     FA("fa", "fa-IR", "فارسی", "هی جارویس");
-    companion object { fun fromCode(code: String) = entries.firstOrNull { it.code == code } ?: EN }
+    companion object { val supported=listOf(EN,ES); fun fromCode(code: String) = supported.firstOrNull { it.code == code } ?: EN }
 }
 
 enum class AssistantPhase { READY, LISTENING, THINKING, SPEAKING, PAUSED, ERROR }

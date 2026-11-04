@@ -412,6 +412,7 @@ private fun MemoryScreen(state: JarvisUiState, actions: JarvisUiActions) {
     LazyColumn(contentPadding = PaddingValues(24.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
         item { PageTitle(l.choose("A place for what matters.", "Lo importante, contigo.", "جایی برای چیزهای مهم."), l.choose("MEMORY", "MEMORIA", "حافظه")) }
         item { Text(l.choose("Say “remember that…” to save a note. Your memories stay on this phone. You can remove them whenever you like.", "Di “recuerda que…” para guardar una nota. Tus recuerdos se guardan en este teléfono y puedes borrarlos cuando quieras.", "برای ذخیرهٔ یادداشت بگویید «یادت بماند که…». یادداشت‌ها روی همین گوشی می‌مانند و هر زمان بخواهید می‌توانید حذفشان کنید."), color = Muted, lineHeight = 23.sp) }
+        item { OutlinedButton(onClick=actions.onOpenMemoryCards){Text(l.choose("Open memory cards · edit, pin, private export","Abrir tarjetas · editar, fijar, exportar en privado","Memory cards"))} }
         item { OutlinedTextField(query,{query=it},label={Text(l.choose("Search memory","Buscar memoria","جست‌وجوی حافظه"))},modifier=Modifier.fillMaxWidth()) }
         item { Row(Modifier.horizontalScroll(androidx.compose.foundation.rememberScrollState()),horizontalArrangement=Arrangement.spacedBy(8.dp)) { listOf("All","Notes","Personal","Work","Tasks").forEach { c->FilterChip(category==c,{category=c},label={Text(c)}) } } }
         item { SectionCard {
@@ -458,7 +459,8 @@ private fun Onboarding(state: JarvisUiState, actions: JarvisUiActions) {
             }
             SectionCard {
                 Text(l.choose("Make yourself at home", "Hazlo tuyo", "از همین‌جا شروع کنیم"), style = MaterialTheme.typography.titleMedium)
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) { AppLanguage.entries.forEach { lang -> FilterChip(selected = lang == l, onClick = { actions.onLanguage(lang) }, label = { Text(lang.label) }) } }
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) { AppLanguage.supported.forEach { lang -> FilterChip(selected = lang == l, onClick = { actions.onLanguage(lang) }, label = { Text(lang.label) }) } }
+                TextButton(onClick={actions.onOpenTitan("Setup")}){Text(l.choose("Optional guided AI setup","Configuración guiada opcional","Setup"))}
                 OutlinedTextField(name, { name = it }, label = { Text(l.choose("Your name (optional)", "Tu nombre (opcional)", "نام شما (اختیاری)")) }, singleLine = true, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(15.dp))
             }
             SectionCard {
@@ -593,7 +595,7 @@ private fun SettingsScreen(state: JarvisUiState, actions: JarvisUiActions, senti
         item { SectionCard {
             Text(l.choose("Identity & language", "Identidad e idioma", "نام و زبان"), style = MaterialTheme.typography.titleMedium)
             OutlinedTextField(draft.name, { draft = draft.copy(name = it); saved = false }, modifier = Modifier.fillMaxWidth(), singleLine = true, label = { Text(l.choose("Your name", "Tu nombre", "نام شما")) }, shape = RoundedCornerShape(14.dp))
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) { AppLanguage.entries.forEach { lang -> FilterChip(selected = lang == l, onClick = { actions.onLanguage(lang) }, label = { Text(lang.label) }) } }
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) { AppLanguage.supported.forEach { lang -> FilterChip(selected = lang == l, onClick = { actions.onLanguage(lang) }, label = { Text(lang.label) }) } }
             Text(l.choose("Your selected language controls voice recognition, replies, and the interface.", "El idioma elegido se usa para el reconocimiento, las respuestas y la interfaz.", "زبان انتخابی برای تشخیص گفتار، پاسخ‌ها و رابط برنامه استفاده می‌شود."), color = Muted, style = MaterialTheme.typography.bodySmall)
         } }
         item { SectionCard {
@@ -648,6 +650,9 @@ private fun SettingsScreen(state: JarvisUiState, actions: JarvisUiActions, senti
             Text(l.choose("Screen Security & Voice Unlock","Seguridad y desbloqueo por voz","امنیت صفحه و درخواست بازکردن قفل با صدا"),style=MaterialTheme.typography.titleMedium)
             Text(l.choose("Verify with Android. Jarvis never collects your system credential.","Verifica con Android. Jarvis no recoge tu credencial.","با اندروید تأیید کنید. جارویس رمز دستگاه را جمع‌آوری نمی‌کند."))
             OutlinedButton(onClick=actions.onOpenContacts){Text(l.choose("Fifteen contact shortcuts & personal memos","Quince atajos de contactos y notas personales","پانزده میانبر مخاطب و پیام شخصی"))}
+            Text("QUANTUM CORE 10.9 · PERSONAL INTELLIGENCE",style=MaterialTheme.typography.titleMedium)
+            listOf("Capabilities","Voice Lab","Battery","Routines","Setup").forEach{page->OutlinedButton(onClick={actions.onOpenTitan(page)}){Text(page)}}
+            OutlinedButton(onClick=actions.onOpenMemoryCards){Text(l.choose("Intelligent memory cards · edit, pin, export","Tarjetas de memoria · editar, fijar, exportar","Memory cards"))}
             Button(onClick=actions.onOpenOutputVoice){Text(l.choose("Output voice · editable ID","Voz de salida · ID editable","صدای خروجی · شناسهٔ قابل ویرایش"))}
             Button(onClick=actions.onOpenScreenSecurity){Text(l.choose("Open screen security","Abrir seguridad de pantalla","باز کردن امنیت صفحه"))}
         } }

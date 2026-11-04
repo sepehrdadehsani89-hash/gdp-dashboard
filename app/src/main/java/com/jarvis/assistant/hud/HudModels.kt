@@ -30,7 +30,7 @@ data class WeatherDay(val date:String,val high:Double?,val low:Double?,val rain:
 data class WeatherReading(val place: String, val temperatureC: Double?, val feelsLikeC: Double?, val humidity: Int?,
     val windKmh: Double?, val precipitationProbability: Int?, val sunrise: String?, val sunset: String?,
     val code: Int?, val observationTime: String, val fetchedAt: Long,
-    val hourly:List<WeatherHour> = emptyList(), val daily:List<WeatherDay> = emptyList(), val sourceTimezone:String = "Unavailable")
+    val hourly:List<WeatherHour> = emptyList(), val daily:List<WeatherDay> = emptyList(), val sourceTimezone:String = "Unavailable",val latitude:Double?=null,val longitude:Double?=null)
 data class WeatherState(val reading: WeatherReading? = null, val loading: Boolean = false, val error: String? = null,
     val stale: Boolean = true, val locationNotice: String? = null)
 data class HudState(val settings: HudSettings = HudSettings(), val telemetry: Telemetry = Telemetry(), val weather: WeatherState = WeatherState())

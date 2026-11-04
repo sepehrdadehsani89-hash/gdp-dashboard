@@ -1,7 +1,7 @@
 package com.jarvis.assistant.voice
 
-/** Ten seconds of inactivity, bounded to two minutes per utterance. Energy extends only after recognized speech. */
-class SpeechInactivityClock(private val now:()->Long){
+/** Adaptive speech activity, bounded to two minutes per utterance. Energy extends only after recognized speech. */
+class SpeechInactivityClock(private val now:()->Long,private val threshold:Float=.015f){
     private var opened=now()
     private var last=opened
     private var recognized=""
@@ -14,8 +14,8 @@ class SpeechInactivityClock(private val now:()->Long){
         recognized=clean;last=now();return true
     }
     @Synchronized fun energy(level:Float):Boolean{
-        if(recognized.isBlank() || expired() || !level.isFinite() || level<.015f)return false
+        if(recognized.isBlank() || expired() || !level.isFinite() || level<threshold)return false
         last=now();return true
     }
-    companion object {const val IDLE_MS=10_000L;const val MAX_MS=120_000L}
+    companion object {const val IDLE_MS=12_000L;const val MAX_MS=120_000L}
 }

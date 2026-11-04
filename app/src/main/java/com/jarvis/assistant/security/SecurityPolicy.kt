@@ -4,7 +4,7 @@ import com.jarvis.assistant.neural.AppMatching
 import com.jarvis.assistant.core.choose
 import java.util.UUID
 
-enum class VerificationMode { THREE_ANDROID_CHALLENGES, ANDROID_AND_TWO_CONFIRMATIONS }
+enum class VerificationMode { THREE_ANDROID_CHALLENGES, ANDROID_AND_TWO_CONFIRMATIONS, ANDROID_SINGLE_CHALLENGE }
 enum class SecurityStage { NOT_CONFIGURED, VERIFYING, VERIFIED, AUTHENTICATION_REQUIRED, CANCELLED, UNAVAILABLE }
 data class CredentialChallenge(val id:String,val stage:Int,val issued:Long)
 /** Only a matching, live system callback can satisfy a credential stage. No credential value enters this model. */
@@ -18,7 +18,7 @@ class SecurityVerification(private val now:()->Long){
         completed=0;pending=null;this.mode=mode;started=now()
         state=if(secure)SecurityStage.VERIFYING else SecurityStage.UNAVAILABLE
     }
-    fun needsAndroid()=state==SecurityStage.VERIFYING && (mode==VerificationMode.THREE_ANDROID_CHALLENGES || completed==0)
+    fun needsAndroid()=state==SecurityStage.VERIFYING && (mode in setOf(VerificationMode.THREE_ANDROID_CHALLENGES,VerificationMode.ANDROID_SINGLE_CHALLENGE) || completed==0)
     fun challenge(secure:Boolean):CredentialChallenge? {
         if(!valid(secure) || !needsAndroid() || pending!=null)return null
         return CredentialChallenge(UUID.randomUUID().toString(),completed+1,now()).also{pending=it}
@@ -36,7 +36,7 @@ class SecurityVerification(private val now:()->Long){
     }
     fun abort(){pending=null;completed=0;state=SecurityStage.CANCELLED}
     fun invalidate(){pending=null;completed=0;state=SecurityStage.UNAVAILABLE}
-    private fun advance(){completed++;if(completed==3)state=SecurityStage.VERIFIED}
+    private fun advance(){completed++;if(completed==(if(mode==VerificationMode.ANDROID_SINGLE_CHALLENGE)1 else 3))state=SecurityStage.VERIFIED}
     private fun valid(secure:Boolean):Boolean{
         if(state!=SecurityStage.VERIFYING)return false
         if(!secure || now()-started !in 0..600_000){invalidate();return false}

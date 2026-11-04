@@ -122,6 +122,8 @@ class WakeListenerService : Service() {
                         check(minimum > 0) { "16 kHz microphone capture is not supported." }
                         val audio = AudioRecord(MediaRecorder.AudioSource.VOICE_RECOGNITION, 16000, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, maxOf(minimum * 2, 8192))
                         recorder = audio
+                        val processing=MicrophoneProcessing(this,audio.audioSessionId)
+                        utterance=UtteranceAssembler(SystemClock::elapsedRealtime,com.jarvis.assistant.titan.VoicePreferences(this).energy)
                         audio.registerAudioRecordingCallback(mainExecutor,object:android.media.AudioManager.AudioRecordingCallback(){
                             override fun onRecordingConfigChanged(configs:MutableList<android.media.AudioRecordingConfiguration>){
                                 if(configs.any { it.clientAudioSessionId==audio.audioSessionId && it.isClientSilenced }){
@@ -161,11 +163,13 @@ class WakeListenerService : Service() {
                                     runCatching{speakerBuffer.feed(bytes,count,(application as com.jarvis.assistant.JarvisApplication).runtime.speakers.autoEnabled)}.onFailure{speakerBuffer.clear()}
                                     if (window.expire()) { recognizer.reset(); recognizerSerial = window.snapshot().resetSerial; publish(listeningText(), true); continue }
                                     val serial = window.snapshot().resetSerial
-                                    if (recognizerSerial != serial) { recognizer.reset(); recognizerSerial = serial; continue }
+                                    if (recognizerSerial != serial) { recognizer.reset(); recognizerSerial = serial; utterance.reset();continue }
                                     if (window.captureReady()) {
-                                        publish(language.choose("Follow-up · 10 seconds of inactivity", "Siguiente pregunta · 10 segundos de inactividad", "پرسش بعدی · ۱۰ ثانیه گوش می‌دهم"), true, awaitingCommand = true)
+                                        utterance.reset();
+                                        publish(language.choose("Follow-up · adaptive inactivity", "Siguiente pregunta · inactividad adaptativa", "پرسش بعدی · ۱۰ ثانیه گوش می‌دهم"), true, awaitingCommand = true)
                                         scheduleTimeout()
                                     }
+                                    if(window.acceptsCommand(serial))utterance.energy(com.jarvis.assistant.hud.PcmLevel.pcm16(bytes,count))
                                     if(window.speechProgress("",com.jarvis.assistant.hud.PcmLevel.pcm16(bytes,count)))scheduleTimeout()
                                     val final = recognizer.acceptWaveForm(bytes, count)
                                     val json=JSONObject(if(final)recognizer.result else recognizer.partialResult)
@@ -173,12 +177,14 @@ class WakeListenerService : Service() {
                                     if(window.speechProgress(text))scheduleTimeout()
                                     if(!final && window.acceptsCommand(serial)){
                                         val partial=WakePhraseMatcher.extractCommand(text,language) ?: text
-                                        sendBroadcast(Intent(ACTION_PARTIAL).setPackage(packageName).putExtra(EXTRA_TEXT,partial))
+                                        utterance.partial(partial)
+                                        sendBroadcast(Intent(ACTION_PARTIAL).setPackage(packageName).putExtra(EXTRA_TEXT,utterance.text()))
                                     }
-                                    if(!final || RecognitionConfidence.acceptsFinal(json))handleTranscript(text,final,serial)
+                                    if(!final || RecognitionConfidence.acceptsFinal(json,com.jarvis.assistant.titan.VoicePreferences(this).confidence.toDouble()))handleTranscript(text,final,serial)
+                                    if(window.acceptsCommand(serial) && utterance.ready())deliver(utterance.text(),serial)
                                 }
                             }
-                        } finally { speakerBuffer.clear();com.jarvis.assistant.hud.AudioSignals.stop(audio); runCatching { audio.stop() }; audio.release(); recorder = null }
+                        } finally { speakerBuffer.clear();com.jarvis.assistant.hud.AudioSignals.stop(audio); runCatching { audio.stop() }; audio.release();processing.close(); recorder = null }
                     }
                 }
             } catch (_: InterruptedException) {
@@ -200,6 +206,7 @@ class WakeListenerService : Service() {
         if (deadline > 0) main.postDelayed(windowTimeout, (deadline - SystemClock.elapsedRealtime()).coerceAtLeast(0))
     }
 
+    private var utterance=UtteranceAssembler(SystemClock::elapsedRealtime)
     private fun handleTranscript(text: String, final: Boolean, serial: Long) {
         if (text.isBlank() || serial != window.snapshot().resetSerial) return
         // A result recognized before expiry must not reactivate itself after the deadline.
@@ -208,13 +215,21 @@ class WakeListenerService : Service() {
         if (afterWake != null) {
             if (window.wake()) {
                 activateHud()
-                publish(language.choose("Command window · 10 seconds of inactivity", "Tu petición · 10 segundos de inactividad", "فرصت دستور · ۱۰ ثانیه بی‌گفتاری"), true, awaitingCommand = true)
+                publish(language.choose("Command window · adaptive inactivity", "Tu petición · inactividad adaptativa", "فرصت دستور · ۱۰ ثانیه بی‌گفتاری"), true, awaitingCommand = true)
                 scheduleTimeout()
                 @Suppress("DEPRECATION")
                 getSystemService(Vibrator::class.java)?.vibrate(VibrationEffect.createOneShot(45, VibrationEffect.DEFAULT_AMPLITUDE))
             }
-            if (final && afterWake.isNotBlank()) deliver(afterWake, serial)
-        } else if (final) deliver(text, serial)
+            if(final && afterWake.isBlank() && window.accept(serial)){
+                paused=true;main.removeCallbacks(windowTimeout)
+                val sample=runCatching{speakerBuffer.take()?.let(com.jarvis.assistant.omnisystem.SpeakerSamples::deposit)}.getOrNull()
+                main.post{(application as com.jarvis.assistant.JarvisApplication).runtime.greetWake(sample)}
+            }else if(final && afterWake.isNotBlank())segmentCommand(afterWake,serial)
+        } else if(final && window.acceptsCommand(serial))segmentCommand(text,serial)
+    }
+    private fun segmentCommand(text:String,serial:Long){
+        utterance.segment(text)
+        if(UtteranceAssembler.fastCommand(utterance.text()))deliver(utterance.text(),serial)
     }
 
     private fun activateHud() {
@@ -253,7 +268,7 @@ class WakeListenerService : Service() {
                 ConversationWindow.Mode.WAKE_ONLY,ConversationWindow.Mode.OFF->manager.cancel(3102)
                 ConversationWindow.Mode.PAUSED->updateActivationNotification("Command accepted · microphone paused")
                 ConversationWindow.Mode.WAITING_FOR_CAPTURE->updateActivationNotification("Preparing your follow-up window")
-                ConversationWindow.Mode.FOLLOW_UP->updateActivationNotification("Follow-up · up to 10 seconds, no wake phrase needed")
+                ConversationWindow.Mode.FOLLOW_UP->updateActivationNotification("Follow-up · adaptive inactivity, no wake phrase needed")
                 else->Unit
             }
         }

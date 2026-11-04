@@ -11,6 +11,7 @@ data class ToolRequest(val id:String,val arguments:Map<String,String>)
 object ToolRegistry {
     val definitions=listOf(
         ToolDefinition("dial_contact","Reviewed saved contact dialer request",setOf("id","number"),listOf("user-approved shortcut","optional READ_CONTACTS for linked number recheck"),ToolRisk.EXTERNAL,5000,"Dialer intent only; user presses Call; outcome unverified",true),
+        ToolDefinition("tasks","User-approved saved tasks",emptySet(),emptyList(),ToolRisk.PRIVATE,5000,"Existing task repository rows",false),
         ToolDefinition("time","Phone clock",emptySet(),emptyList(),ToolRisk.READ_ONLY,2000,"Android clock",false),
         ToolDefinition("battery","Battery reading",emptySet(),emptyList(),ToolRisk.READ_ONLY,2000,"Android BatteryManager",false),
         ToolDefinition("weather","Forecast for an explicit/configured city",setOf("city","day"),listOf("android.permission.INTERNET"),ToolRisk.READ_ONLY,30000,"Dated Open-Meteo fields",false),
@@ -98,6 +99,7 @@ object ToolRegistry {
         return when(request.id){
         "open_app"->input.split(Regex(" then | después | despues | سپس ",RegexOption.IGNORE_CASE)).mapNotNull(AppMatching::commandTarget).any{AppMatching.normalize(it)==AppMatching.normalize(request.arguments["name"].orEmpty())}
         "bluetooth_devices","set_timer","set_alarm"->boundDeviceClause(request,input)!=null
+        "tasks"->Regex("tasks|tareas",RegexOption.IGNORE_CASE).containsMatchIn(input)
         "calendar"->Regex("calendar|events|calendario|eventos|تقویم|رویداد",RegexOption.IGNORE_CASE).containsMatchIn(input)
         "news"->Regex("news|headline|noticias|titulares|اخبار|خبر",RegexOption.IGNORE_CASE).containsMatchIn(input)
         "weather"->Regex("weather|rain|umbrella|clima|lluvia|paraguas|هوا|باران|چتر",RegexOption.IGNORE_CASE).containsMatchIn(input)

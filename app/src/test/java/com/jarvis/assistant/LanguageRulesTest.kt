@@ -6,14 +6,14 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class LanguageRulesTest {
-    @Test fun persianScriptWinsOverLatinNames() {
-        assertEquals(AppLanguage.FA, LanguageRules.detect("اخبار YouTube رو بگو", AppLanguage.EN))
+    @Test fun legacyScriptDoesNotReactivateDiscontinuedLanguage() {
+        assertEquals(AppLanguage.EN, LanguageRules.detect("اخبار YouTube رو بگو", AppLanguage.EN))
     }
     @Test fun spanishCommandDetected() {
         assertEquals(AppLanguage.ES, LanguageRules.detect("Dime las noticias de ayer", AppLanguage.EN))
     }
     @Test fun explicitReplyLanguageOverridesInput() {
-        assertEquals(AppLanguage.FA, LanguageRules.languageRequest("Please speak Persian"))
+        assertNull(LanguageRules.languageRequest("Please speak Persian"))
         assertEquals(AppLanguage.ES, LanguageRules.languageRequest("به اسپانیایی صحبت کن"))
     }
     @Test fun mereLanguageMentionIsNotACommand() {

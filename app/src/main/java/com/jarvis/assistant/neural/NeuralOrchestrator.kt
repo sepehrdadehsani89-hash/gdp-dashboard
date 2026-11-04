@@ -58,7 +58,7 @@ class NeuralOrchestrator(private val context:Context,private val hud:HudReposito
         return plan
     }
     suspend fun executePlan(input:String,plan:List<ToolRequest>,lang:AppLanguage):AssistantReply{
-        check(!locked());require(plan.size in 1..3)
+        check(!locked());require(plan.size in 1..8)
         require(plan.all{ToolRegistry.authorizedByInput(it,input) && ToolRegistry.publicArgumentsBound(it,input,hud.state.value.settings.weatherCity)}){"A proposed argument did not match your request."}
         val results=mutableListOf<AssistantReply>()
         for(step in plan){
@@ -70,8 +70,9 @@ class NeuralOrchestrator(private val context:Context,private val hud:HudReposito
                 "bluetooth_devices","set_timer","set_alarm"->tools.route(requireNotNull(ToolRegistry.boundDeviceClause(step,input)),lang) ?: error("Requested device tool unavailable")
                 "weather"->{val (city,day)=ToolRegistry.weatherArguments(step,input,hud.state.value.settings.weatherCity);forecast.reply(city,day,lang,Regex("umbrella|paraguas|چتر",RegexOption.IGNORE_CASE).containsMatchIn(input),input)}
                 "news"->tools.news("news about ${step.arguments["topic"].orEmpty()}",lang)
+                "tasks"->AssistantReply(withContext(Dispatchers.IO){index.tasks().joinToString("\n"){it.second}}.ifBlank{if(lang==AppLanguage.ES)"No hay tareas guardadas." else "No saved tasks."})
                 "calendar"->PhoneContext(context).route("my calendar today",lang)!!
-                "open_app"->{val target=step.arguments["name"] ?: error("Explicit app target required");tools.requestApp(target,lang,alwaysConfirm=true)}
+                "open_app"->{val target=step.arguments["name"] ?: error("Explicit app target required");tools.requestApp(target,lang,alwaysConfirm=false)}
                 "knowledge"->{val hits=withContext(Dispatchers.IO){index.search(input)};AssistantReply(if(hits.isEmpty())"No relevant approved offline source." else RetrievalPolicy.reference(hits))}
                 else->error("Unsupported tool")
             }}

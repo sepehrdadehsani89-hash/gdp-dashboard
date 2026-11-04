@@ -23,13 +23,13 @@ class AppRegistry(private val context:Context){
         cachedAt=now;return cached
     }
     fun aliases():Map<String,String> = prefs.all.mapNotNull{(k,v)->(v as? String)?.let{k to it}}.toMap()
-    @Synchronized fun saveAlias(alias:String,pkg:String){val name=AppMatching.normalize(alias);require(name.length in 2..80);require(apps().any{it.packageId==pkg}){"Choose a currently available app"};require(aliases().size<100 || name in aliases());prefs.edit().putString(name,pkg).apply();invalidate()}
+    @Synchronized fun saveAlias(alias:String,pkg:String){val name=AppMatching.normalize(alias);require(name.length in 2..80);require(apps().any{it.packageId==pkg}){"Choose a currently available app"};require(aliases().size<25 || name in aliases());prefs.edit().putString(name,pkg).apply();invalidate()}
     @Synchronized fun removeAlias(alias:String){prefs.edit().remove(alias).apply();invalidate()}
     @Synchronized fun restoreAliases(items:Map<String,String>):Pair<Int,Int>{
         val existing=aliases()
         val available=apps().map{it.packageId}.toSet()
         val eligible=items.filter{(name,pkg)->name !in existing && pkg in available}
-        val selected=eligible.entries.take((100-existing.size).coerceAtLeast(0))
+        val selected=eligible.entries.take((25-existing.size).coerceAtLeast(0))
         if(selected.isNotEmpty()){
             val edit=prefs.edit();selected.forEach{edit.putString(it.key,it.value)}
             check(edit.commit()){"Alias storage unavailable. Retry the import."};invalidate()

@@ -9,18 +9,18 @@ object LanguageRules {
         else -> null
     }
     fun detect(text: String, fallback: AppLanguage): AppLanguage {
-        if (text.any { it in '\u0600'..'\u06ff' }) return AppLanguage.FA
+        if (text.any { it in '\u0600'..'\u06ff' }) return if(fallback in AppLanguage.supported)fallback else AppLanguage.EN
         val lowered = text.lowercase(Locale.ROOT)
         if (Regex("\\b(hola|noticias|ayer|español|habla|recuerda|abre|qué|quiero|buenos|gracias|dime|por favor)\\b").containsMatchIn(lowered)) return AppLanguage.ES
         if (Regex("\\b(hey|hello|news|yesterday|remember|open|what|please|tell|english|speak)\\b").containsMatchIn(lowered)) return AppLanguage.EN
-        return fallback
+        return if(fallback in AppLanguage.supported)fallback else AppLanguage.EN
     }
     fun languageRequest(text: String): AppLanguage? {
         val lowered = text.lowercase(Locale.ROOT)
         val request = listOf("speak", "answer in", "habla", "responde en", "صحبت", "جواب", "حرف بزن").any(lowered::contains)
         if (!request) return null
         return when {
-            listOf("persian", "farsi", "فارسی", "persa").any(lowered::contains) -> AppLanguage.FA
+            listOf("persian", "farsi", "فارسی", "persa").any(lowered::contains) -> null
             listOf("spanish", "español", "اسپانیایی").any(lowered::contains) -> AppLanguage.ES
             listOf("english", "inglés", "انگلیسی").any(lowered::contains) -> AppLanguage.EN
             else -> null

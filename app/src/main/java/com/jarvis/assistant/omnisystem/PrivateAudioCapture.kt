@@ -45,13 +45,14 @@ object AudioSpectrum {
 /** Visible bounded capture only; no files, hidden service or persistent audio samples. */
 object PrivateAudioCapture {
     @android.annotation.SuppressLint("MissingPermission")
-    suspend fun record(context:Context,seconds:Int,spectrum:Boolean=false,onLevel:(Float,Float,List<Float>)->Unit):CapturedVoice=withContext(Dispatchers.IO){
+    suspend fun record(context:Context,seconds:Int,spectrum:Boolean=false,onCaptureInfo:(String)->Unit={},onLevel:(Float,Float,List<Float>)->Unit):CapturedVoice=withContext(Dispatchers.IO){
         require(seconds in 3..25)
         check(ContextCompat.checkSelfPermission(context,Manifest.permission.RECORD_AUDIO)==PackageManager.PERMISSION_GRANTED){"Microphone permission required."}
         val rate=16000;val target=seconds*rate*2
         val minimum=AudioRecord.getMinBufferSize(rate,AudioFormat.CHANNEL_IN_MONO,AudioFormat.ENCODING_PCM_16BIT)
         check(minimum>0){"Microphone format unavailable."}
         val recorder=AudioRecord(MediaRecorder.AudioSource.MIC,rate,AudioFormat.CHANNEL_IN_MONO,AudioFormat.ENCODING_PCM_16BIT,maxOf(minimum,8192))
+        val processing=com.jarvis.assistant.voice.MicrophoneProcessing(context,recorder.audioSessionId)
         val meter=Any()
         val captured=ByteArray(target);val buffer=ByteArray(3200)
         var completed=false
@@ -59,6 +60,7 @@ object PrivateAudioCapture {
             check(recorder.state==AudioRecord.STATE_INITIALIZED){"Microphone is unavailable."}
             var position=0
             recorder.startRecording();check(recorder.recordingState==AudioRecord.RECORDSTATE_RECORDING)
+            withContext(Dispatchers.Main.immediate){onCaptureInfo("MIC · "+(recorder.routedDevice?.productName?.toString() ?: "Android default input")+" · "+processing.report)}
             com.jarvis.assistant.hud.AudioSignals.start(meter,"Private foreground audio capture")
             withTimeout((seconds+5)*1000L){while(position<target){
                 ensureActive()
@@ -73,7 +75,7 @@ object PrivateAudioCapture {
             completed=true
             CapturedVoice(captured,rate)
         } finally {
-            runCatching{recorder.stop()};recorder.release();com.jarvis.assistant.hud.AudioSignals.stop(meter)
+            runCatching{recorder.stop()};recorder.release();processing.close();com.jarvis.assistant.hud.AudioSignals.stop(meter)
             buffer.fill(0);if(!completed)captured.fill(0)
         }
     }

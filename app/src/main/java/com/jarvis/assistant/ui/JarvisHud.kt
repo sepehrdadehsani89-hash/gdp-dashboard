@@ -186,6 +186,11 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
                 rotate(spin,center){for(i in 0..2){ drawArc(if(i==1)Purple.copy(alpha=.85f) else color.copy(alpha=.8f),i*120f+12,(if(ring==0)40f else 64f)*boot.rings,false,Offset(center.x-rr,center.y-rr),Size(rr*2,rr*2),style=Stroke(if(ring==0)5.dp.toPx() else 2.dp.toPx()))}}
             }
             if(boot.pulse>0)drawCircle(color.copy(alpha=boot.pulse*.5f),r*(.5f+boot.pulse*.6f),center,style=Stroke(1.5.dp.toPx()))
+            b.percent?.let{percent->
+                val tone=Color(com.jarvis.assistant.titan.BatteryPolicy.band(percent).argb)
+                val rr=r*.55f
+                drawArc(tone.copy(alpha=.7f),-90f,percent*3.6f,false,Offset(center.x-rr,center.y-rr),Size(rr*2,rr*2),style=Stroke(2.dp.toPx()))
+            }
             if((b.charging || b.full && b.source!="Battery") && s.sentinel.chargingEffects){val rr=r*1.025f;drawArc(Color(ReactorPalette.green).copy(alpha=.9f),angle*2,36f,false,Offset(center.x-rr,center.y-rr),Size(rr*2,rr*2),style=Stroke(2.dp.toPx()))}
             val core=r*.49f
             drawCircle(Brush.radialGradient(listOf(Back,color.copy(alpha=.18f)),center,core),core,center)
@@ -203,7 +208,7 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
             if(authorizing) Icon(Icons.Rounded.Lock,"Authorization required",Modifier.size(16.dp),tint=Purple)
             Text(if(authorizing)"CODEX" else when(state.phase){AssistantPhase.LISTENING->"LISTENING";AssistantPhase.SPEAKING->"SPEAKING";AssistantPhase.THINKING->"THINKING";AssistantPhase.ERROR->"ATTENTION";else->"READY"},color=Ice,fontSize=10.sp,letterSpacing=2.sp)
             if(state.phase==AssistantPhase.THINKING && state.neuralStage!="Idle")Text(state.neuralStage,color=Ice,fontSize=9.sp)
-            Text(b.percent?.let {"$it%"} ?: "—",modifier=Modifier.clickable(enabled=actions!=null,role=Role.Button,onClickLabel="Battery details"){actions?.onInteraction?.invoke(SentinelSound.PANEL_OPEN);batteryDetails=true},color=Ice,fontSize=44.sp,fontWeight=FontWeight.Light)
+            Text(b.percent?.let {"$it%"} ?: "—",modifier=Modifier.clickable(enabled=actions!=null,role=Role.Button,onClickLabel="Battery details"){actions?.onInteraction?.invoke(SentinelSound.PANEL_OPEN);batteryDetails=true},color=Color(com.jarvis.assistant.titan.BatteryPolicy.band(b.percent).argb),fontSize=44.sp,fontWeight=FontWeight.Light)
             Text(if(b.full)"FULL" else if(b.charging)"CHARGING · ${b.source}" else "BATTERY",color=color,fontSize=9.sp,textAlign=TextAlign.Center)
         }
         Text(if(state.playback.active)"LIVE PCM PLAYBACK · NEURAL VOICE" else if(state.audio.recording)"LIVE MIC · ${state.audio.source}" else if(state.phase==AssistantPhase.SPEAKING)"SPEAKING · DECORATIVE MOTION" else "${s.animationProfile.uppercase()} · ${if(fps==0)"STILL" else "$fps FPS CAP"}",color=Dim,fontSize=8.sp,modifier=Modifier.align(Alignment.BottomCenter))
@@ -304,5 +309,5 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
             seconds=((state.voiceWindowDeadline-SystemClock.elapsedRealtime()+999)/1000).toInt().coerceAtLeast(0);delay(200)
         };seconds=0
     }}
-    Text(if(seconds>0)"COMMAND WINDOW · ${seconds}s" else if(state.followUpArming)"MIC REARMING · FOLLOW-UP NEXT" else if(state.phase==AssistantPhase.LISTENING)"MANUAL CAPTURE · UP TO 10s" else if(state.wakeEnabled)"WAKE WORD ONLY · ${state.settings.language.wakePhrase}" else "WAKE OFF · TAP MIC",color=if(seconds>0)Cyan else Dim,fontSize=10.sp)
+    Text(if(seconds>0)"INACTIVITY · ${seconds}s" else if(state.followUpArming)"MIC REARMING · FOLLOW-UP NEXT" else if(state.phase==AssistantPhase.LISTENING)"LISTENING · ADAPTIVE END OF TURN" else if(state.wakeEnabled)"WAKE WORD ONLY · ${state.settings.language.wakePhrase}" else "WAKE OFF · TAP MIC",color=if(seconds>0)Cyan else Dim,fontSize=10.sp)
 }

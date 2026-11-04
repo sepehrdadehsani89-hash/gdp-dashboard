@@ -90,6 +90,13 @@ class WallpaperRenderer {
                 canvas.drawCircle(cx+cos(a).toFloat()*rr,cy+sin(a).toFloat()*rr,max(1f,radius*.004f),fill)
             }
         }
+        battery.percent?.let{percent->
+            val tone=com.jarvis.assistant.titan.BatteryPolicy.band(percent).argb.toInt()
+            val pulse=if(motion && percent<=10)(.65+.2*sin(now/1400.0)).toFloat() else .8f
+            line.color=colorWithAlpha(tone,(pulse*255).toInt());line.strokeWidth=radius*.012f
+            val rr=radius*.55f;ring.set(cx-rr,cy-rr,cx+rr,cy+rr)
+            canvas.drawArc(ring,-90f,percent*3.6f,false,line)
+        }
         if(charging){
             line.color=colorWithAlpha(ReactorPalette.green,(brightness*210).toInt());line.strokeWidth=radius*.014f
             ring.set(cx-radius*1.025f,cy-radius*1.025f,cx+radius*1.025f,cy+radius*1.025f)
@@ -99,13 +106,13 @@ class WallpaperRenderer {
         fill.color=colorWithAlpha(color,ringAlpha);canvas.drawPath(pointer,fill)
         val font=radius*.24f
         text.textLocale=Locale.forLanguageTag(frame.language.tag)
-        text.color=colorWithAlpha(Color.rgb(221,248,255),(210*brightness+45).toInt().coerceIn(0,255));text.textSize=font
+        text.color=com.jarvis.assistant.titan.BatteryPolicy.band(battery.percent).argb.toInt();text.textSize=font
         if(v.wallpaperBattery)drawText(canvas,battery.percent?.let{"$it%"} ?: "—",cx,cy+font*.3f,text,frame.language)
         text.textSize=radius*.045f
         val state=when(mode){
             SentinelMode.DORMANT->frame.language.choose("SENTINEL · STANDBY","SENTINEL · EN ESPERA","سنتینل · آماده‌باش")
             SentinelMode.ACTIVATING->frame.language.choose("J.A.R.V.I.S. · AWAKENING","J.A.R.V.I.S. · ACTIVANDO","جارویس · فعال‌سازی")
-            SentinelMode.LISTENING->if(frame.followUpArming)frame.language.choose("MIC REARMING","PREPARANDO MICRÓFONO","آماده‌سازی میکروفن") else frame.language.choose("LISTENING · 10s WINDOW","ESCUCHANDO · VENTANA 10s","در حال شنیدن · فرصت ۱۰ ثانیه")
+            SentinelMode.LISTENING->if(frame.followUpArming)frame.language.choose("MIC REARMING","PREPARANDO MICRÓFONO","آماده‌سازی میکروفن") else frame.language.choose("LISTENING · ADAPTIVE","ESCUCHANDO · ADAPTATIVO","در حال شنیدن · فرصت ۱۰ ثانیه")
             SentinelMode.PROCESSING->frame.language.choose("PROCESSING","PROCESANDO","در حال پردازش")
             SentinelMode.SPEAKING->if(frame.playback.active)"SPEAKING · LIVE PCM PLAYBACK" else frame.language.choose("SPEAKING · DECORATIVE MOTION","HABLANDO · MOVIMIENTO DECORATIVO","در حال گفتن · حرکت تزئینی")
             SentinelMode.AUTHORIZATION_REQUIRED->"CODEX · IDENTITY REQUIRED"

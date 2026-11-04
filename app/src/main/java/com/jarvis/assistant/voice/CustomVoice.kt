@@ -1,5 +1,6 @@
 package com.jarvis.assistant.voice
 
+import com.jarvis.assistant.core.AppLanguage
 import com.jarvis.assistant.omnisystem.FeatureVault
 import com.jarvis.assistant.omnisystem.ModuleHttp
 import okhttp3.Request
@@ -11,6 +12,7 @@ import java.io.ByteArrayOutputStream
 /** Output voice selection only; never an authentication or speaker-recognition identity. */
 object CustomVoicePolicy {
     const val REQUESTED_ID="05b36da8574341d0803391491850db20"
+    const val SPANISH_ID="ae74d1059517440aa6e5d2d50598d179"
     fun validId(id:String)=id.matches(Regex("[A-Za-z0-9_-]{1,100}"))
     fun eligible(enabled:Boolean,allowCloudSpeech:Boolean,privateTurn:Boolean)=enabled && allowCloudSpeech && !privateTurn
     // The official Fish SDK uses MessagePack. Encode only this fixed, bounded string map.
@@ -27,24 +29,29 @@ object CustomVoicePolicy {
         return out.toByteArray()
     }
 }
-class CustomVoiceConfig(val id:String=CustomVoicePolicy.REQUESTED_ID,val model:String="s2.1-pro",val key:String="",val enabled:Boolean=false)
+class CustomVoiceConfig(val id:String=CustomVoicePolicy.REQUESTED_ID,val model:String="s2.1-pro",val key:String="",val enabled:Boolean=false,val privateAllowed:Boolean=false)
 class CustomVoice(private val vault:FeatureVault,private val http:ModuleHttp=ModuleHttp()) {
-    fun config():CustomVoiceConfig {
-        val raw=vault.read("custom_output_voice") ?: return CustomVoiceConfig()
-        return runCatching{val j=JSONObject(raw);CustomVoiceConfig(j.getString("id"),j.getString("model"),j.getString("key"),j.optBoolean("enabled"))}.getOrElse{CustomVoiceConfig()}
+    private fun namespace(language:AppLanguage)=if(language==AppLanguage.ES)"spanish_output_voice" else "custom_output_voice"
+    fun config(language:AppLanguage=AppLanguage.EN):CustomVoiceConfig {
+        val default=if(language==AppLanguage.ES)CustomVoiceConfig(id=CustomVoicePolicy.SPANISH_ID) else CustomVoiceConfig()
+        val raw=vault.read(namespace(language)) ?: return default
+        return runCatching{val j=JSONObject(raw);CustomVoiceConfig(j.getString("id"),j.getString("model"),j.getString("key"),j.optBoolean("enabled"),j.optBoolean("private_allowed",false))}.getOrElse{default}
     }
-    fun save(c:CustomVoiceConfig){
+    fun save(c:CustomVoiceConfig,language:AppLanguage=AppLanguage.EN){
+        require(language!=AppLanguage.ES || c.id==CustomVoicePolicy.SPANISH_ID)
         require(CustomVoicePolicy.validId(c.id) && c.model.matches(Regex("[A-Za-z0-9._-]{1,60}")))
         require(c.key.length in 1..1000 && c.key.none{it=='\r'||it=='\n'})
-        vault.write("custom_output_voice",JSONObject().put("id",c.id).put("model",c.model).put("key",c.key).put("enabled",c.enabled).toString())
+        vault.write(namespace(language),JSONObject().put("id",c.id).put("model",c.model).put("key",c.key).put("enabled",c.enabled).put("private_allowed",c.privateAllowed).toString())
     }
-    fun disable(){val c=config();if(c.key.isNotBlank())save(CustomVoiceConfig(c.id,c.model,c.key,false))}
-    fun clear()=vault.remove("custom_output_voice")
-    suspend fun preview(c:CustomVoiceConfig):ByteArray {
+    fun disable(language:AppLanguage=AppLanguage.EN){val c=config(language);if(c.key.isNotBlank())save(CustomVoiceConfig(c.id,c.model,c.key,false,c.privateAllowed),language)}
+    fun revokePrivate(language:AppLanguage){val c=config(language);if(c.key.isNotBlank())save(CustomVoiceConfig(c.id,c.model,c.key,c.enabled,false),language)}
+    fun clear(language:AppLanguage=AppLanguage.EN)=vault.remove(namespace(language))
+    suspend fun preview(c:CustomVoiceConfig,language:AppLanguage=AppLanguage.EN):ByteArray {
+        require(language!=AppLanguage.ES || c.id==CustomVoicePolicy.SPANISH_ID)
         require(CustomVoicePolicy.validId(c.id) && c.key.isNotBlank() && c.model.matches(Regex("[A-Za-z0-9._-]{1,60}")))
         val metadata=http.json(Request.Builder().url("https://api.fish.audio/model/${c.id}").header("Authorization","Bearer ${c.key}").build(),100_000)
         check(metadata.optString("_id")==c.id){"Voice service returned a different identity."}
-        return synthesize(c,"Hello. This is a preview of your selected Jarvis voice.")
+        return synthesize(c,if(language==AppLanguage.ES)"Hola. Esta es una prueba de la voz española exclusiva de Jarvis." else "Hello. This is a preview of your selected Jarvis voice.")
     }
     suspend fun synthesize(c:CustomVoiceConfig,text:String):ByteArray {
         require(c.key.isNotBlank() && c.model.matches(Regex("[A-Za-z0-9._-]{1,60}")))

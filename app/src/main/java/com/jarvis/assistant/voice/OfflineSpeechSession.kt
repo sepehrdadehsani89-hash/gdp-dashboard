@@ -26,7 +26,8 @@ internal class OfflineSpeechSession(
     private val closed = AtomicBoolean(false)
     private val audioLock = Any()
     private val main = Handler(Looper.getMainLooper())
-    private val timing=SpeechInactivityClock(android.os.SystemClock::elapsedRealtime)
+    private val timing=SpeechInactivityClock(android.os.SystemClock::elapsedRealtime,com.jarvis.assistant.titan.VoicePreferences(context).energy)
+    private val utterance=UtteranceAssembler(android.os.SystemClock::elapsedRealtime,com.jarvis.assistant.titan.VoicePreferences(context).energy)
     @Volatile private var recorder: AudioRecord? = null
 
     fun start() {
@@ -36,10 +37,12 @@ internal class OfflineSpeechSession(
                 Model(modelDirectory.absolutePath).use { model ->
                     if (closed.get()) return@Thread
                     Recognizer(model, 16000f).use { recognizer ->
+                        recognizer.setWords(true)
                         val minimum = AudioRecord.getMinBufferSize(16000, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT)
                         check(minimum > 0) { "This microphone does not support 16 kHz recording." }
                         val audio = AudioRecord(MediaRecorder.AudioSource.VOICE_RECOGNITION, 16000, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, maxOf(minimum * 2, 8192))
                         recorder = audio
+                        val processing=MicrophoneProcessing(context,audio.audioSessionId)
                         audio.registerAudioRecordingCallback(context.mainExecutor,object:android.media.AudioManager.AudioRecordingCallback(){
                             override fun onRecordingConfigChanged(configs:MutableList<android.media.AudioRecordingConfiguration>){
                                 if(configs.any { it.clientAudioSessionId==audio.audioSessionId && it.isClientSilenced }){
@@ -56,31 +59,36 @@ internal class OfflineSpeechSession(
                             }
                             com.jarvis.assistant.hud.AudioSignals.start(this, "Offline microphone · PCM RMS")
                             val bytes = ByteArray(4096)
-                            timing.start()
+                            timing.start();utterance.reset()
                             var previousPartial = ""
                             while (!closed.get() && !timing.expired()) {
                                 val count = audio.read(bytes, 0, bytes.size)
                                 check(count >= 0) { "Microphone capture interrupted." }
                                 if (count == 0) continue
                                 val level=com.jarvis.assistant.hud.PcmLevel.pcm16(bytes,count)
-                                com.jarvis.assistant.hud.AudioSignals.level(this,level);timing.energy(level)
+                                com.jarvis.assistant.hud.AudioSignals.level(this,level);timing.energy(level);utterance.energy(level)
                                 if (recognizer.acceptWaveForm(bytes, count)) {
-                                    val text = JSONObject(recognizer.result).optString("text")
-                                    if (text.isNotBlank()) { timing.progress(text);emitResult(text); return@Thread }
+                                    val result=JSONObject(recognizer.result)
+                                    val text = result.optString("text")
+                                    if (text.isNotBlank() && RecognitionConfidence.acceptsFinal(result,com.jarvis.assistant.titan.VoicePreferences(context).confidence.toDouble())) {
+                                        timing.progress(text);utterance.segment(text)
+                                        if(UtteranceAssembler.fastCommand(utterance.text())){emitResult(utterance.text());return@Thread}
+                                    }
                                 } else {
                                     val partial = JSONObject(recognizer.partialResult).optString("partial")
-                                    timing.progress(partial)
+                                    timing.progress(partial);utterance.partial(partial)
                                     if (partial != previousPartial) {
                                         previousPartial = partial
-                                        main.post { if (!closed.get()) onPartial(partial) }
+                                        main.post { if (!closed.get()) onPartial(utterance.text()) }
                                     }
                                 }
+                                if(utterance.ready()){emitResult(utterance.text());return@Thread}
                             }
                             if (!closed.get()) {
                                 val final = JSONObject(recognizer.finalResult).optString("text")
                                 emitError("Speech inactivity or two-minute utterance limit reached. Tap the microphone or say your wake phrase again.")
                             }
-                        } finally { com.jarvis.assistant.hud.AudioSignals.stop(this); runCatching { audio.stop() }; audio.release(); recorder = null }
+                        } finally { com.jarvis.assistant.hud.AudioSignals.stop(this); runCatching { audio.stop() }; audio.release();processing.close(); recorder = null }
                     }
                 }
             } catch (error: Throwable) {

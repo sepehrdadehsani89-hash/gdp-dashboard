@@ -19,6 +19,7 @@ class SentinelVoiceSettingsTest {
             runtime.store.updateSettings(runtime.store.settings.value.copy(language=com.jarvis.assistant.core.AppLanguage.EN,speakReplies=false))
         }
         compose.waitForIdle()
+        compose.onNodeWithText("English").performScrollTo().performClick()
     }
     @Test fun requestedReferenceIsEditableButCannotEnableWithoutRealPreview(){
         compose.onNodeWithText(CustomVoicePolicy.REQUESTED_ID).performScrollTo().assertExists()

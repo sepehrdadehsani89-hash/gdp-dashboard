@@ -157,6 +157,8 @@ class MainActivity : ComponentActivity() {
                 }
             }
             JarvisAppUi(state, JarvisUiActions(
+                onOpenTitan={page->startActivity(Intent(this,com.jarvis.assistant.titan.TitanCenterActivity::class.java).putExtra("page",page))},
+                onOpenMemoryCards={startActivity(Intent(this,com.jarvis.assistant.titan.MemoryCardsActivity::class.java))},
                 onOpenCamera={startActivity(Intent(this,com.jarvis.assistant.omnisystem.CameraHudActivity::class.java))},
                 onOpenVision={startActivity(Intent(this,com.jarvis.assistant.omnisystem.VisionHudActivity::class.java))},
                 onModule=runtime::selectModule,

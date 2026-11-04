@@ -13,6 +13,7 @@ object WakePhraseMatcher {
         .replace(Regex("\\s+"), " ").trim()
 
     fun extractCommand(text: String, language: AppLanguage): String? {
+        if(language !in AppLanguage.supported)return null
         val value = normalize(text)
         val prefixes = when (language) {
             AppLanguage.EN -> listOf("hey jarvis", "hello jarvis", "hey jervis", "hey jarves")

@@ -56,5 +56,5 @@ class ConversationWindow(private val now: () -> Long) {
         return true
     }
     private fun change(value: Mode) { mode = value; deadline = 0; resetSerial++ }
-    companion object { const val DURATION_MS = 10_000L; private const val COOLDOWN_MS = 1_500L }
+    companion object { const val DURATION_MS = SpeechInactivityClock.IDLE_MS; private const val COOLDOWN_MS = 1_500L }
 }

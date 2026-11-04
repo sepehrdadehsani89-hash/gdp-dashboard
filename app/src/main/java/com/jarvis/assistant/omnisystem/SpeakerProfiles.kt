@@ -68,7 +68,8 @@ class SpeakerProfiles(private val context:Context,private val vault:FeatureVault
     private val directory=File(context.filesDir,"speaker-profiles")
     private val model=File(directory,FILE)
     private val mutex=Mutex()
-    private var extractor:SpeakerEmbeddingExtractor?=null
+    @Volatile private var extractor:SpeakerEmbeddingExtractor?=null
+    val isWarm get()=extractor!=null
     private val cleanupScope=CoroutineScope(SupervisorJob()+Dispatchers.IO)
     private var releaseJob:Job?=null
     private val options=context.getSharedPreferences("jarvis_speaker_options_v1",Context.MODE_PRIVATE)

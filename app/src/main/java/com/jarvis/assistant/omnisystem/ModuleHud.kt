@@ -42,6 +42,7 @@ fun ModuleHud(state: JarvisUiState, actions: JarvisUiActions) {
         when(state.module) {
             HudModule.WEATHER -> HudPanel(l.choose("Atmospheric intelligence","Inteligencia atmosférica","اطلاعات هواشناسی"),Modifier.fillMaxWidth()) {
                 WeatherAtmosphere(state)
+                com.jarvis.assistant.titan.WeatherGlobe(h)
                 val w=h.weather.reading
                 if(w==null)Text(h.weather.error ?: "No weather received. Configure a city in Settings or explicitly request approximate location.")
                 else {

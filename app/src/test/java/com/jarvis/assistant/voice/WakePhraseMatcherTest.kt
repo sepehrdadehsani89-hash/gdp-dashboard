@@ -8,7 +8,7 @@ class WakePhraseMatcherTest {
     @Test fun recognizesLocalizedWakePrefixesAndKeepsCommand() {
         assertEquals("read the news", WakePhraseMatcher.extractCommand("Hey Jarvis, read the news!", AppLanguage.EN))
         assertEquals("las noticias", WakePhraseMatcher.extractCommand("Hola Jarvis, las noticias", AppLanguage.ES))
-        assertEquals("خبرها را بخوان", WakePhraseMatcher.extractCommand("سلام جارويس، خبرها را بخوان", AppLanguage.FA))
+        assertNull(WakePhraseMatcher.extractCommand("سلام جارويس، خبرها را بخوان", AppLanguage.FA))
     }
 
     @Test fun wakeOnlyWaitsForNextUtteranceAndUnrelatedSpeechDoesNotActivate() {

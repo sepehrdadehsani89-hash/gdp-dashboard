@@ -58,6 +58,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
@@ -68,7 +70,10 @@ class AssistantRuntime(private val context: Context) {
     val store = JarvisStore(context)
     val features = com.jarvis.assistant.omnisystem.FeatureVault(context)
     val customVoice by lazy{com.jarvis.assistant.voice.CustomVoice(features)}
+    val deviceControl by lazy{com.jarvis.assistant.quantum.DeviceControl(context)}
+    val routines by lazy{com.jarvis.assistant.titan.Routines(features)}
     val contacts by lazy{com.jarvis.assistant.contacts.ContactShortcuts(context,features)}
+    val locationAssistant by lazy{com.jarvis.assistant.titan.LocationAssistant(context,locations)}
     val locations = com.jarvis.assistant.omnisystem.LocationIntelligence(context,features)
     val speakers by lazy{com.jarvis.assistant.omnisystem.SpeakerProfiles(context,features)}
     val timers by lazy{com.jarvis.assistant.omnisystem.OwnedTimers(context)}
@@ -124,6 +129,9 @@ class AssistantRuntime(private val context: Context) {
     private var captureGeneration = 0L
     private var awaitScreenQuestion = false
     private var privateTurn = false
+    val batteryAlerts by lazy{com.jarvis.assistant.titan.BatteryAlerts(context,hud,scope,
+        ready={cameraOwner==null && state.value.phase==AssistantPhase.READY && session?.isActive!=true && state.value.authorization==null && !state.value.followUpArming && state.value.voiceWindowDeadline<=SystemClock.elapsedRealtime() && !com.jarvis.assistant.security.SystemCredentialPrivacy.pending(context)},
+        play={text,volume,done,error->pauseWake();speak(text,language(),allowCloudSpeech=true,volumeOverride=volume,completion=done,failure=error,privateSpeech=false,publicOnly=true)},language=::language)}
     private var initialized = false
     @Volatile private var sessionGeneration = 0L
     private var lastReplyLanguage = AppLanguage.EN
@@ -132,9 +140,10 @@ class AssistantRuntime(private val context: Context) {
     fun initialize() {
         if (initialized) return
         initialized = true
+        batteryAlerts.start()
         // WorkManager restores opt-in work across process restarts; no microphone/LLM is started.
         com.jarvis.assistant.neural.BriefingScheduler.sync(context,keepExisting=true)
-        scope.launch(Dispatchers.IO){if(knowledge.list().none{it.id=="builtin-help-v4"})knowledge.index("Jarvis offline help","Jarvis uses a local model only after its explicit download. Say Hey Jarvis once for a ten-second command window. After a completed spoken answer a fresh ten-second window opens without a new wake phrase. A timed-out window returns to wake-only detection. Stop disables microphone listening. Choose documents explicitly to index them. App aliases refer only to Android-visible installed apps. Codex is not a password: Android authentication is required. Daily briefings are opt-in and may run late. Google quota is independent from local inference.","OFFLINE_KNOWLEDGE","Bundled original help","4","2026-11-02","CC0-1.0","builtin-help-v4")}
+        scope.launch(Dispatchers.IO){if(knowledge.list().none{it.id=="builtin-help-v4" && (it.version=="10.9" || it.kind!="OFFLINE_KNOWLEDGE")})knowledge.index("Jarvis offline help","Jarvis uses a local model only after its explicit download. Say Hey Jarvis once for an adaptive command session. After a completed spoken answer an adaptive follow-up session opens without a new wake phrase. A timed-out window returns to wake-only detection. Stop disables microphone listening. Choose documents explicitly to index them. App aliases refer only to Android-visible installed apps. Codex is not a password: Android authentication is required. Daily briefings are opt-in and may run late. Google quota is independent from local inference.","OFFLINE_KNOWLEDGE","Bundled original help","10.9","2026-11-03","CC0-1.0","builtin-help-v4")}
         scope.launch{brain.progress.collectLatest{stage->
             if(stage.startsWith("Loading"))com.jarvis.assistant.neural.NeuralEvents.emit(com.jarvis.assistant.neural.NeuralEvent.LOCAL_MODEL_LOADING,stage)
             else if(stage.startsWith("Generating"))com.jarvis.assistant.neural.NeuralEvents.emit(com.jarvis.assistant.neural.NeuralEvent.LOCAL_MODEL_GENERATING,stage)
@@ -190,6 +199,7 @@ class AssistantRuntime(private val context: Context) {
                     };sound?.let(effects::play)
                 }
                 previous=current
+                if(current.phase==AssistantPhase.READY)batteryAlerts.drain()
             }
         }
         scope.launch{var previous=neuralPreferences.state.value;neuralPreferences.state.collectLatest{current->
@@ -227,6 +237,8 @@ class AssistantRuntime(private val context: Context) {
         }, ContextCompat.RECEIVER_NOT_EXPORTED)
         ContextCompat.registerReceiver(context, object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
+                deviceControl.clearHistory()
+        locationAssistant.cancel()
                 locations.clearTransient()
                 clearSpeakerSuggestion()
                 clearScreenContext(); conversation.clear(); neural.conversation.clear(); tools.infinity.clearContext();captureStarted = 0; awaitScreenQuestion = false
@@ -252,6 +264,33 @@ class AssistantRuntime(private val context: Context) {
             delay(1700);if(visuals.state.value.activationId==activation){visuals.settle();effects.play(com.jarvis.assistant.sentinel.SentinelSound.READY)}
         }
     }
+    fun greetWake(sampleId:Long?){
+        if(cameraOwner!=null)return
+        cancelSession();pauseWake()
+        val generation=sessionGeneration
+        val lang=language()
+        val audio=sampleId?.let{com.jarvis.assistant.omnisystem.SpeakerSamples.take(it)}
+        session=scope.launch{
+            var profile:com.jarvis.assistant.omnisystem.SpeakerProfile?=null
+            if(audio!=null && !locked() && speakers.autoEnabled && speakers.isWarm){
+                val matching=scope.async(Dispatchers.Default){
+                    try{
+                        val vector=speakers.embedding(audio)
+                        try{com.jarvis.assistant.omnisystem.SpeakerProfilePolicy.suggest(vector,speakers.profiles(),.78f,.1f).profile}finally{vector.fill(0f)}
+                    }finally{audio.pcm.fill(0)}
+                }
+                matching.invokeOnCompletion{audio.pcm.fill(0)}
+                speakerJob=matching
+                profile=withTimeoutOrNull(750){runCatching{matching.await()}.getOrNull()};matching.cancel()
+            }else audio?.pcm?.fill(0)
+            if(generation!=sessionGeneration)return@launch
+            val prefs=com.jarvis.assistant.titan.VoicePreferences(context)
+            val text=com.jarvis.assistant.titan.GreetingPolicy.greeting(java.time.ZonedDateTime.now().hour,lang,profile!=null,profile?.owner==true,profile?.name,
+                prefs.morning,prefs.afternoon,prefs.evening,prefs.night)
+            mutableState.update{it.copy(liveReply=text,phase=AssistantPhase.READY,voiceInteraction=true)}
+            speak(text,lang,generation,allowCloudSpeech=profile==null,followUpOnDone=true,privateSpeech=profile!=null,publicOnly=profile==null)
+        }
+    }
     fun dismissHud(){
         activationEffects?.cancel();effects.silence()
         cancelAuthorization(false);cancelSession();clearScreenContext()
@@ -270,7 +309,7 @@ class AssistantRuntime(private val context: Context) {
             brainStatus = runCatching {
                 if (brain.modelReady()) brain.modelStatus() else lang.choose("Local brain not installed · optional ~400 MB download", "Cerebro local no instalado · descarga opcional de ~400 MB", "مدل محلی نصب نشده · دانلود اختیاری حدود ۴۰۰ مگابایت")
             }.getOrElse { lang.choose("Local brain not installed", "Cerebro local no instalado", "مدل محلی نصب نشده است") },
-            voiceStatus = speech.voiceStatus(lang), voices = speech.availableVoices(lang),
+            voiceStatus = if(lang==AppLanguage.ES)"Fish Audio · ae74d1059517440aa6e5d2d50598d179 · setup/preview required" else speech.voiceStatus(lang), voices = if(lang==AppLanguage.ES)emptyList() else speech.availableVoices(lang),
         ) }
     }
 
@@ -356,6 +395,7 @@ class AssistantRuntime(private val context: Context) {
     fun endExclusiveCapture(owner:Any)=endCamera(owner)
     fun pauseForAndroidUi():Long{cancelSession();pauseWake();mutableState.update{it.copy(phase=AssistantPhase.PAUSED)};return sessionGeneration}
     fun finishAndroidUi(token:Long){if(token==sessionGeneration){mutableState.update{it.copy(phase=AssistantPhase.READY)};resumeWake()}}
+    fun currentCommandSerial()=sessionGeneration
     fun captureIsCurrent(owner:Any)=cameraOwner===owner && captureVoiceGeneration==sessionGeneration
     fun abandonExclusiveCapture(owner:Any){if(cameraOwner===owner){cameraOwner=null;mutableState.update{it.copy(phase=AssistantPhase.PAUSED)}}}
     fun trackModuleOperation(owner:Any,job:Job){moduleOperations[owner]=job;job.invokeOnCompletion{moduleOperations.remove(owner,job)}}
@@ -398,6 +438,17 @@ class AssistantRuntime(private val context: Context) {
         val text = input.trim().take(8000)
         if (text.isBlank()) return
         mutableState.update{it.copy(confirmedEntity=null)}
+        val direct=com.jarvis.assistant.neural.AppMatching.normalize(text).removePrefix("hey jarvis ").removePrefix("oye jarvis ").removePrefix("jarvis ")
+        if(direct in setOf("shut down all systems","shut down","lock everything","end jarvis and lock my phone","apaga todos los sistemas","cierra jarvis y bloquea mi telefono")){
+            stopEverything()
+            val result=com.jarvis.assistant.security.ScreenSecurityController(context).lockRequest()
+            mutableState.update{it.copy(liveReply=result,phase=AssistantPhase.PAUSED)};return
+        }
+        if(direct in setOf("open yourself","open jarvis","abre jarvis","abrete")){
+            if(locked()){fail(unlockMessage());return}
+            val result=com.jarvis.assistant.titan.TitanLaunch.open(context,Intent(context,MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),"Jarvis")
+            mutableState.update{it.copy(liveReply=result)};return
+        }
         if(com.jarvis.assistant.voice.ConversationInterruptPolicy.matches(text)){
             cancelSession();mutableState.update{it.copy(phase=AssistantPhase.READY,transcript="",liveReply="")}
             if(voiced)listen() else resumeWake(followUp=state.value.voiceInteraction)
@@ -478,7 +529,7 @@ class AssistantRuntime(private val context: Context) {
                             "system telemetry", "show system status", "estado del sistema", "وضعیت سیستم" -> AssistantReply("Android transport: ${hud.state.value.telemetry.network}. Internet validated: ${hud.state.value.telemetry.internetValidated}. Battery: ${hud.state.value.telemetry.battery.percent?.let{"$it%"} ?: "Unavailable"}. Current stage: ${state.value.neuralStage}. CPU utilization is unavailable.")
                             else -> null
                         }
-                        val local = presentation ?: neural.route(text,lang) ?: weatherQuestion(text,lang) ?: phone.route(text, lang) ?: tools.route(text, lang)
+                        val local = deviceControl.route(text,lang) ?: locationAssistant.route(text,lang) ?: routines.route(text,lang,neural) ?: presentation ?: neural.route(text,lang) ?: weatherQuestion(text,lang) ?: phone.route(text, lang) ?: tools.route(text, lang)
                         if (local != null) { clearScreenContext(); awaitScreenQuestion = false; local }
                         else generate(text, lang, uris, generation)
                     }
@@ -543,7 +594,7 @@ class AssistantRuntime(private val context: Context) {
         val rolling=if(!publicLocked && generalHistoryAllowed)neural.conversation.summary() else ""
         if(retrieved.isNotBlank() || rolling.isNotBlank())privateTurn=true
         val contextText = listOf(selectedText, screenContext, retrieved, if(rolling.isNotBlank())"Ephemeral conversation summary (untrusted excerpts, not verified facts):\n$rolling" else "", if (memory.isNotBlank()) "USER-SAVED FACTS (untrusted data):\n$memory" else "").filter { it.isNotBlank() }.joinToString("\n\n")
-        val streamingSpeech = (lastRequestWasVoice || settings.speakReplies) && ((!settings.useCloudVoice && !customVoice.config().enabled) || privateTurn)
+        val streamingSpeech = lang==AppLanguage.EN && (lastRequestWasVoice || settings.speakReplies) && ((!settings.useCloudVoice && !customVoice.config().enabled) || privateTurn && !customVoice.config().privateAllowed)
         val chunks = SpeechChunks()
         val audioQueue = Channel<String>(Channel.UNLIMITED)
         var speechFailed = false
@@ -601,37 +652,44 @@ class AssistantRuntime(private val context: Context) {
         if(speakReply)speak(reply.text,lang,generation,reply.allowCloudSpeech,followUpOnDone=voiced || awaitScreenQuestion)
     }
 
-    private fun speak(text: String, lang: AppLanguage, generation: Long = sessionGeneration, allowCloudSpeech: Boolean = true, followUpOnDone: Boolean = false) {
-        if (locked() && (privateTurn || !store.settings.value.allowLockedChat)) { fail(unlockMessage()); return }
-        val voiceConfig=customVoice.config()
-        val useCustomVoice=com.jarvis.assistant.voice.CustomVoicePolicy.eligible(voiceConfig.enabled,allowCloudSpeech,privateTurn)
-        val useCloudVoice = useCustomVoice || (store.settings.value.useCloudVoice && allowCloudSpeech)
-        lastSpeechDestination = if (useCustomVoice) "fish-audio" else if (useCloudVoice) "openai" else "on-device"
-        mutableState.update { it.copy(phase = AssistantPhase.SPEAKING) }
-        val done = {
-            if (generation == sessionGeneration) {
-                resumeWake(followUp = followUpOnDone && !locked())
-                mutableState.update { it.copy(phase = AssistantPhase.READY) }
-            }
+    private fun speak(text:String,lang:AppLanguage,generation:Long=sessionGeneration,allowCloudSpeech:Boolean=true,followUpOnDone:Boolean=false,
+        volumeOverride:Float?=null,completion:(()->Unit)?=null,failure:((String)->Unit)?=null,privateSpeech:Boolean=privateTurn,publicOnly:Boolean=false){
+        fun allowed()=generation==sessionGeneration && (!locked() || publicOnly || !privateSpeech && store.settings.value.allowLockedChat)
+        if(!allowed()){failure?.invoke(unlockMessage());return}
+        val voiceConfig=customVoice.config(lang)
+        val route=com.jarvis.assistant.titan.SpeechRoutePolicy.route(lang,voiceConfig.enabled,voiceConfig.id,allowCloudSpeech,privateSpeech,store.settings.value.useCloudVoice,voiceConfig.privateAllowed)
+        val done={if(generation==sessionGeneration){mutableState.update{it.copy(phase=AssistantPhase.READY)};completion?.invoke();resumeWake(followUp=followUpOnDone && !locked())}}
+        val error:(String)->Unit={message->if(generation==sessionGeneration){
+            mutableState.update{it.copy(error=message,phase=AssistantPhase.READY)};failure?.invoke(message);resumeWake()
+        }}
+        if(route==com.jarvis.assistant.titan.SpeechRoute.TEXT_ONLY){
+            lastSpeechDestination="text-only"
+            error("La voz española exclusiva no está disponible o no está autorizada para este contenido. Configura Fish Audio y prueba la voz; el texto sigue disponible. No se eligió otra voz.")
+            return
         }
-        val error: (String) -> Unit = { message -> if (generation == sessionGeneration) { fail(message); resumeWake() } }
-        val localFallback: (String)->Unit = { _ ->
-            if(generation==sessionGeneration && !(locked() && (privateTurn || !store.settings.value.allowLockedChat))){
-                lastSpeechDestination="on-device";speech.speak(text.take(5000),lang,done,error)
-            }
+        mutableState.update{it.copy(phase=AssistantPhase.SPEAKING)}
+        fun local(){if(allowed()){lastSpeechDestination="on-device";speech.speak(text.take(5000),lang,done,error,volumeOverride)}}
+        if(route==com.jarvis.assistant.titan.SpeechRoute.LOCAL){local();return}
+        lastSpeechDestination=if(route==com.jarvis.assistant.titan.SpeechRoute.FISH)"fish-audio" else "openai"
+        cloudVoiceJob=scope.launch{
+            var file:File?=null
+            try{
+                val audio=if(route==com.jarvis.assistant.titan.SpeechRoute.FISH)customVoice.synthesize(voiceConfig,text.take(3500)) else llm.synthesizeSpeech(text.take(3500),lang)
+                try{
+                    if(route==com.jarvis.assistant.titan.SpeechRoute.FISH)check(customVoice.config(lang).let{it.enabled && it.id==voiceConfig.id && it.key==voiceConfig.key && it.model==voiceConfig.model && it.privateAllowed==voiceConfig.privateAllowed})
+                    check(allowed())
+                    val temporary=File.createTempFile("reply-",".mp3",context.cacheDir);file=temporary
+                    withContext(Dispatchers.IO){temporary.writeBytes(audio)}
+                    suspendCancellableCoroutine<Unit>{continuation->
+                        continuation.invokeOnCancellation{speech.stop()}
+                        speech.playAudio(temporary,{if(continuation.isActive)continuation.resume(Unit)},{message->if(continuation.isActive)continuation.resumeWith(Result.failure(java.io.IOException(message)))},volumeOverride)
+                    }
+                }finally{audio.fill(0)}
+                done()
+            }catch(e:CancellationException){throw e}
+            catch(_:Exception){if(lang==AppLanguage.ES)error("Fish Audio no pudo reproducir la voz española exclusiva. El texto sigue disponible; revisa clave, voz, conexión y cuota. No se sustituyó otra voz.") else local()}
+            finally{file?.delete()}
         }
-        if (useCloudVoice) {
-            cloudVoiceJob = scope.launch {
-                try {
-                    val audio = if(useCustomVoice)customVoice.synthesize(voiceConfig,text.take(3500)) else llm.synthesizeSpeech(text.take(3500), lang)
-                    if(useCustomVoice && customVoice.config().let{!it.enabled || it.id!=voiceConfig.id || it.key!=voiceConfig.key || it.model!=voiceConfig.model})throw java.io.IOException("Voice configuration changed.")
-                    lastSpeechDestination=if(useCustomVoice)"fish-audio" else "openai"
-                    val file = withContext(Dispatchers.IO) { File.createTempFile("reply-", ".mp3", context.cacheDir).apply { writeBytes(audio) } };audio.fill(0)
-                    if (generation == sessionGeneration) speech.playAudio(file, { file.delete(); done() }, { message -> file.delete(); localFallback(message) }) else file.delete()
-                } catch (cancelled: CancellationException) { throw cancelled }
-                catch (_: Exception) { localFallback("Cloud voice unavailable") }
-            }
-        } else speech.speak(text.take(5000), lang, done, error)
     }
 
     fun confirmAction(id: String) {
@@ -758,6 +816,7 @@ class AssistantRuntime(private val context: Context) {
     }
 
     fun downloadVoice() {
+        if(language()!=AppLanguage.EN){fail("La voz española exclusiva se configura en Output voice / Voz de salida.");return}
         if (voiceDownload?.isActive == true) return
         val lang = language()
         voiceDownload = scope.launch {
@@ -832,8 +891,10 @@ class AssistantRuntime(private val context: Context) {
         if(value.codexEnabled!=hud.state.value.settings.codexEnabled) protect("Change Codex protection") { hud.save(value) } else hud.save(value)
     }
     fun saveMemory(text:String, category:String) { if(text.isBlank())return; scope.launch { val id=store.remember(text); setCategory(id,category) } }
-    fun setCategory(id:Long, category:String) { val value=category.takeIf { it in listOf("Notes","Personal","Work","Tasks") } ?: "Notes"; categories.edit().putString(id.toString(),value).apply(); mutableState.update { it.copy(memoryCategories=it.memoryCategories+(id to value)) } }
+    fun setCategory(id:Long, category:String) { val value=category.takeIf { it in com.jarvis.assistant.titan.MemoryCardPolicy.categories } ?: "Notes"; categories.edit().putString(id.toString(),value).apply(); mutableState.update { it.copy(memoryCategories=it.memoryCategories+(id to value)) } }
 
+    fun invalidateMemoryContext(){conversation.clear();neural.conversation.clear()}
+    fun installedWakeModelForCalibration()=models.modelPath(language())
     fun deleteMemory(id: Long) { conversation.clear(); neural.conversation.clear(); scope.launch { store.forget(id); categories.edit().remove(id.toString()).apply() } }
     fun clearConversation() { selectModule(com.jarvis.assistant.omnisystem.HudModule.ASSISTANT); cancelSession(); tools.infinity.clearContext();conversation.clear(); neural.conversation.clear(); clearScreenContext(); scope.launch { store.clearConversation() } }
 
@@ -856,6 +917,10 @@ class AssistantRuntime(private val context: Context) {
             com.jarvis.assistant.security.ScreenSecurityPreferences(context).clear();com.jarvis.assistant.security.ScreenUnlockRequests.clear()
             locations.clearTransient()
             categories.edit().clear().apply()
+            com.jarvis.assistant.titan.VoicePreferences(context).clear()
+            com.jarvis.assistant.titan.NavigationPreferences(context).clear()
+            context.getSharedPreferences("jarvis_titan_memory_cards_v1",Context.MODE_PRIVATE).edit().clear().apply()
+            batteryAlerts.preferences.clear()
             hud.clear()
             withContext(Dispatchers.IO) {
                 listOf("wake-models", "voice-models", "local-brain", "ocr").forEach { File(context.filesDir, it).deleteRecursively() }
@@ -867,6 +932,8 @@ class AssistantRuntime(private val context: Context) {
     }
 
     fun stopEverything() {
+        locationAssistant.cancel()
+        batteryAlerts.cancel()
         clearSpeakerSuggestion()
         cancelAuthorization(resume=false)
         moduleOperations.values.forEach{it.cancel()}
