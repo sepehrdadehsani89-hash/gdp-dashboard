@@ -7,8 +7,8 @@ import com.jarvis.assistant.hud.*
 import kotlin.math.*
 import java.util.Locale
 
-/** No transcripts, stored memories, keys or other private conversation data enter this frame. */
-data class WallpaperFrame(val hud:HudState=HudState(),val audio:AudioReading=AudioReading(),val visual:SentinelVisualState=SentinelVisualState(),val language:AppLanguage=AppLanguage.EN,val playback:PlaybackReading=PlaybackReading(),val followUpArming:Boolean=false,val commandDeadlineElapsed:Long=0)
+/** Captions are ephemeral, explicitly opted in, and stripped at render time when locked. */
+data class WallpaperFrame(val hud:HudState=HudState(),val audio:AudioReading=AudioReading(),val visual:SentinelVisualState=SentinelVisualState(),val language:AppLanguage=AppLanguage.EN,val playback:PlaybackReading=PlaybackReading(),val followUpArming:Boolean=false,val commandDeadlineElapsed:Long=0,val caption:com.jarvis.assistant.phantom.LiveCaption=com.jarvis.assistant.phantom.LiveCaption(),val captionLines:Int=3)
 
 /** Native dynamic artwork. Geometry/paints are reused; no video, full-screen blur or random sensor values. */
 class WallpaperRenderer {
@@ -23,6 +23,9 @@ class WallpaperRenderer {
     private var glowColor=0
     private val labelCache=object:LinkedHashMap<String,android.text.StaticLayout>(12,.75f,true){override fun removeEldestEntry(eldest:MutableMap.MutableEntry<String,android.text.StaticLayout>?)=size>12}
     private var clockKey="";private var clock="";private var date=""
+    private var captionKey=""
+    private var captionLayout:android.text.StaticLayout?=null
+    fun clearCaption(){captionKey="";captionLayout=null}
     fun draw(canvas:Canvas,frame:WallpaperFrame,now:Long) {
         val s=frame.hud.settings;val v=s.sentinel;val battery=frame.hud.telemetry.battery
         val mode=frame.visual.mode
@@ -127,6 +130,7 @@ class WallpaperRenderer {
             line.color=colorWithAlpha(Color.rgb(170,124,255),200);line.strokeWidth=max(1f,radius*.007f)
             values.forEachIndexed{i,value->val xx=cx-core*.625f+i*step;val amplitude=value*core*.14f;canvas.drawLine(xx,cy+core*.75f-amplitude,xx,cy+core*.75f+amplitude,line)}
         }
+        drawCaption(canvas,frame,now)
         if(v.wallpaperClock){
             val t=frame.hud.telemetry
             val key="${t.epochMillis/60000}|${t.timezone}|${s.clockFormat}|${t.system24Hour}|${frame.language.code}"
@@ -151,6 +155,27 @@ class WallpaperRenderer {
             text.textSize=short*.023f;text.color=colorWithAlpha(color,(brightness*180).toInt());drawText(canvas,label,weatherX,weatherY,text,frame.language,weatherWidth)
             text.textSize=short*.019f;drawText(canvas,"Open-Meteo.com · ${r?.observationTime?.replace('T',' ') ?: "no reading"}",weatherX,weatherY+short*.07f,text,frame.language,weatherWidth)
         }
+    }
+    private fun drawCaption(canvas:Canvas,frame:WallpaperFrame,now:Long){
+        val caption=frame.caption
+        if(!caption.visible(now)){captionLayout=null;captionKey="";return}
+        val value=(if(caption.user.isNotBlank())"${if(caption.provisional)"Heard (provisional)" else "You"} · ${caption.user.takeLast(240)}" else "")+(if(caption.assistant.isNotBlank())"\nJarvis · ${caption.assistant.takeLast(600)}" else "")
+        val width=(w*.88f).toInt().coerceAtLeast(1)
+        val size=(min(w,h)*.031f).coerceAtLeast(16f)
+        val key="$value|${caption.entity}|$width|$size|${frame.captionLines}"
+        if(captionKey!=key){
+            captionKey=key
+            val spans=android.text.SpannableString(value)
+            caption.entity?.takeIf{it.isNotBlank()}?.let{entity->val index=value.indexOf(entity,ignoreCase=true);if(index>=0)spans.setSpan(android.text.style.ForegroundColorSpan(Color.rgb(34,197,94)),index,index+entity.length,android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)}
+            val paint=android.text.TextPaint(Paint.ANTI_ALIAS_FLAG).apply{color=Color.WHITE;textSize=size;typeface=Typeface.create("sans-serif",Typeface.NORMAL)}
+            captionLayout=android.text.StaticLayout.Builder.obtain(spans,0,spans.length,paint,width).setAlignment(android.text.Layout.Alignment.ALIGN_CENTER).setIncludePad(false).setMaxLines(frame.captionLines.coerceIn(2,4)).setEllipsize(android.text.TextUtils.TruncateAt.END).build()
+        }
+        val layout=captionLayout ?: return
+        val top=(cy+radius*1.12f).coerceAtMost(h-layout.height-min(w,h)*.045f).coerceAtLeast(cy+radius*.6f)
+        val alpha=caption.alpha(now,frame.hud.settings.reducedMotion || !frame.hud.telemetry.systemMotion)
+        fill.color=Color.argb((210*alpha).toInt(),0,0,0);canvas.drawRoundRect(w*.06f-10,top-8,w*.94f+10,top+layout.height+8,12f,12f,fill)
+        layout.paint.alpha=(255*alpha).toInt()
+        canvas.save();canvas.translate((w-width)/2f,top);layout.draw(canvas);canvas.restore()
     }
     private fun drawText(canvas:Canvas,value:String,x:Float,baseline:Float,paint:Paint,language:AppLanguage,widthFraction:Float=if(w>h).28f else .92f){
         // StaticLayout handles native shaping and bidirectional runs; cache bounded labels.

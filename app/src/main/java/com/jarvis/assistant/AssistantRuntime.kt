@@ -64,6 +64,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import android.os.SystemClock
+import com.jarvis.assistant.phantom.*
 
 /** Process-scoped session owner: no hidden microphone start, no LLM-authorized actions. */
 class AssistantRuntime(private val context: Context) {
@@ -98,6 +99,9 @@ class AssistantRuntime(private val context: Context) {
         fail(language().choose("Something interrupted that request. Please try again.", "La solicitud se interrumpió. Inténtalo otra vez.", "درخواست متوقف شد. لطفاً دوباره تلاش کنید."))
     }
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate + errors)
+    val phantom=PhantomSession(SystemClock::elapsedRealtime)
+    val phantomPreferences=PhantomPreferences(context)
+    val phantomOverlay by lazy{PhantomOverlay(context,this,scope)}
     private val speech = SpeechController(context)
     private val models = WakeModelManager(context)
     private val tools = DeviceTools(context, store)
@@ -140,12 +144,23 @@ class AssistantRuntime(private val context: Context) {
     fun initialize() {
         if (initialized) return
         initialized = true
+        phantomOverlay.start()
+        scope.launch{while(true){
+            delay(1000)
+            if(locked() || com.jarvis.assistant.security.SystemCredentialPrivacy.pending(context))phantom.clearCaption()
+            if(phantom.timedOut()){
+                val partial=state.value.liveReply
+                cancelSession();if(!locked() && partial.isNotBlank())phantom.response(partial);phantom.finish(ExecutionState.FAILED)
+                mutableState.update{it.copy(phase=AssistantPhase.ERROR,liveReply=partial,error="That operation reached its progress or total time limit. Available text is preserved. Check request diagnostics, then retry or choose a smaller local model.")}
+                resumeWake()
+            }
+        }}
         batteryAlerts.start()
         // WorkManager restores opt-in work across process restarts; no microphone/LLM is started.
         com.jarvis.assistant.neural.BriefingScheduler.sync(context,keepExisting=true)
         scope.launch(Dispatchers.IO){if(knowledge.list().none{it.id=="builtin-help-v4" && (it.version=="10.9" || it.kind!="OFFLINE_KNOWLEDGE")})knowledge.index("Jarvis offline help","Jarvis uses a local model only after its explicit download. Say Hey Jarvis once for an adaptive command session. After a completed spoken answer an adaptive follow-up session opens without a new wake phrase. A timed-out window returns to wake-only detection. Stop disables microphone listening. Choose documents explicitly to index them. App aliases refer only to Android-visible installed apps. Codex is not a password: Android authentication is required. Daily briefings are opt-in and may run late. Google quota is independent from local inference.","OFFLINE_KNOWLEDGE","Bundled original help","10.9","2026-11-03","CC0-1.0","builtin-help-v4")}
         scope.launch{brain.progress.collectLatest{stage->
-            if(stage.startsWith("Loading"))com.jarvis.assistant.neural.NeuralEvents.emit(com.jarvis.assistant.neural.NeuralEvent.LOCAL_MODEL_LOADING,stage)
+            if(stage.startsWith("Loading")){phantom.event(TraceEvent.MODEL_LOADING);com.jarvis.assistant.neural.NeuralEvents.emit(com.jarvis.assistant.neural.NeuralEvent.LOCAL_MODEL_LOADING,stage)}
             else if(stage.startsWith("Generating"))com.jarvis.assistant.neural.NeuralEvents.emit(com.jarvis.assistant.neural.NeuralEvent.LOCAL_MODEL_GENERATING,stage)
             else if(stage=="Idle" && com.jarvis.assistant.neural.NeuralEvents.state.value.event in setOf(com.jarvis.assistant.neural.NeuralEvent.LOCAL_MODEL_LOADING,com.jarvis.assistant.neural.NeuralEvent.LOCAL_MODEL_GENERATING))com.jarvis.assistant.neural.NeuralEvents.emit(com.jarvis.assistant.neural.NeuralEvent.ASSISTANT_IDLE,"Idle")
         }}
@@ -221,7 +236,7 @@ class AssistantRuntime(private val context: Context) {
                 when (intent?.action) {
                     WakeListenerService.ACTION_PARTIAL -> {
                         if(!locked() && state.value.phase==AssistantPhase.LISTENING && state.value.voiceWindowDeadline>SystemClock.elapsedRealtime())
-                            mutableState.update{it.copy(confirmedEntity=null,transcript=intent.getStringExtra(WakeListenerService.EXTRA_TEXT).orEmpty().take(4000))}
+                            {val text=intent.getStringExtra(WakeListenerService.EXTRA_TEXT).orEmpty().take(4000);phantom.partial(text);mutableState.update{it.copy(confirmedEntity=null,transcript=text)}}
                     }
                     WakeListenerService.ACTION_COMMAND -> {
                         val text = intent.getStringExtra(WakeListenerService.EXTRA_TEXT).orEmpty()
@@ -309,7 +324,7 @@ class AssistantRuntime(private val context: Context) {
             brainStatus = runCatching {
                 if (brain.modelReady()) brain.modelStatus() else lang.choose("Local brain not installed · optional ~400 MB download", "Cerebro local no instalado · descarga opcional de ~400 MB", "مدل محلی نصب نشده · دانلود اختیاری حدود ۴۰۰ مگابایت")
             }.getOrElse { lang.choose("Local brain not installed", "Cerebro local no instalado", "مدل محلی نصب نشده است") },
-            voiceStatus = if(lang==AppLanguage.ES)"Fish Audio · ae74d1059517440aa6e5d2d50598d179 · setup/preview required" else speech.voiceStatus(lang), voices = if(lang==AppLanguage.ES)emptyList() else speech.availableVoices(lang),
+            voiceStatus = "Fish Audio · configured voice only · Output voice setup/preview required", voices = emptyList(),
         ) }
     }
 
@@ -361,14 +376,16 @@ class AssistantRuntime(private val context: Context) {
         if(cameraOwner!=null || com.jarvis.assistant.security.SystemCredentialPrivacy.pending(context))return
         if (locked() && !store.settings.value.allowLockedChat) { fail(unlockMessage()); return }
         cancelSession()
+        phantom.begin(true)
         val listeningGeneration=sessionGeneration
         pauseWake()
         val lang = language()
         mutableState.update { it.copy(confirmedEntity=null,phase = AssistantPhase.LISTENING, voiceInteraction=true, transcript = "", error = null, pendingAction = null) }
         speech.listen(lang, store.settings.value.allowNetworkSpeech,
-            onPartial = { text -> if(listeningGeneration==sessionGeneration)mutableState.update { it.copy(transcript = text) } },
+            onPartial = { text -> if(listeningGeneration==sessionGeneration){if(!locked())phantom.partial(text);mutableState.update { it.copy(transcript = text) }} },
             onResult = { text -> if(listeningGeneration==sessionGeneration)submit(text, true) },
             onError = { message -> if(listeningGeneration==sessionGeneration){if(message.startsWith("10-second") || message.startsWith("Speech inactivity"))endListening() else { fail(message); resumeWake() }} },
+            onCaptureStarted={if(listeningGeneration==sessionGeneration)phantom.event(TraceEvent.CAPTURE_STARTED)},
         )
     }
 
@@ -400,6 +417,7 @@ class AssistantRuntime(private val context: Context) {
     fun abandonExclusiveCapture(owner:Any){if(cameraOwner===owner){cameraOwner=null;mutableState.update{it.copy(phase=AssistantPhase.PAUSED)}}}
     fun trackModuleOperation(owner:Any,job:Job){moduleOperations[owner]=job;job.invokeOnCompletion{moduleOperations.remove(owner,job)}}
     fun clearSpeakerSuggestion(){
+        WakeListenerService.clearSpeakerFocus()
         speakerJob?.cancel();speakerExpiry?.cancel()
         com.jarvis.assistant.omnisystem.SpeakerSamples.clear()
         mutableState.update{it.copy(speakerProfileName=null,speakerSimilarity=null)}
@@ -437,6 +455,7 @@ class AssistantRuntime(private val context: Context) {
         if(cameraOwner!=null)return
         val text = input.trim().take(8000)
         if (text.isBlank()) return
+        com.jarvis.assistant.voice.ConversationInterruptPolicy.replacement(text)?.let{replacement->submit(replacement,voiced,speakerSampleId);return}
         mutableState.update{it.copy(confirmedEntity=null)}
         val direct=com.jarvis.assistant.neural.AppMatching.normalize(text).removePrefix("hey jarvis ").removePrefix("oye jarvis ").removePrefix("jarvis ")
         if(direct in setOf("shut down all systems","shut down","lock everything","end jarvis and lock my phone","apaga todos los sistemas","cierra jarvis y bloquea mi telefono")){
@@ -465,9 +484,7 @@ class AssistantRuntime(private val context: Context) {
                 privateTurn=false;speak(result,language(),allowCloudSpeech=false)
             }else{
                 if(locked()){mutableState.update{it.copy(liveReply="Android reports that the screen is already locked.")};return}
-                protect("Request Android to lock this screen"){
-                    val result=controller.lockRequest();stopEverything();mutableState.update{it.copy(liveReply=result)}
-                }
+                val result=controller.lockRequest();stopEverything();mutableState.update{it.copy(liveReply=result)}
             }
             return
         }
@@ -493,8 +510,12 @@ class AssistantRuntime(private val context: Context) {
                 null -> Unit
             }
         }
-        cancelSession()
+        if(PhantomPolicy.expand(text)){
+            val result=expandPhantom();mutableState.update{it.copy(liveReply=result)};return
+        }
+        cancelSession(preserveCapture=voiced)
         pauseWake()
+        phantom.submitted(text,voiced)
         privateTurn = !isLocked
         lastRequestWasVoice = voiced
         mutableState.update{it.copy(voiceInteraction=voiced)}
@@ -529,12 +550,22 @@ class AssistantRuntime(private val context: Context) {
                             "system telemetry", "show system status", "estado del sistema", "وضعیت سیستم" -> AssistantReply("Android transport: ${hud.state.value.telemetry.network}. Internet validated: ${hud.state.value.telemetry.internetValidated}. Battery: ${hud.state.value.telemetry.battery.percent?.let{"$it%"} ?: "Unavailable"}. Current stage: ${state.value.neuralStage}. CPU utilization is unavailable.")
                             else -> null
                         }
-                        val local = deviceControl.route(text,lang) ?: locationAssistant.route(text,lang) ?: routines.route(text,lang,neural) ?: presentation ?: neural.route(text,lang) ?: weatherQuestion(text,lang) ?: phone.route(text, lang) ?: tools.route(text, lang)
+                        phantom.event(TraceEvent.INTENT_RESOLVED);phantom.stage(ExecutionState.EXECUTING);phantom.event(TraceEvent.TOOL_STARTED)
+                        val fast=PhantomPolicy.fastTool(text)
+                        if(fast!=null)privateTurn=false
+                        val appTarget=com.jarvis.assistant.neural.AppMatching.commandTarget(text)
+                        val local = fast?.let{tools.fastRoute(it,lang)} ?: deviceControl.route(text,lang) ?: locationAssistant.route(text,lang) ?: (if(appTarget!=null && presentation==null)tools.requestApp(appTarget,lang) else null) ?: routines.route(text,lang,neural) ?: presentation ?: neural.route(text,lang) ?: weatherQuestion(text,lang) ?: phone.route(text, lang) ?: tools.route(text, lang)
+                        phantom.event(TraceEvent.TOOL_COMPLETED)
                         if (local != null) { clearScreenContext(); awaitScreenQuestion = false; local }
                         else generate(text, lang, uris, generation)
                     }
                 }
                 if (generation == sessionGeneration) deliver(result, lang, voiced, generation)
+            } catch (timeout:kotlinx.coroutines.TimeoutCancellationException) {
+                if(generation==sessionGeneration){
+                    phantom.event(TraceEvent.FAILED)
+                    deliver(AssistantReply("That operation timed out. Check the connection or service settings, then retry. No completed result is claimed."),lang,voiced,generation)
+                }
             } catch (cancelled: CancellationException) { throw cancelled }
             catch (error: Exception) {
                 if (generation == sessionGeneration) {
@@ -561,6 +592,7 @@ class AssistantRuntime(private val context: Context) {
     }
 
     private suspend fun generate(text: String, lang: AppLanguage, uris: List<Uri>, generation: Long, publicLocked: Boolean = false): AssistantReply = coroutineScope {
+        phantom.stage(ExecutionState.GENERATING_RESPONSE);phantom.event(TraceEvent.CONTEXT_STARTED)
         val screen = if (!publicLocked && (awaitScreenQuestion || ScreenContextPolicy.isFollowUp(text))) screenSession.current(SystemClock.elapsedRealtime()) else null
         awaitScreenQuestion = false
         if (screen == null) clearScreenContext()
@@ -594,7 +626,9 @@ class AssistantRuntime(private val context: Context) {
         val rolling=if(!publicLocked && generalHistoryAllowed)neural.conversation.summary() else ""
         if(retrieved.isNotBlank() || rolling.isNotBlank())privateTurn=true
         val contextText = listOf(selectedText, screenContext, retrieved, if(rolling.isNotBlank())"Ephemeral conversation summary (untrusted excerpts, not verified facts):\n$rolling" else "", if (memory.isNotBlank()) "USER-SAVED FACTS (untrusted data):\n$memory" else "").filter { it.isNotBlank() }.joinToString("\n\n")
-        val streamingSpeech = lang==AppLanguage.EN && (lastRequestWasVoice || settings.speakReplies) && ((!settings.useCloudVoice && !customVoice.config().enabled) || privateTurn && !customVoice.config().privateAllowed)
+        phantom.event(TraceEvent.CONTEXT_READY)
+        val config=if(lastRequestWasVoice || settings.speakReplies)withContext(Dispatchers.IO){customVoice.config(lang)} else com.jarvis.assistant.voice.CustomVoiceConfig()
+        val streamingSpeech=(lastRequestWasVoice || settings.speakReplies) && com.jarvis.assistant.titan.SpeechRoutePolicy.route(lang,config.enabled,config.id,!privateTurn,privateTurn,false,config.privateAllowed)==com.jarvis.assistant.titan.SpeechRoute.FISH
         val chunks = SpeechChunks()
         val audioQueue = Channel<String>(Channel.UNLIMITED)
         var speechFailed = false
@@ -602,25 +636,27 @@ class AssistantRuntime(private val context: Context) {
             for (part in audioQueue) {
                 if (generation != sessionGeneration || speechFailed) continue
                 if (privateTurn && locked()) continue
-                mutableState.update { it.copy(phase = AssistantPhase.SPEAKING) }
-                lastSpeechDestination = "on-device"
                 suspendCancellableCoroutine<Unit> { continuation ->
-                    continuation.invokeOnCancellation { speech.stop() }
-                    speech.speak(part, lang, { if (continuation.isActive) continuation.resume(Unit) }, { message ->
+                    continuation.invokeOnCancellation { cloudVoiceJob?.cancel();speech.stop() }
+                    speak(part,lang,generation,allowCloudSpeech=!privateTurn,completion={if(continuation.isActive)continuation.resume(Unit)},failure={message->
                         speechFailed = true
                         mutableState.update { it.copy(error = message) }
                         if (continuation.isActive) continuation.resume(Unit)
-                    })
+                    },resumeListening=false)
                 }
             }
         } else null
         var streamed = ""
         val onChunk: (String) -> Unit = { delta ->
             streamed = (streamed + delta).take(32_000)
-            if (generation == sessionGeneration) mutableState.update { it.copy(liveReply = streamed) }
-            if (streamingSpeech) chunks.add(delta).forEach { audioQueue.trySend(it) }
+            if (generation == sessionGeneration){
+                phantom.event(TraceEvent.FIRST_TOKEN);if(!locked())phantom.response(streamed)
+                mutableState.update { it.copy(liveReply = streamed) }
+                if (streamingSpeech) chunks.add(delta).forEach { audioQueue.trySend(it) }
+            }
         }
         try {
+            phantom.event(TraceEvent.INFERENCE_STARTED)
             val answer = if (useLocal) {
                 val localPrompt = LocalContextBudget.build(text, listOf(selectedText, screenContext,retrieved,rolling).joinToString("\n"), memory)
                 brain.answer(localPrompt, lang, if(generalHistoryAllowed)neural.conversation.history() else emptyList(), onChunk, concise=hud.state.value.settings.sentinel.conciseReplies)
@@ -643,53 +679,83 @@ class AssistantRuntime(private val context: Context) {
     }
 
     private suspend fun deliver(reply: AssistantReply, lang: AppLanguage, voiced: Boolean, generation: Long) {
+        if(generation!=sessionGeneration)return
+        if(!locked())phantom.response(reply.text,reply.confirmedEntity)
         reply.action?.let{action->withContext(Dispatchers.IO){knowledge.audit(action.kind,"awaiting_confirmation")}}
         if(neuralPreferences.state.value.saveHistory)store.addMessage(ChatMessage(role=MessageRole.ASSISTANT,text=reply.text,sources=reply.sources)) else store.addEphemeral(ChatMessage(role=MessageRole.ASSISTANT,text=reply.text,sources=reply.sources))
         val speakReply=!reply.speechHandled && (voiced || store.settings.value.speakReplies)
         if(reply.speechHandled)resumeWake(followUp=lastRequestWasVoice && !locked() || awaitScreenQuestion)
         else if(!speakReply)resumeWake(followUp=awaitScreenQuestion)
-        mutableState.update{it.copy(confirmedEntity=reply.confirmedEntity,moduleResponse=if(it.moduleSequence==moduleRequestSequence && it.module!=com.jarvis.assistant.omnisystem.HudModule.ASSISTANT)reply.text else it.moduleResponse,transcript="",liveReply="",pendingAction=reply.action,phase=if(speakReply)AssistantPhase.SPEAKING else AssistantPhase.READY)}
+        mutableState.update{it.copy(confirmedEntity=reply.confirmedEntity,moduleResponse=if(it.moduleSequence==moduleRequestSequence && it.module!=com.jarvis.assistant.omnisystem.HudModule.ASSISTANT)reply.text else it.moduleResponse,transcript="",liveReply="",pendingAction=reply.action,phase=if(speakReply)AssistantPhase.THINKING else AssistantPhase.READY)}
+        if(!speakReply)phantom.finish(if(reply.action!=null)ExecutionState.WAITING_USER else ExecutionState.COMPLETED)
         if(speakReply)speak(reply.text,lang,generation,reply.allowCloudSpeech,followUpOnDone=voiced || awaitScreenQuestion)
     }
 
     private fun speak(text:String,lang:AppLanguage,generation:Long=sessionGeneration,allowCloudSpeech:Boolean=true,followUpOnDone:Boolean=false,
-        volumeOverride:Float?=null,completion:(()->Unit)?=null,failure:((String)->Unit)?=null,privateSpeech:Boolean=privateTurn,publicOnly:Boolean=false){
-        fun allowed()=generation==sessionGeneration && (!locked() || publicOnly || !privateSpeech && store.settings.value.allowLockedChat)
+        volumeOverride:Float?=null,completion:(()->Unit)?=null,failure:((String)->Unit)?=null,privateSpeech:Boolean=privateTurn,publicOnly:Boolean=false,resumeListening:Boolean=true){
+        fun allowed()=generation==sessionGeneration && (!locked() || publicOnly || !privateSpeech && store.settings.value.allowLockedChat) && !com.jarvis.assistant.security.SystemCredentialPrivacy.pending(context)
         if(!allowed()){failure?.invoke(unlockMessage());return}
-        val voiceConfig=customVoice.config(lang)
-        val route=com.jarvis.assistant.titan.SpeechRoutePolicy.route(lang,voiceConfig.enabled,voiceConfig.id,allowCloudSpeech,privateSpeech,store.settings.value.useCloudVoice,voiceConfig.privateAllowed)
-        val done={if(generation==sessionGeneration){mutableState.update{it.copy(phase=AssistantPhase.READY)};completion?.invoke();resumeWake(followUp=followUpOnDone && !locked())}}
-        val error:(String)->Unit={message->if(generation==sessionGeneration){
-            mutableState.update{it.copy(error=message,phase=AssistantPhase.READY)};failure?.invoke(message);resumeWake()
+        if(resumeListening && phantom.state.value.execution in setOf(ExecutionState.IDLE,ExecutionState.COMPLETED,ExecutionState.FAILED,ExecutionState.CANCELLED))phantom.begin()
+        if(resumeListening && !locked() && phantom.state.value.caption.assistant.isBlank())phantom.response(text)
+        val traceId=phantom.state.value.trace?.id
+        val done={if(generation==sessionGeneration){
+            mutableState.update{it.copy(phase=if(resumeListening)AssistantPhase.READY else AssistantPhase.THINKING)}
+            if(resumeListening)phantom.finish(if(state.value.pendingAction!=null)ExecutionState.WAITING_USER else ExecutionState.COMPLETED) else phantom.stage(ExecutionState.GENERATING_RESPONSE,traceId)
+            completion?.invoke();if(resumeListening)resumeWake(followUp=followUpOnDone && !locked())
         }}
-        if(route==com.jarvis.assistant.titan.SpeechRoute.TEXT_ONLY){
-            lastSpeechDestination="text-only"
-            error("La voz española exclusiva no está disponible o no está autorizada para este contenido. Configura Fish Audio y prueba la voz; el texto sigue disponible. No se eligió otra voz.")
-            return
-        }
-        mutableState.update{it.copy(phase=AssistantPhase.SPEAKING)}
-        fun local(){if(allowed()){lastSpeechDestination="on-device";speech.speak(text.take(5000),lang,done,error,volumeOverride)}}
-        if(route==com.jarvis.assistant.titan.SpeechRoute.LOCAL){local();return}
-        lastSpeechDestination=if(route==com.jarvis.assistant.titan.SpeechRoute.FISH)"fish-audio" else "openai"
+        val error:(String)->Unit={message->if(generation==sessionGeneration){
+            mutableState.update{it.copy(error=message,phase=if(resumeListening)AssistantPhase.READY else AssistantPhase.THINKING)}
+            if(resumeListening)phantom.finish(ExecutionState.FAILED) else phantom.stage(ExecutionState.GENERATING_RESPONSE,traceId)
+            failure?.invoke(message);if(resumeListening)resumeWake()
+        }}
         cloudVoiceJob=scope.launch{
             var file:File?=null
             try{
-                val audio=if(route==com.jarvis.assistant.titan.SpeechRoute.FISH)customVoice.synthesize(voiceConfig,text.take(3500)) else llm.synthesizeSpeech(text.take(3500),lang)
+                val voiceConfig=withContext(Dispatchers.IO){customVoice.config(lang)}
+                check(allowed())
+                val route=com.jarvis.assistant.titan.SpeechRoutePolicy.route(lang,voiceConfig.enabled,voiceConfig.id,allowCloudSpeech,privateSpeech,false,voiceConfig.privateAllowed)
+                if(route!=com.jarvis.assistant.titan.SpeechRoute.FISH){
+                    lastSpeechDestination="text-only"
+                    error(if(lang==AppLanguage.ES)"La voz Fish Audio no está configurada o autorizada para este contenido. El texto sigue disponible; configura y prueba la voz. No se sustituyó otra voz." else "The configured Fish Audio voice is unavailable or not authorized for this content. Text remains available. Configure and preview Output voice, then retry. No substitute voice was used.")
+                    return@launch
+                }
+                lastSpeechDestination="fish-audio"
+                phantom.stage(ExecutionState.GENERATING_AUDIO,traceId);phantom.event(TraceEvent.TTS_REQUESTED,traceId)
+                mutableState.update{it.copy(phase=AssistantPhase.THINKING)}
+                val audio=customVoice.synthesize(voiceConfig,text.take(3500))
                 try{
-                    if(route==com.jarvis.assistant.titan.SpeechRoute.FISH)check(customVoice.config(lang).let{it.enabled && it.id==voiceConfig.id && it.key==voiceConfig.key && it.model==voiceConfig.model && it.privateAllowed==voiceConfig.privateAllowed})
+                    val current=withContext(Dispatchers.IO){customVoice.config(lang)}
+                    check(current.enabled && current.id==voiceConfig.id && current.key==voiceConfig.key && current.model==voiceConfig.model && current.privateAllowed==voiceConfig.privateAllowed)
                     check(allowed())
                     val temporary=File.createTempFile("reply-",".mp3",context.cacheDir);file=temporary
                     withContext(Dispatchers.IO){temporary.writeBytes(audio)}
+                    phantom.event(TraceEvent.AUDIO_BUFFERED,traceId)
                     suspendCancellableCoroutine<Unit>{continuation->
                         continuation.invokeOnCancellation{speech.stop()}
-                        speech.playAudio(temporary,{if(continuation.isActive)continuation.resume(Unit)},{message->if(continuation.isActive)continuation.resumeWith(Result.failure(java.io.IOException(message)))},volumeOverride)
+                        speech.playAudio(temporary,{if(continuation.isActive)continuation.resume(Unit)},{message->if(continuation.isActive)continuation.resumeWith(Result.failure(java.io.IOException(message)))},volumeOverride,onStarted={
+                            if(allowed()){
+                                phantom.event(TraceEvent.FIRST_AUDIO,traceId);phantom.stage(ExecutionState.SPEAKING,traceId)
+                                mutableState.update{it.copy(phase=AssistantPhase.SPEAKING)}
+                            }else{speech.stop();if(continuation.isActive)continuation.cancel()}
+                        })
                     }
                 }finally{audio.fill(0)}
                 done()
             }catch(e:CancellationException){throw e}
-            catch(_:Exception){if(lang==AppLanguage.ES)error("Fish Audio no pudo reproducir la voz española exclusiva. El texto sigue disponible; revisa clave, voz, conexión y cuota. No se sustituyó otra voz.") else local()}
+            catch(_:Exception){error(if(lang==AppLanguage.ES)"Fish Audio no pudo reproducir la voz. Revisa clave, voz, conexión y cuota. El texto sigue disponible; no se sustituyó otra voz." else "Fish Audio could not play the configured voice. Check the key, voice, connection and quota, then retry. Text remains available; no substitute voice was used.")}
             finally{file?.delete()}
         }
+    }
+
+    /** Explicit expansion uses the actual selected panel, with a notification fallback in background. */
+    fun expandPhantom(userTap:Boolean=false):String {
+        if(locked() || com.jarvis.assistant.security.SystemCredentialPrivacy.pending(context))return unlockMessage()
+        val intent=Intent(context,MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP).putExtra("phantom_expand",true)
+        phantomOverlay.hide()
+        if(userTap && android.provider.Settings.canDrawOverlays(context)){
+            return try{context.startActivity(intent);"Requested the current Jarvis panel."}catch(_:Exception){com.jarvis.assistant.titan.TitanLaunch.open(context,intent,"current Jarvis panel")}
+        }
+        return com.jarvis.assistant.titan.TitanLaunch.open(context,intent,"current Jarvis panel")
     }
 
     fun confirmAction(id: String) {
@@ -941,13 +1007,14 @@ class AssistantRuntime(private val context: Context) {
         captureStarted = 0; clearScreenContext(); awaitScreenQuestion = false
         context.stopService(Intent(context, ScreenCaptureService::class.java))
         providerCheck?.cancel()
-        cancelSession()
+        cancelSession();phantomOverlay.hide()
         wakeDownload?.cancel(); brainDownload?.cancel(); voiceDownload?.cancel()
         stopWake()
         mutableState.update { it.copy(phase = AssistantPhase.PAUSED, voiceInteraction=false,voiceWindowDeadline=0,followUpArming=false, transcript = "", pendingAction = null, modelProgress = null, brainProgress = null, voiceProgress = null) }
     }
 
-    private fun cancelSession() {
+    private fun cancelSession(preserveCapture:Boolean=false) {
+        if(!preserveCapture || phantom.state.value.execution !in setOf(ExecutionState.WAKE,ExecutionState.LISTENING,ExecutionState.TRANSCRIBING))phantom.finish(ExecutionState.CANCELLED)
         captureStarted = 0
         ++sessionGeneration
         lastSpeechDestination = "none"
@@ -961,7 +1028,7 @@ class AssistantRuntime(private val context: Context) {
     fun trimMemory() {
         if (session?.isActive != true && neuralOperation?.isActive != true) scope.launch { runCatching { brain.releaseIdle() } }
     }
-    private fun fail(message: String) { mutableState.update { it.copy(error = message, phase = AssistantPhase.ERROR) } }
+    private fun fail(message: String) { phantom.finish(ExecutionState.FAILED);mutableState.update { it.copy(error = message, phase = AssistantPhase.ERROR) } }
     private fun language() = store.settings.value.language
     private fun locked() = context.getSystemService(KeyguardManager::class.java)?.isDeviceLocked == true
     private fun unlockMessage() = language().choose("Unlock your phone to use Jarvis with private information.", "Desbloquea el teléfono para usar Jarvis con información privada.", "برای استفاده از اطلاعات خصوصی، قفل گوشی را باز کنید.")

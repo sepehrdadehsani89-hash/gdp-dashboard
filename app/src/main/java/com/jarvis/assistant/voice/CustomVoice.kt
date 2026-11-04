@@ -30,7 +30,7 @@ object CustomVoicePolicy {
     }
 }
 class CustomVoiceConfig(val id:String=CustomVoicePolicy.REQUESTED_ID,val model:String="s2.1-pro",val key:String="",val enabled:Boolean=false,val privateAllowed:Boolean=false)
-class CustomVoice(private val vault:FeatureVault,private val http:ModuleHttp=ModuleHttp()) {
+class CustomVoice(private val vault:FeatureVault,private val http:ModuleHttp=ModuleHttp(okhttp3.OkHttpClient.Builder().connectTimeout(8,java.util.concurrent.TimeUnit.SECONDS).readTimeout(20,java.util.concurrent.TimeUnit.SECONDS).callTimeout(25,java.util.concurrent.TimeUnit.SECONDS).retryOnConnectionFailure(false).followRedirects(false).followSslRedirects(false).build())) {
     private fun namespace(language:AppLanguage)=if(language==AppLanguage.ES)"spanish_output_voice" else "custom_output_voice"
     fun config(language:AppLanguage=AppLanguage.EN):CustomVoiceConfig {
         val default=if(language==AppLanguage.ES)CustomVoiceConfig(id=CustomVoicePolicy.SPANISH_ID) else CustomVoiceConfig()

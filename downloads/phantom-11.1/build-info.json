@@ -1,0 +1,56 @@
+{
+  "package": "com.jarvis.next",
+  "version_code": 14,
+  "version_name": "11.1.0-beta1-reinstall",
+  "abi": [
+    "arm64-v8a"
+  ],
+  "min_sdk": 29,
+  "target_sdk": 35,
+  "debuggable": false,
+  "apk": "Jarvis-11.1.0-beta1-arm64-reinstall.apk",
+  "bytes": 84112397,
+  "sha256": "1dcc9458ed6241d86075aa76f9c177727b556f937af732c3d665ac8fac59abed",
+  "certificate_sha256": "1094ecc1e01dfb873a8e63689b09dc156fff9d41f77ffdfae27e702991711bda",
+  "signature_v2_verified": true,
+  "zip_alignment_4_verified": true,
+  "private_material_or_weights_packaged": false,
+  "source_base_commit": "36e988949b0542bb3344f123dbedd99734a61697",
+  "source_manifest_sha256": "f82879f2ea1f3c10ed406df09edd02486d7a91507504ae3140eb37af757eeed6",
+  "unit_tests": {
+    "tests": 317,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "lint": {
+    "reinstall": {
+      "Warning": 42
+    }
+  },
+  "new_android_runtime_cases_executed": 0,
+  "android_runtime_blocked": "No physical handset/accessory connected; retained API29 AVD previously stalled in system_server/package commands. No instrumentation runtime executed.",
+  "original_jarvis_7_in_place_update": false,
+  "physical_redmi9_verified": false,
+  "live_optional_provider_accounts_verified": false,
+  "full_master_directive_complete": false,
+  "signing_key_generated_this_upgrade": false,
+  "off_cloud_signing_backup_confirmed": false,
+  "final_build_log": "phantom111-release.log",
+  "final_build_duration": "8m 26s",
+  "production_source_frozen_and_verified": true,
+  "android_test_source_compilation": "compileDebugAndroidTestKotlin succeeded; compilation only",
+  "new_android_runtime_cases_passed": 0,
+  "directive_android_acceptance_cases": 37,
+  "directive_android_acceptance_cases_executed": 0,
+  "full_11_1_directive_complete": false,
+  "both_voice_providers_confirmed_by_user": "Fish Audio",
+  "english_voice_id": "05b36da8574341d0803391491850db20",
+  "english_voice_id_editable": true,
+  "spanish_voice_id": "ae74d1059517440aa6e5d2d50598d179",
+  "spanish_voice_exclusive": true,
+  "silent_system_or_openai_voice_fallback": false,
+  "voice_account_and_acoustic_verification": false,
+  "actual_redmi_delay_root_cause_reproduced": false,
+  "commercial_readiness_verified": false
+}

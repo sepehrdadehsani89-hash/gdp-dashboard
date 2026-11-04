@@ -69,6 +69,7 @@ class SpeechController(context: Context) {
         onPartial: (String) -> Unit,
         onResult: (String) -> Unit,
         onError: (String) -> Unit,
+        onCaptureStarted:()->Unit={},
     ) {
         main.post {
             stopInternal()
@@ -83,6 +84,7 @@ class SpeechController(context: Context) {
                     onPartial = { if (token == generation) onPartial(it) },
                     onResult = { if (token == generation) { offlineSpeech = null; onResult(it) } },
                     onError = { if (token == generation) { offlineSpeech = null; onError(it) } },
+                    onCaptureStarted={if(token==generation)onCaptureStarted()},
                 ).also { it.start() }
                 return@post
             }
@@ -108,7 +110,7 @@ class SpeechController(context: Context) {
                     else SpeechRecognizer.createSpeechRecognizer(context)
                 recognizer = instance
                 instance.setRecognitionListener(object : RecognitionListener {
-                    override fun onReadyForSpeech(params: Bundle?) { com.jarvis.assistant.hud.AudioSignals.start(instance,"Android recognizer · RMS level") }
+                    override fun onReadyForSpeech(params: Bundle?) { if(token==generation)onCaptureStarted();com.jarvis.assistant.hud.AudioSignals.start(instance,"Android recognizer · RMS level") }
                     override fun onBeginningOfSpeech() { speechDetected=true;captureTiming.progress("[Android speech started]") }
                     override fun onRmsChanged(rmsdB: Float) { if(token==generation){val level=((rmsdB+2)/12).coerceIn(0f,1f);com.jarvis.assistant.hud.AudioSignals.level(instance,level);if(speechDetected)captureTiming.energy(level)} }
                     override fun onBufferReceived(buffer: ByteArray?) = Unit
@@ -219,7 +221,7 @@ class SpeechController(context: Context) {
         }
     }
 
-    fun playAudio(file: File, onDone: () -> Unit, onError: (String) -> Unit,volumeOverride:Float?=null) {
+    fun playAudio(file: File, onDone: () -> Unit, onError: (String) -> Unit,volumeOverride:Float?=null,onStarted:()->Unit={}) {
         main.post {
             if (isQuietMode()) { onError("Voice reply paused by Silent or Do Not Disturb mode."); return@post }
             stopInternal(); temporaryPlayback=file; speakingDone = onDone; speakingError = onError
@@ -236,7 +238,7 @@ class SpeechController(context: Context) {
                         val controls=com.jarvis.assistant.hud.HudPreferences(context).read()
                         p.setVolume(volumeOverride ?: controls.voiceVolume,volumeOverride ?: controls.voiceVolume)
                         runCatching { p.playbackParams = android.media.PlaybackParams().setSpeed(controls.voiceRate).setPitch(controls.voicePitch) }
-                        p.start()
+                        try{p.start();onStarted()}catch(_:Exception){failSpeaking("Cloud voice playback failed.")}
                     }
                 }
             } catch (_: Exception) { failSpeaking("Cloud voice playback failed.") }

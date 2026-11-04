@@ -7,7 +7,9 @@ class UtteranceAssembler(private val now:()->Long,private val threshold:Float=.0
     private var lastVoice=now()
     fun reset(){segments.clear();tail="";lastVoice=now()}
     fun partial(text:String){val clean=text.trim().take(8000);if(clean!=tail && clean.isNotBlank()){tail=clean;lastVoice=now()}}
-    fun segment(text:String){val clean=text.trim();if(clean.isNotBlank() && this.text().length+clean.length<=8000){segments+=clean;tail="";lastVoice=now()}}
+    fun segment(text:String,keepPartial:Boolean=false){val clean=text.trim();if(clean.isNotBlank() && this.text().length+clean.length<=8000){segments+=clean;if(!keepPartial)tail="";lastVoice=now()}}
+    fun clearPartial(){tail=""}
+    val hasUnfinishedSpeech:Boolean get()=tail.isNotBlank()
     fun energy(level:Float){if((segments.isNotEmpty() || tail.isNotBlank()) && level.isFinite() && level>=threshold)lastVoice=now()}
     fun text()=(segments+listOf(tail).filter{it.isNotBlank()}).joinToString(" ").take(8000)
     fun ready():Boolean {

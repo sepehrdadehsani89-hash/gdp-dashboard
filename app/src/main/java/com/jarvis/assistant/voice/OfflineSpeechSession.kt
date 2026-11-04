@@ -22,6 +22,7 @@ internal class OfflineSpeechSession(
     private val onPartial: (String) -> Unit,
     private val onResult: (String) -> Unit,
     private val onError: (String) -> Unit,
+    private val onCaptureStarted:()->Unit={},
 ) {
     private val closed = AtomicBoolean(false)
     private val audioLock = Any()
@@ -56,6 +57,7 @@ internal class OfflineSpeechSession(
                             synchronized(audioLock) {
                                 if (closed.get()) return@Thread
                                 audio.startRecording()
+                                onCaptureStarted()
                             }
                             com.jarvis.assistant.hud.AudioSignals.start(this, "Offline microphone · PCM RMS")
                             val bytes = ByteArray(4096)

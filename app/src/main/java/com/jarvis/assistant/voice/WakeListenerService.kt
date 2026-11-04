@@ -38,6 +38,7 @@ class WakeListenerService : Service() {
     private val audioLock = Any()
     private var worker: Thread? = null
     private val speakerBuffer=com.jarvis.assistant.omnisystem.SpeakerSampleBuffer()
+    private val speakerFocus by lazy{com.jarvis.assistant.phantom.SpeakerFocusEngine((application as com.jarvis.assistant.JarvisApplication).runtime.speakers,SystemClock::elapsedRealtime)}
     @Volatile private var failureReason:String?=null
     private var language = AppLanguage.EN
     private val window = ConversationWindow { SystemClock.elapsedRealtime() }
@@ -163,8 +164,22 @@ class WakeListenerService : Service() {
                                     runCatching{speakerBuffer.feed(bytes,count,(application as com.jarvis.assistant.JarvisApplication).runtime.speakers.autoEnabled)}.onFailure{speakerBuffer.clear()}
                                     if (window.expire()) { recognizer.reset(); recognizerSerial = window.snapshot().resetSerial; publish(listeningText(), true); continue }
                                     val serial = window.snapshot().resetSerial
+                                    speakerFocus.setSerial(serial)
+                                    for(decision in speakerFocus.drain()){
+                                        if(!window.acceptsCommand(decision.serial))continue
+                                        if(decision.accepted){
+                                            utterance.segment(decision.text,keepPartial=true)
+                                            if(!utterance.hasUnfinishedSpeech && !speakerFocus.hasPending(decision.serial) && UtteranceAssembler.fastCommand(utterance.text()))deliver(utterance.text(),decision.serial)
+                                        }
+                                        else{
+                                            utterance.reset()
+                                            sendBroadcast(Intent(ACTION_PARTIAL).setPackage(packageName).putExtra(EXTRA_TEXT,""))
+                                            publish("Voice focus was uncertain or heard a different profile. Please repeat clearly.",true,awaitingCommand=true)
+                                        }
+                                    }
                                     if (recognizerSerial != serial) { recognizer.reset(); recognizerSerial = serial; utterance.reset();continue }
                                     if (window.captureReady()) {
+                                        (application as com.jarvis.assistant.JarvisApplication).runtime.phantom.apply{begin(true);event(com.jarvis.assistant.phantom.TraceEvent.CAPTURE_STARTED)}
                                         utterance.reset();
                                         publish(language.choose("Follow-up · adaptive inactivity", "Siguiente pregunta · inactividad adaptativa", "پرسش بعدی · ۱۰ ثانیه گوش می‌دهم"), true, awaitingCommand = true)
                                         scheduleTimeout()
@@ -181,7 +196,7 @@ class WakeListenerService : Service() {
                                         sendBroadcast(Intent(ACTION_PARTIAL).setPackage(packageName).putExtra(EXTRA_TEXT,utterance.text()))
                                     }
                                     if(!final || RecognitionConfidence.acceptsFinal(json,com.jarvis.assistant.titan.VoicePreferences(this).confidence.toDouble()))handleTranscript(text,final,serial)
-                                    if(window.acceptsCommand(serial) && utterance.ready())deliver(utterance.text(),serial)
+                                    if(window.acceptsCommand(serial) && !speakerFocus.hasPending(serial) && utterance.ready())deliver(utterance.text(),serial)
                                 }
                             }
                         } finally { speakerBuffer.clear();com.jarvis.assistant.hud.AudioSignals.stop(audio); runCatching { audio.stop() }; audio.release();processing.close(); recorder = null }
@@ -214,6 +229,8 @@ class WakeListenerService : Service() {
         val afterWake = WakePhraseMatcher.extractCommand(text, language)
         if (afterWake != null) {
             if (window.wake()) {
+                speakerFocus.newWake()
+                (application as com.jarvis.assistant.JarvisApplication).runtime.phantom.apply{begin(true);event(com.jarvis.assistant.phantom.TraceEvent.WAKE_DETECTED)}
                 activateHud()
                 publish(language.choose("Command window · adaptive inactivity", "Tu petición · inactividad adaptativa", "فرصت دستور · ۱۰ ثانیه بی‌گفتاری"), true, awaitingCommand = true)
                 scheduleTimeout()
@@ -228,6 +245,11 @@ class WakeListenerService : Service() {
         } else if(final && window.acceptsCommand(serial))segmentCommand(text,serial)
     }
     private fun segmentCommand(text:String,serial:Long){
+        if((application as com.jarvis.assistant.JarvisApplication).runtime.speakers.focusEnabled){
+            utterance.clearPartial()
+            if(!speakerFocus.offer(text,serial,speakerBuffer.take())){utterance.reset();publish("Voice focus is busy. Please repeat one short request.",true,awaitingCommand=true)}
+            return
+        }
         utterance.segment(text)
         if(UtteranceAssembler.fastCommand(utterance.text()))deliver(utterance.text(),serial)
     }
@@ -298,6 +320,7 @@ class WakeListenerService : Service() {
     }
 
     private fun stopCaptureImmediately(){
+        speakerFocus.reset()
         synchronized(audioLock){running=false;paused=true;window.disable();runCatching{recorder?.stop()}}
         main.removeCallbacks(windowTimeout)
         mutableState.value=WakeState(status=failureReason ?: language.choose("Wake listening is off","Activación desactivada","بیدارباش خاموش است"),language=language)
@@ -305,6 +328,7 @@ class WakeListenerService : Service() {
 
     override fun onDestroy() {
         stopCaptureImmediately()
+        speakerFocus.close()
         if(current.get()===this)current.clear()
         main.removeCallbacks(renewCpu)
         getSystemService(NotificationManager::class.java).cancel(3102)
@@ -330,6 +354,7 @@ class WakeListenerService : Service() {
         const val EXTRA_TEXT = "text"
         const val EXTRA_LANGUAGE = "language"
         const val EXTRA_STATUS = "status"
+        fun clearSpeakerFocus(){current.get()?.speakerFocus?.reset()}
         @Volatile private var current=java.lang.ref.WeakReference<WakeListenerService>(null)
         fun stopImmediately(){current.get()?.stopCaptureImmediately()}
         private const val CHANNEL = "jarvis_wake"

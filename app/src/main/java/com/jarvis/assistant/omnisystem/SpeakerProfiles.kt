@@ -70,6 +70,8 @@ class SpeakerProfiles(private val context:Context,private val vault:FeatureVault
     private val mutex=Mutex()
     @Volatile private var extractor:SpeakerEmbeddingExtractor?=null
     val isWarm get()=extractor!=null
+    val focusEnabled:Boolean get()=options.getBoolean("segment_focus",false) && autoEnabled
+    fun setFocus(enabled:Boolean){check(unlocked());if(enabled)check(autoEnabled);check(options.edit().putBoolean("segment_focus",enabled).commit())}
     private val cleanupScope=CoroutineScope(SupervisorJob()+Dispatchers.IO)
     private var releaseJob:Job?=null
     private val options=context.getSharedPreferences("jarvis_speaker_options_v1",Context.MODE_PRIVATE)

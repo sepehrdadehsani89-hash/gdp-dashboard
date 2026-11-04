@@ -1,0 +1,15 @@
+# Phantom 11.1 build verification
+
+Final frozen-source pipeline succeeded in 8m 26s. **317 JVM tests passed**, zero failures/errors/skips. Android lint: zero errors/fatals, 42 warnings; warnings were not suppressed to obtain a pass. Android test sources compiled with compileDebugAndroidTestKotlin; **no instrumentation case ran** and no physical Redmi 9 result is claimed.
+
+Version code 14 /11.1.0-beta1-reinstall, package com.jarvis.next, Android 10+/target35, non-debuggable ARM64. Source baseline 36e988949b0542bb3344f123dbedd99734a61697 (10.9). No verified 11.0 foundation was present. Main/test source and build configuration were frozen by SHA-256 before final packaging and verified unchanged afterward. The source-input manifest accompanies the artifact.
+
+APK: 84,112,397 bytes. SHA-256: `1dcc9458ed6241d86075aa76f9c177727b556f937af732c3d665ac8fac59abed`. V2 signature and 4-byte ZIP alignment verified. Retained certificate SHA-256: `1094ecc1e01dfb873a8e63689b09dc156fff9d41f77ffdfae27e702991711bda`. Only arm64-v8a native libraries. No private signing archives/unlock files/keystores, private memory export, optional model weights or Android-test fixture classes are packaged. The inherited Vosk 4KiB ELF limitation remains; this is not a universal 16KiB-page or Play readiness claim.
+
+New JVM checks cover stalled progress and bounded total work, exclusion of active capture from inference deadlines, stale audio generation IDs, partial/final text replacement, caption fade/expiry/cancellation, bounded timings-only traces, exhaustive privacy/presentation combinations, narrow native fast routes, normalized position bounds, conservative expiring speaker affinity and explicit spoken app repair. Updated voice tests forbid silent English fallback as well as preserving exclusive Spanish routing and private-text consent. These are host policy/regression tests, not real microphones or WindowManager surfaces.
+
+No real Fish account call, audible voice verification, local-model latency/thermal benchmark, TV/overlap calibration, launcher caption inspection, screen-lock test or actual overlay touch/cutout/rotation test was available here. The user's one-to-two-minute delay has not been reproduced; source risks were addressed and real on-device tracing added without claiming a measured speedup. The previously preserved API29 emulator stalled in system_server/package commands; it was not reset to manufacture passing runtime evidence.
+
+The retained reinstall signer can update compatible newer betas. **Original Jarvis7.0 uses a different certificate and cannot accept this APK in place.** No original key was recovered, no replacement key was generated, and no uninstall or phone-data clear was performed. Private off-cloud signing backup copies remain unconfirmed. Keep the original installed app and its data untouched if Android rejects this signer.
+
+See [implementation limits](STATUS.md), [37-case device acceptance ledger](ACCEPTANCE.md), and [phone setup](SETUP.md). This is a partial development beta, not full directive or commercial sign-off.

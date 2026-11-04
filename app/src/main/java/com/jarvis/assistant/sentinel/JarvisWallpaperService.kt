@@ -9,6 +9,7 @@ import androidx.core.content.ContextCompat
 import com.jarvis.assistant.JarvisApplication
 import com.jarvis.assistant.MainActivity
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.combine
 import java.util.concurrent.atomic.AtomicInteger
 
 /** Wallpaper selection never starts a microphone service or asks for microphone access. */
@@ -50,7 +51,10 @@ class JarvisWallpaperService:WallpaperService() {
                 var drawn=false
                 try {
                     canvas=try{surfaceHolder.lockHardwareCanvas()}catch(_:Exception){surfaceHolder.lockCanvas()}
-                    if(canvas!=null){renderer.draw(canvas,frame,started);drawn=true}
+                    if(canvas!=null){
+                        val safe=runtime.phantomPreferences.state.value.captions && getSystemService(android.app.KeyguardManager::class.java)?.isDeviceLocked==false && !com.jarvis.assistant.security.SystemCredentialPrivacy.pending(this@JarvisWallpaperService)
+                        renderer.draw(canvas,if(safe)frame else frame.copy(caption=com.jarvis.assistant.phantom.LiveCaption()),started);drawn=true
+                    }
                 }catch(_:IllegalArgumentException){/* Surface is being replaced by Android. */}
                 catch(_:IllegalStateException){/* A hidden/destroyed surface is not a render target. */}
                 finally{canvas?.let{if(runCatching{surfaceHolder.unlockCanvasAndPost(it)}.isSuccess && drawn)frames.incrementAndGet()}}
@@ -58,6 +62,7 @@ class JarvisWallpaperService:WallpaperService() {
             val snapshot=frame
             val fps=WallpaperRenderPolicy.fps(visible,surfaceReady,interactive,snapshot.hud.settings,snapshot.hud.telemetry.battery,snapshot.hud.telemetry.powerSaver,snapshot.hud.telemetry.systemMotion,snapshot.visual.mode)
             if(fps>0 && !destroyed && visible)renderHandler.postDelayed(this,(1000L/fps-(SystemClock.elapsedRealtime()-started)).coerceAtLeast(1))
+            else if(snapshot.caption.visible(started) && snapshot.caption.expiresAt>0 && !destroyed && visible)renderHandler.postDelayed(this,if(snapshot.caption.expiresAt-started<1000 && !snapshot.hud.settings.reducedMotion)80L else 1000L)
         }}
         override fun onCreate(holder:SurfaceHolder){super.onCreate(holder);setTouchEventsEnabled(false);setOffsetNotificationsEnabled(false);engines.incrementAndGet()}
         override fun onSurfaceCreated(holder:SurfaceHolder){super.onSurfaceCreated(holder);synchronized(surfaceLock){surfaceReady=true};requestFrame()}
@@ -72,9 +77,9 @@ class JarvisWallpaperService:WallpaperService() {
         private fun startObservation(){
             interactive=getSystemService(PowerManager::class.java).isInteractive
             runtime.hud.startVisible(this,includeWeather=runtime.hud.state.value.settings.sentinel.wallpaperWeather)
-            if(!registered){ContextCompat.registerReceiver(this@JarvisWallpaperService,screenReceiver,IntentFilter().apply{addAction(Intent.ACTION_SCREEN_OFF);addAction(Intent.ACTION_SCREEN_ON)},ContextCompat.RECEIVER_EXPORTED);registered=true}
+            if(!registered){ContextCompat.registerReceiver(this@JarvisWallpaperService,screenReceiver,IntentFilter().apply{addAction(Intent.ACTION_SCREEN_OFF);addAction(Intent.ACTION_SCREEN_ON);addAction(Intent.ACTION_USER_PRESENT)},ContextCompat.RECEIVER_EXPORTED);registered=true}
             observation?.cancel()
-            observation=scope.launch{runtime.state.collect{state->
+            observation=scope.launch{combine(runtime.state,runtime.phantom.state,runtime.phantomPreferences.state){state,phantom,prefs->Triple(state,phantom,prefs)}.collect{(state,phantom,prefs)->
                 val hud=state.hud
                 // Observe only visible artwork. Memory/network/PCM wake-only updates and
                 // sub-minute timestamps must not wake a static wallpaper renderer.
@@ -83,13 +88,16 @@ class JarvisWallpaperService:WallpaperService() {
                 val mode=state.sentinelVisual.mode
                 val audio=if(mode in listOf(SentinelMode.LISTENING,SentinelMode.ACTIVATING))state.audio else com.jarvis.assistant.hud.AudioReading()
                 val playback=if(mode==SentinelMode.SPEAKING)state.playback else PlaybackReading()
-                val next=WallpaperFrame(hud.copy(telemetry=telemetry,weather=if(hud.settings.sentinel.wallpaperWeather)hud.weather else com.jarvis.assistant.hud.WeatherState()),audio,state.sentinelVisual,state.settings.language,playback,state.followUpArming,state.voiceWindowDeadline)
+                val safe=prefs.captions && getSystemService(android.app.KeyguardManager::class.java)?.isDeviceLocked==false && !com.jarvis.assistant.security.SystemCredentialPrivacy.pending(this@JarvisWallpaperService)
+                val next=WallpaperFrame(hud.copy(telemetry=telemetry,weather=if(hud.settings.sentinel.wallpaperWeather)hud.weather else com.jarvis.assistant.hud.WeatherState()),audio,state.sentinelVisual,state.settings.language,playback,state.followUpArming,state.voiceWindowDeadline,if(safe)phantom.caption else com.jarvis.assistant.phantom.LiveCaption(),prefs.lines)
                 runtime.hud.weatherInterest(this@SentinelEngine,hud.settings.sentinel.wallpaperWeather)
                 if(next!=frame){frame=next;requestFrame()}
             }}
             requestFrame()
         }
         private fun stopObservation(){
+            frame=frame.copy(caption=com.jarvis.assistant.phantom.LiveCaption())
+            renderHandler.post{renderer.clearCaption()}
             renderHandler.removeCallbacks(draw)
             renderHandler.removeCallbacks(schedule)
             observation?.cancel();observation=null

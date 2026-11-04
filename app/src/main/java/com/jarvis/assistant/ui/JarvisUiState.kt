@@ -51,6 +51,7 @@ data class JarvisUiState(
 )
 
 data class JarvisUiActions(
+    val onOpenPhantom:()->Unit={},
     val onOpenTitan:(String)->Unit={},
     val onOpenMemoryCards:()->Unit={},
     val onOpenCamera: ()->Unit = {},

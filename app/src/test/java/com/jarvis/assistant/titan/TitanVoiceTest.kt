@@ -16,9 +16,9 @@ class TitanVoiceTest {
         }
     }
     @Test fun privateSpeechRequiresSeparateExplicitConsentAndCannotUseLegacyCloud(){
-        assertEquals(SpeechRoute.LOCAL,SpeechRoutePolicy.route(AppLanguage.EN,true,"approved",true,true,true))
+        assertEquals(SpeechRoute.TEXT_ONLY,SpeechRoutePolicy.route(AppLanguage.EN,true,"approved",true,true,true))
         assertEquals(SpeechRoute.FISH,SpeechRoutePolicy.route(AppLanguage.EN,true,"approved",false,true,true,true))
-        assertEquals(SpeechRoute.OPENAI,SpeechRoutePolicy.route(AppLanguage.EN,false,"approved",true,false,true))
+        assertEquals(SpeechRoute.TEXT_ONLY,SpeechRoutePolicy.route(AppLanguage.EN,false,"approved",true,false,true))
         assertEquals(SpeechRoute.TEXT_ONLY,SpeechRoutePolicy.route(AppLanguage.FA,true,"approved",true,false,true))
     }
     @Test fun onlyEnglishAndSpanishCanBeActivatedWithoutDeletingLegacyEnumData(){

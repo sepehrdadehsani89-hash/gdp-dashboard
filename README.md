@@ -1,10 +1,10 @@
 # Jarvis for Android
 
-Current development beta: [Jarvis10.9 Quantum Core · signed ARM64 APK](downloads/quantum-10.9/Jarvis-10.9.0-beta1-arm64-reinstall.apk). [Setup](docs/quantum-10.9/SETUP.md) · [20-feature implementation status](docs/quantum-10.9/STATUS.md) · [50-feature preservation boundaries](docs/quantum-10.9/PRESERVATION.md) · [Build evidence](downloads/quantum-10.9/build-info.json).
+Current development beta: [Jarvis 11.1 Phantom · signed ARM64 APK](downloads/phantom-11.1/Jarvis-11.1.0-beta1-arm64-reinstall.apk). [Phone setup](docs/phantom-11.1/SETUP.md) · [Implementation and limits](docs/phantom-11.1/STATUS.md) · [37-case acceptance ledger](docs/phantom-11.1/ACCEPTANCE.md) · [Build evidence](downloads/phantom-11.1/build-info.json).
 
-**The10.9 APK uses the retained reinstall certificate and updates that signing line only. It cannot update original Jarvis7.0 in place. Keep the original app and its data installed. No replacement signing key was generated.** This beta contains explicitly partial and unimplemented capabilities; it is not a complete70-feature or commercial acceptance sign-off. Both configured voices are Fish Audio; actual account access and audible output require a real private key and successful preview. Spanish never substitutes another speaker.
+**This APK uses the retained reinstall certificate and updates that signing line only. It cannot update original Jarvis 7.0 in place. Keep the original app and its data installed. No replacement signing key was generated.** Phantom adds request timings, native fast paths, sentence Fish speech, optional speaker focus, real live-wallpaper captions and user-granted floating windows. It is a partial development beta; physical Redmi acceptance and commercial readiness remain unverified. Both languages use only their configured Fish Audio voice or text/error; account setup and actual voice preview are required. Settings → Phantom enables the optional presentation features.
 
-Previous beta: [Jarvis10.4](downloads/sentinel-10.4/README.md).
+Previous beta: [Jarvis 10.9 Quantum Core](downloads/quantum-10.9/Jarvis-10.9.0-beta1-arm64-reinstall.apk). [Preserved feature boundaries](docs/quantum-10.9/PRESERVATION.md).
 
 ## Historical original-signature 7.0 release
 

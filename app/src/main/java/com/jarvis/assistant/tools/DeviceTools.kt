@@ -37,6 +37,16 @@ class DeviceTools(private val context: Context, private val store: JarvisStore) 
         .connectTimeout(10, TimeUnit.SECONDS).readTimeout(15, TimeUnit.SECONDS)
         .callTimeout(25, TimeUnit.SECONDS).followRedirects(false).build()
 
+    /** Canonical, local-only requests: no vault, model, network or app scanning. */
+    fun fastRoute(canonical:String,language:AppLanguage):AssistantReply?=when(canonical){
+        "battery"->{
+            val level=context.getSystemService(BatteryManager::class.java).getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
+            AssistantReply(if(level in 0..100)language.choose("Battery level is $level percent.","La batería está al $level por ciento.","Battery $level%") else "Android did not report a battery level.")
+        }
+        "what time is it"->{val time=LocalDateTime.now().format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT).withLocale(Locale.forLanguageTag(language.tag)));AssistantReply(language.choose("It's $time.","Son las $time.",time))}
+        else->null
+    }
+
     suspend fun route(text: String, language: AppLanguage): AssistantReply? {
         com.jarvis.assistant.contacts.ContactShortcutPolicy.target(text)?.let{target->
             if(locked())return AssistantReply(unlockMessage(language))

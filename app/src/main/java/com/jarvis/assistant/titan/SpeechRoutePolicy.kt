@@ -9,6 +9,6 @@ object SpeechRoutePolicy {
         if(language !in AppLanguage.supported)return SpeechRoute.TEXT_ONLY
         val eligible=enabled && (allowCloud && !privateTurn || privateTurn && privateConsent)
         if(language==AppLanguage.ES)return if(eligible && id==CustomVoicePolicy.SPANISH_ID)SpeechRoute.FISH else SpeechRoute.TEXT_ONLY
-        return when{eligible->SpeechRoute.FISH;legacyCloud && allowCloud && !privateTurn->SpeechRoute.OPENAI;else->SpeechRoute.LOCAL}
+        return if(eligible && CustomVoicePolicy.validId(id))SpeechRoute.FISH else SpeechRoute.TEXT_ONLY
     }
 }

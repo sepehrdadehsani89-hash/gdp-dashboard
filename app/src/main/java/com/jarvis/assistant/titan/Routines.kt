@@ -43,7 +43,7 @@ class Routines(private val vault:FeatureVault){
     @Synchronized fun remove(id:String)=persist(all().filterNot{it.id==id})
     private fun persist(routines:List<Routine>){vault.write("titan_routines",JSONArray().apply{routines.forEach{r->put(JSONObject().put("id",r.id).put("name",r.name).put("trigger",r.trigger).put("steps",JSONArray(r.steps)).put("enabled",r.enabled))}}.toString())}
     suspend fun route(input:String,language:AppLanguage,orchestrator:NeuralOrchestrator):AssistantReply? {
-        val r=all().singleOrNull{it.enabled && AppMatching.normalize(it.trigger)==AppMatching.normalize(input)} ?: return null
+        val r=kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO){all().singleOrNull{it.enabled && AppMatching.normalize(it.trigger)==AppMatching.normalize(input)}} ?: return null
         val steps=r.steps.map(RoutinePolicy::step)
         val canonical=steps.mapIndexed{i,step->when(step.id){
             "time"->"what time is it";"battery"->"battery";"calendar"->"my calendar today";"tasks"->"show tasks"
