@@ -71,8 +71,6 @@ class AssistantRuntime(private val context: Context) {
     val store = JarvisStore(context)
     val features = com.jarvis.assistant.omnisystem.FeatureVault(context)
     val crashDiagnostics=com.jarvis.assistant.rebirth.CrashDiagnostics(context)
-    val googleAccounts by lazy{com.jarvis.assistant.rebirth.GoogleAccounts(context,features)}
-    val gmail by lazy{com.jarvis.assistant.rebirth.GmailRepository(googleAccounts,brain)}
     val customVoice by lazy{com.jarvis.assistant.voice.CustomVoice(features)}
     val deviceControl by lazy{com.jarvis.assistant.quantum.DeviceControl(context)}
     val routines by lazy{com.jarvis.assistant.titan.Routines(features)}
@@ -316,6 +314,7 @@ class AssistantRuntime(private val context: Context) {
             val prefs=com.jarvis.assistant.titan.VoicePreferences(context)
             val text=com.jarvis.assistant.titan.GreetingPolicy.greeting(java.time.ZonedDateTime.now().hour,lang,profile!=null,profile?.owner==true,profile?.name,
                 prefs.morning,prefs.afternoon,prefs.evening,prefs.night)
+            privateTurn=profile!=null
             mutableState.update{it.copy(liveReply=text,phase=AssistantPhase.READY,voiceInteraction=true)}
             speak(text,lang,generation,allowCloudSpeech=profile==null,followUpOnDone=true,privateSpeech=profile!=null,publicOnly=profile==null)
         }
@@ -473,6 +472,12 @@ class AssistantRuntime(private val context: Context) {
         mutableState.update { it.copy(module=module, moduleSequence=it.moduleSequence+1,moduleResponse="") }
     }
 
+    private fun lockedRequestDenied(voiced:Boolean,chatDisabled:Boolean){
+        val message=if(chatDisabled)language().choose("I heard you. Unlock your phone, or enable general chat while locked in Jarvis Settings. Private actions still require Android unlock.","Te escuché. Desbloquea el teléfono o activa la conversación general con la pantalla bloqueada en Ajustes. Las acciones privadas requieren desbloquear Android.","صدایتان را شنیدم. گوشی را باز کنید یا گفت‌وگوی عمومی هنگام قفل را در تنظیمات فعال کنید. کارهای خصوصی همچنان نیاز به باز شدن قفل اندروید دارند.") else unlockMessage()
+        pauseWake();fail(message)
+        if(voiced)speak(message,language(),allowCloudSpeech=true,privateSpeech=false,publicOnly=true) else resumeWake()
+    }
+
     private fun reportNative(message:String,voiced:Boolean,input:String){
         cancelSession(preserveCapture=voiced);pauseWake();privateTurn=false;lastRequestWasVoice=voiced;lastReplyLanguage=language()
         val generation=sessionGeneration;phantom.submitted(input,voiced);store.addEphemeral(ChatMessage(role=MessageRole.USER,text=input));mutableState.update{it.copy(phase=AssistantPhase.THINKING,voiceInteraction=voiced,transcript=input,activeTask="INTERFACE")}
@@ -500,7 +505,6 @@ class AssistantRuntime(private val context: Context) {
         com.jarvis.assistant.rebirth.NativeNavigation.destination(text)?.let{destination->
             val target=when(destination){
                 com.jarvis.assistant.rebirth.NativeNavigation.Destination.SETTINGS->Intent(context,com.jarvis.assistant.rebirth.AndroidSettingsActivity::class.java)
-                com.jarvis.assistant.rebirth.NativeNavigation.Destination.ACCOUNT->Intent(context,com.jarvis.assistant.rebirth.AccountCenterActivity::class.java)
                 com.jarvis.assistant.rebirth.NativeNavigation.Destination.CONTENT,com.jarvis.assistant.rebirth.NativeNavigation.Destination.PHOTOS->Intent(context,com.jarvis.assistant.rebirth.PersonalContentActivity::class.java).putExtra("pick_photos",destination==com.jarvis.assistant.rebirth.NativeNavigation.Destination.PHOTOS)
                 com.jarvis.assistant.rebirth.NativeNavigation.Destination.ALIASES->Intent(context,com.jarvis.assistant.neural.NeuralSettingsActivity::class.java)
                 com.jarvis.assistant.rebirth.NativeNavigation.Destination.MEMORY->Intent(context,com.jarvis.assistant.titan.MemoryCardsActivity::class.java)
@@ -554,11 +558,12 @@ class AssistantRuntime(private val context: Context) {
             submit("open $correction",voiced);return
         }
         if (LanguageRules.isStop(text)) { stopEverything(); return }
+        if(com.jarvis.assistant.rebirth.RemovedMailIntegration.matches(text)){reportNative("Gmail account integration is not included in this build. I can still open your installed Gmail app when the phone is unlocked.",voiced,text);return}
         val isLocked = locked()
         if (isLocked && com.jarvis.assistant.core.LockedChatPolicy.requiresUnlock(text)) {
-            protect("Continue protected command after unlocking") { submit(text, voiced) }; fail(unlockMessage()); resumeWake(); return
+            protect("Continue protected command after unlocking") { submit(text, voiced) }; lockedRequestDenied(voiced,false); return
         }
-        if (isLocked && !store.settings.value.allowLockedChat) { fail(unlockMessage()); resumeWake(); return }
+        if (isLocked && !store.settings.value.allowLockedChat) { cancelSession(); lockedRequestDenied(voiced,true); return }
         val pending = state.value.pendingAction
         if (pending != null) {
             when (LanguageRules.confirmation(text)) {
@@ -583,13 +588,12 @@ class AssistantRuntime(private val context: Context) {
         mutableState.update { it.copy(phase = AssistantPhase.THINKING, transcript = text, liveReply="",error = null, pendingAction = null) }
         if(!isLocked){
             val explicit=com.jarvis.assistant.omnisystem.ModuleRoute.fromUserInput(text)
-            val email=gmail.recognizes(text)
             val content=selectedUris.isNotEmpty()
             val app=com.jarvis.assistant.neural.AppMatching.commandTarget(text)!=null
             val contextual=state.value.activeTask=="WEATHER" && neural.conversation.weatherFollowUp(text,SystemClock.elapsedRealtime())!=null
-            val module=when{email || content->com.jarvis.assistant.omnisystem.HudModule.ASSISTANT;explicit!=null->explicit;com.jarvis.assistant.rebirth.WorldClocks.isRequest(text) || com.jarvis.assistant.phantom.PhantomPolicy.fastTool(text)=="what time is it"->com.jarvis.assistant.omnisystem.HudModule.CLOCK;app->com.jarvis.assistant.omnisystem.HudModule.ASSISTANT;contextual->com.jarvis.assistant.omnisystem.HudModule.WEATHER;else->com.jarvis.assistant.omnisystem.HudModule.ASSISTANT}
+            val module=when{content->com.jarvis.assistant.omnisystem.HudModule.ASSISTANT;explicit!=null->explicit;com.jarvis.assistant.rebirth.WorldClocks.isRequest(text) || com.jarvis.assistant.phantom.PhantomPolicy.fastTool(text)=="what time is it"->com.jarvis.assistant.omnisystem.HudModule.CLOCK;app->com.jarvis.assistant.omnisystem.HudModule.ASSISTANT;contextual->com.jarvis.assistant.omnisystem.HudModule.WEATHER;else->com.jarvis.assistant.omnisystem.HudModule.ASSISTANT}
             selectModule(module)
-            mutableState.update{it.copy(activeTask=when{email->"EMAIL";content->"CONTENT";explicit!=null->module.name;app->"APP";else->module.name})}
+            mutableState.update{it.copy(activeTask=when{content->"CONTENT";explicit!=null->module.name;app->"APP";else->module.name})}
         }
         moduleRequestSequence=state.value.moduleSequence
         val uris = selectedUris.toList()
@@ -628,9 +632,8 @@ class AssistantRuntime(private val context: Context) {
                         val clarification=if(corrected.kind==com.jarvis.assistant.rebirth.CorrectionKind.CLARIFY)AssistantReply(if(corrected.candidates.isEmpty())"The saved app alias target is unavailable or hidden by Android. Check it in Neural Core aliases; no different app was launched." else "Which app did you mean: "+corrected.candidates.joinToString()+"? No app was launched.") else null
                         if(voiced && com.jarvis.assistant.rebirth.RebirthFastCommands.social(text,lang==AppLanguage.ES,false)!=null)withTimeoutOrNull(250){speakerJob?.join()}
                         val social=com.jarvis.assistant.rebirth.RebirthFastCommands.social(text,lang==AppLanguage.ES,state.value.speakerOwnerConfident)?.let{AssistantReply(it)}
-                        if(social==null && !gmail.recognizes(text))gmail.clear()
                         val resolvedApp=corrected.targetPackage?.let{pkg->val label=com.jarvis.assistant.neural.AppMatching.commandTarget(corrected.understood) ?: "selected app";AssistantReply(tools.launches.launchPackage(pkg,label).detail,confirmedEntity=label)}
-                        val local = clarification ?: social ?: resolvedApp ?: worldClock ?: gmail.route(text,lang){delta->if(generation==sessionGeneration && !locked()){phantom.event(TraceEvent.FIRST_TOKEN);mutableState.update{it.copy(liveReply=(it.liveReply+delta).take(16000))};phantom.response(state.value.liveReply)}} ?: fast?.let{tools.fastRoute(it,lang)} ?: deviceControl.route(text,lang) ?: locationAssistant.route(text,lang) ?: (if(appTarget!=null && presentation==null)tools.requestApp(appTarget,lang) else null) ?: routines.route(text,lang,neural) ?: presentation ?: neural.route(text,lang) ?: weatherQuestion(text,lang) ?: phone.route(text, lang) ?: tools.route(text, lang)
+                        val local = clarification ?: social ?: resolvedApp ?: worldClock ?: fast?.let{tools.fastRoute(it,lang)} ?: deviceControl.route(text,lang) ?: locationAssistant.route(text,lang) ?: (if(appTarget!=null && presentation==null)tools.requestApp(appTarget,lang) else null) ?: routines.route(text,lang,neural) ?: presentation ?: neural.route(text,lang) ?: weatherQuestion(text,lang) ?: phone.route(text, lang) ?: tools.route(text, lang)
                         phantom.event(TraceEvent.TOOL_COMPLETED)
                         if (local != null) { clearScreenContext(); awaitScreenQuestion = false; local }
                         else generate(text, lang, uris, generation)
@@ -762,17 +765,23 @@ class AssistantRuntime(private val context: Context) {
         lastTurnAt=SystemClock.elapsedRealtime()
         store.addEphemeral(ChatMessage(role=MessageRole.ASSISTANT,text=reply.text,sources=reply.sources))
         val speakReply=!reply.speechHandled && (voiced || store.settings.value.speakReplies)
-        if(reply.speechHandled)resumeWake(followUp=lastRequestWasVoice && !locked() || awaitScreenQuestion)
-        else if(!speakReply)resumeWake(followUp=awaitScreenQuestion)
+        if(reply.speechHandled)resumeWake(followUp=allowVoiceFollowUp(lastRequestWasVoice || awaitScreenQuestion))
+        else if(!speakReply)resumeWake(followUp=allowVoiceFollowUp(voiced || awaitScreenQuestion))
         mutableState.update{it.copy(confirmedEntity=reply.confirmedEntity,moduleResponse=if(it.moduleSequence==moduleRequestSequence && it.module!=com.jarvis.assistant.omnisystem.HudModule.ASSISTANT)reply.text else it.moduleResponse,transcript="",liveReply="",pendingAction=reply.action,phase=if(speakReply)AssistantPhase.THINKING else AssistantPhase.READY)}
         if(!speakReply)phantom.finish(if(reply.action!=null)ExecutionState.WAITING_USER else ExecutionState.COMPLETED)
         if(speakReply)speak(reply.text,lang,generation,reply.allowCloudSpeech,followUpOnDone=voiced || awaitScreenQuestion)
     }
 
+    private fun allowVoiceFollowUp(requested:Boolean,publicPrompt:Boolean=false,privateReply:Boolean=privateTurn)=
+        com.jarvis.assistant.voice.VoiceContinuationPolicy.followUp(requested,locked(),store.settings.value.allowLockedChat,publicPrompt,privateReply,com.jarvis.assistant.security.SystemCredentialPrivacy.pending(context))
+
     private fun speak(text:String,lang:AppLanguage,generation:Long=sessionGeneration,allowCloudSpeech:Boolean=true,followUpOnDone:Boolean=false,
         volumeOverride:Float?=null,completion:(()->Unit)?=null,failure:((String)->Unit)?=null,privateSpeech:Boolean=privateTurn,publicOnly:Boolean=false,resumeListening:Boolean=true){
         fun allowed()=generation==sessionGeneration && (!locked() || publicOnly || !privateSpeech && store.settings.value.allowLockedChat) && !com.jarvis.assistant.security.SystemCredentialPrivacy.pending(context)
-        if(!allowed()){failure?.invoke(unlockMessage());return}
+        if(!allowed()){
+            if(generation==sessionGeneration){failure?.invoke(unlockMessage());if(resumeListening){mutableState.update{it.copy(phase=AssistantPhase.READY)};resumeWake()}}
+            return
+        }
         if(resumeListening && phantom.state.value.execution in setOf(ExecutionState.IDLE,ExecutionState.COMPLETED,ExecutionState.FAILED,ExecutionState.CANCELLED))phantom.begin()
         if(resumeListening && !locked() && phantom.state.value.caption.assistant.isBlank())phantom.response(text)
         val traceId=phantom.state.value.trace?.id
@@ -780,13 +789,13 @@ class AssistantRuntime(private val context: Context) {
             if(resumeListening)lastTurnAt=SystemClock.elapsedRealtime()
             mutableState.update{it.copy(phase=if(resumeListening)AssistantPhase.READY else AssistantPhase.THINKING)}
             if(resumeListening)phantom.finish(if(state.value.pendingAction!=null)ExecutionState.WAITING_USER else ExecutionState.COMPLETED) else phantom.stage(ExecutionState.GENERATING_RESPONSE,traceId)
-            completion?.invoke();if(resumeListening)resumeWake(followUp=followUpOnDone && !locked())
+            completion?.invoke();if(resumeListening)resumeWake(followUp=allowVoiceFollowUp(followUpOnDone,publicOnly,privateSpeech))
         }}
         val error:(String)->Unit={message->if(generation==sessionGeneration){
             if(resumeListening)lastTurnAt=SystemClock.elapsedRealtime()
             mutableState.update{it.copy(error=message,phase=if(resumeListening)AssistantPhase.READY else AssistantPhase.THINKING)}
             if(resumeListening)phantom.finish(ExecutionState.FAILED) else phantom.stage(ExecutionState.GENERATING_RESPONSE,traceId)
-            failure?.invoke(message);if(resumeListening)resumeWake(followUp=followUpOnDone && !locked())
+            failure?.invoke(message);if(resumeListening)resumeWake(followUp=allowVoiceFollowUp(followUpOnDone,publicOnly,privateSpeech))
         }}
         cloudVoiceJob=scope.launch{
             var file:File?=null
@@ -834,7 +843,7 @@ class AssistantRuntime(private val context: Context) {
     /** Explicit expansion uses the actual selected panel, with a notification fallback in background. */
     fun expandPhantom(userTap:Boolean=false):String {
         if(locked() || com.jarvis.assistant.security.SystemCredentialPrivacy.pending(context))return unlockMessage()
-        if(state.value.activeTask in setOf("EMAIL","CONTENT","APP"))selectModule(com.jarvis.assistant.omnisystem.HudModule.ASSISTANT)
+        if(state.value.activeTask in setOf("CONTENT","APP"))selectModule(com.jarvis.assistant.omnisystem.HudModule.ASSISTANT)
         val intent=Intent(context,MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP).putExtra("phantom_expand",true)
         phantomOverlay.hide()
         if(userTap && android.provider.Settings.canDrawOverlays(context)){
@@ -908,7 +917,7 @@ class AssistantRuntime(private val context: Context) {
         if (WakeListenerService.state.value.running) runCatching {
             mutableState.update{it.copy(followUpArming=followUp)}
             context.startService(Intent(context, WakeListenerService::class.java).setAction(WakeListenerService.ACTION_RESUME).putExtra("follow_up", followUp))
-        } else if(followUp && !locked() && com.jarvis.assistant.rebirth.AppVisibility.visible && state.value.voiceInteraction && ContextCompat.checkSelfPermission(context,Manifest.permission.RECORD_AUDIO)==PackageManager.PERMISSION_GRANTED){
+        }.onFailure{mutableState.update{it.copy(followUpArming=false,error="Android could not resume listening. Open Jarvis and tap Start listening to retry.")}} else if(followUp && !locked() && com.jarvis.assistant.rebirth.AppVisibility.visible && state.value.voiceInteraction && ContextCompat.checkSelfPermission(context,Manifest.permission.RECORD_AUDIO)==PackageManager.PERMISSION_GRANTED){
             val expected=sessionGeneration
             foregroundFollowUp?.cancel();mutableState.update{it.copy(followUpArming=true)}
             foregroundFollowUp=scope.launch{
@@ -1022,7 +1031,7 @@ class AssistantRuntime(private val context: Context) {
 
     fun addAttachments(uris: List<Uri>,allowCloud:Boolean=false) {
         if (locked()) { fail(unlockMessage()); return }
-        cancelSession();gmail.clear();attachmentCloudConsent=allowCloud
+        cancelSession();attachmentCloudConsent=allowCloud
         selectedUris.clear(); selectedUris.addAll(uris.take(3))
         mutableState.update { it.copy(attachedFiles = selectedUris.map { uri -> attachments.displayName(uri) }, error = null) }
     }
@@ -1095,7 +1104,7 @@ class AssistantRuntime(private val context: Context) {
     }
 
     fun clearTemporaryConversation(){
-        lastTurnAt=0;gmail.clear();googleAccounts.clearReadSession();store.clearEphemeral();conversation.clear();neural.conversation.clear();clearScreenContext();phantom.clearCaption()
+        lastTurnAt=0;store.clearEphemeral();conversation.clear();neural.conversation.clear();clearScreenContext();phantom.clearCaption()
         mutableState.update{it.copy(transcript="",liveReply="",moduleResponse="",confirmedEntity=null,recognition=null,activeTask="ASSISTANT")}
     }
     fun stopEverything() {

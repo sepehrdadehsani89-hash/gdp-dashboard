@@ -126,14 +126,15 @@ class WakeListenerService : Service() {
                         if(managed==null){publish("Waiting for the previous microphone to release",false);Thread.sleep(100);continue}
                         capture=managed
                         val audio=managed.audio;recorder=audio
+                        val silenced=java.util.concurrent.atomic.AtomicBoolean(false)
                         utterance=UtteranceAssembler(SystemClock::elapsedRealtime,com.jarvis.assistant.titan.VoicePreferences(this).energy)
                         managed.registerCallback(mainExecutor,object:android.media.AudioManager.AudioRecordingCallback(){
                             override fun onRecordingConfigChanged(configs:MutableList<android.media.AudioRecordingConfiguration>){
                                 if(capture!==managed || !running)return
                                 if(configs.any { it.clientAudioSessionId==audio.audioSessionId && it.isClientSilenced }){
-                                    failureReason="Android silenced microphone capture. Stop other recording or call apps, then reopen Jarvis to retry."
-                                    publish(failureReason!!,false)
-                                    stopSelf()
+                                    silenced.set(true)
+                                    publish("Android silenced capture · releasing before a bounded retry",false,interrupted=true)
+                                    runCatching{audio.stop()}
                                 }
                             }
                         })
@@ -153,6 +154,7 @@ class WakeListenerService : Service() {
                                 while (running && !paused && !com.jarvis.assistant.security.SystemCredentialPrivacy.pending(this)) {
                                     val count = audio.read(bytes, 0, bytes.size)
                                     if (paused || !running || com.jarvis.assistant.security.SystemCredentialPrivacy.pending(this)) break
+                                    check(!silenced.get()){ "Android silenced microphone capture." }
                                     check(count >= 0) { "Microphone capture was interrupted." }
                                     if (count == 0) continue
                                     recovery.healthy()

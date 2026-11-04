@@ -11,11 +11,10 @@ import kotlinx.coroutines.*
 class RebirthCenterActivity:PrivateModuleActivity(){
     private var diagnostics by mutableStateOf("")
     override fun onCreate(savedInstanceState:Bundle?){super.onCreate(savedInstanceState);if(isFinishing)return
-        screen("REBIRTH 11.2 · PRIVACY & CONNECTIONS"){
+        screen("REBIRTH 11.2 · CONTENT & LISTENING"){
             val shared by runtime.state.collectAsStateWithLifecycle()
             val phantom by runtime.phantom.state.collectAsStateWithLifecycle()
             Text("Ordinary conversations are live-only. Saved memories, shortcuts, locations, settings and prior archived chats remain separate. Stop, lock and idle expiry clear the temporary conversation.")
-            Button(onClick={startActivity(Intent(this@RebirthCenterActivity,AccountCenterActivity::class.java))}){Text("Google Account Center · Gmail read-only")}
             Button(onClick={startActivity(Intent(this@RebirthCenterActivity,PersonalContentActivity::class.java))}){Text("Personal Content · files, photos & authorized folders")}
             OutlinedButton(onClick={startActivity(Intent(this@RebirthCenterActivity,com.jarvis.assistant.neural.NeuralSettingsActivity::class.java))}){Text("App aliases, approved memories & previous-history deletion")}
             OutlinedButton(onClick={startActivity(Intent(this@RebirthCenterActivity,com.jarvis.assistant.titan.TitanCenterActivity::class.java).putExtra("page","Voice Lab"))}){Text("Microphone calibration / Voice Lab")}
@@ -28,7 +27,7 @@ class RebirthCenterActivity:PrivateModuleActivity(){
             OutlinedButton(enabled=!working,onClick={task{diagnostics=withContext(Dispatchers.IO){runtime.crashDiagnostics.snapshot()}}}){Text("Read actual memory / process-exit metadata")}
             if(diagnostics.isNotBlank())Text(diagnostics)
             TextButton(onClick={runtime.crashDiagnostics.clear();diagnostics=""}){Text("Clear non-content failure metadata")}
-            Text("Real microphone, TV/noise, device app-launch, Google consent, Fish playback and crash-stress checks still need device testing. OAuth registration is required before Gmail can connect. No provider account is assumed connected.")
+            Text("Microphone, background noise, app launches, Fish playback and stability still need testing on your phone. Gmail account integration is not included in this build.")
         }
     }
 }

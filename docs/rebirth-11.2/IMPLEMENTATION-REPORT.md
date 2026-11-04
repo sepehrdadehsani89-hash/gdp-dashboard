@@ -1,3 +1,5 @@
+> Historical code15 candidate record. The owner subsequently requested Gmail removal and publication of a speech-repaired beta. See [the current release scope](RELEASE.md) and [current download/verification](../../downloads/rebirth-11.2/README.md). Gmail integration is absent from the current build.
+
 # JARVIS 11.2 · Project Rebirth
 
 **Release status: BLOCKED / HELD.** This is a development validation candidate based on Phantom11.1 commit `4100cbe2479fe482693ded1055e88bde938003d4`. It is not a claim that the entire master directive is complete or that the user's reported handset defects have been reproduced and fixed. No public11.2 APK/download is published. The existing11.1 artifact remains unchanged.

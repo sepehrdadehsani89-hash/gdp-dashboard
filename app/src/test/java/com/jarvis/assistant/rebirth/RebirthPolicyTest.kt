@@ -63,7 +63,7 @@ class RebirthPolicyTest {
         assertEquals("en-US",SpeechLocalePolicy.select(false,listOf("es-EC","en-US")))
     }
     @Test fun interfaceNavigationDoesNotHijackMailboxOrFileQuestions(){
-        assertEquals(NativeNavigation.Destination.ACCOUNT,NativeNavigation.destination("open my account settings"))
+        assertNull(NativeNavigation.destination("open my account settings"))
         assertEquals(NativeNavigation.Destination.PHOTOS,NativeNavigation.destination("open my photos"))
         assertNull(NativeNavigation.destination("read my latest email"));assertNull(NativeNavigation.destination("explain how to open my files"))
     }

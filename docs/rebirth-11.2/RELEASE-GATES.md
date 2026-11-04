@@ -1,3 +1,5 @@
+> Historical code15 candidate record. The owner subsequently requested Gmail removal and publication of a speech-repaired beta. See [the current release scope](RELEASE.md) and [current download/verification](../../downloads/rebirth-11.2/README.md). Gmail integration is absent from the current build.
+
 # 11.2 release gates — release held
 
 The master directive says not to release11.2 before foundational repairs and real-account workflows are addressed. A local signed candidate is retained for validation. No new public APK link is created and no existing public artifact is replaced.

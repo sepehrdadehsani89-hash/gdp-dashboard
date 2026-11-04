@@ -1,3 +1,5 @@
+> Historical code15 candidate record. The owner subsequently requested Gmail removal and publication of a speech-repaired beta. See [the current release scope](RELEASE.md) and [current download/verification](../../downloads/rebirth-11.2/README.md). Gmail integration is absent from the current build.
+
 # 11.2 device acceptance matrix
 
 All cases below are **NOT TESTED** as Android runtime acceptance in this upgrade. Host policy/fixture tests cover selected algorithms only; they do not close device cases. No physical Redmi9, real Google mailbox, authorized Fish session or accessory is connected here. The preserved API29 emulator is not a working substitute for these tests.

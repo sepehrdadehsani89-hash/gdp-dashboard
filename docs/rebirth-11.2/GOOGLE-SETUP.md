@@ -1,3 +1,5 @@
+> Historical code15 candidate record. The owner subsequently requested Gmail removal and publication of a speech-repaired beta. See [the current release scope](RELEASE.md) and [current download/verification](../../downloads/rebirth-11.2/README.md). Gmail integration is absent from the current build.
+
 # Google Gmail setup for the 11.2 validation candidate
 
 The owner confirmed that Google Cloud registration is not set up yet. Source compilation does not create that registration or grant access to a mailbox. Keep passwords, OAuth access tokens and Fish API keys out of chat, source control, APK assets and screenshots.

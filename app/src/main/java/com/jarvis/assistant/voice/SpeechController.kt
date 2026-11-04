@@ -38,6 +38,7 @@ class SpeechController(context: Context) {
     private var offlineSpeech: OfflineSpeechSession? = null
     private var player: MediaPlayer? = null
     private var temporaryPlayback:File?=null
+    private var playbackTimeout:Runnable?=null
     private var ttsReady = false
     private var ttsFailed = false
     private var pendingSpeech: (() -> Unit)? = null
@@ -255,22 +256,36 @@ class SpeechController(context: Context) {
             stopInternal(); temporaryPlayback=file; speakingDone = onDone; speakingError = onError
             if (!requestFocus()) { failSpeaking("Audio is in use by another app."); return@post }
             WakeListenerService.suppressFor(60_000)
+            val token=generation
             try {
-                player = MediaPlayer().apply {
+                val instance=MediaPlayer();player=instance
+                instance.apply {
                     setAudioAttributes(speechAttributes())
                     setDataSource(file.absolutePath)
-                    setOnCompletionListener { finishSpeaking() }
-                    setOnErrorListener { _, _, _ -> failSpeaking("Cloud voice playback failed."); true }
-                    prepareAsync()
+                    setOnCompletionListener { p -> if(token==generation && player===p)finishSpeaking() }
+                    setOnErrorListener { p, _, _ -> if(token==generation && player===p)failSpeaking("Cloud voice playback failed."); true }
                     setOnPreparedListener { p ->
-                        val controls=com.jarvis.assistant.hud.HudPreferences(context).read()
-                        p.setVolume(volumeOverride ?: controls.voiceVolume,volumeOverride ?: controls.voiceVolume)
-                        runCatching { p.playbackParams = android.media.PlaybackParams().setSpeed(controls.voiceRate).setPitch(controls.voicePitch) }
-                        try{p.start();onStarted()}catch(_:Exception){failSpeaking("Cloud voice playback failed.")}
+                        if(token!=generation || player!==p)return@setOnPreparedListener
+                        try{
+                            val controls=com.jarvis.assistant.hud.HudPreferences(context).read()
+                            p.setVolume(volumeOverride ?: controls.voiceVolume,volumeOverride ?: controls.voiceVolume)
+                            runCatching { p.playbackParams = android.media.PlaybackParams().setSpeed(controls.voiceRate).setPitch(controls.voicePitch) }
+                            val rate=runCatching{p.playbackParams.speed}.getOrDefault(1f).takeIf{it.isFinite() && it>0} ?: 1f
+                            val duration=if(p.duration>0)(p.duration.toDouble()/rate+10_000).toLong().coerceIn(10_000,300_000) else 120_000L
+                            armPlaybackTimeout(p,token,duration,"Voice playback timed out. Listening can resume; no substitute voice was used.")
+                            p.start();onStarted()
+                        }catch(_:Exception){failSpeaking("Cloud voice playback failed.")}
                     }
+                    armPlaybackTimeout(this,token,15_000,"Voice audio could not start. Listening can resume; check Output voice and retry.")
+                    prepareAsync()
                 }
             } catch (_: Exception) { failSpeaking("Cloud voice playback failed.") }
         }
+    }
+
+    private fun armPlaybackTimeout(expected:MediaPlayer,token:Int,milliseconds:Long,message:String){
+        playbackTimeout?.let(main::removeCallbacks)
+        playbackTimeout=Runnable{if(token==generation && player===expected)failSpeaking(message)}.also{main.postDelayed(it,milliseconds)}
     }
 
     fun stop() { main.post { stopInternal() } }
@@ -285,24 +300,26 @@ class SpeechController(context: Context) {
     }
     private fun stopInternal() {
         generation++
+        playbackTimeout?.let(main::removeCallbacks);playbackTimeout=null
         pendingSpeech = null; speakingDone = null; speakingError = null
         utterancePrefix = null; lastUtterance = null
-        offlineSpeech?.close(); offlineSpeech = null
-        offlineVoice.stop()
+        runCatching{offlineSpeech?.close()}; offlineSpeech = null
+        runCatching{offlineVoice.stop()}
         recognizer?.let { com.jarvis.assistant.hud.AudioSignals.stop(it); runCatching{it.cancel()};runCatching{it.destroy()} }; recognizer = null;releaseAndroidMicrophone()
-        tts.stop()
-        player?.run { runCatching { stop() }; release() }; player = null
+        runCatching{tts.stop()}
+        player?.run { runCatching { stop() }; runCatching{release()} }; player = null
         temporaryPlayback?.delete();temporaryPlayback=null
-        focus?.let { audio.abandonAudioFocusRequest(it) }; focus = null
+        focus?.let { runCatching{audio.abandonAudioFocusRequest(it)} }; focus = null
         WakeListenerService.setSpeechActive(false)
     }
 
     private fun finishSpeaking() {
         val callback = speakingDone
+        playbackTimeout?.let(main::removeCallbacks);playbackTimeout=null
         speakingDone = null; speakingError = null
         utterancePrefix = null; lastUtterance = null
-        player?.release(); player = null
-        focus?.let { audio.abandonAudioFocusRequest(it) }; focus = null
+        runCatching{player?.release()}; player = null
+        focus?.let { runCatching{audio.abandonAudioFocusRequest(it)} }; focus = null
         WakeListenerService.setSpeechActive(false)
         callback?.invoke()
     }
@@ -315,16 +332,19 @@ class SpeechController(context: Context) {
 
     private fun speechAttributes() = AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ASSISTANT).setContentType(AudioAttributes.CONTENT_TYPE_SPEECH).build()
     private fun requestFocus(): Boolean {
-        val request = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK)
+        val token=generation
+        lateinit var request:AudioFocusRequest
+        request = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK)
             .setAudioAttributes(speechAttributes())
             .setOnAudioFocusChangeListener { change ->
                 if (change == AudioManager.AUDIOFOCUS_LOSS || change == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) main.post {
+                    if(token!=generation || focus!==request)return@post
                     if (speakingError != null) failSpeaking("Voice playback was interrupted by another audio session.") else stopInternal()
                 }
             }
             .build()
         focus = request
-        val granted=audio.requestAudioFocus(request)==AudioManager.AUDIOFOCUS_REQUEST_GRANTED
+        val granted=runCatching{audio.requestAudioFocus(request)==AudioManager.AUDIOFOCUS_REQUEST_GRANTED}.getOrDefault(false)
         if(granted)WakeListenerService.setSpeechActive(true)
         return granted
     }

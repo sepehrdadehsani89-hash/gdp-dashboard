@@ -650,7 +650,7 @@ private fun SettingsScreen(state: JarvisUiState, actions: JarvisUiActions, senti
             Text(l.choose("Screen Security & Voice Unlock","Seguridad y desbloqueo por voz","امنیت صفحه و درخواست بازکردن قفل با صدا"),style=MaterialTheme.typography.titleMedium)
             Text(l.choose("Verify with Android. Jarvis never collects your system credential.","Verifica con Android. Jarvis no recoge tu credencial.","با اندروید تأیید کنید. جارویس رمز دستگاه را جمع‌آوری نمی‌کند."))
             OutlinedButton(onClick=actions.onOpenContacts){Text(l.choose("Fifteen contact shortcuts & personal memos","Quince atajos de contactos y notas personales","پانزده میانبر مخاطب و پیام شخصی"))}
-            OutlinedButton(onClick=actions.onOpenRebirth){Text("Rebirth · accounts, personal content & listening diagnostics")}
+            OutlinedButton(onClick=actions.onOpenRebirth){Text("Rebirth · personal content & listening diagnostics")}
             OutlinedButton(onClick=actions.onOpenPhantom){Text("Phantom · floating HUD, wallpaper captions & request timings")}
             Text("REBIRTH 11.2 · PRIVATE CONVERSATIONS",style=MaterialTheme.typography.titleMedium)
             listOf("Capabilities","Voice Lab","Battery","Routines","Setup").forEach{page->OutlinedButton(onClick={actions.onOpenTitan(page)}){Text(page)}}

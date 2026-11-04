@@ -1,12 +1,11 @@
 package com.jarvis.assistant.rebirth
 
 object NativeNavigation {
-    enum class Destination { ACCOUNT, CONTENT, PHOTOS, ALIASES, MEMORY, CLOCK, BLUETOOTH, PHANTOM, SETTINGS }
+    enum class Destination { CONTENT, PHOTOS, ALIASES, MEMORY, CLOCK, BLUETOOTH, PHANTOM, SETTINGS }
     fun destination(text:String):Destination? {
         val t=com.jarvis.assistant.neural.AppMatching.normalize(text).removePrefix("hey jarvis ").removePrefix("jarvis ")
         return when(t){
             "open settings","open android settings","abre ajustes","abre configuracion"->Destination.SETTINGS
-            "open my account settings","open account center","show my email","open my email","open account settings"->Destination.ACCOUNT
             "open my files","open my documents","open personal content"->Destination.CONTENT
             "open my photos","show my photos"->Destination.PHOTOS
             "show available apps","show my app aliases"->Destination.ALIASES

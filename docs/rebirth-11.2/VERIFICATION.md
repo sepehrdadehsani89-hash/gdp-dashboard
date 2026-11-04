@@ -1,3 +1,5 @@
+> Historical code15 candidate record. The owner subsequently requested Gmail removal and publication of a speech-repaired beta. See [the current release scope](RELEASE.md) and [current download/verification](../../downloads/rebirth-11.2/README.md). Gmail integration is absent from the current build.
+
 # 11.2 local candidate verification — release held
 
 Final frozen-input pipeline **BUILD SUCCESSFUL in 15m 8s**. **336 JVM tests passed**, zero failures/errors/skips. Android lint: **zero errors/fatals,43 warnings**, no lint baseline or suppression added to obtain this result. Android instrumentation test sources compiled with `:app:compileDebugAndroidTestKotlin`; **zero runtime instrumentation cases executed**. The full master directive and physical Redmi9 acceptance are not signed off.

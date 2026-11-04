@@ -1,10 +1,12 @@
 # Jarvis for Android
 
-Current development beta: [Jarvis 11.1 Phantom · signed ARM64 APK](downloads/phantom-11.1/Jarvis-11.1.0-beta1-arm64-reinstall.apk). [Phone setup](docs/phantom-11.1/SETUP.md) · [Implementation and limits](docs/phantom-11.1/STATUS.md) · [37-case acceptance ledger](docs/phantom-11.1/ACCEPTANCE.md) · [Build evidence](downloads/phantom-11.1/build-info.json).
+Current development beta: [Jarvis11.2 Rebirth · signed ARM64 APK](downloads/rebirth-11.2/Jarvis-11.2.0-beta1-arm64-reinstall.apk). [Release scope and phone steps](docs/rebirth-11.2/RELEASE.md) · [Verification](downloads/rebirth-11.2/VERIFICATION.md) · [Build identity/checksum](downloads/rebirth-11.2/build-info.json).
 
-**This APK uses the retained reinstall certificate and updates that signing line only. It cannot update original Jarvis 7.0 in place. Keep the original app and its data installed. No replacement signing key was generated.** Phantom adds request timings, native fast paths, sentence Fish speech, optional speaker focus, real live-wallpaper captions and user-granted floating windows. It is a partial development beta; physical Redmi acceptance and commercial readiness remain unverified. Both languages use only their configured Fish Audio voice or text/error; account setup and actual voice preview are required. Settings → Phantom enables the optional presentation features.
+Gmail account integration is removed. This beta repairs the locked-screen wake-greeting follow-up gate and stale playback/focus callbacks, adds bounded audio-start/playback timeouts and retains strict Fish voice routing, live-only chats and personal content. General locked-phone replies require the existing **General chat while locked** setting; protected actions still require Android unlock. Physical Redmi9, actual Fish sound and commercial readiness remain unverified.
 
-Previous beta: [Jarvis 10.9 Quantum Core](downloads/quantum-10.9/Jarvis-10.9.0-beta1-arm64-reinstall.apk). [Preserved feature boundaries](docs/quantum-10.9/PRESERVATION.md).
+**This APK uses the retained reinstall certificate and updates that signing line only. It cannot update original Jarvis7.0 in place. Keep the original app and its data installed if Android reports a signature conflict. No replacement key was generated.**
+
+Previous beta: [Jarvis11.1 Phantom](downloads/phantom-11.1/Jarvis-11.1.0-beta1-arm64-reinstall.apk) · [11.1 setup](docs/phantom-11.1/SETUP.md). [Jarvis10.9](downloads/quantum-10.9/Jarvis-10.9.0-beta1-arm64-reinstall.apk) and its [preserved feature boundaries](docs/quantum-10.9/PRESERVATION.md) remain available. Earlier11.2 candidate/account documents are historical; current scope follows the owner's subsequent Gmail-removal/publication request.
 
 ## Historical original-signature 7.0 release
 

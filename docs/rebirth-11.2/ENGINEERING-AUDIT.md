@@ -1,3 +1,5 @@
+> Historical code15 candidate record. The owner subsequently requested Gmail removal and publication of a speech-repaired beta. See [the current release scope](RELEASE.md) and [current download/verification](../../downloads/rebirth-11.2/README.md). Gmail integration is absent from the current build.
+
 # 11.2 Rebirth source investigation
 
 Source baseline: published Phantom 11.1 commit `4100cbe2479fe482693ded1055e88bde938003d4`, clean before this task. Package remains `com.jarvis.next`, retained reinstall signing certificate, code15 /11.2.0-candidate1. No verified 11.0 source foundation is assumed. No signing key is generated. Original7.0 remains a different signing line; no uninstall/data-clear workaround is part of this work.
