@@ -29,6 +29,7 @@ class SpeakerProfilesActivity:PrivateModuleActivity(){
     override fun onCreate(savedInstanceState:Bundle?){
         super.onCreate(savedInstanceState);if(isFinishing)return
         reload()
+        if(intent.getBooleanExtra("voice_setup",false) && profiles.none{it.owner})name=runtime.store.settings.value.name
         screen(words("JARVIS · OPTIONAL VOICE PROFILES","JARVIS · PERFILES DE VOZ OPCIONALES","جارویس · نمایه‌های صوتی اختیاری")){
             Text(words("One owner and up to five additional consenting people. Voice similarity is personalization only, never Android authentication. No voice profile unlocks the phone or grants access to private actions.","Un propietario y hasta cinco personas adicionales con consentimiento. La similitud solo personaliza; nunca autentica Android ni autoriza acciones privadas.","یک مالک و حداکثر پنج فرد دیگر با رضایت. شباهت صدا فقط برای شخصی‌سازی است؛ قفل گوشی را باز نمی‌کند و مجوز اقدام خصوصی نمی‌دهد."))
             Text("WeSpeaker VoxCeleb ResNet34 LM · 26.5 MB · CC BY 4.0")
@@ -74,10 +75,10 @@ class SpeakerProfilesActivity:PrivateModuleActivity(){
         if(!consent || !hasMicrophone())return
         val chosen=existing?.name ?: name.trim();val isOwner=existing?.owner ?: owner
         authorize{AlertDialog.Builder(this).setTitle(words("Record consenting person: $chosen?","¿Grabar a la persona que consiente: $chosen?","ضبط صدای فرد موافق: $chosen؟"))
-            .setMessage(words("Speak naturally for 20 seconds. Raw audio is discarded; only an encrypted local embedding template remains. This cannot unlock the phone.","Habla naturalmente durante 20 segundos. Se descarta el audio; solo queda una plantilla local cifrada. No desbloquea el teléfono.","۲۰ ثانیه طبیعی صحبت کنید. صدای خام حذف می‌شود و فقط الگوی محلی رمز‌شده باقی می‌ماند. این کار قفل گوشی را باز نمی‌کند."))
+            .setMessage(words("Speak naturally for 20 seconds. Raw audio is discarded; only an encrypted local embedding template remains. An owner sample also enables local greeting personalization. This cannot unlock the phone.","Habla naturalmente durante 20 segundos. Se descarta el audio; solo queda una plantilla local cifrada. No desbloquea el teléfono.","۲۰ ثانیه طبیعی صحبت کنید. صدای خام حذف می‌شود و فقط الگوی محلی رمز‌شده باقی می‌ماند. این کار قفل گوشی را باز نمی‌کند."))
             .setNegativeButton(words("Cancel","Cancelar","لغو"),null).setPositiveButton(words("Record","Grabar","ضبط")){_,_->capture(20){audio->
                 val vector=runtime.speakers.embedding(audio)
-                runtime.speakers.enroll(chosen,isOwner,vector,true,existing?.id);vector.fill(0f);name="";consent=false;reload()
+                try{runtime.speakers.enroll(chosen,isOwner,vector,true,existing?.id);if(isOwner)runtime.speakers.setAuto(true)}finally{vector.fill(0f)};name="";consent=false;reload()
                 status=words("Consented voice template saved locally","Plantilla consentida guardada localmente","الگوی صوتی با رضایت، محلی ذخیره شد")
             }}.show()}
     }
@@ -96,6 +97,9 @@ class SpeakerProfilesActivity:PrivateModuleActivity(){
         var voice:CapturedVoice?=null;var audible=0;var frames=0
         try {
             fraction=0f
+            status=words("Preparing the spoken recording prompt…","Preparando el aviso de grabación…","آماده‌سازی پیام ضبط…")
+            runtime.playEnrollmentPrompt(this@SpeakerProfilesActivity,seconds)
+            status=words("Recording now · speak naturally","Grabando ahora · habla con naturalidad","در حال ضبط · طبیعی صحبت کنید")
             voice=PrivateAudioCapture.record(this@SpeakerProfilesActivity,seconds){level,value,_->fraction=value;frames++;if(level>.01f)audible++}
             require(audible>=(if(seconds==20)40 else 10) && audible.toFloat()/frames>=.2f){"More clear speech is needed."}
             status=words("Computing the local speaker embedding…","Calculando la representación local de voz…","در حال محاسبهٔ بردار صوتی محلی…")

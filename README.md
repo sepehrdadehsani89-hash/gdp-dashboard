@@ -1,12 +1,12 @@
 # Jarvis for Android
 
-Current development beta: [Jarvis11.2 Rebirth · signed ARM64 APK](downloads/rebirth-11.2/Jarvis-11.2.0-beta1-arm64-reinstall.apk). [Release scope and phone steps](docs/rebirth-11.2/RELEASE.md) · [Verification](downloads/rebirth-11.2/VERIFICATION.md) · [Build identity/checksum](downloads/rebirth-11.2/build-info.json).
+Current development beta: [Jarvis11.2 beta2 · signed ARM64 APK](downloads/rebirth-11.2-beta2/Jarvis-11.2.0-beta2-arm64-reinstall.apk). [Live conversation/voice setup](docs/rebirth-11.2/CONVERSATION-UPDATE.md) · [Verification](downloads/rebirth-11.2-beta2/VERIFICATION.md) · [Build/checksum](downloads/rebirth-11.2-beta2/build-info.json).
 
-Gmail account integration is removed. This beta repairs the locked-screen wake-greeting follow-up gate and stale playback/focus callbacks, adds bounded audio-start/playback timeouts and retains strict Fish voice routing, live-only chats and personal content. General locked-phone replies require the existing **General chat while locked** setting; protected actions still require Android unlock. Physical Redmi9, actual Fish sound and commercial readiness remain unverified.
+Adds stable bare-wake acknowledgement, requested Sir courtesy greeting, live chat completion/cleanup, owner-approved short local session notes and a voice-command path to consent-based20-second owner enrollment. Current reply, speech errors and controls appear beneath the actual reactor. Gmail remains removed. English/Spanish use configured Fish voices; real phone playback/noise/owner-match and commercial readiness are unverified. Owner similarity does not replace Android unlock; files require explicit Android grants. See the update guide for exact behavior and privacy controls.
 
-**This APK uses the retained reinstall certificate and updates that signing line only. It cannot update original Jarvis7.0 in place. Keep the original app and its data installed if Android reports a signature conflict. No replacement key was generated.**
+**Existing package and retained newer signing certificate are unchanged. This updates compatible newer betas only. Original Jarvis7.0 still needs its original key for an in-place update; keep the installed app/data if Android reports a signature conflict. No key was generated.**
 
-Previous beta: [Jarvis11.1 Phantom](downloads/phantom-11.1/Jarvis-11.1.0-beta1-arm64-reinstall.apk) · [11.1 setup](docs/phantom-11.1/SETUP.md). [Jarvis10.9](downloads/quantum-10.9/Jarvis-10.9.0-beta1-arm64-reinstall.apk) and its [preserved feature boundaries](docs/quantum-10.9/PRESERVATION.md) remain available. Earlier11.2 candidate/account documents are historical; current scope follows the owner's subsequent Gmail-removal/publication request.
+Previous beta: [11.2 beta1](downloads/rebirth-11.2/Jarvis-11.2.0-beta1-arm64-reinstall.apk) · [its setup/limits](docs/rebirth-11.2/RELEASE.md). [11.1 Phantom](downloads/phantom-11.1/Jarvis-11.1.0-beta1-arm64-reinstall.apk) and [10.9](downloads/quantum-10.9/Jarvis-10.9.0-beta1-arm64-reinstall.apk) remain preserved. The earlier11.2 candidate/account documents are historical; Gmail integration is absent from current builds.
 
 ## Historical original-signature 7.0 release
 

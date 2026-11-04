@@ -118,7 +118,7 @@ class JarvisStore(context: Context) {
     @Synchronized fun clearEphemeral(){ephemeral.value=emptyList()}
     suspend fun clearConversation(){clearEphemeral();dao.deleteMessages()}
 
-    /** Called only after the user's explicit remember request or memory-screen action. */
+    /** Called after an explicit remember request, approved memory action or enabled local session-note option. */
     suspend fun remember(text: String): Long {
         val value = text.trim().take(4_000)
         return if (value.isNotBlank()) dao.insertMemory(MemoryEntity(text = value, createdAt = System.currentTimeMillis())) else -1L

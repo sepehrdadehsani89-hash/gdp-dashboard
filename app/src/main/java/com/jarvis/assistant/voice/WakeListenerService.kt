@@ -43,6 +43,7 @@ class WakeListenerService : Service() {
     @Volatile private var failureReason:String?=null
     private var language = AppLanguage.EN
     private val window = ConversationWindow { SystemClock.elapsedRealtime() }
+    private val greetingGate=WakeGreetingGate(SystemClock::elapsedRealtime)
     private val windowTimeout = Runnable { if (window.expire()) publish(listeningText(), true) }
     private val audioManager by lazy { getSystemService(android.media.AudioManager::class.java) }
     private var cpuLock: PowerManager.WakeLock? = null
@@ -205,6 +206,7 @@ class WakeListenerService : Service() {
                                         sendBroadcast(Intent(ACTION_PARTIAL).setPackage(packageName).putExtra(EXTRA_TEXT,utterance.text()).putExtra("runtime_generation",windowRuntimeGeneration))
                                     }
                                     if(!final || RecognitionConfidence.acceptsFinal(json,com.jarvis.assistant.titan.VoicePreferences(this).confidence.toDouble()))handleTranscript(text,final,serial)
+                                    if(greetingGate.due(serial) && window.snapshot().mode==ConversationWindow.Mode.COMMAND)acknowledgeWake(serial)
                                     if(window.acceptsCommand(serial) && !speakerFocus.hasPending(serial) && utterance.ready())deliver(utterance.text(),serial)
                                 }
                             }
@@ -245,6 +247,7 @@ class WakeListenerService : Service() {
         val afterWake = WakePhraseMatcher.extractCommand(text, language)
         if (afterWake != null) {
             if (window.wake()) {
+                if(afterWake.isBlank())greetingGate.arm(serial) else greetingGate.cancel()
                 (application as com.jarvis.assistant.JarvisApplication).runtime.phantomOverlay.reveal()
                 windowRuntimeGeneration=(application as com.jarvis.assistant.JarvisApplication).runtime.currentCommandSerial()
                 speakerFocus.newWake()
@@ -255,13 +258,20 @@ class WakeListenerService : Service() {
                 @Suppress("DEPRECATION")
                 getSystemService(Vibrator::class.java)?.vibrate(VibrationEffect.createOneShot(45, VibrationEffect.DEFAULT_AMPLITUDE))
             }
-            if(final && afterWake.isBlank() && window.accept(serial)){
-                paused=true;main.removeCallbacks(windowTimeout)
-                val sample=runCatching{speakerBuffer.take()?.let(com.jarvis.assistant.omnisystem.SpeakerSamples::deposit)}.getOrNull()
-                val expected=windowRuntimeGeneration
-                main.post{val runtime=(application as com.jarvis.assistant.JarvisApplication).runtime;if(running && runtime.currentCommandSerial()==expected)runtime.greetWake(sample)}
-            }else if(final && afterWake.isNotBlank())segmentCommand(afterWake,serial)
-        } else if(final && window.acceptsCommand(serial))segmentCommand(text,serial)
+            if(afterWake.isNotBlank())greetingGate.cancel()
+            if(final && afterWake.isBlank())acknowledgeWake(serial)
+            else if(final && afterWake.isNotBlank())segmentCommand(afterWake,serial)
+        } else if(window.acceptsCommand(serial)){
+            greetingGate.cancel()
+            if(final)segmentCommand(text,serial)
+        }
+    }
+    private fun acknowledgeWake(serial:Long){
+        if(paused || !window.accept(serial))return
+        greetingGate.cancel();paused=true;main.removeCallbacks(windowTimeout)
+        val sample=runCatching{speakerBuffer.take()?.let(com.jarvis.assistant.omnisystem.SpeakerSamples::deposit)}.getOrNull()
+        val expected=windowRuntimeGeneration
+        main.post{val runtime=(application as com.jarvis.assistant.JarvisApplication).runtime;if(running && runtime.currentCommandSerial()==expected)runtime.greetWake(sample)}
     }
     private fun segmentCommand(text:String,serial:Long){
         if((application as com.jarvis.assistant.JarvisApplication).runtime.speakers.focusEnabled){
@@ -339,6 +349,7 @@ class WakeListenerService : Service() {
     }
 
     private fun stopCaptureImmediately(){
+        greetingGate.cancel()
         speakerFocus.reset()
         synchronized(audioLock){running=false;paused=true;window.disable();runCatching{recorder?.stop()}}
         main.removeCallbacks(windowTimeout)

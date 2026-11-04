@@ -140,6 +140,23 @@ class AssistantRuntime(private val context: Context) {
     val batteryAlerts by lazy{com.jarvis.assistant.titan.BatteryAlerts(context,hud,scope,
         ready={cameraOwner==null && state.value.phase==AssistantPhase.READY && session?.isActive!=true && state.value.authorization==null && !state.value.followUpArming && state.value.voiceWindowDeadline<=SystemClock.elapsedRealtime() && !com.jarvis.assistant.security.SystemCredentialPrivacy.pending(context)},
         play={text,volume,done,error->pauseWake();speak(text,language(),allowCloudSpeech=true,volumeOverride=volume,completion=done,failure=error,privateSpeech=false,publicOnly=true)},language=::language)}
+    val sessionNotePreferences by lazy{com.jarvis.assistant.rebirth.SessionNotePreferences(context)}
+    private val sessionNoteDraft=com.jarvis.assistant.rebirth.SessionNoteDraft()
+    private var sessionNoteWrite:Job?=null
+    private val sessionNoteWrites=java.util.concurrent.ConcurrentHashMap.newKeySet<Job>()
+    fun setAutomaticSessionNotes(enabled:Boolean){sessionNotePreferences.setEnabled(enabled);if(!enabled)sessionNoteDraft.clear()}
+    private fun saveSessionNote(){
+        val note=sessionNoteDraft.takeSummary() ?: return
+        if(!sessionNotePreferences.enabled.value)return
+        val previous=sessionNoteWrite
+        val job=scope.launch {
+            previous?.join()
+            try{val id=store.remember(note);if(id>=0)setCategory(id,"Notes")}
+            catch(e:CancellationException){throw e}
+            catch(_:Exception){mutableState.update{it.copy(error="The live chat cleared, but its local session note could not be saved.")}}
+        }
+        sessionNoteWrite=job;sessionNoteWrites.add(job);job.invokeOnCompletion{sessionNoteWrites.remove(job)}
+    }
     private var lastTurnAt=0L
     private var initialized = false
     @Volatile private var sessionGeneration = 0L
@@ -164,6 +181,7 @@ class AssistantRuntime(private val context: Context) {
                 resumeWake()
             }
         }}
+        scope.launch{sessionNotePreferences.enabled.collectLatest{enabled->mutableState.update{it.copy(automaticSessionNotes=enabled)}}}
         batteryAlerts.start()
         // WorkManager restores opt-in work across process restarts; no microphone/LLM is started.
         com.jarvis.assistant.neural.BriefingScheduler.sync(context,keepExisting=true)
@@ -299,7 +317,8 @@ class AssistantRuntime(private val context: Context) {
         val audio=sampleId?.let{com.jarvis.assistant.omnisystem.SpeakerSamples.take(it)}
         session=scope.launch{
             var profile:com.jarvis.assistant.omnisystem.SpeakerProfile?=null
-            if(audio!=null && !locked() && speakers.autoEnabled && speakers.isWarm){
+            var matched=false
+            if(audio!=null && !locked() && speakers.autoEnabled){
                 val matching=scope.async(Dispatchers.Default){
                     try{
                         val vector=speakers.embedding(audio)
@@ -308,17 +327,42 @@ class AssistantRuntime(private val context: Context) {
                 }
                 matching.invokeOnCompletion{audio.pcm.fill(0)}
                 speakerJob=matching
-                profile=withTimeoutOrNull(750){runCatching{matching.await()}.getOrNull()};matching.cancel()
+                withTimeoutOrNull(2500){runCatching{matching.await()}.onSuccess{profile=it;matched=true}};matching.cancel()
             }else audio?.pcm?.fill(0)
             if(generation!=sessionGeneration)return@launch
-            val prefs=com.jarvis.assistant.titan.VoicePreferences(context)
-            val text=com.jarvis.assistant.titan.GreetingPolicy.greeting(java.time.ZonedDateTime.now().hour,lang,profile!=null,profile?.owner==true,profile?.name,
-                prefs.morning,prefs.afternoon,prefs.evening,prefs.night)
-            privateTurn=profile!=null
-            mutableState.update{it.copy(liveReply=text,phase=AssistantPhase.READY,voiceInteraction=true)}
-            speak(text,lang,generation,allowCloudSpeech=profile==null,followUpOnDone=true,privateSpeech=profile!=null,publicOnly=profile==null)
+            val text=com.jarvis.assistant.rebirth.ConversationGreetingPolicy.text(lang,matched && profile?.owner!=true)
+            privateTurn=false;lastTurnAt=SystemClock.elapsedRealtime()
+            store.addEphemeral(ChatMessage(role=MessageRole.ASSISTANT,text=text))
+            mutableState.update{it.copy(liveReply=text,phase=AssistantPhase.THINKING,voiceInteraction=true,speakerOwnerConfident=matched && profile?.owner==true)}
+            if(!locked())phantom.response(text)
+            // Fixed courtesy text contains no saved name or private tool data. It is eligible
+            // for the already-configured general Fish voice, even after a profile match.
+            speak(text,lang,generation,allowCloudSpeech=true,followUpOnDone=true,privateSpeech=false,publicOnly=true)
         }
     }
+    fun finishConversation(voiced:Boolean=false){
+        cancelSession();pauseWake();cancelAuthorization(false)
+        clearAttachmentSelection(false);clearTemporaryConversation();tools.infinity.clearContext();clearSpeakerSuggestion()
+        mutableState.update{it.copy(phase=AssistantPhase.READY,voiceInteraction=false,error=null,pendingAction=null)}
+        visuals.dismiss()
+        if(voiced){
+            val line=language().choose("Of course, sir. The live conversation is cleared.","Por supuesto, señor. La conversación temporal está borrada.","حتماً. گفت‌وگوی موقت پاک شد.")
+            speak(line,language(),allowCloudSpeech=true,completion={clearTemporaryConversation();visuals.dismiss()},failure={clearTemporaryConversation()},privateSpeech=false,publicOnly=true)
+        }else resumeWake()
+    }
+
+    suspend fun playEnrollmentPrompt(owner:Any,seconds:Int){
+        check(captureIsCurrent(owner) && !locked())
+        val expected=sessionGeneration
+        val text=language().choose("Yes, sir. After this prompt, please speak naturally for $seconds seconds.","Sí, señor. Después de este aviso, habla con naturalidad durante $seconds segundos.","پس از این پیام، $seconds ثانیه طبیعی صحبت کنید.")
+        suspendCancellableCoroutine<Unit>{continuation->
+            continuation.invokeOnCancellation{if(expected==sessionGeneration && captureIsCurrent(owner)){cloudVoiceJob?.cancel();speech.stop()}}
+            speak(text,language(),expected,allowCloudSpeech=true,completion={if(continuation.isActive)continuation.resume(Unit)},failure={if(continuation.isActive)continuation.resume(Unit)},privateSpeech=false,resumeListening=false)
+        }
+        check(expected==sessionGeneration && captureIsCurrent(owner) && !locked())
+        delay(250)
+    }
+
     fun dismissHud(){
         activationEffects?.cancel();effects.silence()
         cancelAuthorization(false);cancelSession();clearScreenContext()
@@ -481,7 +525,7 @@ class AssistantRuntime(private val context: Context) {
     private fun reportNative(message:String,voiced:Boolean,input:String){
         cancelSession(preserveCapture=voiced);pauseWake();privateTurn=false;lastRequestWasVoice=voiced;lastReplyLanguage=language()
         val generation=sessionGeneration;phantom.submitted(input,voiced);store.addEphemeral(ChatMessage(role=MessageRole.USER,text=input));mutableState.update{it.copy(phase=AssistantPhase.THINKING,voiceInteraction=voiced,transcript=input,activeTask="INTERFACE")}
-        session=scope.launch{deliver(AssistantReply(message),language(),voiced,generation)}
+        session=scope.launch{deliver(AssistantReply(message,allowCloudSpeech=true),language(),voiced,generation)}
     }
     fun offerContactFollowUp(){if(!locked())mutableState.update{it.copy(contactFollowUp=true)}}
     fun dismissContactFollowUp(){mutableState.update{it.copy(contactFollowUp=false)}}
@@ -489,6 +533,7 @@ class AssistantRuntime(private val context: Context) {
         if(cameraOwner!=null)return
         val text = input.trim().take(8000)
         if (text.isBlank()) return
+        if(com.jarvis.assistant.rebirth.ConversationCompletionPolicy.matches(text)){finishConversation(voiced);return}
         phantomOverlay.reveal()
         com.jarvis.assistant.voice.ConversationInterruptPolicy.replacement(text)?.let{replacement->submit(replacement,voiced,speakerSampleId);return}
         mutableState.update{it.copy(confirmedEntity=null,recognition=null)}
@@ -505,6 +550,7 @@ class AssistantRuntime(private val context: Context) {
         com.jarvis.assistant.rebirth.NativeNavigation.destination(text)?.let{destination->
             val target=when(destination){
                 com.jarvis.assistant.rebirth.NativeNavigation.Destination.SETTINGS->Intent(context,com.jarvis.assistant.rebirth.AndroidSettingsActivity::class.java)
+                com.jarvis.assistant.rebirth.NativeNavigation.Destination.VOICE->Intent(context,com.jarvis.assistant.omnisystem.SpeakerProfilesActivity::class.java).putExtra("voice_setup",true)
                 com.jarvis.assistant.rebirth.NativeNavigation.Destination.CONTENT,com.jarvis.assistant.rebirth.NativeNavigation.Destination.PHOTOS->Intent(context,com.jarvis.assistant.rebirth.PersonalContentActivity::class.java).putExtra("pick_photos",destination==com.jarvis.assistant.rebirth.NativeNavigation.Destination.PHOTOS)
                 com.jarvis.assistant.rebirth.NativeNavigation.Destination.ALIASES->Intent(context,com.jarvis.assistant.neural.NeuralSettingsActivity::class.java)
                 com.jarvis.assistant.rebirth.NativeNavigation.Destination.MEMORY->Intent(context,com.jarvis.assistant.titan.MemoryCardsActivity::class.java)
@@ -542,7 +588,7 @@ class AssistantRuntime(private val context: Context) {
                 cancelSession();pauseWake()
                 val result=controller.requestUnlock(forceNotification=!com.jarvis.assistant.MainActivity.isVisible)
                 mutableState.update{it.copy(phase=AssistantPhase.READY,transcript="",liveReply=result,pendingAction=null)}
-                privateTurn=false;speak(result,language(),allowCloudSpeech=false)
+                privateTurn=false;speak(result,language(),allowCloudSpeech=true,privateSpeech=false,publicOnly=true)
             }else{
                 if(locked()){mutableState.update{it.copy(liveReply="Android reports that the screen is already locked.")};return}
                 val result=controller.lockRequest();stopEverything();mutableState.update{it.copy(liveReply=result)}
@@ -627,13 +673,14 @@ class AssistantRuntime(private val context: Context) {
                         phantom.event(TraceEvent.INTENT_RESOLVED);phantom.stage(ExecutionState.EXECUTING);phantom.event(TraceEvent.TOOL_STARTED)
                         val fast=PhantomPolicy.fastTool(text)
                         val worldClock=com.jarvis.assistant.rebirth.WorldClocks.answer(text)
-                        if(fast!=null || worldClock!=null)privateTurn=false
+                        if(fast=="what time is it" || worldClock!=null)privateTurn=false
                         val appTarget=com.jarvis.assistant.neural.AppMatching.commandTarget(text)
                         val clarification=if(corrected.kind==com.jarvis.assistant.rebirth.CorrectionKind.CLARIFY)AssistantReply(if(corrected.candidates.isEmpty())"The saved app alias target is unavailable or hidden by Android. Check it in Neural Core aliases; no different app was launched." else "Which app did you mean: "+corrected.candidates.joinToString()+"? No app was launched.") else null
                         if(voiced && com.jarvis.assistant.rebirth.RebirthFastCommands.social(text,lang==AppLanguage.ES,false)!=null)withTimeoutOrNull(250){speakerJob?.join()}
-                        val social=com.jarvis.assistant.rebirth.RebirthFastCommands.social(text,lang==AppLanguage.ES,state.value.speakerOwnerConfident)?.let{AssistantReply(it)}
+                        val social=com.jarvis.assistant.rebirth.RebirthFastCommands.socialReply(text,lang==AppLanguage.ES,state.value.speakerOwnerConfident)
+                        if(social!=null)privateTurn=false
                         val resolvedApp=corrected.targetPackage?.let{pkg->val label=com.jarvis.assistant.neural.AppMatching.commandTarget(corrected.understood) ?: "selected app";AssistantReply(tools.launches.launchPackage(pkg,label).detail,confirmedEntity=label)}
-                        val local = clarification ?: social ?: resolvedApp ?: worldClock ?: fast?.let{tools.fastRoute(it,lang)} ?: deviceControl.route(text,lang) ?: locationAssistant.route(text,lang) ?: (if(appTarget!=null && presentation==null)tools.requestApp(appTarget,lang) else null) ?: routines.route(text,lang,neural) ?: presentation ?: neural.route(text,lang) ?: weatherQuestion(text,lang) ?: phone.route(text, lang) ?: tools.route(text, lang)
+                        val local = clarification ?: social ?: resolvedApp ?: worldClock ?: fast?.let{key->tools.fastRoute(key,lang)?.let{reply->if(key=="what time is it")reply.copy(allowCloudSpeech=true) else reply}} ?: deviceControl.route(text,lang) ?: locationAssistant.route(text,lang) ?: (if(appTarget!=null && presentation==null)tools.requestApp(appTarget,lang) else null) ?: routines.route(text,lang,neural) ?: presentation ?: neural.route(text,lang) ?: weatherQuestion(text,lang) ?: phone.route(text, lang) ?: tools.route(text, lang)
                         phantom.event(TraceEvent.TOOL_COMPLETED)
                         if (local != null) { clearScreenContext(); awaitScreenQuestion = false; local }
                         else generate(text, lang, uris, generation)
@@ -680,8 +727,8 @@ class AssistantRuntime(private val context: Context) {
         val contentCloudAllowed=uris.isEmpty() || selectedUris.toList()==uris && attachmentCloudConsent
         val useLocal=settings.provider=="local" || localOnly || !contentCloudAllowed
         val memory = if (!publicLocked && (useLocal || settings.shareSavedMemories)) com.jarvis.assistant.neural.RetrievalPolicy.relevantMemories(text,store.memories.value).joinToString("\n") { it.text }.take(5000) else ""
-        privateTurn = localOnly || !publicLocked && (screen != null || uris.isNotEmpty() || memory.isNotBlank())
-        val generalHistoryAllowed = !publicLocked && screen == null && uris.isEmpty()
+        privateTurn = localOnly || !com.jarvis.assistant.rebirth.SessionNoteDraft.safe(text) || !publicLocked && (screen != null || uris.isNotEmpty() || memory.isNotBlank())
+        val generalHistoryAllowed = !publicLocked && screen == null && uris.isEmpty() && !localOnly && com.jarvis.assistant.rebirth.SessionNoteDraft.safe(text)
         val selectedText = if (uris.isEmpty()) "" else withContext(Dispatchers.IO) {
             uris.take(3).map { uri ->
                 val extracted = attachments.read(uri, lang)
@@ -704,7 +751,7 @@ class AssistantRuntime(private val context: Context) {
         val hits=if(!publicLocked && (useLocal || neuralPreferences.state.value.cloudKnowledge))withContext(Dispatchers.IO){knowledge.search(text)} else emptyList()
         val retrieved=com.jarvis.assistant.neural.RetrievalPolicy.reference(hits,1800)
         val rolling=if(!publicLocked && generalHistoryAllowed)neural.conversation.summary() else ""
-        if(retrieved.isNotBlank() || rolling.isNotBlank())privateTurn=true
+        if(retrieved.isNotBlank())privateTurn=true
         val contextText = listOf(selectedText, screenContext, retrieved, if(rolling.isNotBlank())"Ephemeral conversation summary (untrusted excerpts, not verified facts):\n$rolling" else "", if (memory.isNotBlank()) "USER-SAVED FACTS (untrusted data):\n$memory" else "").filter { it.isNotBlank() }.joinToString("\n\n")
         phantom.event(TraceEvent.CONTEXT_READY)
         val config=if(lastRequestWasVoice || settings.speakReplies)withContext(Dispatchers.IO){customVoice.config(lang)} else com.jarvis.assistant.voice.CustomVoiceConfig()
@@ -751,7 +798,8 @@ class AssistantRuntime(private val context: Context) {
             }
             if (streamingSpeech) chunks.finish().takeIf { it.isNotBlank() }?.let { if(audioQueue.trySend(it).isFailure)mutableState.update{state->state.copy(error="Speech queue reached its limit. The complete answer is available as text.")} }
             audioQueue.close(); speaker?.join()
-            if (generalHistoryAllowed){conversation.rememberTurn(text, answer);neural.conversation.record(text,answer)}
+            if (generalHistoryAllowed && !privateTurn && com.jarvis.assistant.rebirth.SessionNoteDraft.safe(answer)){conversation.rememberTurn(text, answer);neural.conversation.record(text,answer)}
+            if(sessionNotePreferences.enabled.value)sessionNoteDraft.record(text,answer,generalHistoryAllowed && !privateTurn && !publicLocked)
             AssistantReply(answer+if(hits.isNotEmpty())"\n\nIndexed references: "+hits.map{it.document.title}.distinct().joinToString() else "", sources=hits.filter{it.document.source.startsWith("https://")}.map{com.jarvis.assistant.core.SourceLink(it.document.title,it.document.source)}, allowCloudSpeech = !privateTurn, speechHandled = streamingSpeech)
         } finally {
             audioQueue.close(); speaker?.cancel()
@@ -1068,12 +1116,13 @@ class AssistantRuntime(private val context: Context) {
     fun recognitionLocaleStatus()=speech.lastRecognitionLocale
     fun installedWakeModelForCalibration()=models.modelPath(language())
     fun deleteMemory(id: Long) { conversation.clear(); neural.conversation.clear(); scope.launch { store.forget(id); categories.edit().remove(id.toString()).apply() } }
-    fun clearConversation() { selectModule(com.jarvis.assistant.omnisystem.HudModule.ASSISTANT); cancelSession(); tools.infinity.clearContext();conversation.clear(); neural.conversation.clear(); clearScreenContext(); scope.launch { store.clearConversation() } }
+    fun clearConversation() { sessionNoteDraft.clear(); selectModule(com.jarvis.assistant.omnisystem.HudModule.ASSISTANT); cancelSession(); tools.infinity.clearContext();conversation.clear(); neural.conversation.clear(); clearScreenContext(); scope.launch { store.clearConversation() } }
 
     fun wipe() {
+        sessionNoteDraft.clear();sessionNotePreferences.setEnabled(false);sessionNoteWrites.forEach{it.cancel()}
         clearSpeakerSuggestion()
         conversation.clear(); neural.conversation.clear()
-        val cancelledJobs = listOfNotNull(session, cloudVoiceJob, wakeDownload, brainDownload, voiceDownload,neuralOperation,speakerJob)+moduleOperations.values.toList()
+        val cancelledJobs = listOfNotNull(session, cloudVoiceJob, wakeDownload, brainDownload, voiceDownload,neuralOperation,speakerJob,sessionNoteWrite)+moduleOperations.values.toList()+sessionNoteWrites.toList()
         stopEverything()
         clearAttachments()
         scope.launch {
@@ -1104,6 +1153,7 @@ class AssistantRuntime(private val context: Context) {
     }
 
     fun clearTemporaryConversation(){
+        saveSessionNote()
         lastTurnAt=0;store.clearEphemeral();conversation.clear();neural.conversation.clear();clearScreenContext();phantom.clearCaption()
         mutableState.update{it.copy(transcript="",liveReply="",moduleResponse="",confirmedEntity=null,recognition=null,activeTask="ASSISTANT")}
     }

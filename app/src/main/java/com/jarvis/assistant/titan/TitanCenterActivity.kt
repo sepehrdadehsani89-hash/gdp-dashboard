@@ -80,7 +80,7 @@ class TitanCenterActivity:PrivateModuleActivity(){
         Button(onClick={val m=morning.toIntOrNull();val a=afternoon.toIntOrNull();val e=evening.toIntOrNull();val n=night.toIntOrNull()
             if(m!=null && a!=null && e!=null && n!=null && GreetingPolicy.validBounds(m,a,e,n)){voice.morning=m;voice.afternoon=a;voice.evening=e;voice.night=n;status="Greeting boundaries saved"}else status="Use four increasing hours from 0 through 23"
         }){Text("Save greeting boundaries")}
-        Text(words("The owner is addressed as sir only after a confident current-sample profile match. Unknown/uncertain or locked-device speakers receive a neutral greeting. Voice never authenticates private access.","El propietario recibe señor solo tras coincidencia fiable de la muestra actual. Con identidad incierta o dispositivo bloqueado, saludo neutral. La voz no autentica acceso privado.","No voice authentication"))
+        Text(words("Sir is the requested courtesy greeting, not proof of identity. A current local match may personalize the greeting; uncertain matches stay neutral. Voice never authenticates private access or unlocks Android.","El propietario recibe señor solo tras coincidencia fiable de la muestra actual. Con identidad incierta o dispositivo bloqueado, saludo neutral. La voz no autentica acceso privado.","No voice authentication"))
         OutlinedButton(onClick={startActivity(Intent(this,SpeakerProfilesActivity::class.java))}){Text("Six consenting speaker profiles")}
         OutlinedButton(onClick={startActivity(Intent(this,com.jarvis.assistant.voice.VoiceSettingsActivity::class.java))}){Text("English / exclusive Spanish Fish Audio preview")}
     }

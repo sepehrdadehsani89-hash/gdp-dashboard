@@ -114,6 +114,12 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
                 Text(confirmedCaption(l.choose("YOU: ","TÚ: ","شما: ")+userCaption.ifBlank{l.choose("Tap the microphone or use your enabled wake phrase.","Toca el micrófono o usa la frase de activación.","میکروفن یا عبارت بیدارباش را فعال کنید.")},state.confirmedEntity),color=Purple,fontSize=13.sp)
                 if(assistantCaption.isNotBlank())Text("JARVIS: $assistantCaption",color=Ice,fontSize=13.sp)
             }
+            Text(if(state.automaticSessionNotes)l.choose("Temporary chat · local session summaries ON","Chat temporal · resúmenes locales ACTIVADOS","گفت‌وگوی موقت · یادداشت محلی روشن") else l.choose("Temporary chat · no automatic summaries","Chat temporal · sin resúmenes automáticos","گفت‌وگوی موقت · بدون یادداشت خودکار"),color=Dim,fontSize=10.sp)
+            state.error?.takeIf{it.isNotBlank()}?.let{Text(it,color=Color(0xFFFFB3B3),fontSize=12.sp)}
+            Row {
+                TextButton(onClick={actions.onSend("I'm done")}){Text(l.choose("End & clear chat","Terminar y borrar chat","پایان و پاک کردن"))}
+                TextButton(onClick=actions.onOpenOutputVoice){Text(l.choose("Output voice","Voz de salida","صدای خروجی"))}
+            }
         }
         HudPanel(l.choose("Quick info","Información","اطلاعات"),Modifier.fillMaxWidth().then(panelMotion)) {
                 Reading("MEMORIES",state.memories.size.toString())
@@ -130,7 +136,7 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
             item{Text(state.transcript.ifBlank{"No active transcript"})}
             if(state.liveReply.isNotBlank())item{Text("JARVIS: ${state.liveReply}")}
         }
-    },confirmButton={TextButton(onClick={conversation=false;actions.onInteraction(SentinelSound.PANEL_CLOSE)}){Text("Close")}})
+    },confirmButton={TextButton(onClick={conversation=false;actions.onInteraction(SentinelSound.PANEL_CLOSE)}){Text("Close")}},dismissButton={TextButton(onClick={conversation=false;actions.onSend("I'm done")}){Text(l.choose("End & clear","Terminar y borrar","پایان و پاک کردن"))}})
 }
 @Composable private fun SystemPanel(state:JarvisUiState,actions:JarvisUiActions,modifier:Modifier) {
     val t=state.hud.telemetry

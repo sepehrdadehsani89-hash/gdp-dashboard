@@ -1,0 +1,51 @@
+{
+  "package": "com.jarvis.next",
+  "version_code": 17,
+  "version_name": "11.2.0-beta2-reinstall",
+  "source_base_commit": "acddad9874adaaf0ec5e2d2e475fee7a576266ed",
+  "release_status": "DEVELOPMENT_BETA",
+  "gmail_integration_included": false,
+  "google_auth_sdk_included": false,
+  "apk": "Jarvis-11.2.0-beta2-arm64-reinstall.apk",
+  "bytes": 84313141,
+  "sha256": "aae704b0e4146237d5328e27d6a78ff1e455cb6fd2a1eac60b29d18de78a6840",
+  "certificate_sha256": "1094ecc1e01dfb873a8e63689b09dc156fff9d41f77ffdfae27e702991711bda",
+  "signature_v2_verified": true,
+  "zip_alignment_4_verified": true,
+  "abi": [
+    "arm64-v8a"
+  ],
+  "min_sdk": 29,
+  "target_sdk": 35,
+  "debuggable": false,
+  "unit_tests": {
+    "tests": 347,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "lint": {
+    "Warning": 42
+  },
+  "added_merged_permissions": [],
+  "private_material_or_model_weights_packaged": false,
+  "source_inputs_frozen_and_verified": true,
+  "source_input_count": 1541,
+  "source_manifest_sha256": "5603105a33612566a4a217220e14c96e1042834ec28a13ba656f2f23afeeb2d3",
+  "final_build_duration": "12m 57s",
+  "android_test_source_compilation": "compileDebugAndroidTestKotlin succeeded; compilation only",
+  "android_runtime_cases_executed": 0,
+  "physical_redmi9_verified": false,
+  "fish_account_and_acoustic_playback_verified": false,
+  "original_jarvis7_in_place_update": false,
+  "new_signing_key_generated": false,
+  "full_master_directive_complete": false,
+  "commercial_readiness_verified": false,
+  "owner_enrollment_seconds": 20,
+  "voice_only_android_unlock_supported": false,
+  "automatic_local_session_notes_default": true,
+  "session_note_format": "bounded ordinary-dialogue excerpts; assistant text unverified",
+  "full_chat_archive_enabled": false,
+  "wake_acknowledgement_debounce_ms": 700,
+  "real_owner_voice_enrolled_in_cloud": false
+}

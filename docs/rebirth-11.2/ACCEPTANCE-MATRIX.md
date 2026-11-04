@@ -1,4 +1,4 @@
-> Historical code15 candidate record. The owner subsequently requested Gmail removal and publication of a speech-repaired beta. See [the current release scope](RELEASE.md) and [current download/verification](../../downloads/rebirth-11.2/README.md). Gmail integration is absent from the current build.
+> Historical code15 candidate record. The owner subsequently requested Gmail removal and publication of a speech-repaired beta. See [the current release scope](CONVERSATION-UPDATE.md) and [current download/verification](../../downloads/rebirth-11.2-beta2/README.md). Gmail integration is absent from the current build.
 
 # 11.2 device acceptance matrix
 

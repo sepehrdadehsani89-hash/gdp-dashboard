@@ -16,6 +16,6 @@ object WorldClocks {
         val known=cities.entries.firstOrNull{com.jarvis.assistant.neural.AppMatching.normalize(it.key)==normalized}?.value
             ?: if(normalized in setOf("teheran","teherán"))"Asia/Tehran" else null
         val zone=known ?: runCatching{ZoneId.of(name).id}.getOrNull()
-        return if(zone==null)AssistantReply("Name a supported city (${cities.keys.joinToString()}) or an exact IANA time-zone ID. No time zone was guessed.") else AssistantReply("${time(instant,zone)} · $zone · Android time-zone data.")
+        return if(zone==null)AssistantReply("Name a supported city (${cities.keys.joinToString()}) or an exact IANA time-zone ID. No time zone was guessed.",allowCloudSpeech=true) else AssistantReply("${time(instant,zone)} · $zone · Android time-zone data.",allowCloudSpeech=true)
     }
 }

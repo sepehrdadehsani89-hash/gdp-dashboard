@@ -9,6 +9,7 @@ import com.jarvis.assistant.core.PendingAction
 import com.jarvis.assistant.core.ConnectionCheck
 
 data class JarvisUiState(
+    val automaticSessionNotes:Boolean=true,
     val activeTask:String="ASSISTANT",
     val performanceRestricted:Boolean=false,
     val recognition:com.jarvis.assistant.rebirth.CorrectedRecognition?=null,

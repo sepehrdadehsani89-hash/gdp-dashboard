@@ -18,7 +18,7 @@ class UtteranceAssembler(private val now:()->Long,private val threshold:Float=.0
         return now()-lastVoice>=if(incomplete)2500 else 1000
     }
     companion object {
-        fun fastCommand(text:String)=Regex("^(?:open|abre|call|llama|lock my|unlock my|bloquea|desbloquea|turn (?:on|off) (?:the )?flashlight|start (?:a )?\\d+.+timer|inicia (?:un )?temporizador)\\b",RegexOption.IGNORE_CASE).containsMatchIn(text.trim()) &&
+        fun fastCommand(text:String)=com.jarvis.assistant.rebirth.ConversationCompletionPolicy.matches(text) || Regex("^(?:open|abre|call|llama|lock my|unlock my|bloquea|desbloquea|turn (?:on|off) (?:the )?flashlight|start (?:a )?\\d+.+timer|inicia (?:un )?temporizador)\\b",RegexOption.IGNORE_CASE).containsMatchIn(text.trim()) &&
             !Regex("\\b(and|then|y|despues|después)\\b|[,;]",RegexOption.IGNORE_CASE).containsMatchIn(text)
     }
 }

@@ -1,0 +1,17 @@
+# 11.2 beta2 verification
+
+Final frozen-source pipeline **BUILD SUCCESSFUL in 12m 57s**: `:app:testReinstallUnitTest :app:lintReinstall :app:assembleReinstall :app:compileDebugAndroidTestKotlin`.
+
+**347 JVM tests passed**, zero failures/errors/skips. Lint zero errors/fatals, 42warnings. No suppression/baseline introduced to force a pass. Android instrumentation sources compiled; **zero runtime instrumentation cases executed**, no physical Redmi9 or live Fish account sound verified.
+
+Nine new policy/regression cases cover acknowledgement of a stable bare wake without an engine-final event, cancellation by inline commands/Stop, stale final rejection, exact completion phrases versus embedded speech, public courtesy versus uncertain speaker, real voice/content navigation, note provenance exclusions, secret screening before clipping, bounded draft retention and one-time consumption. Existing338 cases remain. These are host checks, not real microphone, keyguard, MediaPlayer or enrollment-accuracy tests.
+
+Package com.jarvis.next; code17 /11.2.0-beta2-reinstall; non-debuggable arm64-v8a; min29/target35. APK 84,313,141bytes; SHA-256 `aae704b0e4146237d5328e27d6a78ff1e455cb6fd2a1eac60b29d18de78a6840`. V2 signature and4-byte ZIP alignment verified. Retained certificate SHA-256 `1094ecc1e01dfb873a8e63689b09dc156fff9d41f77ffdfae27e702991711bda`. No new key. Added merged permissions versus11.1: []. No broad file/media/account permissions added. Gmail client/sign-in classes, private signing/password archives, private memory exports, optional model weights and test fixture classes excluded from the APK.
+
+All 1541 production/test/build inputs were frozen before the pipeline and match afterward. [Exact source hashes](source-inputs.sha256), manifest SHA-256 `5603105a33612566a4a217220e14c96e1042834ec28a13ba656f2f23afeeb2d3`, [machine properties](build-info.json). Baseline `acddad9874adaaf0ec5e2d2e475fee7a576266ed`; final release commit contains these frozen bytes. Earlier APK artifacts remain unchanged; main and jarvis-android-download are preserved. Public APK bytes and SHA-256 are checked independently after push.
+
+Source findings repaired: wake acknowledgement depended on a potentially delayed final event; a profile greeting could be denied speech as private despite a general courtesy containing no private name; ordinary rolling dialogue could force a private speech route; errors were far from the current caption. The update addresses those source paths without asserting reproduction or resolution of every handset fault. Optional saved-memory/file/screen speech still needs explicit private-text sharing consent. The requested auto notes are bounded local excerpts, not perfect redaction or guaranteed facts.
+
+No real owner voice can be enrolled from this cloud. A consenting20-second recording/model setup is required on the phone. Speaker matching never grants private access or Android unlock. Android-granted storage/apps and OEM background limits remain. No actual wake/partial/Fish/first-audio/latency/memory/crash benchmark is invented. Prior stalled API29 emulator is preserved, not reset for manufactured passes. Inherited Vosk4KiB ELF compatibility limitation remains; no universal16KiB-page/Play or commercial approval claim.
+
+See [full update scope and phone steps](../../docs/rebirth-11.2/CONVERSATION-UPDATE.md). Original7.0 certificate mismatch remains; no uninstall or data clear was performed.

@@ -47,6 +47,8 @@ object RebirthFastCommands {
     private fun normalized(text:String)=AppMatching.normalize(text).removePrefix("hey jarvis ").removePrefix("oye jarvis ").removePrefix("jarvis ")
     fun openSelf(text:String)=normalized(text) in setOf("let s cook","lets cook","open yourself","open jarvis","abre jarvis","abrete")
     fun homeScreen(text:String)=normalized(text) in setOf("go to the home screen","go to home screen","open home screen","show home screen","ve a la pantalla de inicio")
+    fun socialReply(text:String,spanish:Boolean,confidentOwner:Boolean):com.jarvis.assistant.core.AssistantReply?=
+        social(text,spanish,confidentOwner)?.let{com.jarvis.assistant.core.AssistantReply(it,allowCloudSpeech=true)}
     fun social(text:String,spanish:Boolean,confidentOwner:Boolean):String? {
         val sir=if(confidentOwner)if(spanish)", señor" else ", sir" else ""
         return when(normalized(text)){

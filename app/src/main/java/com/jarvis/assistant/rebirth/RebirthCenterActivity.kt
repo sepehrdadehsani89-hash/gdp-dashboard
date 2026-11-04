@@ -14,7 +14,12 @@ class RebirthCenterActivity:PrivateModuleActivity(){
         screen("REBIRTH 11.2 · CONTENT & LISTENING"){
             val shared by runtime.state.collectAsStateWithLifecycle()
             val phantom by runtime.phantom.state.collectAsStateWithLifecycle()
-            Text("Ordinary conversations are live-only. Saved memories, shortcuts, locations, settings and prior archived chats remain separate. Stop, lock and idle expiry clear the temporary conversation.")
+            val notes by runtime.sessionNotePreferences.enabled.collectAsStateWithLifecycle()
+            Text("The chat itself is temporary. Enabled session summaries and explicitly saved memories remain separate. Say “I’m done”, use End & clear, Stop, or lock to clear the live chat; idle expiry also clears it.")
+            Switch(notes,{enabled->authorize{runtime.setAutomaticSessionNotes(enabled)}})
+            Text("Save short local summaries of ordinary conversations when the session ends. No full chat archive. Files, screen contents, private tool results and credential-like turns are excluded. Review or delete notes in Memory cards. Turning this off discards the current note draft; existing notes stay until you delete them.")
+            OutlinedButton(onClick={startActivity(Intent(this@RebirthCenterActivity,com.jarvis.assistant.titan.MemoryCardsActivity::class.java))}){Text("Review / delete saved session notes and memories")}
+            OutlinedButton(onClick={startActivity(Intent(this@RebirthCenterActivity,com.jarvis.assistant.omnisystem.SpeakerProfilesActivity::class.java).putExtra("voice_setup",true))}){Text("Set up owner voice · 20-second local recording")}
             Button(onClick={startActivity(Intent(this@RebirthCenterActivity,PersonalContentActivity::class.java))}){Text("Personal Content · files, photos & authorized folders")}
             OutlinedButton(onClick={startActivity(Intent(this@RebirthCenterActivity,com.jarvis.assistant.neural.NeuralSettingsActivity::class.java))}){Text("App aliases, approved memories & previous-history deletion")}
             OutlinedButton(onClick={startActivity(Intent(this@RebirthCenterActivity,com.jarvis.assistant.titan.TitanCenterActivity::class.java).putExtra("page","Voice Lab"))}){Text("Microphone calibration / Voice Lab")}
