@@ -26,6 +26,8 @@ class ScreenUnlockActivity:ComponentActivity(){
     private var inFlight by mutableStateOf(false)
     private var generation=0L
     private var validRequest=false
+    private var homeGeneration:Long?=null
+    private var homeExpiresAt=0L
     private var audioGeneration:Long?=null
     private val runtime get()=(application as JarvisApplication).runtime
     private val language get()=(application as JarvisApplication).runtime.store.settings.value.language
@@ -33,7 +35,10 @@ class ScreenUnlockActivity:ComponentActivity(){
     override fun onCreate(savedInstanceState:Bundle?){
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-        validRequest=ScreenUnlockRequests.consume(intent.getStringExtra("request_id"))
+        val ticket=ScreenUnlockRequests.take(intent.getStringExtra("request_id"))
+        validRequest=ticket!=null
+        homeGeneration=ticket?.homeGeneration;homeExpiresAt=(ticket?.issuedAt ?: 0)+120_000
+        if(homeGeneration!=null && homeGeneration!=runtime.currentCommandSerial()){finish();return}
         if(!validRequest || !ScreenSecurityPreferences(this).enabled){finish();return}
         setShowWhenLocked(true);setTurnScreenOn(true)
         message=words("Device authentication required. Android controls unlocking.","Autenticación requerida. Android controla el desbloqueo.","احراز هویت لازم است. بازکردن قفل در کنترل اندروید است.")
@@ -53,19 +58,26 @@ class ScreenUnlockActivity:ComponentActivity(){
     private fun requestAndroid(){
         if(inFlight || isFinishing || !ScreenSecurityPreferences(this).enabled)return
         val manager=getSystemService(KeyguardManager::class.java)
-        if(!manager.isKeyguardLocked && !manager.isDeviceLocked){stage=SecurityStage.VERIFIED;message=words("Android reports that your phone is already unlocked.","Android indica que ya está desbloqueado.","اندروید گزارش می‌دهد گوشی شما هم‌اکنون باز است.");generation++;return}
+        if(!manager.isKeyguardLocked && !manager.isDeviceLocked){stage=SecurityStage.VERIFIED;message=words("Android reports that your phone is already unlocked.","Android indica que ya está desbloqueado.","اندروید گزارش می‌دهد گوشی شما هم‌اکنون باز است.");generation++;openHomeIfCurrent();return}
         val token=++generation;inFlight=true;stage=SecurityStage.AUTHENTICATION_REQUIRED
-        if(runCatching{SystemCredentialPrivacy.begin(this);audioGeneration=runtime.pauseForAndroidUi()}.isFailure){failed(token,words("Audio privacy pause unavailable. Unlock normally with Android.","Pausa de privacidad no disponible. Desbloquea normalmente.","توقف صوتی برای حریم خصوصی در دسترس نیست. با اندروید معمولی باز کنید."));return}
+        if(runCatching{SystemCredentialPrivacy.begin(this);audioGeneration=runtime.pauseForAndroidUi();if(homeGeneration!=null)homeGeneration=audioGeneration}.isFailure){failed(token,words("Audio privacy pause unavailable. Unlock normally with Android.","Pausa de privacidad no disponible. Desbloquea normalmente.","توقف صوتی برای حریم خصوصی در دسترس نیست. با اندروید معمولی باز کنید."));return}
         lifecycleScope.launch{delay(120_000);if(token==generation && inFlight){generation++;inFlight=false;stage=SecurityStage.CANCELLED;message=words("The request expired. Unlock normally or tap to request a fresh Android challenge.","La solicitud caducó. Desbloquea normalmente o pide un nuevo reto Android.","مهلت درخواست پایان یافت. معمولی باز کنید یا یک احراز هویت تازه از اندروید بخواهید.")}}
         try{manager.requestDismissKeyguard(this,object:KeyguardManager.KeyguardDismissCallback(){
             override fun onDismissSucceeded(){if(token!=generation || isFinishing)return
                 inFlight=false;finishAudioPrivacy()
-                if(!manager.isDeviceLocked && !manager.isKeyguardLocked){stage=SecurityStage.VERIFIED;message=words("Android confirms the screen is unlocked. No private action was executed.","Android confirma el desbloqueo. No se ejecutó ninguna acción privada.","اندروید باز بودن صفحه را تأیید می‌کند. اقدام خصوصی اجرا نشد.")}
+                if(!manager.isDeviceLocked && !manager.isKeyguardLocked){openHomeIfCurrent();stage=SecurityStage.VERIFIED;message=words("Android confirms the screen is unlocked. No private action was executed.","Android confirma el desbloqueo. No se ejecutó ninguna acción privada.","اندروید باز بودن صفحه را تأیید می‌کند. اقدام خصوصی اجرا نشد.")}
                 else failed(token,words("Android did not report an unlocked screen. Retry only when ready.","Android no confirmó desbloqueo. Reintenta cuando quieras.","اندروید صفحهٔ باز را گزارش نکرد. در زمان مناسب دوباره تلاش کنید."))
             }
             override fun onDismissCancelled(){failed(token,words("Authentication cancelled. Android remains in control of the lock.","Autenticación cancelada. Android mantiene el control del bloqueo.","احراز هویت لغو شد. کنترل قفل با اندروید می‌ماند."))}
             override fun onDismissError(){failed(token,words("Android cannot dismiss keyguard here. Close this screen and unlock normally.","Android no puede desbloquear aquí. Cierra y desbloquea normalmente.","اندروید نمی‌تواند قفل را اینجا باز کند. صفحه را ببندید و معمولی باز کنید."))}
         })}catch(_:Exception){failed(token,words("Android keyguard dismissal is unavailable here.","Desbloqueo Android no disponible aquí.","درخواست بازکردن قفل اندروید اینجا در دسترس نیست."))}
+    }
+    private fun openHomeIfCurrent(){
+        val expected=homeGeneration ?: return
+        if(expected!=runtime.currentCommandSerial() || android.os.SystemClock.elapsedRealtime()>homeExpiresAt || getSystemService(KeyguardManager::class.java).isDeviceLocked)return
+        homeGeneration=null
+        runtime.selectModule(com.jarvis.assistant.omnisystem.HudModule.ASSISTANT)
+        runCatching{startActivity(android.content.Intent(this,com.jarvis.assistant.MainActivity::class.java).addFlags(android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP or android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP).putExtra("rebirth_home",true))}.onSuccess{runtime.resumeWakeAfterNavigation(expected);finish()}.onFailure{message="Android did not allow Home to open. Open Jarvis manually."}
     }
     private fun finishAudioPrivacy(){runCatching{SystemCredentialPrivacy.end(this)};audioGeneration?.let(runtime::finishAndroidUi);audioGeneration=null}
     private fun failed(token:Long,text:String){if(token!=generation || isFinishing)return;inFlight=false;finishAudioPrivacy();stage=SecurityStage.CANCELLED;message=text}

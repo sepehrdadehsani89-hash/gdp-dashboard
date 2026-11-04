@@ -32,6 +32,7 @@ class DeviceTools(private val context: Context, private val store: JarvisStore) 
     val infinity=com.jarvis.assistant.infinity.InfinityTools(context)
     val appRegistry=com.jarvis.assistant.neural.AppRegistry(context)
     private var recentNews:Pair<Long,List<NewsArticle>>?=null
+    val launches=com.jarvis.assistant.rebirth.AppLaunchCoordinator(context)
     private val pending = ConcurrentHashMap<String, PendingAction>()
     private val client = OkHttpClient.Builder()
         .connectTimeout(10, TimeUnit.SECONDS).readTimeout(15, TimeUnit.SECONDS)
@@ -204,9 +205,7 @@ class DeviceTools(private val context: Context, private val store: JarvisStore) 
                 }
                 "open_app" -> {
                     check(!ToolPolicy.protectedPackage(action.payload))
-                    val intent = context.packageManager.getLaunchIntentForPackage(action.payload) ?: error("Application unavailable")
-                    context.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-                    return@withContext language.choose("App launch requested. Check the foreground app; Android controls whether it opens.","Apertura solicitada. Android controla el inicio; comprueba la aplicación.","باز کردن برنامه درخواست شد؛ نمایش آن را در اندروید بررسی کنید.")
+                    return@withContext launches.launchPackage(action.payload,appRegistry.apps().firstOrNull{it.packageId==action.payload}?.label ?: "requested app").detail
                 }
                 "nav_home", "nav_back" -> {
                     check(JarvisAccessibilityService.navigate(context, action.kind == "nav_home"))
@@ -263,17 +262,23 @@ class DeviceTools(private val context: Context, private val store: JarvisStore) 
         return AssistantReply(description, action = action,confirmedEntity=confirmedEntity)
     }
 
+    private fun resolvedMatches(name:String):List<com.jarvis.assistant.neural.AppMatch>{
+        val apps=appRegistry.apps()
+        val pinned=appRegistry.aliases().entries.firstOrNull{com.jarvis.assistant.neural.AppMatching.normalize(it.key)==com.jarvis.assistant.neural.AppMatching.normalize(name)}?.value
+        if(pinned!=null)return apps.firstOrNull{it.packageId==pinned}?.let{listOf(com.jarvis.assistant.neural.AppMatch(it,1.0,true))} ?: emptyList()
+        return com.jarvis.assistant.neural.AppMatching.match(name,apps)
+    }
     fun requestApp(name:String,language:AppLanguage,alwaysConfirm:Boolean=false):AssistantReply {
         if(locked())return AssistantReply(unlockMessage(language))
         if(!alwaysConfirm)return app(name,language)
-        val matches=com.jarvis.assistant.neural.AppMatching.match(name,appRegistry.apps())
+        val matches=resolvedMatches(name)
         if(matches.isEmpty() || matches.size>1 && matches[1].score>=matches[0].score-.08)return AssistantReply("Choose an unambiguous available app in Neural Core settings.")
         val target=matches.first().app
         return proposal(language.choose("Open ${target.label}?","¿Abrir ${target.label}?","${target.label} باز شود؟"),"open_app",target.packageId)
     }
     fun requestAlias(alias:String,name:String,language:AppLanguage):AssistantReply {
         if(locked())return AssistantReply(unlockMessage(language))
-        val matches=com.jarvis.assistant.neural.AppMatching.match(name,appRegistry.apps())
+        val matches=resolvedMatches(name)
         if(matches.isEmpty() || matches.size>1 && matches[1].score>=matches[0].score-.08)return AssistantReply("Choose the alias target in Neural Core settings.")
         val payload=org.json.JSONObject().put("alias",alias.take(80)).put("package",matches.first().app.packageId).toString()
         return proposal(language.choose("Save '$alias' as ${matches.first().app.label}?","¿Guardar '$alias' como ${matches.first().app.label}?","«$alias» برای ${matches.first().app.label} ذخیره شود؟"),"app_alias",payload)
@@ -281,15 +286,15 @@ class DeviceTools(private val context: Context, private val store: JarvisStore) 
 
     private fun app(name: String, language: AppLanguage): AssistantReply {
         if (locked()) return AssistantReply(unlockMessage(language))
-        val matches=com.jarvis.assistant.neural.AppMatching.match(name,appRegistry.apps())
+        val matches=resolvedMatches(name)
         if(matches.isEmpty())return AssistantReply(language.choose("I couldn't find a matching available app.","No encontré una aplicación disponible que coincida.","برنامهٔ در دسترس مطابقی پیدا نشد."))
         val best=matches.first()
         if(matches.size>1 && matches[1].score>=best.score-.08)return AssistantReply(language.choose("Which app: ","¿Qué aplicación: ","کدام برنامه: ")+matches.take(3).joinToString{it.app.label})
         val packageName=best.app.packageId;val label=best.app.label
         if(!best.exact)return proposal(language.choose("Do you mean $label?","¿Te refieres a $label?","منظورتان $label است؟"),"open_app",packageName)
         return try {
-            withLaunch(packageName)
-            AssistantReply(language.choose("Opening request sent to Android for $label.","Solicitud de apertura enviada a Android para $label.","درخواست باز کردن $label به اندروید ارسال شد."),confirmedEntity=name)
+            val result=launches.launchPackage(packageName,label)
+            AssistantReply(result.detail,confirmedEntity=if(result.status in setOf(com.jarvis.assistant.rebirth.LaunchStatus.DISPATCHED,com.jarvis.assistant.rebirth.LaunchStatus.WAITING_FOR_USER))name else null)
         } catch (_: Exception) { AssistantReply("Android could not open $label.") }
     }
 

@@ -33,13 +33,15 @@ class SpeechController(context: Context) {
     private val audio = this.context.getSystemService(AudioManager::class.java)
     private val offlineVoice = OfflineVoiceManager(this.context)
     private var recognizer: SpeechRecognizer? = null
+    @Volatile var lastRecognitionLocale:String="not started";private set
+    private var androidMicrophoneLease:com.jarvis.assistant.rebirth.MicrophoneLease?=null
     private var offlineSpeech: OfflineSpeechSession? = null
     private var player: MediaPlayer? = null
     private var temporaryPlayback:File?=null
     private var ttsReady = false
     private var ttsFailed = false
     private var pendingSpeech: (() -> Unit)? = null
-    private var generation = 0
+    @Volatile private var generation = 0
     private var speakingDone: (() -> Unit)? = null
     private var speakingError: ((String) -> Unit)? = null
     private var focus: AudioFocusRequest? = null
@@ -70,6 +72,7 @@ class SpeechController(context: Context) {
         onResult: (String) -> Unit,
         onError: (String) -> Unit,
         onCaptureStarted:()->Unit={},
+        onAlternatives:(List<com.jarvis.assistant.rebirth.RecognitionHypothesis>)->Unit={},
     ) {
         main.post {
             stopInternal()
@@ -85,6 +88,7 @@ class SpeechController(context: Context) {
                     onResult = { if (token == generation) { offlineSpeech = null; onResult(it) } },
                     onError = { if (token == generation) { offlineSpeech = null; onError(it) } },
                     onCaptureStarted={if(token==generation)onCaptureStarted()},
+                    onAlternatives={if(token==generation)onAlternatives(it)},
                 ).also { it.start() }
                 return@post
             }
@@ -97,10 +101,13 @@ class SpeechController(context: Context) {
                 ))
                 return@post
             }
-            if (!SpeechRecognizer.isRecognitionAvailable(context)) {
+            if (!onDevice && !SpeechRecognizer.isRecognitionAvailable(context)) {
                 onError(language.choose("Install or enable an Android speech recognition service.", "Instala o activa un servicio de reconocimiento de voz de Android.", "یک سرویس تشخیص گفتار اندروید نصب یا فعال کنید."))
                 return@post
             }
+            val lease=com.jarvis.assistant.rebirth.MicrophoneSessions.manager.acquire(com.jarvis.assistant.rebirth.MicrophoneOwner.FOREGROUND_RECOGNIZER)
+            if(lease==null){onError("RECOGNIZER_BUSY: previous audio capture is still releasing.");return@post}
+            androidMicrophoneLease=lease
             try {
                 val token = generation
                 var completed = false
@@ -110,23 +117,26 @@ class SpeechController(context: Context) {
                     else SpeechRecognizer.createSpeechRecognizer(context)
                 recognizer = instance
                 instance.setRecognitionListener(object : RecognitionListener {
-                    override fun onReadyForSpeech(params: Bundle?) { if(token==generation)onCaptureStarted();com.jarvis.assistant.hud.AudioSignals.start(instance,"Android recognizer · RMS level") }
-                    override fun onBeginningOfSpeech() { speechDetected=true;captureTiming.progress("[Android speech started]") }
+                    override fun onReadyForSpeech(params: Bundle?) { if(token!=generation || completed)return;onCaptureStarted();com.jarvis.assistant.hud.AudioSignals.start(instance,"Android recognizer · RMS level") }
+                    override fun onBeginningOfSpeech() { if(token!=generation || completed)return;speechDetected=true;captureTiming.progress("[Android speech started]") }
                     override fun onRmsChanged(rmsdB: Float) { if(token==generation){val level=((rmsdB+2)/12).coerceIn(0f,1f);com.jarvis.assistant.hud.AudioSignals.level(instance,level);if(speechDetected)captureTiming.energy(level)} }
                     override fun onBufferReceived(buffer: ByteArray?) = Unit
-                    override fun onEndOfSpeech() { speechDetected=false;com.jarvis.assistant.hud.AudioSignals.stop(instance) }
+                    override fun onEndOfSpeech() { if(token!=generation || completed)return;speechDetected=false;com.jarvis.assistant.hud.AudioSignals.stop(instance) }
                     override fun onEvent(eventType: Int, params: Bundle?) = Unit
                     override fun onError(error: Int) {
                         if (token != generation || completed) return
                         completed = true
-                        com.jarvis.assistant.hud.AudioSignals.stop(instance); instance.destroy(); recognizer = null
+                        com.jarvis.assistant.hud.AudioSignals.stop(instance); runCatching{instance.destroy()}; recognizer = null;releaseAndroidMicrophone()
                         onError(recognitionError(error, language))
                     }
                     override fun onResults(results: Bundle?) {
                         if (token != generation || completed) return
                         completed = true
-                        val text = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull().orEmpty()
-                        com.jarvis.assistant.hud.AudioSignals.stop(instance); instance.destroy(); recognizer = null
+                        val hypotheses=results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION).orEmpty().take(5)
+                        val scores=results?.getFloatArray(SpeechRecognizer.CONFIDENCE_SCORES)
+                        onAlternatives(hypotheses.mapIndexed{i,text->com.jarvis.assistant.rebirth.RecognitionHypothesis(text.take(4000),scores?.getOrNull(i)?.takeIf{it.isFinite() && it in 0f..1f})})
+                        val text=hypotheses.firstOrNull().orEmpty()
+                        com.jarvis.assistant.hud.AudioSignals.stop(instance); runCatching{instance.destroy()}; recognizer = null;releaseAndroidMicrophone()
                         if(captureTiming.expired())onError("Speech inactivity or two-minute utterance limit reached.") else if (text.isBlank()) onError(recognitionError(SpeechRecognizer.ERROR_NO_MATCH, language)) else onResult(text)
                     }
                     override fun onPartialResults(partialResults: Bundle?) {
@@ -137,19 +147,37 @@ class SpeechController(context: Context) {
                     putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
                     putExtra(RecognizerIntent.EXTRA_LANGUAGE, language.tag)
                     putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
-                    putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1)
+                    putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5)
                     putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, !allowNetwork)
                 }
-                instance.startListening(intent)
+                var started=false
+                fun startWithLocale(locale:String,supportReported:Boolean){
+                    if(started || completed || token!=generation)return
+                    started=true;lastRecognitionLocale="$locale · "+if(supportReported)"reported by recognizer" else "configured fallback; support not reported"
+                    intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE,locale)
+                    try{instance.startListening(intent)}catch(_:Exception){completed=true;runCatching{instance.destroy()};recognizer=null;releaseAndroidMicrophone();onError("AUDIO_ERROR: Android could not start this recognizer.")}
+                }
+                if(Build.VERSION.SDK_INT>=33){
+                    try{instance.checkRecognitionSupport(intent,context.mainExecutor,object:android.speech.RecognitionSupportCallback{
+                        override fun onSupportResult(support:android.speech.RecognitionSupport){
+                            if(token!=generation || completed)return
+                            val locales=support.installedOnDeviceLanguages+(if(!onDevice && allowNetwork)support.onlineLanguages else emptyList())
+                            val chosen=com.jarvis.assistant.rebirth.SpeechLocalePolicy.select(language==AppLanguage.ES,locales)
+                            startWithLocale(chosen ?: language.tag,chosen!=null)
+                        }
+                        override fun onError(error:Int){startWithLocale(language.tag,false)}
+                    })}catch(_:Exception){startWithLocale(language.tag,false)}
+                    main.postDelayed({startWithLocale(language.tag,false)},1500)
+                }else startWithLocale(language.tag,false)
                 val timeout=object:Runnable{override fun run(){
                     if(token!=generation || completed)return
                     if(!captureTiming.expired()){main.postDelayed(this,(captureTiming.deadline()-android.os.SystemClock.elapsedRealtime()).coerceAtLeast(1));return}
-                    completed=true;instance.cancel();com.jarvis.assistant.hud.AudioSignals.stop(instance);instance.destroy();recognizer=null
+                    completed=true;runCatching{instance.cancel()};com.jarvis.assistant.hud.AudioSignals.stop(instance);runCatching{instance.destroy()};recognizer=null;releaseAndroidMicrophone()
                     onError("Speech inactivity or two-minute utterance limit reached.")
                 }}
                 main.postDelayed(timeout,SpeechInactivityClock.IDLE_MS)
             } catch (_: Exception) {
-                recognizer?.destroy(); recognizer = null
+                runCatching{recognizer?.destroy()}; recognizer = null;releaseAndroidMicrophone()
                 onError(language.choose("Speech capture is unavailable. Check the microphone and speech service.", "No se puede escuchar. Revisa el micrófono y el servicio de voz.", "ضبط گفتار در دسترس نیست. میکروفن و سرویس گفتار را بررسی کنید."))
             }
         }
@@ -250,13 +278,18 @@ class SpeechController(context: Context) {
     fun voiceModelReady(language: AppLanguage): Boolean = offlineVoice.modelPath(language) != null
     fun shutdown() { main.post { stopInternal(); tts.shutdown(); offlineVoice.shutdown() } }
 
+    private fun releaseAndroidMicrophone(){
+        val lease=androidMicrophoneLease ?: return;androidMicrophoneLease=null
+        // Android recognition service teardown is asynchronous; avoid an immediate busy restart.
+        main.postDelayed({com.jarvis.assistant.rebirth.MicrophoneSessions.manager.release(lease)},200)
+    }
     private fun stopInternal() {
         generation++
         pendingSpeech = null; speakingDone = null; speakingError = null
         utterancePrefix = null; lastUtterance = null
         offlineSpeech?.close(); offlineSpeech = null
         offlineVoice.stop()
-        recognizer?.let { com.jarvis.assistant.hud.AudioSignals.stop(it); it.cancel(); it.destroy() }; recognizer = null
+        recognizer?.let { com.jarvis.assistant.hud.AudioSignals.stop(it); runCatching{it.cancel()};runCatching{it.destroy()} }; recognizer = null;releaseAndroidMicrophone()
         tts.stop()
         player?.run { runCatching { stop() }; release() }; player = null
         temporaryPlayback?.delete();temporaryPlayback=null
@@ -318,7 +351,7 @@ class SpeechController(context: Context) {
     private fun recognitionError(code: Int, language: AppLanguage) = when (code) {
         SpeechRecognizer.ERROR_NO_MATCH, SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> language.choose("I didn't catch that. Tap the microphone and try again.", "No entendí. Toca el micrófono e inténtalo otra vez.", "متوجه نشدم. میکروفن را بزنید و دوباره بگویید.")
         SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> language.choose("Microphone access was denied.", "Se denegó el acceso al micrófono.", "دسترسی به میکروفن داده نشد.")
-        SpeechRecognizer.ERROR_RECOGNIZER_BUSY, SpeechRecognizer.ERROR_AUDIO -> language.choose("The microphone is busy. Stop wake listening or another recording app, then retry.", "El micrófono está ocupado. Detén la activación o la otra aplicación y vuelve a probar.", "میکروفن مشغول است. حالت بیدارباش یا برنامهٔ ضبط دیگر را متوقف و دوباره تلاش کنید.")
+        SpeechRecognizer.ERROR_RECOGNIZER_BUSY, SpeechRecognizer.ERROR_AUDIO -> "RECOGNIZER_BUSY: "+language.choose("The microphone is busy. Stop wake listening or another recording app, then retry.", "El micrófono está ocupado. Detén la activación o la otra aplicación y vuelve a probar.", "میکروفن مشغول است. حالت بیدارباش یا برنامهٔ ضبط دیگر را متوقف و دوباره تلاش کنید.")
         SpeechRecognizer.ERROR_LANGUAGE_NOT_SUPPORTED, SpeechRecognizer.ERROR_LANGUAGE_UNAVAILABLE -> language.choose("This recognizer has no downloaded support for ${language.label}. Check Android speech settings.", "Este reconocedor no tiene soporte descargado para ${language.label}. Revisa los ajustes de voz.", "پشتیبانی دانلودشده برای ${language.label} در این سرویس نیست. تنظیمات گفتار اندروید را بررسی کنید.")
         else -> language.choose("Speech recognition failed ($code). Check your speech service and connection.", "Falló el reconocimiento ($code). Revisa el servicio de voz y la conexión.", "تشخیص گفتار ناموفق بود ($code). سرویس گفتار و اتصال را بررسی کنید.")
     }

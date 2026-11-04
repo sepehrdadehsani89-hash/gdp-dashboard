@@ -9,12 +9,16 @@ import com.jarvis.assistant.core.PendingAction
 import com.jarvis.assistant.core.ConnectionCheck
 
 data class JarvisUiState(
+    val activeTask:String="ASSISTANT",
+    val performanceRestricted:Boolean=false,
+    val recognition:com.jarvis.assistant.rebirth.CorrectedRecognition?=null,
     val module: com.jarvis.assistant.omnisystem.HudModule = com.jarvis.assistant.omnisystem.HudModule.ASSISTANT,
     val moduleSequence: Long = 0,
     val moduleResponse: String = "",
     val contactFollowUp:Boolean=false,
     val confirmedEntity:String?=null,
     val speakerProfileName:String?=null,
+    val speakerOwnerConfident:Boolean=false,
     val speakerSimilarity:Float?=null,
     val neuralStage:String="Idle",
     val playback:com.jarvis.assistant.sentinel.PlaybackReading = com.jarvis.assistant.sentinel.PlaybackReading(),
@@ -51,6 +55,7 @@ data class JarvisUiState(
 )
 
 data class JarvisUiActions(
+    val onOpenRebirth:()->Unit={},
     val onOpenPhantom:()->Unit={},
     val onOpenTitan:(String)->Unit={},
     val onOpenMemoryCards:()->Unit={},

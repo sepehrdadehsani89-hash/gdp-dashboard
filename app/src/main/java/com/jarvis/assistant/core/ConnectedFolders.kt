@@ -34,6 +34,16 @@ class ConnectedFolders(private val context: Context) {
         unlocked()
         openRoot() // recheck persisted grant on every navigation
         check(directory.isDirectory && directory.canRead()) { "Folder unavailable." }
-        return directory.listFiles().take(100).sortedWith(compareBy({ !it.isDirectory }, { it.name.orEmpty().lowercase() }))
+        val selected=checkNotNull(root)
+        check(directory.uri.authority==selected.authority && android.provider.DocumentsContract.getTreeDocumentId(directory.uri)==android.provider.DocumentsContract.getTreeDocumentId(selected)){"Choose a directory inside the authorized tree."}
+        val uri=android.provider.DocumentsContract.buildChildDocumentsUriUsingTree(selected,android.provider.DocumentsContract.getDocumentId(directory.uri))
+        val result=mutableListOf<DocumentFile>()
+        context.contentResolver.query(uri,arrayOf(android.provider.DocumentsContract.Document.COLUMN_DOCUMENT_ID),null,null,null)?.use{cursor->
+            while(result.size<100 && cursor.moveToNext()){
+                val document=android.provider.DocumentsContract.buildDocumentUriUsingTree(selected,cursor.getString(0))
+                DocumentFile.fromSingleUri(context,document)?.let(result::add)
+            }
+        }
+        return result.sortedWith(compareBy({ !it.isDirectory }, { it.name.orEmpty().lowercase() }))
     }
 }

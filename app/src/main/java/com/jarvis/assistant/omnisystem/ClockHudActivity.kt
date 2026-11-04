@@ -35,8 +35,11 @@ class ClockHudActivity:PrivateModuleActivity(){
         screen(words("JARVIS · CLOCK & OWN TIMERS","JARVIS · RELOJ Y TEMPORIZADORES","جارویس · ساعت و تایمرهای داخلی")){
             val timers by runtime.timers.state.collectAsStateWithLifecycle()
             val healthy by runtime.timers.readable.collectAsStateWithLifecycle()
+            var wallNow by remember{mutableLongStateOf(System.currentTimeMillis())}
             var now by remember{mutableLongStateOf(SystemClock.elapsedRealtime())}
-            LaunchedEffect(Unit){lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED){while(true){now=SystemClock.elapsedRealtime();delay(1000)}}}
+            LaunchedEffect(Unit){lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED){while(true){now=SystemClock.elapsedRealtime();wallNow=System.currentTimeMillis();delay(1000)}}}
+            Text("WORLD CLOCKS · Android IANA time-zone data")
+            com.jarvis.assistant.rebirth.WorldClocks.cities.forEach{(city,zone)->Text("$city · ${com.jarvis.assistant.rebirth.WorldClocks.time(java.time.Instant.ofEpochMilli(wallNow),zone)}")}
             Text(words("These countdowns belong to Jarvis. They do not claim to show an external Clock app's timers or saved alarms.","Estas cuentas pertenecen a Jarvis; no muestran ni verifican temporizadores o alarmas de otra app.","این شمارش‌ها متعلق به جارویس هستند؛ وضعیت تایمر یا زنگ برنامهٔ ساعت دیگری را نشان نمی‌دهند."))
             Text(words("Android timezone","Zona horaria de Android","منطقهٔ زمانی اندروید")+": "+java.time.ZoneId.systemDefault().id)
             if(!healthy)Text(words("Stored timers are unavailable. Existing data has not been overwritten.","Los temporizadores guardados no están disponibles. No se sobrescribieron datos.","تایمرهای ذخیره‌شده در دسترس نیستند. داده‌ها بازنویسی نشده‌اند."))

@@ -18,33 +18,45 @@ import java.util.UUID
 
 /** One-use in-process request. Process death or a stale notification requires a fresh command. */
 object ScreenUnlockRequests {
-    private var request:Pair<String,Long>?=null
-    @Synchronized fun issue():String=UUID.randomUUID().toString().also{request=it to SystemClock.elapsedRealtime()}
-    @Synchronized fun consume(id:String?):Boolean {
-        val current=request ?: return false
-        if(id!=current.first)return false
+    data class Ticket(val id:String,val issuedAt:Long,val homeGeneration:Long?)
+    private var request:Ticket?=null
+    @Synchronized fun issue(homeGeneration:Long?=null):String=UUID.randomUUID().toString().also{request=Ticket(it,SystemClock.elapsedRealtime(),homeGeneration)}
+    @Synchronized fun take(id:String?):Ticket? {
+        val current=request ?: return null
+        if(id!=current.id)return null
         request=null
-        return SystemClock.elapsedRealtime()-current.second in 0..120_000
+        return current.takeIf{SystemClock.elapsedRealtime()-it.issuedAt in 0..120_000}
     }
+    @Synchronized fun consume(id:String?):Boolean=take(id)!=null
     @Synchronized fun clear(){request=null}
 }
 class ScreenSecurityController(private val context:Context){
     companion object {const val CHANNEL="jarvis_screen_requests_v1";const val NOTIFICATION=4104}
     val preferences=ScreenSecurityPreferences(context)
     private fun words(en:String,es:String,fa:String)=((context.applicationContext as? com.jarvis.assistant.JarvisApplication)?.runtime?.store?.settings?.value?.language ?: AppLanguage.EN).choose(en,es,fa)
-    fun requestUnlock(forceNotification:Boolean=true):String{
+    fun requestUnlock(forceNotification:Boolean=true,openHome:Boolean=false):String{
         preferences.reconcile()
         val manager=context.getSystemService(KeyguardManager::class.java)
         val notifications=context.getSystemService(NotificationManager::class.java)
         val permission=android.os.Build.VERSION.SDK_INT<33 || androidx.core.content.ContextCompat.checkSelfPermission(context,Manifest.permission.POST_NOTIFICATIONS)==android.content.pm.PackageManager.PERMISSION_GRANTED
         val notifyAllowed=permission && NotificationManagerCompat.from(context).areNotificationsEnabled() && notifications.getNotificationChannel(CHANNEL)?.importance!=NotificationManager.IMPORTANCE_NONE
         val foreground=!forceNotification && context is Activity && context.hasWindowFocus()
+        if(openHome && !preferences.enabled){
+            try{
+            if(!notifyAllowed)return "Unlock normally with Android, then open Jarvis. Enable Jarvis notifications for an opening request."
+            notifications.createNotificationChannel(NotificationChannel(CHANNEL,"Jarvis screen requests",NotificationManager.IMPORTANCE_DEFAULT))
+            val target=Intent(context,MainActivity::class.java).putExtra("rebirth_home",true).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            val open=PendingIntent.getActivity(context,NOTIFICATION,target,PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+            notifications.notify(NOTIFICATION,NotificationCompat.Builder(context,CHANNEL).setSmallIcon(R.drawable.ic_jarvis).setContentTitle("Jarvis · open Home").setContentText("Tap and unlock with Android to open Jarvis Home.").setContentIntent(open).setVisibility(NotificationCompat.VISIBILITY_PRIVATE).setAutoCancel(true).setTimeoutAfter(120_000).build())
+            return "Tap the Jarvis Home notification and unlock normally with Android. No locked-screen interface is claimed as opened."
+            }catch(_:Exception){return "Android could not show the opening request. Unlock normally and open Jarvis manually."}
+        }
         val plan=UnlockPresentationPolicy.choose(preferences.enabled,manager.isKeyguardLocked,manager.isDeviceLocked,foreground,notifyAllowed)
         if(plan==UnlockPresentation.DISABLED)return words("Configure and enable voice-initiated unlock in Screen Security & Voice Unlock first.","Primero configura y activa las solicitudes por voz en Seguridad de pantalla.","ابتدا درخواست صوتی را در امنیت صفحه تنظیم و فعال کنید.")
         if(plan==UnlockPresentation.ALREADY_UNLOCKED)return words("Your phone is already unlocked.","Tu teléfono ya está desbloqueado.","گوشی شما هم‌اکنون باز است.")
         val manual=words("Android authentication requires opening Jarvis. Enable its notification permission for a lock-screen request.","Abre Jarvis para autenticar. Activa notificaciones para solicitudes con pantalla bloqueada.","برای احراز هویت جارویس را باز کنید. برای درخواست از صفحهٔ قفل، مجوز اعلان را فعال کنید.")
         if(plan==UnlockPresentation.OPEN_MANUALLY)return manual
-        val request=ScreenUnlockRequests.issue()
+        val request=ScreenUnlockRequests.issue(if(openHome)(context.applicationContext as com.jarvis.assistant.JarvisApplication).runtime.currentCommandSerial() else null)
         val intent=Intent(context,ScreenUnlockActivity::class.java).putExtra("request_id",request).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         if(plan==UnlockPresentation.FOREGROUND_REQUEST){
             try{context.startActivity(intent);return words("Android authentication requested.","Autenticación de Android solicitada.","احراز هویت اندروید درخواست شد.")}catch(_:Exception){}

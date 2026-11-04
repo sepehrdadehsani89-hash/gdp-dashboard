@@ -23,29 +23,38 @@ internal class OfflineSpeechSession(
     private val onResult: (String) -> Unit,
     private val onError: (String) -> Unit,
     private val onCaptureStarted:()->Unit={},
+    private val onAlternatives:(List<com.jarvis.assistant.rebirth.RecognitionHypothesis>)->Unit={},
 ) {
     private val closed = AtomicBoolean(false)
     private val audioLock = Any()
     private val main = Handler(Looper.getMainLooper())
     private val timing=SpeechInactivityClock(android.os.SystemClock::elapsedRealtime,com.jarvis.assistant.titan.VoicePreferences(context).energy)
     private val utterance=UtteranceAssembler(android.os.SystemClock::elapsedRealtime,com.jarvis.assistant.titan.VoicePreferences(context).energy)
+    @Volatile private var capture:ManagedMicrophone?=null
     @Volatile private var recorder: AudioRecord? = null
 
     fun start() {
         Thread({
             try {
                 if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) throw SecurityException("Microphone permission is required.")
-                Model(modelDirectory.absolutePath).use { model ->
+                RecognitionModelCache.acquire(modelDirectory).use { modelReference ->
+                    val model=modelReference.model
                     if (closed.get()) return@Thread
                     Recognizer(model, 16000f).use { recognizer ->
-                        recognizer.setWords(true)
-                        val minimum = AudioRecord.getMinBufferSize(16000, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT)
-                        check(minimum > 0) { "This microphone does not support 16 kHz recording." }
-                        val audio = AudioRecord(MediaRecorder.AudioSource.VOICE_RECOGNITION, 16000, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, maxOf(minimum * 2, 8192))
-                        recorder = audio
-                        val processing=MicrophoneProcessing(context,audio.audioSessionId)
-                        audio.registerAudioRecordingCallback(context.mainExecutor,object:android.media.AudioManager.AudioRecordingCallback(){
+                        recognizer.setWords(true);recognizer.setMaxAlternatives(3)
+                        var opened:ManagedMicrophone?=null
+                        for(attempt in 0..15){
+                            if(closed.get())return@Thread
+                            opened=ManagedMicrophone.open(context,com.jarvis.assistant.rebirth.MicrophoneOwner.FOREGROUND_RECOGNIZER)
+                            if(opened!=null)break
+                            Thread.sleep(100)
+                        }
+                        val managed=opened ?: error("RECOGNIZER_BUSY: the previous microphone is still releasing. Try again.")
+                        capture=managed
+                        val audio=managed.audio;recorder=audio
+                        managed.registerCallback(context.mainExecutor,object:android.media.AudioManager.AudioRecordingCallback(){
                             override fun onRecordingConfigChanged(configs:MutableList<android.media.AudioRecordingConfiguration>){
+                                if(capture!==managed || closed.get())return
                                 if(configs.any { it.clientAudioSessionId==audio.audioSessionId && it.isClientSilenced }){
                                     emitError("Android silenced this microphone. Check calls and other recording apps.")
                                     runCatching { audio.stop() }
@@ -70,7 +79,9 @@ internal class OfflineSpeechSession(
                                 val level=com.jarvis.assistant.hud.PcmLevel.pcm16(bytes,count)
                                 com.jarvis.assistant.hud.AudioSignals.level(this,level);timing.energy(level);utterance.energy(level)
                                 if (recognizer.acceptWaveForm(bytes, count)) {
-                                    val result=JSONObject(recognizer.result)
+                                    val payload=com.jarvis.assistant.rebirth.RecognitionPayload.vosk(JSONObject(recognizer.result))
+                                    val result=payload.primary
+                                    main.post{if(!closed.get())onAlternatives(payload.alternatives)}
                                     val text = result.optString("text")
                                     if (text.isNotBlank() && RecognitionConfidence.acceptsFinal(result,com.jarvis.assistant.titan.VoicePreferences(context).confidence.toDouble())) {
                                         timing.progress(text);utterance.segment(text)
@@ -90,12 +101,12 @@ internal class OfflineSpeechSession(
                                 val final = JSONObject(recognizer.finalResult).optString("text")
                                 emitError("Speech inactivity or two-minute utterance limit reached. Tap the microphone or say your wake phrase again.")
                             }
-                        } finally { com.jarvis.assistant.hud.AudioSignals.stop(this); runCatching { audio.stop() }; audio.release();processing.close(); recorder = null }
+                        } finally { com.jarvis.assistant.hud.AudioSignals.stop(this); runCatching { audio.stop() }; capture?.close();capture=null;recorder = null }
                     }
                 }
             } catch (error: Throwable) {
-                if (!closed.get()) emitError(error.message ?: "Offline recognition failed. Try downloading the model again.")
-            }
+                if (!closed.get()) emitError(if(error is SecurityException)"PERMISSION_REQUIRED: microphone access unavailable." else if(error.message?.startsWith("RECOGNIZER_BUSY")==true)error.message!! else "AUDIO_ERROR: offline recognition stopped. Check input route and model, then retry.")
+            }finally{capture?.close();capture=null}
         }, "JarvisOfflineSpeech").start()
     }
 

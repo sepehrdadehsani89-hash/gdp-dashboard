@@ -157,6 +157,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
             JarvisAppUi(state, JarvisUiActions(
+                onOpenRebirth={startActivity(Intent(this,com.jarvis.assistant.rebirth.RebirthCenterActivity::class.java))},
                 onOpenPhantom={startActivity(Intent(this,com.jarvis.assistant.phantom.PhantomSettingsActivity::class.java))},
                 onOpenTitan={page->startActivity(Intent(this,com.jarvis.assistant.titan.TitanCenterActivity::class.java).putExtra("page",page))},
                 onOpenMemoryCards={startActivity(Intent(this,com.jarvis.assistant.titan.MemoryCardsActivity::class.java))},
@@ -252,7 +253,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    override fun onResume() { super.onResume(); runtime.refreshCapabilities() }
+    override fun onResume() { super.onResume(); runtime.refreshCapabilities();if(intent.getBooleanExtra("rebirth_home",false) && !getSystemService(android.app.KeyguardManager::class.java).isDeviceLocked){intent.removeExtra("rebirth_home");runtime.selectModule(com.jarvis.assistant.omnisystem.HudModule.ASSISTANT)} }
 
     private fun openPermission(name: String) {
         runtime.effects.play(if(name=="licenses")com.jarvis.assistant.sentinel.SentinelSound.PANEL_OPEN else com.jarvis.assistant.sentinel.SentinelSound.PERMISSION)

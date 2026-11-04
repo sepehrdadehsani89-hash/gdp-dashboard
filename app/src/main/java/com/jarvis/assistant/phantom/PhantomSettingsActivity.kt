@@ -31,12 +31,17 @@ class PhantomSettingsActivity:PrivateModuleActivity(){
             Text("Show the current conversation above ordinary apps or beneath the actual live-wallpaper reactor. Captions are private: enable only if you are comfortable with others seeing your unlocked screen. Hidden during screen lock and Android authentication. No second microphone is opened.")
             Text("Android display-over-other-apps permission: ${if(permission)"granted" else "not granted"}")
             OutlinedButton(onClick=::openOverlayPermission){Text("Open Android overlay permission")}
-            Switch(p.enabled,{runtime.phantomPreferences.save(p.copy(enabled=it))});Text("Enable floating HUD (requires Android permission)")
+            Switch(p.enabled,{runtime.phantomPreferences.save(p.copy(enabled=it));if(it)runtime.phantomOverlay.reveal()});Text("Enable floating HUD (requires Android permission)")
             Switch(p.captions,{runtime.phantomPreferences.save(p.copy(captions=it));if(!it)runtime.phantom.clearCaption()});Text("Allow live captions on the selected Jarvis wallpaper")
             Switch(p.autoHide,{runtime.phantomPreferences.save(p.copy(autoHide=it))});Text("Hide floating HUD after the current conversation")
             Switch(p.editMode,{runtime.phantomPreferences.save(p.copy(editMode=it))});Text("Edit position: drag the capsule; tap it to minimize / restore its card")
             Text("Size ${(p.scale*100).toInt()}%");Slider(p.scale,{runtime.phantomPreferences.save(p.copy(scale=it))},valueRange=.8f..1.3f)
             Text("Opacity ${(p.opacity*100).toInt()}%");Slider(p.opacity,{runtime.phantomPreferences.save(p.copy(opacity=it))},valueRange=.65f..1f)
+            Text("Glow strength");Slider(p.glow,{runtime.phantomPreferences.save(p.copy(glow=it))},valueRange=0f..1f)
+            Text("Motion speed");Slider(p.speed,{runtime.phantomPreferences.save(p.copy(speed=it))},valueRange=0f..2f)
+            Text("Caption size ${p.captionSp.toInt()} sp");Slider(p.captionSp,{runtime.phantomPreferences.save(p.copy(captionSp=it))},valueRange=10f..20f)
+            Text("Task card width ${p.cardWidth.toInt()} dp");Slider(p.cardWidth,{runtime.phantomPreferences.save(p.copy(cardWidth=it))},valueRange=160f..280f)
+            Switch(p.reducedMotion,{runtime.phantomPreferences.save(p.copy(reducedMotion=it))});Text("Reduce floating HUD motion")
             Text("Caption lines ${p.lines}");Slider(p.lines.toFloat(),{runtime.phantomPreferences.save(p.copy(lines=it.toInt()))},valueRange=2f..4f,steps=1)
             OutlinedButton(onClick={runtime.phantomPreferences.save(p.copy(x=0f,y=0f,scale=1f))}){Text("Reset position and size")}
             Text("The wallpaper must be selected in Android wallpaper settings. Sensitive apps and Android may hide overlays. This HUD runs with the existing Jarvis process; no promise of survival after Android kills it. Reduced motion follows Jarvis Settings.")

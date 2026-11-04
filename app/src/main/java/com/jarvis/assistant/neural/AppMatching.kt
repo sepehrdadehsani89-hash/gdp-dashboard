@@ -26,7 +26,7 @@ object AppMatching {
             AppMatch(app,score,exact)
         }.filter{it.score>=.62}.sortedWith(compareByDescending<AppMatch>{it.score}.thenBy{it.app.packageId}).take(5)
     }
-    fun correctionTarget(input:String):String? = Regex("^(?:no i meant|no me referia a|no me refiero a|no quise decir|نه منظورم) (.+)$").matchEntire(normalize(input))?.groupValues?.get(1)?.takeIf{it.length in 2..100}
+    fun correctionTarget(input:String):String? = Regex("^(?:no i meant|no i said|no me referia a|no me refiero a|no quise decir|نه منظورم) (.+)$").matchEntire(normalize(input))?.groupValues?.get(1)?.takeIf{it.length in 2..100}
     fun commandTarget(input:String):String? {
         val text=normalize(input).removePrefix("jarvis ").removePrefix("جارویس ")
         val en=Regex("^(?:(?:can|could|would) you |please )?(?:please )?(?:open|launch|start) (.+?)(?: for me| please)?$").matchEntire(text)?.groupValues?.get(1)

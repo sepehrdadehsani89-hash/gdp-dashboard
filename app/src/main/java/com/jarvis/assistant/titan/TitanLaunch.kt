@@ -13,7 +13,7 @@ import com.jarvis.assistant.R
 object TitanLaunch {
     fun open(context:Context,intent:Intent,label:String):String {
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        if(MainActivity.isVisible)return try{context.startActivity(intent);"Android opening requested: $label. Foreground/result is controlled by Android."}catch(_:Exception){"No available app could open $label."}
+        if(com.jarvis.assistant.rebirth.AppVisibility.visible)return try{context.startActivity(intent);"Android opening requested: $label. Foreground/result is controlled by Android."}catch(_:Exception){"No available app could open $label."}
         if(Build.VERSION.SDK_INT>=33 && ContextCompat.checkSelfPermission(context,Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED)return "Open Jarvis to continue $label. Android notification permission is needed for a background request."
         return try{
             val manager=context.getSystemService(NotificationManager::class.java)

@@ -4,7 +4,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 enum class ExecutionState { IDLE, WAKE, LISTENING, TRANSCRIBING, UNDERSTANDING, EXECUTING, GENERATING_RESPONSE, GENERATING_AUDIO, SPEAKING, WAITING_USER, COMPLETED, FAILED, CANCELLED }
-enum class TraceEvent { WAKE_DETECTED, CAPTURE_STARTED, FIRST_PARTIAL, FINAL_TRANSCRIPT, INTENT_RESOLVED, CONTEXT_STARTED, CONTEXT_READY, MODEL_LOADING, INFERENCE_STARTED, FIRST_TOKEN, TOOL_STARTED, TOOL_COMPLETED, TTS_REQUESTED, AUDIO_BUFFERED, FIRST_AUDIO, WAITING_USER, COMPLETED, FAILED, CANCELLED }
+enum class TraceEvent { WAKE_DETECTED, CAPTURE_STARTED, FIRST_PARTIAL, FINAL_TRANSCRIPT, AUTOCORRECT_STARTED, AUTOCORRECT_COMPLETED, INTENT_RESOLVED, CONTEXT_STARTED, CONTEXT_READY, MODEL_LOADING, INFERENCE_STARTED, FIRST_TOKEN, TOOL_STARTED, TOOL_COMPLETED, TTS_REQUESTED, AUDIO_BUFFERED, FIRST_AUDIO, WAITING_USER, COMPLETED, FAILED, CANCELLED }
 data class RequestTrace(val id:Long,val started:Long,val events:Map<TraceEvent,Long> = emptyMap())
 data class LiveCaption(val user:String="",val assistant:String="",val entity:String?=null,val expiresAt:Long=0,val provisional:Boolean=false) {
     fun visible(now:Long)= (user.isNotBlank() || assistant.isNotBlank()) && (expiresAt==0L || now<expiresAt)
@@ -50,6 +50,7 @@ class PhantomSession(private val now:()->Long) {
         mutable.value=mutable.value.copy(caption=LiveCaption(user=text.takeLast(600)))
         return mutable.value.trace!!.id
     }
+    @Synchronized fun corrected(text:String){mutable.value=mutable.value.copy(caption=mutable.value.caption.copy(user=text.takeLast(600),provisional=false))}
     @Synchronized fun response(text:String,entity:String?=null) {
         mutable.value=mutable.value.copy(caption=mutable.value.caption.copy(assistant=text.takeLast(1600),entity=entity,expiresAt=0))
     }

@@ -54,6 +54,10 @@
             <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/camera_paths" />
         </provider>
         <receiver android:name=".neural.BriefingTimeReceiver" android:exported="true"><intent-filter><action android:name="android.intent.action.TIMEZONE_CHANGED" /><action android:name="android.intent.action.TIME_SET" /></intent-filter></receiver>
+        <activity android:name=".rebirth.AndroidSettingsActivity" android:exported="false" />
+        <activity android:name=".rebirth.RebirthCenterActivity" android:exported="false" />
+        <activity android:name=".rebirth.PersonalContentActivity" android:exported="false" />
+        <activity android:name=".rebirth.AccountCenterActivity" android:exported="false" />
         <activity android:name=".phantom.PhantomSettingsActivity" android:exported="false" />
         <activity android:name=".quantum.ControlCenterActivity" android:exported="false" />
         <activity android:name=".titan.TitanCenterActivity" android:exported="false" />

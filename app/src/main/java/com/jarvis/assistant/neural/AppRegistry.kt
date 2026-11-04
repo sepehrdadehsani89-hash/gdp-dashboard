@@ -20,6 +20,13 @@ class AppRegistry(private val context:Context){
             val known=when(pkg){"com.whatsapp"->listOf("واتساپ","واتس اپ");"com.google.android.youtube"->listOf("یوتیوب");"org.telegram.messenger"->listOf("تلگرام");"com.instagram.android"->listOf("اینستاگرام");"com.spotify.music"->listOf("اسپاتیفای");else->emptyList()}
             DiscoveredApp(pkg,info.loadLabel(context.packageManager).toString(),known+alias.filterValues{it==pkg}.keys)
         }.filterNot{ToolPolicy.protectedPackage(it.packageId)}
+        // A user-approved package may expose an explicit launch intent despite launcher query filtering.
+        val known=alias.values.distinct().filter{pkg->cached.none{it.packageId==pkg} && !ToolPolicy.protectedPackage(pkg)}.mapNotNull{pkg->
+            val launch=context.packageManager.getLaunchIntentForPackage(pkg) ?: return@mapNotNull null
+            val label=runCatching{context.packageManager.getApplicationLabel(context.packageManager.getApplicationInfo(pkg,0)).toString()}.getOrDefault(alias.entries.firstOrNull{it.value==pkg}?.key ?: pkg)
+            DiscoveredApp(pkg,label,alias.filterValues{it==pkg}.keys.toList())
+        }
+        cached=(cached+known).distinctBy{it.packageId}
         cachedAt=now;return cached
     }
     fun aliases():Map<String,String> = prefs.all.mapNotNull{(k,v)->(v as? String)?.let{k to it}}.toMap()

@@ -94,7 +94,7 @@ abstract class JarvisDatabase : RoomDatabase() {
     abstract fun dao(): JarvisDao
 }
 
-/** App-private history and explicit memories. Credentials use Keystore encryption separately. */
+/** Live-only conversation and explicitly approved memories. Credentials use Keystore encryption separately. */
 class JarvisStore(context: Context) {
     private val app = context.applicationContext
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -105,39 +105,18 @@ class JarvisStore(context: Context) {
     private val mutableSettings = MutableStateFlow(readSettings())
     val settings: StateFlow<AssistantSettings> = mutableSettings.asStateFlow()
     private val ephemeral=MutableStateFlow<List<ChatMessage>>(emptyList())
-    val messages: StateFlow<List<ChatMessage>> = dao.observeMessages().map { rows ->
-        rows.map { row ->
-            ChatMessage(
-                id = row.id,
-                role = runCatching { MessageRole.valueOf(row.role) }.getOrDefault(MessageRole.STATUS),
-                text = row.text,
-                timestamp = row.timestamp,
-                sources = decodeSources(row.sources),
-            )
-        }
-    }.let{persisted->kotlinx.coroutines.flow.combine(persisted,ephemeral){a,b->(a+b).sortedBy{it.timestamp}.takeLast(200)}}.stateIn(scope, SharingStarted.Eagerly, emptyList())
+    // Existing database rows are preserved for explicit deletion, never reloaded into a live session.
+    val messages: StateFlow<List<ChatMessage>> = ephemeral.asStateFlow()
     val memories: StateFlow<List<MemoryItem>> = dao.observeMemories().map { rows ->
         rows.map { MemoryItem(it.id, it.text, it.createdAt) }
     }.stateIn(scope, SharingStarted.Eagerly, emptyList())
 
-    suspend fun addMessage(message: ChatMessage) {
-        dao.insertMessage(
-            MessageEntity(
-                message.id, message.role.name, message.text.take(32_000), message.timestamp,
-                JSONArray().apply {
-                    message.sources.take(12).forEach { source ->
-                        put(JSONObject().put("title", source.title.take(500)).put("url", source.url.take(2048)))
-                    }
-                }.toString(),
-            ),
-        )
-        dao.trimMessages()
-    }
-
-    suspend fun expireHistory(before:Long)=dao.expireMessages(before)
-
-    fun addEphemeral(message:ChatMessage){ephemeral.value=(ephemeral.value+message).takeLast(200)}
-    suspend fun clearConversation(){ephemeral.value=emptyList();dao.deleteMessages()}
+    /** All ordinary turns are RAM-only, including callers using the legacy API. */
+    suspend fun addMessage(message: ChatMessage) = addEphemeral(message)
+    suspend fun expireHistory(before:Long) = Unit // Archived chats are removed only on explicit deletion.
+    @Synchronized fun addEphemeral(message:ChatMessage){ephemeral.value=com.jarvis.assistant.rebirth.LiveConversationPolicy.bounded(ephemeral.value+message)}
+    @Synchronized fun clearEphemeral(){ephemeral.value=emptyList()}
+    suspend fun clearConversation(){clearEphemeral();dao.deleteMessages()}
 
     /** Called only after the user's explicit remember request or memory-screen action. */
     suspend fun remember(text: String): Long {
