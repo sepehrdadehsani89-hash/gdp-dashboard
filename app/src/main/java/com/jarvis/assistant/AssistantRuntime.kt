@@ -62,6 +62,9 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.isActive
 import kotlin.coroutines.resume
 import android.os.SystemClock
 import com.jarvis.assistant.phantom.*
@@ -157,6 +160,7 @@ class AssistantRuntime(private val context: Context) {
         }
         sessionNoteWrite=job;sessionNoteWrites.add(job);job.invokeOnCompletion{sessionNoteWrites.remove(job)}
     }
+    private var lockCountdownJob:Job?=null
     private var lastTurnAt=0L
     private var initialized = false
     @Volatile private var sessionGeneration = 0L
@@ -516,6 +520,54 @@ class AssistantRuntime(private val context: Context) {
         mutableState.update { it.copy(module=module, moduleSequence=it.moduleSequence+1,moduleResponse="") }
     }
 
+    private suspend fun speakLockCountdown(text:String,expected:Long):Boolean=coroutineScope {
+        val started=CompletableDeferred<Unit>()
+        val finished=async {
+            suspendCancellableCoroutine<Boolean>{continuation->
+                continuation.invokeOnCancellation{if(expected==sessionGeneration){cloudVoiceJob?.cancel();speech.stop()}}
+                speak(text,language(),expected,allowCloudSpeech=true,completion={if(continuation.isActive)continuation.resume(true)},failure={if(continuation.isActive)continuation.resume(false)},privateSpeech=false,publicOnly=true,resumeListening=false,onAudioStarted={started.complete(Unit)})
+            }
+        }
+        try {
+            val playing=withTimeoutOrNull(8000){kotlinx.coroutines.selects.select<Boolean>{started.onAwait{true};finished.onAwait{false}}}==true
+            if(playing)withTimeoutOrNull(15000){finished.await()} ?: false
+            else if(finished.isCompleted)finished.await() else false
+        }finally{finished.cancelAndJoin()}
+    }
+    private fun requestLockCountdown(){
+        val controller=com.jarvis.assistant.security.ScreenSecurityController(context)
+        if(locked()){
+            cancelSession();pauseWake();privateTurn=false
+            val line=language().choose("Android reports that the screen is already locked.","Android indica que la pantalla ya está bloqueada.","صفحه هم‌اکنون قفل است.")
+            mutableState.update{it.copy(liveReply=line)}
+            speak(line,language(),allowCloudSpeech=true,privateSpeech=false,publicOnly=true);return
+        }
+        if(!controller.lockPermissionGranted()){
+            reportNative(controller.lockRequest(),true,"lock my screen");return
+        }
+        cancelSession();pauseWake();cancelAuthorization(false);privateTurn=false
+        val expected=sessionGeneration
+        val announcement=com.jarvis.assistant.security.LockCountdown.announcement(language())
+        phantom.begin();phantom.response(announcement)
+        mutableState.update{it.copy(phase=AssistantPhase.THINKING,liveReply=announcement,error=null,lockCountdownPending=true)}
+        lockCountdownJob=scope.launch {
+            try{
+                com.jarvis.assistant.security.LockCountdown.run(
+                    current={expected==sessionGeneration && !locked() && !com.jarvis.assistant.security.SystemCredentialPrivacy.pending(context)},
+                    announce={speakLockCountdown(announcement,expected)},
+                    tick={value->val line=language().choose("Locking your screen in $value…","Bloqueando tu pantalla en $value…","قفل صفحه در $value…");phantom.response(line);mutableState.update{it.copy(liveReply=line,phase=AssistantPhase.THINKING)}},
+                    lock={
+                        lockCountdownJob=null
+                        cancelSession();clearAttachmentSelection(false);clearTemporaryConversation();clearSpeakerSuggestion();cancelAuthorization(false)
+                        val result=controller.lockRequest()
+                        mutableState.update{it.copy(liveReply=result,phase=AssistantPhase.READY,lockCountdownPending=false)}
+                        resumeWake()
+                    },
+                )
+            }finally{if(kotlinx.coroutines.currentCoroutineContext().isActive && expected==sessionGeneration){lockCountdownJob=null;mutableState.update{it.copy(lockCountdownPending=false,phase=AssistantPhase.READY)};resumeWake()}}
+        }
+    }
+
     private fun lockedRequestDenied(voiced:Boolean,chatDisabled:Boolean){
         val message=if(chatDisabled)language().choose("I heard you. Unlock your phone, or enable general chat while locked in Jarvis Settings. Private actions still require Android unlock.","Te escuché. Desbloquea el teléfono o activa la conversación general con la pantalla bloqueada en Ajustes. Las acciones privadas requieren desbloquear Android.","صدایتان را شنیدم. گوشی را باز کنید یا گفت‌وگوی عمومی هنگام قفل را در تنظیمات فعال کنید. کارهای خصوصی همچنان نیاز به باز شدن قفل اندروید دارند.") else unlockMessage()
         pauseWake();fail(message)
@@ -538,6 +590,9 @@ class AssistantRuntime(private val context: Context) {
         com.jarvis.assistant.voice.ConversationInterruptPolicy.replacement(text)?.let{replacement->submit(replacement,voiced,speakerSampleId);return}
         mutableState.update{it.copy(confirmedEntity=null,recognition=null)}
         val direct=com.jarvis.assistant.neural.AppMatching.normalize(text).removePrefix("hey jarvis ").removePrefix("oye jarvis ").removePrefix("jarvis ")
+        if(direct in setOf("cancel lock countdown","cancel screen lock","cancel locking","cancela el bloqueo")){
+            cancelSession();mutableState.update{it.copy(liveReply="Screen lock cancelled.",error=null)};resumeWake();return
+        }
         if(direct in setOf("shut down all systems","shut down","lock everything","end jarvis and lock my phone","apaga todos los sistemas","cierra jarvis y bloquea mi telefono")){
             stopEverything()
             val result=com.jarvis.assistant.security.ScreenSecurityController(context).lockRequest()
@@ -550,6 +605,7 @@ class AssistantRuntime(private val context: Context) {
         com.jarvis.assistant.rebirth.NativeNavigation.destination(text)?.let{destination->
             val target=when(destination){
                 com.jarvis.assistant.rebirth.NativeNavigation.Destination.SETTINGS->Intent(context,com.jarvis.assistant.rebirth.AndroidSettingsActivity::class.java)
+                com.jarvis.assistant.rebirth.NativeNavigation.Destination.WIDGETS->Intent(context,com.jarvis.assistant.widgets.WidgetCenterActivity::class.java)
                 com.jarvis.assistant.rebirth.NativeNavigation.Destination.VOICE->Intent(context,com.jarvis.assistant.omnisystem.SpeakerProfilesActivity::class.java).putExtra("voice_setup",true)
                 com.jarvis.assistant.rebirth.NativeNavigation.Destination.CONTENT,com.jarvis.assistant.rebirth.NativeNavigation.Destination.PHOTOS->Intent(context,com.jarvis.assistant.rebirth.PersonalContentActivity::class.java).putExtra("pick_photos",destination==com.jarvis.assistant.rebirth.NativeNavigation.Destination.PHOTOS)
                 com.jarvis.assistant.rebirth.NativeNavigation.Destination.ALIASES->Intent(context,com.jarvis.assistant.neural.NeuralSettingsActivity::class.java)
@@ -590,8 +646,7 @@ class AssistantRuntime(private val context: Context) {
                 mutableState.update{it.copy(phase=AssistantPhase.READY,transcript="",liveReply=result,pendingAction=null)}
                 privateTurn=false;speak(result,language(),allowCloudSpeech=true,privateSpeech=false,publicOnly=true)
             }else{
-                if(locked()){mutableState.update{it.copy(liveReply="Android reports that the screen is already locked.")};return}
-                val result=controller.lockRequest();stopEverything();mutableState.update{it.copy(liveReply=result)}
+                requestLockCountdown()
             }
             return
         }
@@ -824,7 +879,7 @@ class AssistantRuntime(private val context: Context) {
         com.jarvis.assistant.voice.VoiceContinuationPolicy.followUp(requested,locked(),store.settings.value.allowLockedChat,publicPrompt,privateReply,com.jarvis.assistant.security.SystemCredentialPrivacy.pending(context))
 
     private fun speak(text:String,lang:AppLanguage,generation:Long=sessionGeneration,allowCloudSpeech:Boolean=true,followUpOnDone:Boolean=false,
-        volumeOverride:Float?=null,completion:(()->Unit)?=null,failure:((String)->Unit)?=null,privateSpeech:Boolean=privateTurn,publicOnly:Boolean=false,resumeListening:Boolean=true){
+        volumeOverride:Float?=null,completion:(()->Unit)?=null,failure:((String)->Unit)?=null,privateSpeech:Boolean=privateTurn,publicOnly:Boolean=false,resumeListening:Boolean=true,onAudioStarted:()->Unit={}){
         fun allowed()=generation==sessionGeneration && (!locked() || publicOnly || !privateSpeech && store.settings.value.allowLockedChat) && !com.jarvis.assistant.security.SystemCredentialPrivacy.pending(context)
         if(!allowed()){
             if(generation==sessionGeneration){failure?.invoke(unlockMessage());if(resumeListening){mutableState.update{it.copy(phase=AssistantPhase.READY)};resumeWake()}}
@@ -876,6 +931,7 @@ class AssistantRuntime(private val context: Context) {
                             if(allowed()){
                                 phantom.event(TraceEvent.FIRST_AUDIO,traceId);phantom.stage(ExecutionState.SPEAKING,traceId)
                                 mutableState.update{it.copy(phase=AssistantPhase.SPEAKING)}
+                                onAudioStarted()
                             }else{speech.stop();if(continuation.isActive)continuation.cancel()}
                         })
                     }
@@ -1131,6 +1187,7 @@ class AssistantRuntime(private val context: Context) {
             speakers.resetOptions();speakers.removeModel()
             timers.clear()
             com.jarvis.assistant.core.ConnectedFolders(context).disconnect()
+            com.jarvis.assistant.widgets.WidgetRepository(context).clear()
             knowledge.clear();appRegistry.clear();neuralPreferences.clear();brain.preferences.clear();briefing.clear();com.jarvis.assistant.neural.BriefingScheduler.sync(context)
             store.clearAll()
             features.clear()
@@ -1175,6 +1232,7 @@ class AssistantRuntime(private val context: Context) {
     }
 
     private fun cancelSession(preserveCapture:Boolean=false) {
+        lockCountdownJob?.cancel();lockCountdownJob=null
         foregroundFollowUp?.cancel();foregroundFollowUp=null
         if(!preserveCapture || phantom.state.value.execution !in setOf(ExecutionState.WAKE,ExecutionState.LISTENING,ExecutionState.TRANSCRIBING))phantom.finish(ExecutionState.CANCELLED)
         captureStarted = 0
@@ -1185,7 +1243,7 @@ class AssistantRuntime(private val context: Context) {
         runCatching { brain.cancel() }
         speech.stop()
         tools.cancelPendingActions()
-        mutableState.update{it.copy(liveReply="",followUpArming=false,phase=AssistantPhase.READY,pendingAction=null)}
+        mutableState.update{it.copy(liveReply="",followUpArming=false,phase=AssistantPhase.READY,pendingAction=null,lockCountdownPending=false)}
     }
     fun restoreVisualQuality():Boolean{
         val info=android.app.ActivityManager.MemoryInfo();context.getSystemService(android.app.ActivityManager::class.java).getMemoryInfo(info)

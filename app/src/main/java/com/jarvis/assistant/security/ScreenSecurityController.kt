@@ -73,6 +73,9 @@ class ScreenSecurityController(private val context:Context){
             words("Device authentication required. Tap the Jarvis notification to continue with Android.","Autenticación requerida. Toca la notificación Jarvis para continuar con Android.","احراز هویت لازم است. برای ادامه با اندروید، اعلان جارویس را لمس کنید.")
         }catch(_:SecurityException){ScreenUnlockRequests.clear();words("Android blocked the notification. Open Jarvis to request authentication.","Android bloqueó la notificación. Abre Jarvis para autenticar.","اندروید اعلان را مسدود کرد. برای درخواست احراز هویت، جارویس را باز کنید.")}
     }
+    fun lockPermissionGranted():Boolean=runCatching{
+        context.getSystemService(DevicePolicyManager::class.java).isAdminActive(ComponentName(context,JarvisLockAdminReceiver::class.java))
+    }.getOrDefault(false)
     fun lockRequest():String {
         val policy=context.getSystemService(DevicePolicyManager::class.java)
         val admin=ComponentName(context,JarvisLockAdminReceiver::class.java)

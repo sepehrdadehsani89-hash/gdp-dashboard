@@ -1,12 +1,12 @@
 # Jarvis for Android
 
-Current development beta: [Jarvis11.2 beta2 · signed ARM64 APK](downloads/rebirth-11.2-beta2/Jarvis-11.2.0-beta2-arm64-reinstall.apk). [Live conversation/voice setup](docs/rebirth-11.2/CONVERSATION-UPDATE.md) · [Verification](downloads/rebirth-11.2-beta2/VERIFICATION.md) · [Build/checksum](downloads/rebirth-11.2-beta2/build-info.json).
+Current development beta: [Jarvis11.2 beta3 · signed ARM64 APK](downloads/rebirth-11.2-beta3/Jarvis-11.2.0-beta3-arm64-reinstall.apk). [Lock countdown and widget setup](docs/rebirth-11.2/LOCK-AND-WIDGETS.md) · [Verification](downloads/rebirth-11.2-beta3/VERIFICATION.md) · [Build/checksum](downloads/rebirth-11.2-beta3/build-info.json).
 
-Adds stable bare-wake acknowledgement, requested Sir courtesy greeting, live chat completion/cleanup, owner-approved short local session notes and a voice-command path to consent-based20-second owner enrollment. Current reply, speech errors and controls appear beneath the actual reactor. Gmail remains removed. English/Spanish use configured Fish voices; real phone playback/noise/owner-match and commercial readiness are unverified. Owner similarity does not replace Android unlock; files require explicit Android grants. See the update guide for exact behavior and privacy controls.
+Adds the spoken “Locking initiated, locking your screen in3,2,1” sequence before Android's authorized lock, cancellation and a visual fallback if speech is unavailable. Adds Android-approved installed-app widget hosting alongside every existing Jarvis panel. Native microphone ownership, Fish English/Spanish, live captions/chat cleanup, approved local notes, owner enrollment, aliases, memories and files remain. Gmail stays removed. Real Redmi9 speech, DPM lock and widget/OEM acceptance are unverified; this is a development beta, not commercial sign-off.
 
-**Existing package and retained newer signing certificate are unchanged. This updates compatible newer betas only. Original Jarvis7.0 still needs its original key for an in-place update; keep the installed app/data if Android reports a signature conflict. No key was generated.**
+**Package and retained newer signing certificate are unchanged. Update compatible newer betas in place. Original Jarvis7.0 still needs its original key; keep the installed app/data if Android rejects the signature. No replacement key was generated.**
 
-Previous beta: [11.2 beta1](downloads/rebirth-11.2/Jarvis-11.2.0-beta1-arm64-reinstall.apk) · [its setup/limits](docs/rebirth-11.2/RELEASE.md). [11.1 Phantom](downloads/phantom-11.1/Jarvis-11.1.0-beta1-arm64-reinstall.apk) and [10.9](downloads/quantum-10.9/Jarvis-10.9.0-beta1-arm64-reinstall.apk) remain preserved. The earlier11.2 candidate/account documents are historical; Gmail integration is absent from current builds.
+Previous: [11.2 beta2](downloads/rebirth-11.2-beta2/Jarvis-11.2.0-beta2-arm64-reinstall.apk) · [conversation/voice setup](docs/rebirth-11.2/CONVERSATION-UPDATE.md) · [11.2 beta1](downloads/rebirth-11.2/Jarvis-11.2.0-beta1-arm64-reinstall.apk) · [11.1 Phantom](downloads/phantom-11.1/Jarvis-11.1.0-beta1-arm64-reinstall.apk). Historical artifacts and their limits remain preserved. Android still controls unlock and widget permissions; no blanket access to other launchers' widget instances is claimed.
 
 ## Historical original-signature 7.0 release
 

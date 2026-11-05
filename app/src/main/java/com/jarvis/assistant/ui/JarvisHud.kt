@@ -117,6 +117,7 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
             Text(if(state.automaticSessionNotes)l.choose("Temporary chat · local session summaries ON","Chat temporal · resúmenes locales ACTIVADOS","گفت‌وگوی موقت · یادداشت محلی روشن") else l.choose("Temporary chat · no automatic summaries","Chat temporal · sin resúmenes automáticos","گفت‌وگوی موقت · بدون یادداشت خودکار"),color=Dim,fontSize=10.sp)
             state.error?.takeIf{it.isNotBlank()}?.let{Text(it,color=Color(0xFFFFB3B3),fontSize=12.sp)}
             Row {
+                if(state.lockCountdownPending)TextButton(onClick={actions.onSend("cancel lock countdown")}){Text(l.choose("Cancel lock","Cancelar bloqueo","لغو قفل"))}
                 TextButton(onClick={actions.onSend("I'm done")}){Text(l.choose("End & clear chat","Terminar y borrar chat","پایان و پاک کردن"))}
                 TextButton(onClick=actions.onOpenOutputVoice){Text(l.choose("Output voice","Voz de salida","صدای خروجی"))}
             }
