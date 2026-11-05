@@ -179,9 +179,7 @@ class WakeListenerService : Service() {
                                             if(!utterance.hasUnfinishedSpeech && !speakerFocus.hasPending(decision.serial) && UtteranceAssembler.fastCommand(utterance.text()))deliver(utterance.text(),decision.serial)
                                         }
                                         else{
-                                            utterance.reset()
-                                            sendBroadcast(Intent(ACTION_PARTIAL).setPackage(packageName).putExtra(EXTRA_TEXT,"").putExtra("runtime_generation",windowRuntimeGeneration))
-                                            publish("Voice focus was uncertain or heard a different profile. Please repeat clearly.",true,awaitingCommand=true)
+                                            rejectHeardCommand(decision.serial)
                                         }
                                     }
                                     if (recognizerSerial != serial) { recognizer.reset(); recognizerSerial = serial; utterance.reset();continue }
@@ -197,7 +195,6 @@ class WakeListenerService : Service() {
                                     val final = recognizer.acceptWaveForm(bytes, count)
                                     val payload=if(final)com.jarvis.assistant.rebirth.RecognitionPayload.vosk(JSONObject(recognizer.result)) else null
                                     val json=payload?.primary ?: JSONObject(recognizer.partialResult)
-                                    if(payload!=null)alternatives=payload.alternatives
                                     val text=json.optString(if(final)"text" else "partial")
                                     if(window.speechProgress(text))scheduleTimeout()
                                     if(!final && window.acceptsCommand(serial)){
@@ -205,8 +202,12 @@ class WakeListenerService : Service() {
                                         utterance.partial(partial)
                                         sendBroadcast(Intent(ACTION_PARTIAL).setPackage(packageName).putExtra(EXTRA_TEXT,utterance.text()).putExtra("runtime_generation",windowRuntimeGeneration))
                                     }
-                                    if(!final || RecognitionConfidence.acceptsFinal(json,com.jarvis.assistant.titan.VoicePreferences(this).confidence.toDouble()))handleTranscript(text,final,serial)
+                                    if(payload!=null)consumeFinal(payload,serial,false) else handleTranscript(text,false,serial)
                                     if(greetingGate.due(serial) && window.snapshot().mode==ConversationWindow.Mode.COMMAND)acknowledgeWake(serial)
+                                    if(window.acceptsCommand(serial) && utterance.needsFinalization()){
+                                        consumeFinal(com.jarvis.assistant.rebirth.RecognitionPayload.vosk(JSONObject(recognizer.finalResult)),serial,true)
+                                        recognizer.reset()
+                                    }
                                     if(window.acceptsCommand(serial) && !speakerFocus.hasPending(serial) && utterance.ready())deliver(utterance.text(),serial)
                                 }
                             }
@@ -240,6 +241,26 @@ class WakeListenerService : Service() {
     @Volatile private var windowRuntimeGeneration=-1L
     private var alternatives:List<com.jarvis.assistant.rebirth.RecognitionHypothesis> = emptyList()
     private var utterance=UtteranceAssembler(SystemClock::elapsedRealtime)
+    private fun consumeFinal(payload:com.jarvis.assistant.rebirth.RecognitionPayload,serial:Long,endpoint:Boolean){
+        if(serial!=window.snapshot().resetSerial)return
+        val text=payload.primary.optString("text")
+        if(!RecognitionConfidence.acceptsFinal(payload.primary,com.jarvis.assistant.titan.VoicePreferences(this).confidence.toDouble())){
+            if(window.acceptsCommand(serial) && (text.isNotBlank() || utterance.hasUnfinishedSpeech))rejectHeardCommand(serial)
+            return
+        }
+        alternatives=payload.alternatives
+        handleTranscript(text,true,serial)
+        if(endpoint)utterance.finalizedEndpoint()
+    }
+    private fun rejectHeardCommand(serial:Long){
+        if(paused || !window.accept(serial))return
+        paused=true;utterance.reset();speakerFocus.reset();greetingGate.cancel();main.removeCallbacks(windowTimeout)
+        val expected=windowRuntimeGeneration
+        publish("Speech was unclear · microphone paused",false)
+        main.post{val runtime=(application as com.jarvis.assistant.JarvisApplication).runtime
+            if(running && runtime.currentCommandSerial()==expected)runtime.recognitionUnclear(expected)
+        }
+    }
     private fun handleTranscript(text: String, final: Boolean, serial: Long) {
         if (text.isBlank() || serial != window.snapshot().resetSerial) return
         // A result recognized before expiry must not reactivate itself after the deadline.
@@ -276,7 +297,7 @@ class WakeListenerService : Service() {
     private fun segmentCommand(text:String,serial:Long){
         if((application as com.jarvis.assistant.JarvisApplication).runtime.speakers.focusEnabled){
             utterance.clearPartial()
-            if(!speakerFocus.offer(text,serial,speakerBuffer.take())){utterance.reset();publish("Voice focus is busy. Please repeat one short request.",true,awaitingCommand=true)}
+            if(!speakerFocus.offer(text,serial,speakerBuffer.take()))rejectHeardCommand(serial)
             return
         }
         utterance.segment(text)

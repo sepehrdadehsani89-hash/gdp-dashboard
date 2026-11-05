@@ -37,11 +37,24 @@ object ReactorGeometry {
     val ticks:List<Vector> = List(120){val rad=it*PI*2/120;Vector(cos(rad).toFloat(),sin(rad).toFloat())}
     val ringScales=listOf(.44f,.56f,.68f,.80f,.92f)
     val arcScales=listOf(.95f,.80f,.65f)
-    fun speed(settings:HudSettings,mode:SentinelMode)=settings.sentinel.animationSpeed*settings.animationIntensity*when(mode){SentinelMode.DORMANT->.16f;SentinelMode.AUTHORIZATION_REQUIRED->.3f;SentinelMode.PROCESSING->1.8f;else->1.3f}
+    fun speed(settings:HudSettings,mode:SentinelMode)=settings.sentinel.animationSpeed*settings.animationIntensity*when(mode){SentinelMode.DORMANT->.16f;SentinelMode.AUTHORIZATION_REQUIRED->.3f;SentinelMode.PROCESSING->5f;SentinelMode.LISTENING->4f;SentinelMode.SPEAKING->3f;else->1.3f}
     fun angle(elapsed:Long,speed:Float,index:Int):Float = ((elapsed.coerceAtLeast(0)*.001 * 5 * speed * if(index%2==0)1 else -1)%360).toFloat()
     fun awakening(elapsed:Long):Awakening {
         fun ease(start:Long,length:Long):Float { val x=((elapsed-start).toFloat()/length).coerceIn(0f,1f);return x*x*(3-2*x) }
         return Awakening(ease(0,450),ease(350,850),ease(1100,650),if(elapsed in 1650..2100)sin((elapsed-1650)*PI/450).toFloat().coerceAtLeast(0f) else 0f,elapsed>=2100)
+    }
+}
+
+/** Accumulate only visible frame deltas. Resume and phase changes never jump or reset rotation. */
+class ReactorFrameClock {
+    private var previous:Long?=null
+    var angle:Float=0f;private set
+    fun pause(){previous=null}
+    fun frame(time:Long,speed:Float):Float {
+        val delta=previous?.let{(time-it).coerceIn(0L,250L)} ?: 0L
+        previous=time
+        if(speed.isFinite())angle=(angle+delta*.005f*speed.coerceAtLeast(0f))%360f
+        return angle
     }
 }
 

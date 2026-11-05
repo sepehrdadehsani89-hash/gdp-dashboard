@@ -113,22 +113,24 @@ class SpeechController(context: Context) {
                 val token = generation
                 var completed = false
                 val captureTiming=SpeechInactivityClock(android.os.SystemClock::elapsedRealtime)
+                val turn=UtteranceAssembler(android.os.SystemClock::elapsedRealtime,.2f)
+                var finalRequestedAt:Long?=null
                 var speechDetected=false
                 val instance = if (onDevice && Build.VERSION.SDK_INT >= 31) SpeechRecognizer.createOnDeviceSpeechRecognizer(context)
                     else SpeechRecognizer.createSpeechRecognizer(context)
                 recognizer = instance
                 instance.setRecognitionListener(object : RecognitionListener {
-                    override fun onReadyForSpeech(params: Bundle?) { if(token!=generation || completed)return;onCaptureStarted();com.jarvis.assistant.hud.AudioSignals.start(instance,"Android recognizer · RMS level") }
+                    override fun onReadyForSpeech(params: Bundle?) { if(token!=generation || completed)return;captureTiming.start();turn.reset();onCaptureStarted();com.jarvis.assistant.hud.AudioSignals.start(instance,"Android recognizer · RMS level") }
                     override fun onBeginningOfSpeech() { if(token!=generation || completed)return;speechDetected=true;captureTiming.progress("[Android speech started]") }
-                    override fun onRmsChanged(rmsdB: Float) { if(token==generation){val level=((rmsdB+2)/12).coerceIn(0f,1f);com.jarvis.assistant.hud.AudioSignals.level(instance,level);if(speechDetected)captureTiming.energy(level)} }
+                    override fun onRmsChanged(rmsdB: Float) { if(token==generation && !completed){val level=((rmsdB+2)/12).coerceIn(0f,1f);com.jarvis.assistant.hud.AudioSignals.level(instance,level);if(speechDetected){if(turn.hasUnfinishedSpeech)captureTiming.energy(level);turn.energy(level)}} }
                     override fun onBufferReceived(buffer: ByteArray?) = Unit
-                    override fun onEndOfSpeech() { if(token!=generation || completed)return;speechDetected=false;com.jarvis.assistant.hud.AudioSignals.stop(instance) }
+                    override fun onEndOfSpeech() { if(token!=generation || completed)return;speechDetected=false;if(finalRequestedAt==null)finalRequestedAt=android.os.SystemClock.elapsedRealtime();com.jarvis.assistant.hud.AudioSignals.stop(instance) }
                     override fun onEvent(eventType: Int, params: Bundle?) = Unit
                     override fun onError(error: Int) {
                         if (token != generation || completed) return
                         completed = true
                         com.jarvis.assistant.hud.AudioSignals.stop(instance); runCatching{instance.destroy()}; recognizer = null;releaseAndroidMicrophone()
-                        onError(recognitionError(error, language))
+                        onError(if(turn.hasUnfinishedSpeech && error in setOf(SpeechRecognizer.ERROR_NO_MATCH,SpeechRecognizer.ERROR_SPEECH_TIMEOUT))"SPEECH_UNCLEAR: Please repeat one request clearly." else recognitionError(error, language))
                     }
                     override fun onResults(results: Bundle?) {
                         if (token != generation || completed) return
@@ -141,7 +143,7 @@ class SpeechController(context: Context) {
                         if(captureTiming.expired())onError("Speech inactivity or two-minute utterance limit reached.") else if (text.isBlank()) onError(recognitionError(SpeechRecognizer.ERROR_NO_MATCH, language)) else onResult(text)
                     }
                     override fun onPartialResults(partialResults: Bundle?) {
-                        if (token == generation && !completed){val text=partialResults?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull().orEmpty();captureTiming.progress(text);onPartial(text)}
+                        if (token == generation && !completed){val text=partialResults?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull().orEmpty();captureTiming.progress(text);turn.partial(text);onPartial(text)}
                     }
                 })
                 val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
@@ -150,6 +152,8 @@ class SpeechController(context: Context) {
                     putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
                     putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5)
                     putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, !allowNetwork)
+                    putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS,800L)
+                    putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS,1200L)
                 }
                 var started=false
                 fun startWithLocale(locale:String,supportReported:Boolean){
@@ -172,11 +176,18 @@ class SpeechController(context: Context) {
                 }else startWithLocale(language.tag,false)
                 val timeout=object:Runnable{override fun run(){
                     if(token!=generation || completed)return
-                    if(!captureTiming.expired()){main.postDelayed(this,(captureTiming.deadline()-android.os.SystemClock.elapsedRealtime()).coerceAtLeast(1));return}
+                    val time=android.os.SystemClock.elapsedRealtime()
+                    if(finalRequestedAt==null && turn.needsFinalization()){
+                        finalRequestedAt=time
+                        // Request an actual engine final; never dispatch a partial as an action.
+                        runCatching{instance.stopListening()}
+                    }
+                    val finalTimedOut=finalRequestedAt?.let{time-it>=2500}==true
+                    if(!captureTiming.expired() && !finalTimedOut){main.postDelayed(this,100);return}
                     completed=true;runCatching{instance.cancel()};com.jarvis.assistant.hud.AudioSignals.stop(instance);runCatching{instance.destroy()};recognizer=null;releaseAndroidMicrophone()
-                    onError("Speech inactivity or two-minute utterance limit reached.")
+                    onError(if(finalTimedOut || turn.hasUnfinishedSpeech)"SPEECH_UNCLEAR: The speech service did not return a final result. Please try again." else "Speech inactivity or two-minute utterance limit reached.")
                 }}
-                main.postDelayed(timeout,SpeechInactivityClock.IDLE_MS)
+                main.postDelayed(timeout,100)
             } catch (_: Exception) {
                 runCatching{recognizer?.destroy()}; recognizer = null;releaseAndroidMicrophone()
                 onError(language.choose("Speech capture is unavailable. Check the microphone and speech service.", "No se puede escuchar. Revisa el micrófono y el servicio de voz.", "ضبط گفتار در دسترس نیست. میکروفن و سرویس گفتار را بررسی کنید."))

@@ -1,12 +1,14 @@
 # Jarvis for Android
 
-Current development beta: [Jarvis11.2 beta3 · signed ARM64 APK](downloads/rebirth-11.2-beta3/Jarvis-11.2.0-beta3-arm64-reinstall.apk). [Lock countdown and widget setup](docs/rebirth-11.2/LOCK-AND-WIDGETS.md) · [Verification](downloads/rebirth-11.2-beta3/VERIFICATION.md) · [Build/checksum](downloads/rebirth-11.2-beta3/build-info.json).
+Current development build: [Jarvis 11.3 · signed ARM64 APK](downloads/rebirth-11.3/Jarvis-11.3.0-arm64-reinstall.apk). [Speech repair and phone checks](docs/rebirth-11.3/VOICE-REPAIR.md) · [Verification](downloads/rebirth-11.3/VERIFICATION.md) · [Build/checksum](downloads/rebirth-11.3/build-info.json).
 
-Adds the spoken “Locking initiated, locking your screen in3,2,1” sequence before Android's authorized lock, cancellation and a visual fallback if speech is unavailable. Adds Android-approved installed-app widget hosting alongside every existing Jarvis panel. Native microphone ownership, Fish English/Spanish, live captions/chat cleanup, approved local notes, owner enrollment, aliases, memories and files remain. Gmail stays removed. Real Redmi9 speech, DPM lock and widget/OEM acceptance are unverified; this is a development beta, not commercial sign-off.
+Repairs stalled speech turns: unfinished recognition is finalized through the speech engine, background RMS cannot keep a completed question open indefinitely, and unclear speech gets a fixed retry prompt. Private/text-only native results get a safe audible acknowledgement using the configured Fish voice. Full private speech still uses the existing separate consent. The reactor resumes with the visible lifecycle and keeps its rotation across phase changes. Additional screen-off phrases use the existing cancellable lock countdown.
 
-**Package and retained newer signing certificate are unchanged. Update compatible newer betas in place. Original Jarvis7.0 still needs its original key; keep the installed app/data if Android rejects the signature. No replacement key was generated.**
+Charging, both widget types, every Jarvis panel, microphone ownership, English/Spanish Fish voices, live captions/chat cleanup, approved local notes, owner enrollment, aliases, memories and files remain. Gmail stays removed. Actual Redmi 9 speech, acoustic playback, lock and widget acceptance still require phone verification.
 
-Previous: [11.2 beta2](downloads/rebirth-11.2-beta2/Jarvis-11.2.0-beta2-arm64-reinstall.apk) · [conversation/voice setup](docs/rebirth-11.2/CONVERSATION-UPDATE.md) · [11.2 beta1](downloads/rebirth-11.2/Jarvis-11.2.0-beta1-arm64-reinstall.apk) · [11.1 Phantom](downloads/phantom-11.1/Jarvis-11.1.0-beta1-arm64-reinstall.apk). Historical artifacts and their limits remain preserved. Android still controls unlock and widget permissions; no blanket access to other launchers' widget instances is claimed.
+**Package and retained newer signing certificate are unchanged. Update compatible newer builds in place. Keep the installed app and data if Android rejects the signature. No replacement key was generated.**
+
+Previous: [11.2 beta3](downloads/rebirth-11.2-beta3/Jarvis-11.2.0-beta3-arm64-reinstall.apk) · [lock and widget setup](docs/rebirth-11.2/LOCK-AND-WIDGETS.md) · [11.2 beta2](downloads/rebirth-11.2-beta2/Jarvis-11.2.0-beta2-arm64-reinstall.apk) · [11.2 beta1](downloads/rebirth-11.2/Jarvis-11.2.0-beta1-arm64-reinstall.apk) · [11.1 Phantom](downloads/phantom-11.1/Jarvis-11.1.0-beta1-arm64-reinstall.apk). Historical artifacts and their limits remain preserved.
 
 ## Historical original-signature 7.0 release
 

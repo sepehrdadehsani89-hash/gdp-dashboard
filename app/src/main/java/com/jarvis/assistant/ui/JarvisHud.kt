@@ -165,19 +165,31 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
 @Composable internal fun HudCore(state:JarvisUiState,modifier:Modifier=Modifier,actions:JarvisUiActions?=null) {
     val t=state.hud.telemetry; val s=state.hud.settings; val b=t.battery
     val lifecycle=LocalLifecycleOwner.current.lifecycle
-    var active by remember { mutableStateOf(lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) }
-    DisposableEffect(lifecycle){val observer=LifecycleEventObserver{_,_->active=lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)};lifecycle.addObserver(observer);onDispose{lifecycle.removeObserver(observer)}}
     val fps=HudMotion.fps(s,b,t.powerSaver,ValueAnimator.areAnimatorsEnabled())
     var frameNow by remember{mutableLongStateOf(SystemClock.elapsedRealtime())}
+    val frameClock=remember{ReactorFrameClock()}
+    var angle by remember{mutableFloatStateOf(0f)}
     var batteryDetails by remember{mutableStateOf(false)}
-    LaunchedEffect(active,fps,s.sentinel.animationSpeed,state.sentinelVisual.mode) {
-        if(active && fps>0)while(true){delay(1000L/fps);frameNow=SystemClock.elapsedRealtime()}
-    }
-    val angle=ReactorGeometry.angle(if(fps>0)frameNow else 0,ReactorGeometry.speed(s,state.sentinelVisual.mode),0)
     val boot=if(state.sentinelVisual.mode==SentinelMode.ACTIVATING && fps>0)ReactorGeometry.awakening(frameNow-state.sentinelVisual.activatedAt) else Awakening(1f,1f,1f,0f,true)
     val auth=state.authorization?.status
     val authorizing=auth in listOf(AuthorizationStatus.AUTHORIZATION_REQUIRED,AuthorizationStatus.AWAITING_CODEX,AuthorizationStatus.IDENTITY_CONFIRMATION)
     val mode=if(authorizing)SentinelMode.AUTHORIZATION_REQUIRED else when(state.phase){AssistantPhase.LISTENING->SentinelMode.LISTENING;AssistantPhase.SPEAKING->SentinelMode.SPEAKING;AssistantPhase.THINKING->SentinelMode.PROCESSING;AssistantPhase.ERROR->SentinelMode.ERROR;else->state.sentinelVisual.mode}
+    val speed by rememberUpdatedState(ReactorGeometry.speed(s,mode))
+    LaunchedEffect(lifecycle,fps) {
+        lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED){
+            frameClock.pause()
+            try{
+                if(fps>0){
+                    var previousFrame=0L
+                    while(true)withFrameNanos{nanos->
+                        if(previousFrame==0L || nanos-previousFrame>=1_000_000_000L/fps){
+                            previousFrame=nanos;frameNow=SystemClock.elapsedRealtime();angle=frameClock.frame(frameNow,speed)
+                        }
+                    }
+                }
+            }finally{frameClock.pause()}
+        }
+    }
     val color=Color(ReactorPalette.core(mode,s.accent))
     val ticks=remember { ReactorGeometry.ticks.map{Offset(it.x,it.y)} }
     Box(modifier.aspectRatio(1f).sizeIn(maxWidth=450.dp,maxHeight=450.dp).clickable(enabled=actions!=null,role=Role.Button,onClickLabel="Activate voice"){actions?.onMic?.invoke()},contentAlignment=Alignment.Center) {
@@ -189,7 +201,7 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
             drawCircle(color.copy(alpha=.09f+energy*.22f),r*.52f,center,style=Stroke((5+energy*4).dp.toPx()))
             for(i in 0 until (s.sentinel.particleDensity*(if(s.sentinel.detail=="minimal")8 else 24)).toInt()){val rad=(i*30f+angle*.35f)*PI/180;val rr=r*(.58f+(i%3)*.08f);drawCircle(color.copy(alpha=.35f),.8.dp.toPx(),center+Offset(cos(rad).toFloat()*rr,sin(rad).toFloat()*rr))}
             for(ring in 0..4){val rr=r*ReactorGeometry.ringScales[ring];drawCircle(color.copy(alpha=.25f),rr,center,style=Stroke(.6.dp.toPx()))}
-            for(ring in 0..2){val rr=r*ReactorGeometry.arcScales[ring];val spin=ReactorGeometry.angle(if(fps>0)frameNow else 0,ReactorGeometry.speed(s,state.sentinelVisual.mode),ring)
+            for(ring in 0..2){val rr=r*ReactorGeometry.arcScales[ring];val spin=angle*(if(ring%2==0)1 else -1)
                 rotate(spin,center){for(i in 0..2){ drawArc(if(i==1)Purple.copy(alpha=.85f) else color.copy(alpha=.8f),i*120f+12,(if(ring==0)40f else 64f)*boot.rings,false,Offset(center.x-rr,center.y-rr),Size(rr*2,rr*2),style=Stroke(if(ring==0)5.dp.toPx() else 2.dp.toPx()))}}
             }
             if(boot.pulse>0)drawCircle(color.copy(alpha=boot.pulse*.5f),r*(.5f+boot.pulse*.6f),center,style=Stroke(1.5.dp.toPx()))

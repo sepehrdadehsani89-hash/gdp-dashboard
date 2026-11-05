@@ -49,7 +49,10 @@ object ScreenCommandPolicy {
         val t=AppMatching.normalize(input).removePrefix("hey jarvis ").removePrefix("jarvis ").removePrefix("هی جارویس ").removePrefix("جارویس ").removePrefix("please ")
         return when(t){
             "unlock my phone","unlock the screen","unlock my device","unlock my screen","open my locked screen","desbloquea mi telefono","desbloquea la pantalla","قفل گوشی را باز کن","قفل صفحه را باز کن"->ScreenCommand.UNLOCK
-            "lock my phone","lock my screen","lock the screen","turn off my screen","bloquea mi telefono","bloquea la pantalla","گوشی را قفل کن","صفحه را قفل کن"->ScreenCommand.LOCK
+            "lock my phone","lock my screen","lock the screen","lock my device","lock phone","lock screen",
+            "turn off","turn off my screen","turn off the screen","turn my screen off","switch off my screen",
+            "turn off my phone","turn my phone off","bloquea mi telefono","bloquea la pantalla","apaga la pantalla","apaga mi pantalla",
+            "گوشی را قفل کن","صفحه را قفل کن"->ScreenCommand.LOCK
             else->null
         }
     }

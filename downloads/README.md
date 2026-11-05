@@ -1,4 +1,10 @@
-# Current release: Jarvis 4.0 — Neural Core
+# Current development build: Jarvis 11.3
+
+[Download the signed ARM64 APK](rebirth-11.3/Jarvis-11.3.0-arm64-reinstall.apk) · [Speech repair and phone checks](../docs/rebirth-11.3/VOICE-REPAIR.md) · [Verification](rebirth-11.3/VERIFICATION.md).
+
+Repairs speech-turn completion and reactor resume; retains charging, both widget types and the existing features. Package and signing certificate match the newer 11.2 builds. Install over the matching build without clearing its data. The historical releases below keep their original limitations and signing lines.
+
+# Historical release: Jarvis 4.0 — Neural Core
 
 [Download the signed ARM64 APK](https://raw.githubusercontent.com/sepehrdadehsani89-hash/gdp-dashboard/1b854d8584be588232be13df723c1dc3f981579d/downloads/neural/Jarvis-4.0.0-arm64.apk) · [Setup and implementation report](../JARVIS_NEURAL_CORE.md) · [Verification](../docs/neural/VERIFICATION.md). Package `com.jarvis.next` updates Jarvis Next/Jarvis 2.0/3.0 with the retained key. Original Jarvis remains separate; no uninstall is needed.
 

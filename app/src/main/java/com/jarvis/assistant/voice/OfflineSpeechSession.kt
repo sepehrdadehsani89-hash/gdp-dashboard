@@ -72,6 +72,23 @@ internal class OfflineSpeechSession(
                             val bytes = ByteArray(4096)
                             timing.start();utterance.reset()
                             var previousPartial = ""
+                            fun acceptFinal(json:JSONObject,endpoint:Boolean):Boolean {
+                                val payload=com.jarvis.assistant.rebirth.RecognitionPayload.vosk(json)
+                                main.post{if(!closed.get())onAlternatives(payload.alternatives)}
+                                val result=payload.primary
+                                val text=result.optString("text")
+                                // Never execute a partial or skip a rejected part of a compound request.
+                                if(!RecognitionConfidence.acceptsFinal(result,com.jarvis.assistant.titan.VoicePreferences(context).confidence.toDouble())){
+                                    if(text.isNotBlank() || utterance.hasUnfinishedSpeech){emitError("SPEECH_UNCLEAR: Please repeat one request clearly.");return true}
+                                    return false
+                                }
+                                timing.progress(text);utterance.segment(text)
+                                if(endpoint)utterance.finalizedEndpoint()
+                                if(UtteranceAssembler.fastCommand(utterance.text()) || utterance.ready()){
+                                    emitResult(utterance.text());return true
+                                }
+                                return false
+                            }
                             while (!closed.get() && !timing.expired()) {
                                 val count = audio.read(bytes, 0, bytes.size)
                                 check(count >= 0) { "Microphone capture interrupted." }
@@ -79,14 +96,7 @@ internal class OfflineSpeechSession(
                                 val level=com.jarvis.assistant.hud.PcmLevel.pcm16(bytes,count)
                                 com.jarvis.assistant.hud.AudioSignals.level(this,level);timing.energy(level);utterance.energy(level)
                                 if (recognizer.acceptWaveForm(bytes, count)) {
-                                    val payload=com.jarvis.assistant.rebirth.RecognitionPayload.vosk(JSONObject(recognizer.result))
-                                    val result=payload.primary
-                                    main.post{if(!closed.get())onAlternatives(payload.alternatives)}
-                                    val text = result.optString("text")
-                                    if (text.isNotBlank() && RecognitionConfidence.acceptsFinal(result,com.jarvis.assistant.titan.VoicePreferences(context).confidence.toDouble())) {
-                                        timing.progress(text);utterance.segment(text)
-                                        if(UtteranceAssembler.fastCommand(utterance.text())){emitResult(utterance.text());return@Thread}
-                                    }
+                                    if(acceptFinal(JSONObject(recognizer.result),false))return@Thread
                                 } else {
                                     val partial = JSONObject(recognizer.partialResult).optString("partial")
                                     timing.progress(partial);utterance.partial(partial)
@@ -95,10 +105,14 @@ internal class OfflineSpeechSession(
                                         main.post { if (!closed.get()) onPartial(utterance.text()) }
                                     }
                                 }
+                                if(utterance.needsFinalization()){
+                                    val final=JSONObject(recognizer.finalResult)
+                                    if(acceptFinal(final,true))return@Thread
+                                    emitError("SPEECH_UNCLEAR: Please repeat one request clearly.");return@Thread
+                                }
                                 if(utterance.ready()){emitResult(utterance.text());return@Thread}
                             }
                             if (!closed.get()) {
-                                val final = JSONObject(recognizer.finalResult).optString("text")
                                 emitError("Speech inactivity or two-minute utterance limit reached. Tap the microphone or say your wake phrase again.")
                             }
                         } finally { com.jarvis.assistant.hud.AudioSignals.stop(this); runCatching { audio.stop() }; capture?.close();capture=null;recorder = null }

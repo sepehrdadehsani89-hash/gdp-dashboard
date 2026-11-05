@@ -344,6 +344,14 @@ class AssistantRuntime(private val context: Context) {
             speak(text,lang,generation,allowCloudSpeech=true,followUpOnDone=true,privateSpeech=false,publicOnly=true)
         }
     }
+    /** Fixed public feedback, never an action inferred from uncertain recognition. */
+    fun recognitionUnclear(expected:Long=currentCommandSerial()){
+        if(expected!=sessionGeneration || cameraOwner!=null || com.jarvis.assistant.security.SystemCredentialPrivacy.pending(context))return
+        cancelSession();pauseWake();privateTurn=false
+        val text=language().choose("I couldn't make out that request, sir. Please say Hey Jarvis and try again.","No entendí esa petición, señor. Di Oye Jarvis e inténtalo de nuevo.","درخواست واضح نبود. لطفاً دوباره بگویید.")
+        mutableState.update{it.copy(liveReply=text,transcript="",phase=AssistantPhase.THINKING,error=null,voiceWindowDeadline=0,followUpArming=false)}
+        speak(text,language(),allowCloudSpeech=true,privateSpeech=false,publicOnly=true,followUpOnDone=false)
+    }
     fun finishConversation(voiced:Boolean=false){
         cancelSession();pauseWake();cancelAuthorization(false)
         clearAttachmentSelection(false);clearTemporaryConversation();tools.infinity.clearContext();clearSpeakerSuggestion()
@@ -451,6 +459,7 @@ class AssistantRuntime(private val context: Context) {
             onError = { message -> if(listeningGeneration==sessionGeneration){
                 val retry=attempt<2 && (message.startsWith("RECOGNIZER_BUSY") || message.startsWith("AUDIO_ERROR") || message.contains("busy",true))
                 if(retry){mutableState.update{it.copy(wakeStatus="Recovering recognition · retry ${attempt+1}/2",phase=AssistantPhase.LISTENING)};scope.launch{delay(if(attempt==0)400 else 1200);if(listeningGeneration==sessionGeneration && !com.jarvis.assistant.security.SystemCredentialPrivacy.pending(context))listenAttempt(attempt+1)}}
+                else if(message.startsWith("SPEECH_UNCLEAR"))recognitionUnclear(listeningGeneration)
                 else if(message.startsWith("10-second") || message.startsWith("Speech inactivity"))endListening()
                 else {fail(message);resumeWake()}
             } },
@@ -872,7 +881,16 @@ class AssistantRuntime(private val context: Context) {
         else if(!speakReply)resumeWake(followUp=allowVoiceFollowUp(voiced || awaitScreenQuestion))
         mutableState.update{it.copy(confirmedEntity=reply.confirmedEntity,moduleResponse=if(it.moduleSequence==moduleRequestSequence && it.module!=com.jarvis.assistant.omnisystem.HudModule.ASSISTANT)reply.text else it.moduleResponse,transcript="",liveReply="",pendingAction=reply.action,phase=if(speakReply)AssistantPhase.THINKING else AssistantPhase.READY)}
         if(!speakReply)phantom.finish(if(reply.action!=null)ExecutionState.WAITING_USER else ExecutionState.COMPLETED)
-        if(speakReply)speak(reply.text,lang,generation,reply.allowCloudSpeech,followUpOnDone=voiced || awaitScreenQuestion)
+        if(speakReply){
+            val config=withContext(Dispatchers.IO){customVoice.config(lang)}
+            if(generation!=sessionGeneration)return
+            val contentRoute=com.jarvis.assistant.titan.SpeechRoutePolicy.route(lang,config.enabled,config.id,reply.allowCloudSpeech,privateTurn,false,config.privateAllowed)
+            val publicRoute=com.jarvis.assistant.titan.SpeechRoutePolicy.route(lang,config.enabled,config.id,true,false,false)
+            if(com.jarvis.assistant.voice.SpeechFeedbackPolicy.needsPublicAcknowledgement(contentRoute,publicRoute)){
+                speak(com.jarvis.assistant.voice.SpeechFeedbackPolicy.publicAcknowledgement(lang,reply.action!=null),lang,generation,allowCloudSpeech=true,
+                    followUpOnDone=allowVoiceFollowUp(voiced || awaitScreenQuestion),privateSpeech=false,publicOnly=true)
+            }else speak(reply.text,lang,generation,reply.allowCloudSpeech,followUpOnDone=voiced || awaitScreenQuestion)
+        }
     }
 
     private fun allowVoiceFollowUp(requested:Boolean,publicPrompt:Boolean=false,privateReply:Boolean=privateTurn)=
