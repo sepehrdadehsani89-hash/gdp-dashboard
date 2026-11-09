@@ -26,6 +26,8 @@ class HudRepository(private val context:Context) {
     private val scope=CoroutineScope(SupervisorJob()+Dispatchers.Main.immediate)
     private val mutable=MutableStateFlow(HudState(settings=prefs.read()))
     val state=mutable.asStateFlow()
+    val powerSource=com.jarvis.assistant.power.BatteryStateRepository(context)
+    init{scope.launch{powerSource.state.collect{reading->mutable.update{it.copy(telemetry=it.telemetry.copy(battery=reading.battery),power=reading)}}}}
     private var visible=false
     private val visibleOwners=mutableSetOf<Any>()
     private val weatherOwners=mutableSetOf<Any>()
@@ -36,7 +38,6 @@ class HudRepository(private val context:Context) {
     private val handler=Handler(Looper.getMainLooper())
     private val receiver=object:BroadcastReceiver(){ override fun onReceive(c:Context?,i:Intent?){
         if(!visible)return
-        if(i?.action==Intent.ACTION_BATTERY_CHANGED) mutable.update { it.copy(telemetry=it.telemetry.copy(battery=battery(i))) }
         refresh()
     } }
     private val observer=object:ContentObserver(handler){ override fun onChange(selfChange:Boolean){ refresh() } }
@@ -53,15 +54,13 @@ class HudRepository(private val context:Context) {
         }
         visible=true
         val sticky=ContextCompat.registerReceiver(context,receiver,IntentFilter().apply {
-            addAction(Intent.ACTION_BATTERY_CHANGED); addAction(Intent.ACTION_TIME_TICK); addAction(Intent.ACTION_TIME_CHANGED)
+            addAction(Intent.ACTION_TIME_TICK); addAction(Intent.ACTION_TIME_CHANGED)
             addAction(Intent.ACTION_TIMEZONE_CHANGED);addAction(Intent.ACTION_DATE_CHANGED);addAction(Intent.ACTION_LOCALE_CHANGED);addAction(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED)
         },ContextCompat.RECEIVER_EXPORTED)
         // All filter actions are Android protected broadcasts. Some Android/OEM senders
         // use a privileged process outside this UID; exporting this system-only receiver
         // allows those deliveries. Read the sticky result synchronously on re-entry too.
-        val initial=sticky?.takeIf { it.action==Intent.ACTION_BATTERY_CHANGED }
-            ?: context.registerReceiver(null,IntentFilter(Intent.ACTION_BATTERY_CHANGED))
-        initial?.let { i->mutable.update { it.copy(telemetry=it.telemetry.copy(battery=battery(i))) } }
+        powerSource.start();powerSource.refresh()
         context.contentResolver.registerContentObserver(Settings.System.getUriFor(Settings.System.TIME_12_24),false,observer)
         context.contentResolver.registerContentObserver(Settings.Global.getUriFor(Settings.Global.ANIMATOR_DURATION_SCALE),false,observer)
         runCatching { cm.registerDefaultNetworkCallback(callback,handler) }
@@ -91,7 +90,7 @@ class HudRepository(private val context:Context) {
     private fun cancelPassiveWeather(){
         if(weatherJob?.isActive==true){weatherJob?.cancel();generation++;mutable.update{it.copy(weather=it.weather.copy(loading=false))}}
     }
-    fun acceptBattery(intent:Intent){mutable.update{it.copy(telemetry=it.telemetry.copy(battery=battery(intent)))}}
+    fun acceptBattery(intent:Intent){powerSource.observe(intent)}
     fun clear(){
         generation++;weatherJob?.cancel();weather.clear();prefs.save(HudSettings())
         mutable.update { HudState(settings=HudSettings(),telemetry=it.telemetry) }

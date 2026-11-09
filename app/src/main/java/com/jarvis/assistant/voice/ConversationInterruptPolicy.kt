@@ -1,6 +1,6 @@
 package com.jarvis.assistant.voice
 import com.jarvis.assistant.neural.AppMatching
-/** Recognized control text only. Does not turn on an echo-sensitive recorder during TTS. */
+/** Normal recognized session controls; playback controls use a separate narrow, echo-checked gate. */
 object ConversationInterruptPolicy {
     fun replacement(text:String):String? {
         val t=AppMatching.normalize(text)

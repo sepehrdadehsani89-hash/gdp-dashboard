@@ -33,7 +33,7 @@ data class WeatherReading(val place: String, val temperatureC: Double?, val feel
     val hourly:List<WeatherHour> = emptyList(), val daily:List<WeatherDay> = emptyList(), val sourceTimezone:String = "Unavailable",val latitude:Double?=null,val longitude:Double?=null)
 data class WeatherState(val reading: WeatherReading? = null, val loading: Boolean = false, val error: String? = null,
     val stale: Boolean = true, val locationNotice: String? = null)
-data class HudState(val settings: HudSettings = HudSettings(), val telemetry: Telemetry = Telemetry(), val weather: WeatherState = WeatherState())
+data class HudState(val settings: HudSettings = HudSettings(), val telemetry: Telemetry = Telemetry(), val weather: WeatherState = WeatherState(),val power:com.jarvis.assistant.power.PowerReading=com.jarvis.assistant.power.PowerReading())
 
 object ClockDisplay {
     fun time(epoch: Long, zone: String, locale: Locale, format: String, system24: Boolean): String =

@@ -1,8 +1,10 @@
-# Current development build: Jarvis 11.3
+# Current development build: Jarvis 11.4 — OVERCHARGE
 
-[Download the signed ARM64 APK](rebirth-11.3/Jarvis-11.3.0-arm64-reinstall.apk) · [Speech repair and phone checks](../docs/rebirth-11.3/VOICE-REPAIR.md) · [Verification](rebirth-11.3/VERIFICATION.md).
+[Download the signed ARM64 APK](overcharge-11.4/Jarvis-11.4.0-arm64-reinstall.apk) · [Implementation and phone setup](../docs/overcharge-11.4/IMPLEMENTATION.md) · [Verification](overcharge-11.4/VERIFICATION.md).
 
-Repairs speech-turn completion and reactor resume; retains charging, both widget types and the existing features. Package and signing certificate match the newer 11.2 builds. Install over the matching build without clearing its data. The historical releases below keep their original limitations and signing lines.
+Adds supported charging ETA, critical alert retry/completion tracking, full-charge reminder controls and the wallpaper charging strip. Preserves 11.3 speech fixes and adds narrow playback interruption through the already-enabled wake service. Package/signing identity match the newer 11.2/11.3 builds. Install over the matching build without clearing data. Real handset behavior still requires verification.
+
+Previous: [11.3](rebirth-11.3/Jarvis-11.3.0-arm64-reinstall.apk) · [11.2 beta3](rebirth-11.2-beta3/Jarvis-11.2.0-beta3-arm64-reinstall.apk).
 
 # Historical release: Jarvis 4.0 — Neural Core
 

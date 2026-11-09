@@ -3,7 +3,7 @@ package com.jarvis.assistant.titan
 import com.jarvis.assistant.core.AppLanguage
 
 /** Percentage color is independent from listening, speaking and charging state. */
-enum class BatteryBand(val argb:Long){ NORMAL(0xFFF8FAFC),MODERATE(0xFFFACC15),LOW(0xFFFB923C),VERY_LOW(0xFFEF4444),CRITICAL(0xFF991B1B),UNKNOWN(0xFF94A3B8) }
+enum class BatteryBand(val argb:Long){ NORMAL(0xFFF8FAFC),MODERATE(0xFFFACC15),LOW(0xFFFB923C),VERY_LOW(0xFFEF4444),CRITICAL(0xFFFF1744),UNKNOWN(0xFF94A3B8) }
 object BatteryPolicy {
     fun band(percent:Int?):BatteryBand=when(percent){
         in 70..100->BatteryBand.NORMAL;in 31..69->BatteryBand.MODERATE;in 11..30->BatteryBand.LOW
@@ -14,7 +14,8 @@ object BatteryPolicy {
         require(percent in 1..10)
         val en=listOf("zero","one","two","three","four","five","six","seven","eight","nine","ten")[percent]
         val es=listOf("cero","uno","dos","tres","cuatro","cinco","seis","siete","ocho","nueve","diez")[percent]
-        return if(language==AppLanguage.ES){if(percent<=5)"Carga tu teléfono inmediatamente. El nivel crítico de batería es del $es por ciento." else "Carga tu teléfono, por favor. La batería está al $es por ciento."}
+        return if(language==AppLanguage.ES){if(percent==1)"Señor, batería en nivel crítico. Carga tu teléfono inmediatamente. El porcentaje de batería es del uno por ciento." else if(percent<=5)"Carga tu teléfono inmediatamente. El nivel crítico de batería es del $es por ciento." else "Carga tu teléfono, por favor. La batería está al $es por ciento."}
+        else if(percent==1)"Sir, battery percentage critical. Please charge your phone immediately. Battery percentage is at one percent."
         else if(percent<=5)"Please charge your phone immediately. Critical battery percentage is at $en percent."
         else "Please charge your phone. Battery percentage is at $en percent."
     }

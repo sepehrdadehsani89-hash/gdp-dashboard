@@ -105,6 +105,12 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
                 HudCore(state,Modifier.fillMaxWidth(),actions)
             }
         }
+        if(h.power.stripVisible)HudPanel(l.choose("Power Core · charging","Núcleo de energía · carga","شارژ"),Modifier.fillMaxWidth().border(.7.dp,Color(ReactorPalette.green),CutCornerShape(10.dp))){
+            val remaining=h.power.estimate?.remaining(SystemClock.elapsedRealtime())
+            Text(com.jarvis.assistant.power.ChargingText.strip(h.power,SystemClock.elapsedRealtime(),l==AppLanguage.ES),color=Ice,fontSize=12.sp)
+            if(h.power.charging && remaining!=null)Text("~ "+com.jarvis.assistant.power.ChargingText.completion(remaining,System.currentTimeMillis(),t.timezone),color=Cyan,fontSize=11.sp)
+            TextButton(onClick={actions.onSend("open power core")}){Text(l.choose("Charging details & reminders","Detalles de carga y avisos","جزئیات شارژ"))}
+        }
         val userCaption=state.transcript.ifBlank{state.messages.lastOrNull{it.role==MessageRole.USER}?.text.orEmpty()}
         val assistantCaption=state.liveReply.ifBlank{state.messages.lastOrNull{it.role==MessageRole.ASSISTANT}?.text.orEmpty()}
         val captions=rememberScrollState()
@@ -168,6 +174,8 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
     val fps=HudMotion.fps(s,b,t.powerSaver,ValueAnimator.areAnimatorsEnabled())
     var frameNow by remember{mutableLongStateOf(SystemClock.elapsedRealtime())}
     val frameClock=remember{ReactorFrameClock()}
+    val chargingClock=remember{com.jarvis.assistant.power.ChargingVisualClock()}
+    var chargingFrame by remember{mutableStateOf(com.jarvis.assistant.power.ChargingVisual())}
     var angle by remember{mutableFloatStateOf(0f)}
     var batteryDetails by remember{mutableStateOf(false)}
     val boot=if(state.sentinelVisual.mode==SentinelMode.ACTIVATING && fps>0)ReactorGeometry.awakening(frameNow-state.sentinelVisual.activatedAt) else Awakening(1f,1f,1f,0f,true)
@@ -175,19 +183,24 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
     val authorizing=auth in listOf(AuthorizationStatus.AUTHORIZATION_REQUIRED,AuthorizationStatus.AWAITING_CODEX,AuthorizationStatus.IDENTITY_CONFIRMATION)
     val mode=if(authorizing)SentinelMode.AUTHORIZATION_REQUIRED else when(state.phase){AssistantPhase.LISTENING->SentinelMode.LISTENING;AssistantPhase.SPEAKING->SentinelMode.SPEAKING;AssistantPhase.THINKING->SentinelMode.PROCESSING;AssistantPhase.ERROR->SentinelMode.ERROR;else->state.sentinelVisual.mode}
     val speed by rememberUpdatedState(ReactorGeometry.speed(s,mode))
+    val actualCharging=(state.hud.power.connected==true && (state.hud.power.charging || state.hud.power.condition==com.jarvis.assistant.power.PowerCondition.FULL) && s.sentinel.chargingEffects)
+    val chargeActive by rememberUpdatedState(actualCharging)
+    val chargeSpeed by rememberUpdatedState(s.sentinel.animationSpeed)
+    val green=if(fps>0)chargingFrame else com.jarvis.assistant.power.ChargingVisual(chargingFrame.angle,if(actualCharging)1f else 0f)
     LaunchedEffect(lifecycle,fps) {
         lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED){
-            frameClock.pause()
+            frameClock.pause();chargingClock.pause()
             try{
                 if(fps>0){
                     var previousFrame=0L
                     while(true)withFrameNanos{nanos->
                         if(previousFrame==0L || nanos-previousFrame>=1_000_000_000L/fps){
                             previousFrame=nanos;frameNow=SystemClock.elapsedRealtime();angle=frameClock.frame(frameNow,speed)
+                            chargingFrame=chargingClock.frame(frameNow,chargeActive,true,chargeSpeed)
                         }
                     }
                 }
-            }finally{frameClock.pause()}
+            }finally{frameClock.pause();chargingClock.pause()}
         }
     }
     val color=Color(ReactorPalette.core(mode,s.accent))
@@ -210,7 +223,8 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
                 val rr=r*.55f
                 drawArc(tone.copy(alpha=.7f),-90f,percent*3.6f,false,Offset(center.x-rr,center.y-rr),Size(rr*2,rr*2),style=Stroke(2.dp.toPx()))
             }
-            if((b.charging || b.full && b.source!="Battery") && s.sentinel.chargingEffects){val rr=r*1.025f;drawArc(Color(ReactorPalette.green).copy(alpha=.9f),angle*2,36f,false,Offset(center.x-rr,center.y-rr),Size(rr*2,rr*2),style=Stroke(2.dp.toPx()))}
+            if(green.alpha>0){val rr=r*1.025f;drawArc(Color(ReactorPalette.green).copy(alpha=.9f*green.alpha),green.angle,36f,false,Offset(center.x-rr,center.y-rr),Size(rr*2,rr*2),style=Stroke(2.dp.toPx()))
+                drawArc(Color(ReactorPalette.green).copy(alpha=.35f*green.alpha),green.angle-30,22f,false,Offset(center.x-rr,center.y-rr),Size(rr*2,rr*2),style=Stroke(.8.dp.toPx()))}
             val core=r*.49f
             drawCircle(Brush.radialGradient(listOf(Back,color.copy(alpha=.18f)),center,core),core,center)
             drawCircle(color,core,center,style=Stroke(1.4.dp.toPx()))

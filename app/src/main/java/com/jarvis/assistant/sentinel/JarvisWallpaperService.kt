@@ -30,6 +30,7 @@ class JarvisWallpaperService:WallpaperService() {
         private var observation:Job?=null
         private var registered=false
         private var lastFrameAt=0L
+        @Volatile private var lastMeasuredFrame=0L
         private val schedule=Runnable {
             renderHandler.removeCallbacks(draw)
             if(visible && surfaceReady && interactive && !destroyed){
@@ -57,7 +58,7 @@ class JarvisWallpaperService:WallpaperService() {
                     }
                 }catch(_:IllegalArgumentException){/* Surface is being replaced by Android. */}
                 catch(_:IllegalStateException){/* A hidden/destroyed surface is not a render target. */}
-                finally{canvas?.let{if(runCatching{surfaceHolder.unlockCanvasAndPost(it)}.isSuccess && drawn)frames.incrementAndGet()}}
+                finally{canvas?.let{if(runCatching{surfaceHolder.unlockCanvasAndPost(it)}.isSuccess && drawn){frames.incrementAndGet();timings.record(if(lastMeasuredFrame>0)started-lastMeasuredFrame else 0,SystemClock.elapsedRealtime()-started);lastMeasuredFrame=started}}}
             }
             val snapshot=frame
             val fps=WallpaperRenderPolicy.fps(visible,surfaceReady,interactive,snapshot.hud.settings,snapshot.hud.telemetry.battery,snapshot.hud.telemetry.powerSaver,snapshot.hud.telemetry.systemMotion,snapshot.visual.mode)
@@ -67,12 +68,13 @@ class JarvisWallpaperService:WallpaperService() {
         override fun onCreate(holder:SurfaceHolder){super.onCreate(holder);setTouchEventsEnabled(false);setOffsetNotificationsEnabled(false);engines.incrementAndGet()}
         override fun onSurfaceCreated(holder:SurfaceHolder){super.onSurfaceCreated(holder);synchronized(surfaceLock){surfaceReady=true};requestFrame()}
         override fun onSurfaceChanged(holder:SurfaceHolder,format:Int,width:Int,height:Int){super.onSurfaceChanged(holder,format,width,height);synchronized(surfaceLock){surfaceReady=true};requestFrame()}
-        override fun onSurfaceDestroyed(holder:SurfaceHolder){synchronized(surfaceLock){surfaceReady=false};renderHandler.removeCallbacks(draw);renderHandler.removeCallbacks(schedule);super.onSurfaceDestroyed(holder)}
+        override fun onSurfaceDestroyed(holder:SurfaceHolder){synchronized(surfaceLock){surfaceReady=false};renderHandler.removeCallbacks(draw);renderHandler.removeCallbacks(schedule);renderHandler.post{renderer.pause();lastMeasuredFrame=0L};super.onSurfaceDestroyed(holder)}
         override fun onVisibilityChanged(value:Boolean){
             super.onVisibilityChanged(value)
             if(visible==value || destroyed)return
             visible=value
-            if(value){visibleEngines.incrementAndGet();if(!isPreview)visibleHomeEngines.incrementAndGet();startObservation()}else{visibleEngines.decrementAndGet();if(!isPreview)visibleHomeEngines.decrementAndGet();stopObservation()}
+            if(!value)lastMeasuredFrame=0L
+            if(value){visibleEngines.incrementAndGet();if(!isPreview)visibleHomeEngines.incrementAndGet();startObservation()}else{visibleEngines.decrementAndGet();if(!isPreview)visibleHomeEngines.decrementAndGet();stopObservation();renderHandler.post{renderer.pause()}}
         }
         private fun startObservation(){
             interactive=getSystemService(PowerManager::class.java).isInteractive
@@ -118,6 +120,8 @@ class JarvisWallpaperService:WallpaperService() {
         private val visibleHomeEngines=AtomicInteger()
         private val engines=AtomicInteger()
         private val frames=AtomicInteger()
+        private val timings=com.jarvis.assistant.power.RenderMeasurements()
+        val frameTimingSummary:String get()=timings.summary()
         val homeVisible:Boolean get()=visibleHomeEngines.get()>0
         val anyVisible:Boolean get()=visibleEngines.get()>0
         val activeEngineCount:Int get()=engines.get()

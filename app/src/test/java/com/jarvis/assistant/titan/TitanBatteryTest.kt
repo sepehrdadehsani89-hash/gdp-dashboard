@@ -8,7 +8,7 @@ class TitanBatteryTest {
     @Test fun everyPercentageHasExactlyTheSpecifiedBand(){
         for(p in 0..100){val expected=when{p>=70->BatteryBand.NORMAL;p>=31->BatteryBand.MODERATE;p>=11->BatteryBand.LOW;p>=6->BatteryBand.VERY_LOW;else->BatteryBand.CRITICAL};assertEquals("$p%",expected,BatteryPolicy.band(p))}
         assertEquals(BatteryBand.UNKNOWN,BatteryPolicy.band(null));assertEquals(BatteryBand.UNKNOWN,BatteryPolicy.band(-1));assertEquals(BatteryBand.UNKNOWN,BatteryPolicy.band(101))
-        assertEquals(0xFFF8FAFC,BatteryBand.NORMAL.argb);assertEquals(0xFF991B1B,BatteryBand.CRITICAL.argb)
+        assertEquals(0xFFF8FAFC,BatteryBand.NORMAL.argb);assertEquals(0xFFFF1744,BatteryBand.CRITICAL.argb)
     }
     @Test fun downwardObservedLevelsAreAnnouncedOnceIncludingAfterRestart(){
         var state=BatteryAlertState()

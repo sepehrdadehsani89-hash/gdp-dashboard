@@ -101,6 +101,7 @@
             <meta-data android:name="android.service.wallpaper" android:resource="@xml/jarvis_wallpaper" />
         </service>
         <activity android:name=".sentinel.SentinelWallpaperSettingsActivity" android:exported="true" android:theme="@style/Theme.Jarvis" />
+        <receiver android:name=".power.PowerReminderAction" android:exported="false" />
         <service android:name=".voice.WakeListenerService" android:exported="false" android:foregroundServiceType="microphone" />
         <activity android:name=".screen.ScreenCaptureActivity" android:exported="false" android:excludeFromRecents="true" android:taskAffinity="${applicationId}.screen" android:theme="@style/Theme.Jarvis.Capture" />
         <service android:name=".screen.ScreenCaptureService" android:exported="false" android:foregroundServiceType="mediaProjection" />

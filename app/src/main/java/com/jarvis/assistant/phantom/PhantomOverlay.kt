@@ -61,7 +61,8 @@ class PhantomOverlay(private val context:Context,private val runtime:AssistantRu
             reactor?.set(current.execution,state.audio.level,state.hud.settings.reducedMotion || !state.hud.telemetry.systemMotion || p.reducedMotion || state.performanceRestricted,p.speed)
             body?.textSize=p.captionSp
             val caption=current.caption.takeIf{it.visible(now)}
-            body?.text=(state.activeTask+"\n"+(caption?.assistant?.ifBlank{caption.user} ?: "Tap Expand for the current Jarvis panel.")).take(1800)
+            val powerLine=if(state.activeTask=="BATTERY")com.jarvis.assistant.power.ChargingText.strip(state.hud.power,now,state.settings.language==com.jarvis.assistant.core.AppLanguage.ES)+"\n"else ""
+            body?.text=(state.activeTask+"\n"+powerLine+(caption?.assistant?.ifBlank{caption.user} ?: "Tap Expand for the current Jarvis panel.")).take(1800)
             body?.maxLines=p.lines+1
             body?.setTextColor(if(state.activeTask=="BATTERY")com.jarvis.assistant.titan.BatteryPolicy.band(state.hud.telemetry.battery.percent).argb.toInt() else Color.WHITE)
             card?.visibility=if(minimized || caption==null)View.GONE else View.VISIBLE

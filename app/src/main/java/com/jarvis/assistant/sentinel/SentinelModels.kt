@@ -88,11 +88,12 @@ class ReactorAnimationController(private val now:()->Long) {
 object WallpaperRenderPolicy {
     fun fps(visible:Boolean,surface:Boolean,interactive:Boolean,settings:HudSettings,battery:BatteryReading,powerSaver:Boolean,systemMotion:Boolean,mode:SentinelMode):Int {
         if(!visible || !surface || !interactive || settings.reducedMotion || !systemMotion || settings.sentinel.animationSpeed==0f)return 0
-        if(powerSaver || settings.animationProfile=="saver" || settings.autoBatterySaver && (battery.percent ?:100)<10)return 2
-        if((battery.percent ?:100)<20)return 4
+        if(powerSaver || settings.animationProfile=="saver")return 2
+        if(settings.autoBatterySaver && (battery.percent ?:100)<10)return if(battery.charging)8 else 2
+        if((battery.percent ?:100)<20)return if(battery.charging)8 else 4
         if(mode==SentinelMode.ERROR)return 3
         if(mode==SentinelMode.AUTHORIZATION_REQUIRED)return 8
-        if(mode==SentinelMode.DORMANT)return if(battery.charging && settings.sentinel.chargingEffects)6 else if(settings.sentinel.cinematicWallpaper)6 else 3
+        if(mode==SentinelMode.DORMANT)return if((battery.charging || battery.full && battery.source!="Battery") && settings.sentinel.chargingEffects){if(settings.animationProfile=="cinematic")30 else 20}else if(settings.sentinel.cinematicWallpaper)6 else 3
         return if(settings.animationProfile=="cinematic")30 else 20
     }
 }

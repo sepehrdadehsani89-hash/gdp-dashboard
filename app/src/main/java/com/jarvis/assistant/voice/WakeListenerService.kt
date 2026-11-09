@@ -42,6 +42,10 @@ class WakeListenerService : Service() {
     private val speakerFocus by lazy{com.jarvis.assistant.phantom.SpeakerFocusEngine((application as com.jarvis.assistant.JarvisApplication).runtime.speakers,SystemClock::elapsedRealtime)}
     @Volatile private var failureReason:String?=null
     private var language = AppLanguage.EN
+    @Volatile private var playbackGeneration:Long?=null
+    @Volatile private var playbackEcho=""
+    @Volatile private var playbackControlPending:Long?=null
+    private fun clearPlaybackControls(){playbackGeneration=null;playbackEcho="";playbackControlPending=null}
     private val window = ConversationWindow { SystemClock.elapsedRealtime() }
     private val greetingGate=WakeGreetingGate(SystemClock::elapsedRealtime)
     private val windowTimeout = Runnable { if (window.expire()) publish(listeningText(), true) }
@@ -73,11 +77,13 @@ class WakeListenerService : Service() {
                 stopSelf(); return START_NOT_STICKY
             }
             ACTION_PAUSE -> {
+                clearPlaybackControls()
                 synchronized(audioLock) { paused = true; window.pause(); main.removeCallbacks(windowTimeout); runCatching { recorder?.stop() } }
                 publish(language.choose("Wake listening paused", "Activación en pausa", "بیدارباش مکث شده است"), false)
                 return if (running) START_STICKY else START_NOT_STICKY
             }
             ACTION_RESUME -> {
+                clearPlaybackControls()
                 if (running) {
                     window.resume(intent.getBooleanExtra("follow_up", false))
                     main.removeCallbacks(windowTimeout)
@@ -86,6 +92,17 @@ class WakeListenerService : Service() {
                         language.choose("Preparing an adaptive follow-up session", "Preparando tu siguiente pregunta", "آماده‌سازی فرصت ۱۰ ثانیه‌ای پرسش بعدی") else listeningText(), true)
                 }
                 return if (running) START_STICKY else START_NOT_STICKY
+            }
+            ACTION_PLAYBACK_CONTROLS -> {
+                if(!running){stopSelf();return START_NOT_STICKY}
+                val runtime=(application as com.jarvis.assistant.JarvisApplication).runtime
+                val expected=intent.getLongExtra("runtime_generation",-1)
+                if(!PlaybackInterruptPolicy.current(expected,runtime.currentCommandSerial(),runtime.state.value.phase==com.jarvis.assistant.core.AssistantPhase.SPEAKING) ||
+                    !com.jarvis.assistant.titan.VoicePreferences(this).playbackInterruption || com.jarvis.assistant.security.SystemCredentialPrivacy.pending(this))return START_STICKY
+                playbackEcho=intent.getStringExtra("spoken_segment").orEmpty().take(8000);playbackGeneration=expected;playbackControlPending=null
+                window.pause();main.removeCallbacks(windowTimeout);paused=false
+                publish("Reply playing · listening only for wait / stop speech controls",true)
+                return START_STICKY
             }
         }
         if (running) return START_STICKY
@@ -148,7 +165,7 @@ class WakeListenerService : Service() {
                                 }
                                 if (!started) return@use
                                 com.jarvis.assistant.hud.AudioSignals.start(audio,"Wake microphone · PCM RMS")
-                                publish(listeningText(), true)
+                                publish(if(playbackGeneration!=null)"Reply playing · wait / stop speech controls" else listeningText(), true)
                                 val bytes = ByteArray(4096)
                                 var suppressed = false
                                 var recognizerSerial = window.snapshot().resetSerial
@@ -161,6 +178,26 @@ class WakeListenerService : Service() {
                                     recovery.healthy()
                                     if(audioManager.mode in listOf(android.media.AudioManager.MODE_IN_CALL,android.media.AudioManager.MODE_IN_COMMUNICATION)){window.resume(false);main.removeCallbacks(windowTimeout);publish("Microphone paused during a call",false,interrupted=true);break}
                                     com.jarvis.assistant.hud.AudioSignals.level(audio,com.jarvis.assistant.hud.PcmLevel.pcm16(bytes,count))
+                                    val playbackExpected=playbackGeneration
+                                    if(playbackExpected!=null){
+                                        speakerBuffer.clear()
+                                        if(!speechActive){recognizer.reset();continue}
+                                        if(recognizer.acceptWaveForm(bytes,count)){
+                                            val result=com.jarvis.assistant.rebirth.RecognitionPayload.vosk(JSONObject(recognizer.result)).primary
+                                            val control=if(RecognitionConfidence.acceptsFinal(result,.65))PlaybackInterruptPolicy.command(result.optString("text"),playbackEcho)else null
+                                            if(control!=null && playbackControlPending!=playbackExpected){
+                                                playbackControlPending=playbackExpected
+                                                main.post{
+                                                    val runtime=(application as com.jarvis.assistant.JarvisApplication).runtime
+                                                    if(running && playbackGeneration==playbackExpected && PlaybackInterruptPolicy.current(playbackExpected,runtime.currentCommandSerial(),runtime.state.value.phase==com.jarvis.assistant.core.AssistantPhase.SPEAKING)){
+                                                        clearPlaybackControls();synchronized(audioLock){paused=true;window.pause();runCatching{recorder?.stop()}}
+                                                        runtime.interruptSpokenReply(playbackExpected)
+                                                    }else if(playbackControlPending==playbackExpected)playbackControlPending=null
+                                                }
+                                            }
+                                        }
+                                        continue
+                                    }
                                     if (speechActive || SystemClock.elapsedRealtime() < suppressionUntil) {
                                         speakerBuffer.clear()
                                         if (!suppressed) { recognizer.reset(); suppressed = true }
@@ -370,6 +407,7 @@ class WakeListenerService : Service() {
     }
 
     private fun stopCaptureImmediately(){
+        clearPlaybackControls()
         greetingGate.cancel()
         speakerFocus.reset()
         synchronized(audioLock){running=false;paused=true;window.disable();runCatching{recorder?.stop()}}
@@ -399,6 +437,7 @@ class WakeListenerService : Service() {
         const val ACTION_STOP = "com.jarvis.next.WAKE_STOP"
         const val ACTION_PAUSE = "com.jarvis.next.WAKE_PAUSE"
         const val ACTION_RESUME = "com.jarvis.next.WAKE_RESUME"
+        const val ACTION_PLAYBACK_CONTROLS = "com.jarvis.next.WAKE_PLAYBACK_CONTROLS"
         const val ACTION_PARTIAL = "com.jarvis.next.WAKE_PARTIAL"
         const val ACTION_COMMAND = "com.jarvis.next.WAKE_COMMAND"
         const val ACTION_STATUS = "com.jarvis.next.WAKE_STATUS"
@@ -412,6 +451,7 @@ class WakeListenerService : Service() {
         private const val NOTIFICATION_ID = 3101
         @Volatile private var suppressionUntil = 0L
         fun pauseImmediately(){current.get()?.let{service->
+            service.clearPlaybackControls()
             synchronized(service.audioLock){service.paused=true;service.window.pause();service.main.removeCallbacks(service.windowTimeout);runCatching{service.recorder?.stop()}}
             service.speakerBuffer.clear()
         }}

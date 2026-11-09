@@ -21,6 +21,7 @@ class RebirthCenterActivity:PrivateModuleActivity(){
             OutlinedButton(onClick={startActivity(Intent(this@RebirthCenterActivity,com.jarvis.assistant.titan.MemoryCardsActivity::class.java))}){Text("Review / delete saved session notes and memories")}
             OutlinedButton(onClick={startActivity(Intent(this@RebirthCenterActivity,com.jarvis.assistant.omnisystem.SpeakerProfilesActivity::class.java).putExtra("voice_setup",true))}){Text("Set up owner voice · 20-second local recording")}
             Button(onClick={startActivity(Intent(this@RebirthCenterActivity,com.jarvis.assistant.widgets.WidgetCenterActivity::class.java))}){Text("Widgets & Jarvis panels · approve installed app widgets")}
+            Button(onClick={startActivity(Intent(this@RebirthCenterActivity,com.jarvis.assistant.titan.TitanCenterActivity::class.java).putExtra("page","Battery"))}){Text("Power Core · charging ETA, critical alerts & reminders")}
             Button(onClick={startActivity(Intent(this@RebirthCenterActivity,PersonalContentActivity::class.java))}){Text("Personal Content · files, photos & authorized folders")}
             OutlinedButton(onClick={startActivity(Intent(this@RebirthCenterActivity,com.jarvis.assistant.neural.NeuralSettingsActivity::class.java))}){Text("App aliases, approved memories & previous-history deletion")}
             OutlinedButton(onClick={startActivity(Intent(this@RebirthCenterActivity,com.jarvis.assistant.titan.TitanCenterActivity::class.java).putExtra("page","Voice Lab"))}){Text("Microphone calibration / Voice Lab")}

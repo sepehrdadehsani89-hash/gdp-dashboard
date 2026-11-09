@@ -64,6 +64,7 @@ class TitanCenterActivity:PrivateModuleActivity(){
         Toggle("Android noise suppression",voice.noiseReduction){voice.noiseReduction=it;revision++}
         Toggle("Android acoustic echo cancellation",voice.echoCancellation){voice.echoCancellation=it;revision++}
         Toggle("Android automatic gain control · optional",voice.gainControl){voice.gainControl=it;revision++}
+        Toggle("Wait / stop voice controls during replies · already-enabled wake service only",voice.playbackInterruption){voice.playbackInterruption=it;revision++}
         Text(words("Changes apply when the recorder next starts. Echo cancellation does not enable automatic TTS barge-in; supported recording and output paths remain separate.","Los cambios se aplican al reiniciar el grabador. La cancelación de eco no activa interrupción acústica automática del TTS; las rutas siguen separadas.","Restart capture"))
         Button(enabled=!working,onClick={calibrate(false)}){Text(words("Measure 3 seconds of background noise","Medir 3 segundos de ruido ambiente","Noise test"))}
         Button(enabled=!working,onClick={calibrate(true)}){Text(words("Record 6-second wake phrase test · no command runs","Grabar prueba de activación de 6 segundos · sin ejecutar comandos","Wake test"))}
@@ -117,22 +118,43 @@ class TitanCenterActivity:PrivateModuleActivity(){
         val state by runtime.state.collectAsStateWithLifecycle()
         val p=runtime.batteryAlerts.preferences
         val reading=state.hud.telemetry.battery
-        Text(words("BATTERY INTELLIGENCE 10.7","INTELIGENCIA DE BATERÍA 10.7","Battery"),style=MaterialTheme.typography.titleLarge)
+        Text(words("JARVIS POWER CORE · OVERCHARGE 11.4","NÚCLEO DE ENERGÍA · OVERCHARGE 11.4","Power Core 11.4"),style=MaterialTheme.typography.titleLarge)
+        val power=state.hud.power
+        val elapsed=android.os.SystemClock.elapsedRealtime()
+        Text(com.jarvis.assistant.power.ChargingText.strip(power,elapsed,sharedSpanish()),style=MaterialTheme.typography.titleMedium)
+        power.estimate?.remaining(elapsed)?.let{left->Text("Android estimate: approximately ${com.jarvis.assistant.power.ChargingText.duration(left,sharedSpanish())}\nEstimated full at ${com.jarvis.assistant.power.ChargingText.completion(left,System.currentTimeMillis(),java.time.ZoneId.systemDefault().id)} · approximate")}
         Text("Android: ${reading.percent ?: "unavailable"}% · charging ${reading.charging} · ${reading.source}\nBand: ${BatteryPolicy.band(reading.percent)}\nTemperature: ${reading.temperatureC ?: "unavailable"} °C\nHealth classification: ${reading.health}")
-        Toggle("BATTERY VOICE ALERTS",p.enabled){p.enabled=it;revision++;runtime.batteryAlerts.drain()}
-        Toggle("CRITICAL ALERTS · 5% through 1%",p.critical){p.critical=it;revision++}
+        Text("Voltage: ${power.voltageMv?.let{"$it mV"} ?: "Unavailable"}\nCurrent: ${power.currentMicroAmps?.let{"$it µA · signed Android measurement; OEM sign conventions vary"} ?: "Unavailable"}\nNo capacity-health percentage or charger wattage is inferred.")
+        OutlinedButton(onClick={runtime.hud.powerSource.refresh();revision++}){Text("Refresh actual battery and Android estimate")}
+        Toggle("BATTERY VOICE ALERTS",p.enabled){p.enabled=it;revision++;runtime.batteryAlerts.settingsChanged()}
+        Toggle("CRITICAL ALERTS · 5% through 1%",p.critical){p.critical=it;revision++;runtime.batteryAlerts.settingsChanged()}
+        Toggle("Announce charging start and first available estimate",p.chargingStart){p.chargingStart=it;revision++;runtime.batteryAlerts.settingsChanged()}
+        Toggle("FULL CHARGE VOICE ALERT",p.fullEnabled){p.fullEnabled=it;revision++;runtime.batteryAlerts.settingsChanged()}
+        Toggle("REPEAT WHILE PLUGGED IN",p.repeatFull){p.repeatFull=it;revision++;runtime.batteryAlerts.settingsChanged()}
+        Text("Reminder interval · Android may deliver background work late")
+        FlowRow{listOf(5,10,15,30).forEach{minutes->FilterChip(p.interval==minutes,{p.interval=minutes;revision++;runtime.batteryAlerts.settingsChanged()},label={Text("$minutes min")})}}
+        Toggle("Power restored personality phrase at full charge",p.cinematicFull){p.cinematicFull=it;revision++}
+        Toggle("Optional charger-disconnection voice",p.disconnectVoice){p.disconnectVoice=it;revision++;runtime.batteryAlerts.settingsChanged()}
+        Text("Optional charging progress reports")
+        FlowRow{listOf(0,15,30,60).forEach{minutes->FilterChip(p.progressMinutes==minutes,{p.progressMinutes=minutes;revision++;runtime.batteryAlerts.settingsChanged()},label={Text(if(minutes==0)"Disabled" else "$minutes min")})}}
+        FlowRow{OutlinedButton(onClick={runtime.batteryAlerts.snoozeReminders();revision++}){Text("Snooze 15 min")};OutlinedButton(onClick={runtime.batteryAlerts.dismissReminders();revision++}){Text("Dismiss until unplugged")}}
         Toggle("Text notifications when speech is blocked",p.notifications){p.notifications=it;revision++}
-        Toggle("Quiet hours · device local time",p.quiet){p.quiet=it;revision++}
+        Toggle("Quiet hours · device local time",p.quiet){p.quiet=it;revision++;runtime.batteryAlerts.settingsChanged()}
         var start by remember{mutableStateOf(p.start.toString())};var end by remember{mutableStateOf(p.end.toString())}
         OutlinedTextField(start,{start=it.take(2)},label={Text("Quiet start hour")});OutlinedTextField(end,{end=it.take(2)},label={Text("Quiet end hour")})
-        Button(onClick={val a=start.toIntOrNull();val b=end.toIntOrNull();if(a in 0..23 && b in 0..23){p.start=a!!;p.end=b!!;revision++}else status="Use hours 0–23"}){Text("Save quiet hours")}
+        Button(onClick={val a=start.toIntOrNull();val b=end.toIntOrNull();if(a in 0..23 && b in 0..23){p.start=a!!;p.end=b!!;revision++;runtime.batteryAlerts.settingsChanged()}else status="Use hours 0–23"}){Text("Save quiet hours")}
         var volume by remember{mutableFloatStateOf(p.volume)}
         Text("Alert volume ${(volume*100).toInt()}%");Slider(volume,{volume=it},onValueChangeFinished={p.volume=volume})
         OutlinedButton(onClick={phoneState.launch(Manifest.permission.READ_PHONE_STATE)}){Text(words("Optional call-state permission · needed for safe spoken alerts","Permiso opcional de llamadas · necesario para avisos de voz seguros","Call-state permission"))}
-        Text(words("Alerts need an alive Android app process and safe audio availability. Android may stop background delivery. Missing call-state permission, active calls, Silent/DND, credential UI or quiet hours prevent speech. No repeated percentage timer or missed-level replay.","Los avisos requieren proceso Android activo y audio seguro. Android puede detener entregas. Sin permiso de llamadas, durante llamadas, Silencio/No molestar, autenticación o descanso, no se habla. Sin temporizador repetitivo ni repetición de niveles omitidos.","Best effort Android delivery"))
+        Text(words("Alerts need safe audio, configured Fish Audio and Android process availability. Full reminders use inexact WorkManager scheduling and re-read the real battery. Missing call-state permission, calls, Silent/DND, credential UI or quiet hours prevent speech. Critical failures retry at most three times for the latest observed level; no missed-level replay.","Los avisos requieren audio seguro, Fish Audio configurado y disponibilidad del proceso. Los recordatorios usan WorkManager y verifican la batería real. Permisos, llamadas, Silencio/No molestar y descanso pueden impedir la voz. Sin repetición de niveles no observados.","Best effort Android delivery"))
         Text("Last alert status: "+p.lastStatus)
+        OutlinedButton(onClick={runtime.batteryAlerts.retryPending();revision++}){Text("Retry current pending alert")}
+        Text("Last actual audio-start latency: ${runtime.batteryAlerts.lastLatencyMs?.let{"$it ms"} ?: "Not measured on this device"}")
+        Text(com.jarvis.assistant.sentinel.JarvisWallpaperService.frameTimingSummary)
+        runtime.batteryAlerts.diagnostics().takeLast(6).forEach{Text(it,style=MaterialTheme.typography.bodySmall)}
         TextButton(onClick={revision++}){Text("Refresh alert status")}
     }
+    private fun sharedSpanish()=runtime.store.settings.value.language==AppLanguage.ES
     @Composable private fun routineStudio(){
         val shared by runtime.state.collectAsStateWithLifecycle()
         Text("ROUTINE STUDIO",style=MaterialTheme.typography.titleLarge)

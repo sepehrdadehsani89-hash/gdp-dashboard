@@ -65,6 +65,9 @@ fun ModuleHud(state: JarvisUiState, actions: JarvisUiActions) {
                 Text("Android health classification: ${t.battery.health}")
                 Text("Temperature: ${t.battery.temperatureC?.let{"$it °C"} ?: "Unavailable"}")
                 Text("Power saver: ${t.powerSaver}\nCapacity-health percentage is not measured.")
+                Text(com.jarvis.assistant.power.ChargingText.strip(h.power,android.os.SystemClock.elapsedRealtime(),l==AppLanguage.ES))
+                h.power.estimate?.remaining(android.os.SystemClock.elapsedRealtime())?.let{left->Text("Approximate full charge: "+com.jarvis.assistant.power.ChargingText.completion(left,System.currentTimeMillis(),t.timezone))}
+                OutlinedButton(onClick={actions.onSend("open power core")}){Text(l.choose("Power Core & charging reminders","Núcleo de energía y avisos","جزئیات شارژ"))}
                 Button(onClick={actions.onSend("show my battery health")}){Text(l.choose("Read voltage, current & charge counter","Leer voltaje, corriente y carga","خواندن ولتاژ، جریان و شمارندهٔ شارژ"))}
             }
             HudModule.WIFI -> HudPanel(l.choose("Wi-Fi intelligence","Información Wi-Fi","اطلاعات وای‌فای"),Modifier.fillMaxWidth()) {

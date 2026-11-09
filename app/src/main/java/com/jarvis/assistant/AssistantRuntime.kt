@@ -142,7 +142,8 @@ class AssistantRuntime(private val context: Context) {
     private var privateTurn = false
     val batteryAlerts by lazy{com.jarvis.assistant.titan.BatteryAlerts(context,hud,scope,
         ready={cameraOwner==null && state.value.phase==AssistantPhase.READY && session?.isActive!=true && state.value.authorization==null && !state.value.followUpArming && state.value.voiceWindowDeadline<=SystemClock.elapsedRealtime() && !com.jarvis.assistant.security.SystemCredentialPrivacy.pending(context)},
-        play={text,volume,done,error->pauseWake();speak(text,language(),allowCloudSpeech=true,volumeOverride=volume,completion=done,failure=error,privateSpeech=false,publicOnly=true)},language=::language)}
+        play={text,volume,started,done,error->pauseWake();speak(text,language(),allowCloudSpeech=true,volumeOverride=volume,completion=done,failure=error,privateSpeech=false,publicOnly=true,onAudioStarted=started)},language=::language,
+        stopPlayback={cloudVoiceJob?.cancel();cloudVoiceJob=null;speech.stop();mutableState.update{it.copy(phase=AssistantPhase.READY)};resumeWake()})}
     val sessionNotePreferences by lazy{com.jarvis.assistant.rebirth.SessionNotePreferences(context)}
     private val sessionNoteDraft=com.jarvis.assistant.rebirth.SessionNoteDraft()
     private var sessionNoteWrite:Job?=null
@@ -334,7 +335,10 @@ class AssistantRuntime(private val context: Context) {
                 withTimeoutOrNull(2500){runCatching{matching.await()}.onSuccess{profile=it;matched=true}};matching.cancel()
             }else audio?.pcm?.fill(0)
             if(generation!=sessionGeneration)return@launch
-            val text=com.jarvis.assistant.rebirth.ConversationGreetingPolicy.text(lang,matched && profile?.owner!=true)
+            val greetingPreferences=com.jarvis.assistant.titan.VoicePreferences(context)
+            val validGreetingHours=com.jarvis.assistant.titan.GreetingPolicy.validBounds(greetingPreferences.morning,greetingPreferences.afternoon,greetingPreferences.evening,greetingPreferences.night)
+            val text=if(validGreetingHours)com.jarvis.assistant.titan.GreetingPolicy.greeting(java.time.ZonedDateTime.now().hour,lang,matched && profile?.owner==true,true,null,greetingPreferences.morning,greetingPreferences.afternoon,greetingPreferences.evening,greetingPreferences.night)
+                else com.jarvis.assistant.titan.GreetingPolicy.greeting(java.time.ZonedDateTime.now().hour,lang,matched && profile?.owner==true,true,null)
             privateTurn=false;lastTurnAt=SystemClock.elapsedRealtime()
             store.addEphemeral(ChatMessage(role=MessageRole.ASSISTANT,text=text))
             mutableState.update{it.copy(liveReply=text,phase=AssistantPhase.THINKING,voiceInteraction=true,speakerOwnerConfident=matched && profile?.owner==true)}
@@ -351,6 +355,13 @@ class AssistantRuntime(private val context: Context) {
         val text=language().choose("I couldn't make out that request, sir. Please say Hey Jarvis and try again.","No entendí esa petición, señor. Di Oye Jarvis e inténtalo de nuevo.","درخواست واضح نبود. لطفاً دوباره بگویید.")
         mutableState.update{it.copy(liveReply=text,transcript="",phase=AssistantPhase.THINKING,error=null,voiceWindowDeadline=0,followUpArming=false)}
         speak(text,language(),allowCloudSpeech=true,privateSpeech=false,publicOnly=true,followUpOnDone=false)
+    }
+    fun interruptSpokenReply(expected:Long){
+        if(!com.jarvis.assistant.voice.PlaybackInterruptPolicy.current(expected,sessionGeneration,state.value.phase==AssistantPhase.SPEAKING) ||
+            !com.jarvis.assistant.titan.VoicePreferences(context).playbackInterruption || com.jarvis.assistant.security.SystemCredentialPrivacy.pending(context))return
+        cancelSession();pauseWake();phantom.begin(true)
+        mutableState.update{it.copy(phase=AssistantPhase.READY,voiceInteraction=true,transcript="",error=null)}
+        resumeWake(followUp=true)
     }
     fun finishConversation(voiced:Boolean=false){
         cancelSession();pauseWake();cancelAuthorization(false)
@@ -599,6 +610,23 @@ class AssistantRuntime(private val context: Context) {
         com.jarvis.assistant.voice.ConversationInterruptPolicy.replacement(text)?.let{replacement->submit(replacement,voiced,speakerSampleId);return}
         mutableState.update{it.copy(confirmedEntity=null,recognition=null)}
         val direct=com.jarvis.assistant.neural.AppMatching.normalize(text).removePrefix("hey jarvis ").removePrefix("oye jarvis ").removePrefix("jarvis ")
+        com.jarvis.assistant.power.PowerCommands.parse(text,state.value.activeTask=="BATTERY" || state.value.activeTask=="ASSISTANT" && hud.powerSource.state.value.verifiedFull)?.let{command->
+            when(command){
+                com.jarvis.assistant.power.PowerCommand.DISMISS->{batteryAlerts.dismissReminders();reportNative(language().choose("Full-charge reminders are dismissed until you unplug, sir.","Avisos de carga completa desactivados hasta desconectar, señor.","اعلان شارژ متوقف شد."),voiced,text)}
+                com.jarvis.assistant.power.PowerCommand.SNOOZE->{batteryAlerts.snoozeReminders();reportNative(language().choose("Charging reminders are snoozed for fifteen minutes, sir.","Avisos de carga pospuestos quince minutos, señor.","اعلان شارژ پانزده دقیقه به تعویق افتاد."),voiced,text)}
+                com.jarvis.assistant.power.PowerCommand.OPEN->{reportNative(tools.launches.open(Intent(context,com.jarvis.assistant.titan.TitanCenterActivity::class.java).putExtra("page","Battery"),"Jarvis Power Core").detail,voiced,text)}
+                else->{
+                    hud.powerSource.refresh()
+                    val r=hud.powerSource.state.value
+                    val answer=if(command==com.jarvis.assistant.power.PowerCommand.TEMPERATURE)r.battery.temperatureC?.let{language().choose("Android reports a battery temperature of $it degrees Celsius, sir.","Android informa una temperatura de batería de $it grados Celsius, señor.","دمای باتری $it درجه سانتی‌گراد است.")} ?: language().choose("Battery temperature is unavailable.","La temperatura de batería no está disponible.","دمای باتری در دسترس نیست.")
+                        else com.jarvis.assistant.power.ChargingText.answer(r,SystemClock.elapsedRealtime(),System.currentTimeMillis(),java.time.ZoneId.systemDefault().id,language())
+                    selectModule(com.jarvis.assistant.omnisystem.HudModule.BATTERY)
+                    reportNative(answer,voiced,text)
+                    mutableState.update{it.copy(activeTask="BATTERY",moduleResponse=answer)}
+                }
+            }
+            return
+        }
         if(direct in setOf("cancel lock countdown","cancel screen lock","cancel locking","cancela el bloqueo")){
             cancelSession();mutableState.update{it.copy(liveReply="Screen lock cancelled.",error=null)};resumeWake();return
         }
@@ -950,6 +978,9 @@ class AssistantRuntime(private val context: Context) {
                                 phantom.event(TraceEvent.FIRST_AUDIO,traceId);phantom.stage(ExecutionState.SPEAKING,traceId)
                                 mutableState.update{it.copy(phase=AssistantPhase.SPEAKING)}
                                 onAudioStarted()
+                                if(com.jarvis.assistant.voice.PlaybackInterruptPolicy.mayArm(WakeListenerService.state.value.running,com.jarvis.assistant.titan.VoicePreferences(context).playbackInterruption,state.value.voiceInteraction,com.jarvis.assistant.security.SystemCredentialPrivacy.pending(context))){
+                                    runCatching{context.startService(Intent(context,WakeListenerService::class.java).setAction(WakeListenerService.ACTION_PLAYBACK_CONTROLS).putExtra("runtime_generation",generation).putExtra("spoken_segment",part))}
+                                }
                             }else{speech.stop();if(continuation.isActive)continuation.cancel()}
                         })
                     }
@@ -1216,7 +1247,7 @@ class AssistantRuntime(private val context: Context) {
             com.jarvis.assistant.titan.VoicePreferences(context).clear()
             com.jarvis.assistant.titan.NavigationPreferences(context).clear()
             context.getSharedPreferences("jarvis_titan_memory_cards_v1",Context.MODE_PRIVATE).edit().clear().apply()
-            batteryAlerts.preferences.clear()
+            batteryAlerts.reset()
             hud.clear()
             withContext(Dispatchers.IO) {
                 listOf("wake-models", "voice-models", "local-brain", "ocr").forEach { File(context.filesDir, it).deleteRecursively() }
@@ -1250,6 +1281,7 @@ class AssistantRuntime(private val context: Context) {
     }
 
     private fun cancelSession(preserveCapture:Boolean=false) {
+        batteryAlerts.cancel()
         lockCountdownJob?.cancel();lockCountdownJob=null
         foregroundFollowUp?.cancel();foregroundFollowUp=null
         if(!preserveCapture || phantom.state.value.execution !in setOf(ExecutionState.WAKE,ExecutionState.LISTENING,ExecutionState.TRANSCRIBING))phantom.finish(ExecutionState.CANCELLED)
