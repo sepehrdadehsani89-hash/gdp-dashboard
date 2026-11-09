@@ -7,7 +7,7 @@ object NativeNavigation {
         return when(t){
             "open my widgets","open widgets","show my widgets","show all widgets","open widget center","access all my widgets","abre mis widgets","muestra mis widgets"->Destination.WIDGETS
             "open settings","open android settings","abre ajustes","abre configuracion"->Destination.SETTINGS
-            "can you recognize these voices","can you recognize my voice","recognize my voice","learn my voice","remember my voice","enroll my voice","hold this as your one and only owner","configura mi voz","reconoce mi voz"->Destination.VOICE
+            "can you recognize these voices","can you recognize my voice","recognize my voice","learn my voice","train my voice","train owner voice","only listen to my voice","remember my voice","enroll my voice","hold this as your one and only owner","configura mi voz","entrena mi voz","reconoce mi voz"->Destination.VOICE
             "open my files","open my documents","open personal content","connect my files","connect all my files","connect to all my files"->Destination.CONTENT
             "open my photos","show my photos"->Destination.PHOTOS
             "show available apps","show my app aliases"->Destination.ALIASES

@@ -1,10 +1,12 @@
-# Current development build: Jarvis 11.4 — OVERCHARGE
+# Current development build: Jarvis 11.5 — voice and core repair
 
-[Download the signed ARM64 APK](overcharge-11.4/Jarvis-11.4.0-arm64-reinstall.apk) · [Implementation and phone setup](../docs/overcharge-11.4/IMPLEMENTATION.md) · [Verification](overcharge-11.4/VERIFICATION.md).
+[Download the signed ARM64 APK](voice-11.5/Jarvis-11.5.0-arm64-reinstall.apk) · [Changes, owner training and phone test](../docs/voice-11.5/REPORT.md) · [Verification](voice-11.5/VERIFICATION.md).
 
-Adds supported charging ETA, critical alert retry/completion tracking, full-charge reminder controls and the wallpaper charging strip. Preserves 11.3 speech fixes and adds narrow playback interruption through the already-enabled wake service. Package/signing identity match the newer 11.2/11.3 builds. Install over the matching build without clearing data. Real handset behavior still requires verification.
+Repairs wake/greeting/capture handoff, empty speech finals and false recognition-error feedback; adds actual local clock answers, truthful provider errors and an optional locally trained owner-only spoken-command filter. The existing core uses adaptive state/audio-reactive animation. All prior charging/widgets/panels/privacy features remain. Real handset behavior still requires verification.
 
-Previous: [11.3](rebirth-11.3/Jarvis-11.3.0-arm64-reinstall.apk) · [11.2 beta3](rebirth-11.2-beta3/Jarvis-11.2.0-beta3-arm64-reinstall.apk).
+Package/signing identity match the newer 11.2/11.3/11.4 builds. Install over the matching build without clearing data. If Android rejects the signature, preserve the installed app/data. Owner similarity does not replace Android authentication; train and test on your phone.
+
+Previous: [11.4](overcharge-11.4/Jarvis-11.4.0-arm64-reinstall.apk) · [11.3](rebirth-11.3/Jarvis-11.3.0-arm64-reinstall.apk) · [11.2 beta3](rebirth-11.2-beta3/Jarvis-11.2.0-beta3-arm64-reinstall.apk).
 
 # Historical release: Jarvis 4.0 — Neural Core
 

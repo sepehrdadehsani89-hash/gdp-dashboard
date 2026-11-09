@@ -75,6 +75,28 @@ class SpeakerProfiles(private val context:Context,private val vault:FeatureVault
     private val cleanupScope=CoroutineScope(SupervisorJob()+Dispatchers.IO)
     private var releaseJob:Job?=null
     private val options=context.getSharedPreferences("jarvis_speaker_options_v1",Context.MODE_PRIVATE)
+    private var ownerVector:FloatArray?=null
+    private var guestVectors=emptyList<FloatArray>()
+    private val ownerVersion=java.util.concurrent.atomic.AtomicLong()
+    val ownerRevision get()=ownerVersion.get()
+    val ownerOnlyRequested get()=options.getBoolean("owner_only",false)
+    val ownerThreshold get()=options.getFloat("owner_threshold",.90f).takeIf{it.isFinite()}?.coerceIn(.72f,.95f) ?: .90f
+    fun setOwnerThreshold(value:Float){check(unlocked());require(value.isFinite() && value in 0.72f..0.95f);check(options.edit().putFloat("owner_threshold",value).commit());ownerVersion.incrementAndGet()}
+    @Synchronized fun ownerSessionReady()=ownerOnlyRequested && ownerVector!=null && present()
+    @Synchronized fun armOwnerSession(){
+        check(unlocked())
+        if(!ownerOnlyRequested)return
+        val all=profiles();val owner=all.singleOrNull{it.owner} ?: error("Enroll the owner voice first.")
+        check(present()){"Download the speaker recognition model first."}
+        releaseJob?.cancel();clearOwnerVectors();ownerVector=owner.vector.toFloatArray();guestVectors=all.filterNot{it.owner}.map{it.vector.toFloatArray()};ownerVersion.incrementAndGet()
+    }
+    @Synchronized private fun clearOwnerVectors(){ownerVector?.fill(0f);ownerVector=null;guestVectors.forEach{it.fill(0f)};guestVectors=emptyList()}
+    @Synchronized fun endOwnerSession(){clearOwnerVectors();ownerVersion.incrementAndGet()}
+    @Synchronized fun setOwnerOnly(enabled:Boolean){
+        check(unlocked());if(enabled)check(profiles().any{it.owner} && present()){"Enroll an owner and install the recognition model first."}
+        check(options.edit().putBoolean("owner_only",enabled).commit())
+        if(enabled)armOwnerSession()else endOwnerSession()
+    }
     @Volatile private var knownCount=0
     @Volatile private var loadedProfiles=false
     private fun unlocked()=context.getSystemService(KeyguardManager::class.java)?.isDeviceLocked==false
@@ -88,7 +110,7 @@ class SpeakerProfiles(private val context:Context,private val vault:FeatureVault
         check(unlocked());if(enabled)require(profiles().isNotEmpty() && present())
         check(options.edit().putBoolean("auto",enabled).commit())
     }
-    fun resetOptions(){check(options.edit().clear().commit());knownCount=0;loadedProfiles=false}
+    fun resetOptions(){endOwnerSession();check(options.edit().clear().commit());knownCount=0;loadedProfiles=false}
     @Synchronized fun profiles():List<SpeakerProfile>{
         check(unlocked())
         val raw=vault.read("speaker_profiles") ?: run{check(!vault.contains("speaker_profiles")){"Encrypted profiles unavailable."};knownCount=0;loadedProfiles=true;return emptyList()}
@@ -110,10 +132,11 @@ class SpeakerProfiles(private val context:Context,private val vault:FeatureVault
         val all=existing.filterNot{it.id==p.id}+p
         val raw=SpeakerProfilePolicy.encode(all);SpeakerProfilePolicy.parse(raw);vault.write("speaker_profiles",raw)
         knownCount=all.size;loadedProfiles=true
+        if(ownerOnlyRequested)armOwnerSession()
         return p
     }
-    @Synchronized fun delete(id:String){val remaining=profiles().filterNot{it.id==id};vault.write("speaker_profiles",SpeakerProfilePolicy.encode(remaining));knownCount=remaining.size;if(remaining.isEmpty())setAuto(false)}
-    @Synchronized fun clearProfiles(){check(unlocked());vault.remove("speaker_profiles");knownCount=0;loadedProfiles=true;setAuto(false)}
+    @Synchronized fun delete(id:String){val remaining=profiles().filterNot{it.id==id};vault.write("speaker_profiles",SpeakerProfilePolicy.encode(remaining));knownCount=remaining.size;endOwnerSession();if(remaining.isEmpty())setAuto(false);if(ownerOnlyRequested && remaining.any{it.owner})armOwnerSession()}
+    @Synchronized fun clearProfiles(){check(unlocked());endOwnerSession();vault.remove("speaker_profiles");knownCount=0;loadedProfiles=true;setAuto(false)}
     suspend fun download(onProgress:(Float)->Unit)=mutex.withLock{withContext(Dispatchers.IO){
         check(directory.exists() || directory.mkdirs());check(StatFs(directory.path).availableBytes>SIZE+20_000_000){"Free storage for the model first."}
         releaseJob?.cancel();extractor?.release();extractor=null
@@ -141,23 +164,34 @@ class SpeakerProfiles(private val context:Context,private val vault:FeatureVault
         if(extractor==null){verify();extractor=SpeakerEmbeddingExtractor(config=SpeakerEmbeddingExtractorConfig(model=model.absolutePath,numThreads=1,debug=false,provider="cpu"))}
         return extractor ?: error("Speaker engine unavailable.")
     }
-    private fun releaseLater(){releaseJob?.cancel();releaseJob=cleanupScope.launch{delay(60_000);release()}}
+    private fun releaseLater(){releaseJob?.cancel();if(ownerSessionReady())return;releaseJob=cleanupScope.launch{delay(60_000);release()}}
     suspend fun prepare()=mutex.withLock{withContext(Dispatchers.IO){check(unlocked());engine();releaseLater();Unit}}
-    suspend fun embedding(audio:CapturedVoice):FloatArray=mutex.withLock{withContext(Dispatchers.IO){
-        check(unlocked());require(audio.sampleRate==16000 && audio.pcm.size in 32_000..800_000)
+    suspend fun embedding(audio:CapturedVoice):FloatArray=computeEmbedding(audio,false)
+    private suspend fun computeEmbedding(audio:CapturedVoice,forOwner:Boolean):FloatArray=mutex.withLock{withContext(Dispatchers.IO){
+        check(if(forOwner)ownerSessionReady()else unlocked());require(audio.sampleRate==16000 && audio.pcm.size in 32_000..800_000)
         releaseJob?.cancel()
         val engine=engine()
         val stream=engine.createStream();val samples=audio.floats()
         try {
             stream.acceptWaveform(samples,16000);stream.inputFinished();check(engine.isReady(stream)){"More clear speech is needed."}
-            val vector=engine.compute(stream);require(vector.size==engine.dim());check(unlocked())
+            val vector=engine.compute(stream);require(vector.size==engine.dim());check(if(forOwner)ownerSessionReady()else unlocked())
             SpeakerProfilePolicy.normalized(vector)
         } finally {
             samples.fill(0f);stream.release()
             releaseLater()
         }
     }}
+    suspend fun verifyOwner(audio:CapturedVoice):com.jarvis.assistant.voice.OwnerVoiceDecision {
+        val revision=ownerRevision
+        val snapshot=synchronized(this){ownerVector?.copyOf()?.let{it to guestVectors.map{v->v.copyOf()}}} ?: return com.jarvis.assistant.voice.OwnerVoiceDecision(com.jarvis.assistant.voice.OwnerVoiceResult.UNAVAILABLE)
+        var query:FloatArray?=null
+        return try{
+            query=computeEmbedding(audio,true)
+            if(revision!=ownerRevision || !ownerSessionReady())com.jarvis.assistant.voice.OwnerVoiceDecision(com.jarvis.assistant.voice.OwnerVoiceResult.UNAVAILABLE)
+            else com.jarvis.assistant.voice.OwnerVoicePolicy.decide(query,snapshot.first,snapshot.second,ownerThreshold)
+        }finally{query?.fill(0f);snapshot.first.fill(0f);snapshot.second.forEach{it.fill(0f)}}
+    }
     suspend fun release()=mutex.withLock{withContext(Dispatchers.IO){extractor?.release();extractor=null}}
-    fun releaseAsync(){cleanupScope.launch{release()}}
-    suspend fun removeModel()=mutex.withLock{withContext(Dispatchers.IO){check(options.edit().putBoolean("auto",false).commit());releaseJob?.cancel();extractor?.release();extractor=null;check(!directory.exists() || directory.deleteRecursively());Unit}}
+    fun releaseAsync(){if(ownerSessionReady() && com.jarvis.assistant.voice.WakeListenerService.state.value.running)return;cleanupScope.launch{release()}}
+    suspend fun removeModel()=mutex.withLock{withContext(Dispatchers.IO){endOwnerSession();check(options.edit().putBoolean("auto",false).commit());releaseJob?.cancel();extractor?.release();extractor=null;check(!directory.exists() || directory.deleteRecursively());Unit}}
 }

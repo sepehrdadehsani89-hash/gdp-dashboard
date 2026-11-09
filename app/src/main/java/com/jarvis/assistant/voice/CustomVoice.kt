@@ -30,7 +30,7 @@ object CustomVoicePolicy {
     }
 }
 class CustomVoiceConfig(val id:String=CustomVoicePolicy.REQUESTED_ID,val model:String="s2.1-pro",val key:String="",val enabled:Boolean=false,val privateAllowed:Boolean=false)
-class CustomVoice(private val vault:FeatureVault,private val http:ModuleHttp=ModuleHttp(okhttp3.OkHttpClient.Builder().connectTimeout(8,java.util.concurrent.TimeUnit.SECONDS).readTimeout(20,java.util.concurrent.TimeUnit.SECONDS).callTimeout(25,java.util.concurrent.TimeUnit.SECONDS).retryOnConnectionFailure(false).followRedirects(false).followSslRedirects(false).build())) {
+class CustomVoice(private val vault:FeatureVault,private val http:ModuleHttp=ModuleHttp(okhttp3.OkHttpClient.Builder().connectTimeout(8,java.util.concurrent.TimeUnit.SECONDS).readTimeout(20,java.util.concurrent.TimeUnit.SECONDS).callTimeout(25,java.util.concurrent.TimeUnit.SECONDS).retryOnConnectionFailure(false).followRedirects(false).followSslRedirects(false).build()),private val greetingCache:PublicGreetingCache?=null) {
     private fun namespace(language:AppLanguage)=if(language==AppLanguage.ES)"spanish_output_voice" else "custom_output_voice"
     fun config(language:AppLanguage=AppLanguage.EN):CustomVoiceConfig {
         val default=if(language==AppLanguage.ES)CustomVoiceConfig(id=CustomVoicePolicy.SPANISH_ID) else CustomVoiceConfig()
@@ -55,8 +55,10 @@ class CustomVoice(private val vault:FeatureVault,private val http:ModuleHttp=Mod
     }
     suspend fun synthesize(c:CustomVoiceConfig,text:String):ByteArray {
         require(c.key.isNotBlank() && c.model.matches(Regex("[A-Za-z0-9._-]{1,60}")))
+        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO){greetingCache?.read(c,text)}?.let{return it}
         return http.bytes(Request.Builder().url("https://api.fish.audio/v1/tts")
             .header("Authorization","Bearer ${c.key}").header("model",c.model)
-            .post(CustomVoicePolicy.payload(text,c.id).toRequestBody("application/msgpack".toMediaType())).build(),4_000_000).also{check(it.isNotEmpty())}
+            .post(CustomVoicePolicy.payload(text,c.id).toRequestBody("application/msgpack".toMediaType())).build(),4_000_000).also{audio->check(audio.isNotEmpty());kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO){greetingCache?.write(c,text,audio)}}
     }
+    fun clearGreetingCache(){greetingCache?.clear()}
 }

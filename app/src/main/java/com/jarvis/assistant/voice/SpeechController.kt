@@ -37,6 +37,7 @@ class SpeechController(context: Context) {
     private var androidMicrophoneLease:com.jarvis.assistant.rebirth.MicrophoneLease?=null
     private var offlineSpeech: OfflineSpeechSession? = null
     private var player: MediaPlayer? = null
+    private var compressedPlaybackMeter:com.jarvis.assistant.sentinel.CompressedPlaybackMeter?=null
     private var temporaryPlayback:File?=null
     private var playbackTimeout:Runnable?=null
     private var ttsReady = false
@@ -74,6 +75,8 @@ class SpeechController(context: Context) {
         onError: (String) -> Unit,
         onCaptureStarted:()->Unit={},
         onAlternatives:(List<com.jarvis.assistant.rebirth.RecognitionHypothesis>)->Unit={},
+        captureSpeaker:Boolean=false,
+        onSpeakerSample:(Long)->Unit={},
     ) {
         main.post {
             stopInternal()
@@ -90,9 +93,11 @@ class SpeechController(context: Context) {
                     onError = { if (token == generation) { offlineSpeech = null; onError(it) } },
                     onCaptureStarted={if(token==generation)onCaptureStarted()},
                     onAlternatives={if(token==generation)onAlternatives(it)},
+                    captureSpeaker=captureSpeaker,onSpeakerSample={if(token==generation)onSpeakerSample(it)},
                 ).also { it.start() }
                 return@post
             }
+            if(captureSpeaker){onError("OWNER_VERIFICATION_UNAVAILABLE: Install this language's offline speech pack to verify the voice from the actual command audio.");return@post}
             val onDevice = Build.VERSION.SDK_INT >= 31 && SpeechRecognizer.isOnDeviceRecognitionAvailable(context)
             if (!onDevice && !allowNetwork) {
                 onError(language.choose(
@@ -284,6 +289,7 @@ class SpeechController(context: Context) {
                             val rate=runCatching{p.playbackParams.speed}.getOrDefault(1f).takeIf{it.isFinite() && it>0} ?: 1f
                             val duration=if(p.duration>0)(p.duration.toDouble()/rate+10_000).toLong().coerceIn(10_000,300_000) else 120_000L
                             armPlaybackTimeout(p,token,duration,"Voice playback timed out. Listening can resume; no substitute voice was used.")
+                            compressedPlaybackMeter=runCatching{com.jarvis.assistant.sentinel.CompressedPlaybackMeter(p,file)}.onFailure{android.util.Log.d("JarvisVoice","DECODED_SPEECH_LEVEL_UNAVAILABLE")}.getOrNull()
                             p.start();onStarted()
                         }catch(_:Exception){failSpeaking("Cloud voice playback failed.")}
                     }
@@ -318,6 +324,7 @@ class SpeechController(context: Context) {
         runCatching{offlineVoice.stop()}
         recognizer?.let { com.jarvis.assistant.hud.AudioSignals.stop(it); runCatching{it.cancel()};runCatching{it.destroy()} }; recognizer = null;releaseAndroidMicrophone()
         runCatching{tts.stop()}
+        compressedPlaybackMeter?.close();compressedPlaybackMeter=null
         player?.run { runCatching { stop() }; runCatching{release()} }; player = null
         temporaryPlayback?.delete();temporaryPlayback=null
         focus?.let { runCatching{audio.abandonAudioFocusRequest(it)} }; focus = null
@@ -329,6 +336,7 @@ class SpeechController(context: Context) {
         playbackTimeout?.let(main::removeCallbacks);playbackTimeout=null
         speakingDone = null; speakingError = null
         utterancePrefix = null; lastUtterance = null
+        compressedPlaybackMeter?.close();compressedPlaybackMeter=null
         runCatching{player?.release()}; player = null
         focus?.let { runCatching{audio.abandonAudioFocusRequest(it)} }; focus = null
         WakeListenerService.setSpeechActive(false)

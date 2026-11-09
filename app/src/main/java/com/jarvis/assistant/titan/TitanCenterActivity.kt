@@ -65,6 +65,7 @@ class TitanCenterActivity:PrivateModuleActivity(){
         Toggle("Android acoustic echo cancellation",voice.echoCancellation){voice.echoCancellation=it;revision++}
         Toggle("Android automatic gain control · optional",voice.gainControl){voice.gainControl=it;revision++}
         Toggle("Wait / stop voice controls during replies · already-enabled wake service only",voice.playbackInterruption){voice.playbackInterruption=it;revision++}
+        Toggle("Optional time-aware greeting · otherwise Hello sir, how can I help you?",voice.timeAwareGreeting){voice.timeAwareGreeting=it;revision++}
         Text(words("Changes apply when the recorder next starts. Echo cancellation does not enable automatic TTS barge-in; supported recording and output paths remain separate.","Los cambios se aplican al reiniciar el grabador. La cancelación de eco no activa interrupción acústica automática del TTS; las rutas siguen separadas.","Restart capture"))
         Button(enabled=!working,onClick={calibrate(false)}){Text(words("Measure 3 seconds of background noise","Medir 3 segundos de ruido ambiente","Noise test"))}
         Button(enabled=!working,onClick={calibrate(true)}){Text(words("Record 6-second wake phrase test · no command runs","Grabar prueba de activación de 6 segundos · sin ejecutar comandos","Wake test"))}
@@ -84,6 +85,10 @@ class TitanCenterActivity:PrivateModuleActivity(){
         Text(words("Sir is the requested courtesy greeting, not proof of identity. A current local match may personalize the greeting; uncertain matches stay neutral. Voice never authenticates private access or unlocks Android.","El propietario recibe señor solo tras coincidencia fiable de la muestra actual. Con identidad incierta o dispositivo bloqueado, saludo neutral. La voz no autentica acceso privado.","No voice authentication"))
         OutlinedButton(onClick={startActivity(Intent(this,SpeakerProfilesActivity::class.java))}){Text("Six consenting speaker profiles")}
         OutlinedButton(onClick={startActivity(Intent(this,com.jarvis.assistant.voice.VoiceSettingsActivity::class.java))}){Text("English / exclusive Spanish Fish Audio preview")}
+        Text("Voice state: ${runtime.voiceSession.snapshot().stage}")
+        Text("Recognized words appear in temporary captions. Diagnostic logs contain state names, failure types and character counts; no transcript, audio or secrets are saved.")
+        runtime.voiceSession.recent().takeLast(12).forEach{event->Text("${event.at} · ${event.stage} · ${event.reason} · ${event.characters} chars",style=MaterialTheme.typography.bodySmall)}
+        TextButton(onClick={revision++}){Text("Refresh voice diagnostics")}
     }
     private fun calibrate(speech:Boolean){task{
         check(ContextCompat.checkSelfPermission(this,Manifest.permission.RECORD_AUDIO)==PackageManager.PERMISSION_GRANTED)

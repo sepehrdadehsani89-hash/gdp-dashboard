@@ -1,0 +1,47 @@
+{
+  "kind": "REAL_SPEAKER_MODEL_ON_SYNTHETIC_LOCAL_FIXTURES",
+  "private_or_human_voice_used": false,
+  "user_owner_enrolled": false,
+  "phone_verified": false,
+  "asr_verified": false,
+  "fish_audio_verified": false,
+  "model_sha256": "e9848563da86f263117134dfd7ad63c92355b37de492b55e325400c9d9c39012",
+  "model_load_ms": 265.53,
+  "training_fixture_compute_ms": 914.49,
+  "measurements": [
+    {
+      "fixture": "same-synthetic-voice-time",
+      "seconds": 1.317125,
+      "cosine_similarity": 0.9300503134727478,
+      "compute_ms": 55.12,
+      "development_threshold_072_match": true,
+      "default_threshold_090_match": true
+    },
+    {
+      "fixture": "same-synthetic-voice-new-words",
+      "seconds": 3.3725625,
+      "cosine_similarity": 0.9561622142791748,
+      "compute_ms": 113.69,
+      "development_threshold_072_match": true,
+      "default_threshold_090_match": true
+    },
+    {
+      "fixture": "different-synthetic-variant-m1",
+      "seconds": 1.3265625,
+      "cosine_similarity": 0.8863313794136047,
+      "compute_ms": 44.17,
+      "development_threshold_072_match": true,
+      "default_threshold_090_match": false
+    },
+    {
+      "fixture": "different-synthetic-variant-f3",
+      "seconds": 1.340625,
+      "cosine_similarity": 0.6718902587890625,
+      "compute_ms": 51.64,
+      "development_threshold_072_match": false,
+      "default_threshold_090_match": false
+    }
+  ],
+  "limitation": "Host CPU and synthetic voices do not establish Redmi 9 latency, real-person false-accept/reject rates, replay resistance, or Android microphone behavior.",
+  "default_threshold": 0.9
+}

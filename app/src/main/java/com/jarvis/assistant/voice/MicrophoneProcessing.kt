@@ -8,6 +8,7 @@ import com.jarvis.assistant.titan.VoicePreferences
 class MicrophoneProcessing(context:Context,session:Int):AutoCloseable {
     private val effects=mutableListOf<AudioEffect>()
     val report:String
+    val echoCancellationActive:Boolean get()=effects.any{it is AcousticEchoCanceler && runCatching{it.enabled}.getOrDefault(false)}
     init{
         val p=VoicePreferences(context)
         fun attach(name:String,requested:Boolean,available:Boolean,create:()->AudioEffect?):String {

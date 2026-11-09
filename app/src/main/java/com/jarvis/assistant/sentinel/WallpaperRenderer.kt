@@ -8,7 +8,7 @@ import kotlin.math.*
 import java.util.Locale
 
 /** Captions are ephemeral, explicitly opted in, and stripped at render time when locked. */
-data class WallpaperFrame(val hud:HudState=HudState(),val audio:AudioReading=AudioReading(),val visual:SentinelVisualState=SentinelVisualState(),val language:AppLanguage=AppLanguage.EN,val playback:PlaybackReading=PlaybackReading(),val followUpArming:Boolean=false,val commandDeadlineElapsed:Long=0,val caption:com.jarvis.assistant.phantom.LiveCaption=com.jarvis.assistant.phantom.LiveCaption(),val captionLines:Int=3)
+data class WallpaperFrame(val hud:HudState=HudState(),val audio:AudioReading=AudioReading(),val visual:SentinelVisualState=SentinelVisualState(),val language:AppLanguage=AppLanguage.EN,val playback:PlaybackReading=PlaybackReading(),val followUpArming:Boolean=false,val commandDeadlineElapsed:Long=0,val caption:com.jarvis.assistant.phantom.LiveCaption=com.jarvis.assistant.phantom.LiveCaption(),val captionLines:Int=3,val restricted:Boolean=false,val refreshRate:Float=60f,val voiceErrorAt:Long=0,val execution:com.jarvis.assistant.phantom.ExecutionState=com.jarvis.assistant.phantom.ExecutionState.IDLE)
 
 /** Native dynamic artwork. Geometry/paints are reused; no video, full-screen blur or random sensor values. */
 class WallpaperRenderer {
@@ -35,7 +35,7 @@ class WallpaperRenderer {
     fun clearCaption(){captionKey="";captionLayout=null}
     fun draw(canvas:Canvas,frame:WallpaperFrame,now:Long) {
         val s=frame.hud.settings;val v=s.sentinel;val battery=frame.hud.telemetry.battery
-        val mode=frame.visual.mode
+        val mode=when{CoreMotionPolicy.errorVisible(frame.voiceErrorAt,now)->SentinelMode.ERROR;frame.visual.mode==SentinelMode.ERROR && frame.voiceErrorAt>0->SentinelMode.DORMANT;else->frame.visual.mode}
         val motion=frame.hud.telemetry.systemMotion && !s.reducedMotion && v.animationSpeed>0
         val power=frame.hud.power
         val green=energyClock.frame(now,power.connected==true && (power.charging || power.condition==com.jarvis.assistant.power.PowerCondition.FULL) && v.chargingEffects,motion,v.animationSpeed)
@@ -44,7 +44,7 @@ class WallpaperRenderer {
         val dormant=mode==SentinelMode.DORMANT
         val returning=if(mode==SentinelMode.RETURNING_TO_WALLPAPER)((now-frame.visual.returningAt)/600f).coerceIn(0f,1f) else 0f
         val activation=if(mode==SentinelMode.ACTIVATING && motion)ReactorGeometry.awakening(now-frame.visual.activatedAt) else Awakening(1f,1f,1f,0f,true)
-        val energy=if(frame.audio.recording && mode in listOf(SentinelMode.LISTENING,SentinelMode.ACTIVATING))frame.audio.level else if(frame.playback.active)frame.playback.level else 0f
+        val energy=CoreMotionPolicy.visualLevel(if(frame.audio.recording && mode in listOf(SentinelMode.LISTENING,SentinelMode.ACTIVATING))frame.audio.level else if(frame.playback.active)frame.playback.level else 0f)
         val active=if(dormant){if(v.cinematicWallpaper).35f else .2f} else (1-returning*.8f)
         val color=ReactorPalette.core(mode,s.accent)
         val scale=v.reactorScale
@@ -75,7 +75,7 @@ class WallpaperRenderer {
         ReactorGeometry.ringScales.forEach { factor ->
             line.color=colorWithAlpha(color,(brightness*(30+active*100)*activation.rings).toInt());canvas.drawCircle(cx,cy,radius*factor,line)
         }
-        val speed=ReactorGeometry.speed(s,mode)
+        val speed=ReactorGeometry.speed(s,mode,frame.execution==com.jarvis.assistant.phantom.ExecutionState.EXECUTING)
         if(!motion)reactorClock.pause()
         val reactorAngle=reactorClock.frame(now,if(motion)speed else 0f)
         ReactorGeometry.arcScales.forEachIndexed { index,factor ->
@@ -88,7 +88,7 @@ class WallpaperRenderer {
                 canvas.drawArc(ring,angle+segment*120+12,(if(index==0)40f else 64f)*activation.rings,false,line)
             }
         }
-        val core=radius*.48f*(.98f+activation.core*.02f)
+        val core=radius*.48f*(.98f+activation.core*.02f)*(if(frame.playback.active)1+energy*.035f else CoreMotionPolicy.breathing(now,mode,motion))
         fill.color=colorWithAlpha(color,(brightness*(8+active*17+energy*15)*activation.core).toInt());canvas.drawCircle(cx,cy,core,fill)
         line.color=colorWithAlpha(color,(brightness*(90+active*150)*activation.core).toInt());line.strokeWidth=max(1.2f,radius*.007f)
         canvas.drawCircle(cx,cy,core,line)
@@ -144,7 +144,7 @@ class WallpaperRenderer {
         if(frame.audio.recording && mode in listOf(SentinelMode.LISTENING,SentinelMode.ACTIVATING) || frame.playback.active){
             val values=if(frame.playback.active)frame.playback.history else frame.audio.history;val step=core*1.25f/32
             line.color=colorWithAlpha(Color.rgb(170,124,255),200);line.strokeWidth=max(1f,radius*.007f)
-            values.forEachIndexed{i,value->val xx=cx-core*.625f+i*step;val amplitude=value*core*.14f;canvas.drawLine(xx,cy+core*.75f-amplitude,xx,cy+core*.75f+amplitude,line)}
+            values.forEachIndexed{i,value->val xx=cx-core*.625f+i*step;val amplitude=CoreMotionPolicy.visualLevel(value)*core*.14f;canvas.drawLine(xx,cy+core*.75f-amplitude,xx,cy+core*.75f+amplitude,line)}
         }
         if(stripPresent)drawChargingStrip(canvas,frame,now,strip.alpha)
         drawCaption(canvas,frame,now)

@@ -37,7 +37,7 @@ object ReactorGeometry {
     val ticks:List<Vector> = List(120){val rad=it*PI*2/120;Vector(cos(rad).toFloat(),sin(rad).toFloat())}
     val ringScales=listOf(.44f,.56f,.68f,.80f,.92f)
     val arcScales=listOf(.95f,.80f,.65f)
-    fun speed(settings:HudSettings,mode:SentinelMode)=settings.sentinel.animationSpeed*settings.animationIntensity*when(mode){SentinelMode.DORMANT->.16f;SentinelMode.AUTHORIZATION_REQUIRED->.3f;SentinelMode.PROCESSING->5f;SentinelMode.LISTENING->4f;SentinelMode.SPEAKING->3f;else->1.3f}
+    fun speed(settings:HudSettings,mode:SentinelMode,executing:Boolean=false)=settings.sentinel.animationSpeed*settings.animationIntensity*when{executing->8f;mode==SentinelMode.DORMANT->1.6f;mode==SentinelMode.AUTHORIZATION_REQUIRED->.3f;mode==SentinelMode.PROCESSING->6.5f;mode==SentinelMode.LISTENING->6f;mode==SentinelMode.SPEAKING->4.8f;else->1.3f}
     fun angle(elapsed:Long,speed:Float,index:Int):Float = ((elapsed.coerceAtLeast(0)*.001 * 5 * speed * if(index%2==0)1 else -1)%360).toFloat()
     fun awakening(elapsed:Long):Awakening {
         fun ease(start:Long,length:Long):Float { val x=((elapsed-start).toFloat()/length).coerceIn(0f,1f);return x*x*(3-2*x) }
@@ -86,14 +86,13 @@ class ReactorAnimationController(private val now:()->Long) {
 }
 
 object WallpaperRenderPolicy {
-    fun fps(visible:Boolean,surface:Boolean,interactive:Boolean,settings:HudSettings,battery:BatteryReading,powerSaver:Boolean,systemMotion:Boolean,mode:SentinelMode):Int {
-        if(!visible || !surface || !interactive || settings.reducedMotion || !systemMotion || settings.sentinel.animationSpeed==0f)return 0
-        if(powerSaver || settings.animationProfile=="saver")return 2
-        if(settings.autoBatterySaver && (battery.percent ?:100)<10)return if(battery.charging)8 else 2
-        if((battery.percent ?:100)<20)return if(battery.charging)8 else 4
-        if(mode==SentinelMode.ERROR)return 3
-        if(mode==SentinelMode.AUTHORIZATION_REQUIRED)return 8
-        if(mode==SentinelMode.DORMANT)return if((battery.charging || battery.full && battery.source!="Battery") && settings.sentinel.chargingEffects){if(settings.animationProfile=="cinematic")30 else 20}else if(settings.sentinel.cinematicWallpaper)6 else 3
-        return if(settings.animationProfile=="cinematic")30 else 20
+    fun fps(visible:Boolean,surface:Boolean,interactive:Boolean,settings:HudSettings,battery:BatteryReading,powerSaver:Boolean,systemMotion:Boolean,mode:SentinelMode,restricted:Boolean=false,thermal:Int?=null,refreshRate:Float=60f):Int {
+        if(!visible || !surface || !interactive)return 0
+        val target=CoreMotionPolicy.fps(settings,battery,powerSaver,systemMotion,mode,restricted,thermal,refreshRate)
+        if(target==0)return 0
+        if((battery.percent ?:100)<20)return minOf(8,target)
+        if(mode in setOf(SentinelMode.ERROR,SentinelMode.AUTHORIZATION_REQUIRED))return minOf(12,target)
+        if(mode==SentinelMode.DORMANT && !battery.charging && !battery.full)return minOf(12,target)
+        return target
     }
 }

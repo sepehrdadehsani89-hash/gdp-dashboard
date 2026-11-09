@@ -14,6 +14,8 @@ class UtteranceAssembler(private val now:()->Long,private val threshold:Float=.0
     val hasUnfinishedSpeech:Boolean get()=tail.isNotBlank()
     fun energy(level:Float){if((segments.isNotEmpty() || tail.isNotBlank()) && level.isFinite() && level>=threshold)lastVoice=now()}
     fun text()=(segments+listOf(tail).filter{it.isNotBlank()}).joinToString(" ").take(8000)
+    fun acceptedText()=segments.joinToString(" ").take(8000)
+    fun emptyFinal(endpoint:Boolean){clearPartial();if(endpoint && acceptedText().isNotBlank())finalizedEndpoint()}
     /** A partial is never a command. Ask the decoder for a confidence-checked final instead.
      * Constant room noise must not postpone this forever when the words have stopped changing. */
     fun needsFinalization():Boolean = tail.isNotBlank() &&
@@ -28,7 +30,7 @@ class UtteranceAssembler(private val now:()->Long,private val threshold:Float=.0
             now()-lastText>=(if(incomplete)4000 else 1800)
     }
     companion object {
-        fun fastCommand(text:String)=com.jarvis.assistant.rebirth.ConversationCompletionPolicy.matches(text) || com.jarvis.assistant.security.ScreenCommandPolicy.parse(text)!=null || Regex("^(?:open|abre|call|llama|lock my|unlock my|bloquea|desbloquea|turn (?:on|off) (?:the )?flashlight|start (?:a )?\\d+.+timer|inicia (?:un )?temporizador)\\b",RegexOption.IGNORE_CASE).containsMatchIn(text.trim()) &&
+        fun fastCommand(text:String)=LocalVoiceQueries.readOnly(text) || com.jarvis.assistant.rebirth.ConversationCompletionPolicy.matches(text) || com.jarvis.assistant.security.ScreenCommandPolicy.parse(text)!=null || Regex("^(?:open|abre|call|llama|lock my|unlock my|bloquea|desbloquea|turn (?:on|off) (?:the )?flashlight|start (?:a )?\\d+.+timer|inicia (?:un )?temporizador)\\b",RegexOption.IGNORE_CASE).containsMatchIn(text.trim()) &&
             !Regex("\\b(and|then|y|despues|después)\\b|[,;]",RegexOption.IGNORE_CASE).containsMatchIn(text)
     }
 }

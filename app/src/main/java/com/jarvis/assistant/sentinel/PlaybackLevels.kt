@@ -7,14 +7,15 @@ import android.os.SystemClock
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-/** PCM levels tied to AudioTrack's actual playback cursor, not future synthesis callbacks. */
-data class PlaybackReading(val active:Boolean=false,val level:Float=0f,val history:List<Float> = emptyList())
+/** PCM levels tied to an actual AudioTrack/MediaPlayer cursor, not future synthesis callbacks. */
+data class PlaybackReading(val active:Boolean=false,val level:Float=0f,val history:List<Float> = emptyList(),val source:String="Neural voice")
 object PlaybackLevels {
     private var owner:Any?=null
+    private var source="Neural voice"
     private val mutable=MutableStateFlow(PlaybackReading())
     val state=mutable.asStateFlow()
-    @Synchronized fun start(token:Any){owner=token;mutable.value=PlaybackReading(active=false)}
-    @Synchronized fun update(token:Any,level:Float,available:Boolean){if(owner!==token)return;val v=level.takeIf{it.isFinite()}?.coerceIn(0f,1f) ?: 0f;mutable.value=PlaybackReading(available,v,(mutable.value.history+v).takeLast(32))}
+    @Synchronized fun start(token:Any,source:String="Neural voice"){owner=token;this.source=source;mutable.value=PlaybackReading(active=false,source=source)}
+    @Synchronized fun update(token:Any,level:Float,available:Boolean){if(owner!==token)return;val v=level.takeIf{it.isFinite()}?.coerceIn(0f,1f) ?: 0f;mutable.value=PlaybackReading(available,v,(mutable.value.history+v).takeLast(32),source)}
     @Synchronized fun stop(token:Any){if(owner===token){owner=null;mutable.value=PlaybackReading()}}
 }
 internal class PlaybackCursorMeter(private val track:AudioTrack) {

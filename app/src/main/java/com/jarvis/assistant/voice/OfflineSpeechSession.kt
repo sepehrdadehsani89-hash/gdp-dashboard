@@ -24,6 +24,8 @@ internal class OfflineSpeechSession(
     private val onError: (String) -> Unit,
     private val onCaptureStarted:()->Unit={},
     private val onAlternatives:(List<com.jarvis.assistant.rebirth.RecognitionHypothesis>)->Unit={},
+    private val captureSpeaker:Boolean=false,
+    private val onSpeakerSample:(Long)->Unit={},
 ) {
     private val closed = AtomicBoolean(false)
     private val audioLock = Any()
@@ -32,6 +34,7 @@ internal class OfflineSpeechSession(
     private val utterance=UtteranceAssembler(android.os.SystemClock::elapsedRealtime,com.jarvis.assistant.titan.VoicePreferences(context).energy)
     @Volatile private var capture:ManagedMicrophone?=null
     @Volatile private var recorder: AudioRecord? = null
+    private val speakerSample=com.jarvis.assistant.omnisystem.SpeakerSampleBuffer()
 
     fun start() {
         Thread({
@@ -77,14 +80,22 @@ internal class OfflineSpeechSession(
                                 main.post{if(!closed.get())onAlternatives(payload.alternatives)}
                                 val result=payload.primary
                                 val text=result.optString("text")
+                                val kind=RecognitionConfidence.kind(result,com.jarvis.assistant.titan.VoicePreferences(context).confidence.toDouble())
+                                if(kind==FinalRecognitionKind.EMPTY){
+                                    // Vosk emits empty endpoints for silence/noise. They are not a failed
+                                    // command and cannot invalidate an earlier accepted final segment.
+                                    utterance.emptyFinal(endpoint)
+                                    if(endpoint && utterance.acceptedText().isNotBlank() && (!captureSpeaker || speakerSample.hasEnoughAudio())){emitResult(utterance.acceptedText());return true}
+                                    return false
+                                }
                                 // Never execute a partial or skip a rejected part of a compound request.
-                                if(!RecognitionConfidence.acceptsFinal(result,com.jarvis.assistant.titan.VoicePreferences(context).confidence.toDouble())){
+                                if(kind==FinalRecognitionKind.UNCERTAIN){
                                     if(text.isNotBlank() || utterance.hasUnfinishedSpeech){emitError("SPEECH_UNCLEAR: Please repeat one request clearly.");return true}
                                     return false
                                 }
                                 timing.progress(text);utterance.segment(text)
                                 if(endpoint)utterance.finalizedEndpoint()
-                                if(UtteranceAssembler.fastCommand(utterance.text()) || utterance.ready()){
+                                if((UtteranceAssembler.fastCommand(utterance.text()) || utterance.ready()) && (!captureSpeaker || speakerSample.hasEnoughAudio())){
                                     emitResult(utterance.text());return true
                                 }
                                 return false
@@ -94,6 +105,7 @@ internal class OfflineSpeechSession(
                                 check(count >= 0) { "Microphone capture interrupted." }
                                 if (count == 0) continue
                                 val level=com.jarvis.assistant.hud.PcmLevel.pcm16(bytes,count)
+                                speakerSample.feed(bytes,count,captureSpeaker)
                                 com.jarvis.assistant.hud.AudioSignals.level(this,level);timing.energy(level);utterance.energy(level)
                                 if (recognizer.acceptWaveForm(bytes, count)) {
                                     if(acceptFinal(JSONObject(recognizer.result),false))return@Thread
@@ -108,9 +120,10 @@ internal class OfflineSpeechSession(
                                 if(utterance.needsFinalization()){
                                     val final=JSONObject(recognizer.finalResult)
                                     if(acceptFinal(final,true))return@Thread
-                                    emitError("SPEECH_UNCLEAR: Please repeat one request clearly.");return@Thread
+                                    // A blank forced final is a decoder boundary, not an ASR error.
+                                    recognizer.reset()
                                 }
-                                if(utterance.ready()){emitResult(utterance.text());return@Thread}
+                                if((utterance.ready() || !utterance.hasUnfinishedSpeech && UtteranceAssembler.fastCommand(utterance.acceptedText())) && (!captureSpeaker || speakerSample.hasEnoughAudio())){emitResult(utterance.acceptedText());return@Thread}
                             }
                             if (!closed.get()) {
                                 emitError("Speech inactivity or two-minute utterance limit reached. Tap the microphone or say your wake phrase again.")
@@ -124,7 +137,18 @@ internal class OfflineSpeechSession(
         }, "JarvisOfflineSpeech").start()
     }
 
-    fun close() { synchronized(audioLock) { closed.set(true); runCatching { recorder?.stop() } } }
-    private fun emitResult(text: String) { main.post { if (!closed.get()) { closed.set(true); if(!timing.expired())onResult(text) else onError("Speech inactivity or two-minute utterance limit reached.") } } }
-    private fun emitError(message: String) { main.post { if (!closed.get()) { closed.set(true); onError(message) } } }
+    fun close() { synchronized(audioLock) { closed.set(true);speakerSample.clear();runCatching { recorder?.stop() } } }
+    private fun emitResult(text: String) {
+        val sample=if(captureSpeaker)speakerSample.take(.002f)else null
+        main.post {
+            if (!closed.get()) {
+                closed.set(true)
+                if(!timing.expired()){
+                    sample?.let{onSpeakerSample(com.jarvis.assistant.omnisystem.SpeakerSamples.deposit(it))}
+                    onResult(text)
+                }else{sample?.pcm?.fill(0);onError("Speech inactivity or two-minute utterance limit reached.")}
+            }else sample?.pcm?.fill(0)
+        }
+    }
+    private fun emitError(message: String) {speakerSample.clear();main.post { if (!closed.get()) { closed.set(true); onError(message) } } }
 }

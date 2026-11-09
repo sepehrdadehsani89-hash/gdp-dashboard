@@ -171,18 +171,22 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
 @Composable internal fun HudCore(state:JarvisUiState,modifier:Modifier=Modifier,actions:JarvisUiActions?=null) {
     val t=state.hud.telemetry; val s=state.hud.settings; val b=t.battery
     val lifecycle=LocalLifecycleOwner.current.lifecycle
-    val fps=HudMotion.fps(s,b,t.powerSaver,ValueAnimator.areAnimatorsEnabled())
     var frameNow by remember{mutableLongStateOf(SystemClock.elapsedRealtime())}
+    val auth=state.authorization?.status
+    val authorizing=auth in listOf(AuthorizationStatus.AUTHORIZATION_REQUIRED,AuthorizationStatus.AWAITING_CODEX,AuthorizationStatus.IDENTITY_CONFIRMATION)
+    val rawMode=if(authorizing)SentinelMode.AUTHORIZATION_REQUIRED else when(state.phase){AssistantPhase.LISTENING->SentinelMode.LISTENING;AssistantPhase.SPEAKING->SentinelMode.SPEAKING;AssistantPhase.THINKING->SentinelMode.PROCESSING;AssistantPhase.ERROR->SentinelMode.ERROR;else->state.sentinelVisual.mode}
+    val mode=when{CoreMotionPolicy.errorVisible(state.voiceErrorAt,frameNow)->SentinelMode.ERROR;rawMode==SentinelMode.ERROR && state.voiceErrorAt>0->SentinelMode.DORMANT;else->rawMode}
+    val context=androidx.compose.ui.platform.LocalContext.current
+    val lowRam=remember(context){context.getSystemService(android.app.ActivityManager::class.java).isLowRamDevice}
+    val refresh=androidx.compose.ui.platform.LocalView.current.display?.refreshRate ?: 60f
+    val fps=CoreMotionPolicy.fps(s,b,t.powerSaver,ValueAnimator.areAnimatorsEnabled(),mode,lowRam || state.performanceRestricted,t.thermalStatus,refresh)
     val frameClock=remember{ReactorFrameClock()}
     val chargingClock=remember{com.jarvis.assistant.power.ChargingVisualClock()}
     var chargingFrame by remember{mutableStateOf(com.jarvis.assistant.power.ChargingVisual())}
     var angle by remember{mutableFloatStateOf(0f)}
     var batteryDetails by remember{mutableStateOf(false)}
     val boot=if(state.sentinelVisual.mode==SentinelMode.ACTIVATING && fps>0)ReactorGeometry.awakening(frameNow-state.sentinelVisual.activatedAt) else Awakening(1f,1f,1f,0f,true)
-    val auth=state.authorization?.status
-    val authorizing=auth in listOf(AuthorizationStatus.AUTHORIZATION_REQUIRED,AuthorizationStatus.AWAITING_CODEX,AuthorizationStatus.IDENTITY_CONFIRMATION)
-    val mode=if(authorizing)SentinelMode.AUTHORIZATION_REQUIRED else when(state.phase){AssistantPhase.LISTENING->SentinelMode.LISTENING;AssistantPhase.SPEAKING->SentinelMode.SPEAKING;AssistantPhase.THINKING->SentinelMode.PROCESSING;AssistantPhase.ERROR->SentinelMode.ERROR;else->state.sentinelVisual.mode}
-    val speed by rememberUpdatedState(ReactorGeometry.speed(s,mode))
+    val speed by rememberUpdatedState(ReactorGeometry.speed(s,mode,state.execution==com.jarvis.assistant.phantom.ExecutionState.EXECUTING))
     val actualCharging=(state.hud.power.connected==true && (state.hud.power.charging || state.hud.power.condition==com.jarvis.assistant.power.PowerCondition.FULL) && s.sentinel.chargingEffects)
     val chargeActive by rememberUpdatedState(actualCharging)
     val chargeSpeed by rememberUpdatedState(s.sentinel.animationSpeed)
@@ -208,9 +212,9 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
     Box(modifier.aspectRatio(1f).sizeIn(maxWidth=450.dp,maxHeight=450.dp).clickable(enabled=actions!=null,role=Role.Button,onClickLabel="Activate voice"){actions?.onMic?.invoke()},contentAlignment=Alignment.Center) {
         Canvas(Modifier.fillMaxSize().semantics { contentDescription="Battery reactor ${b.percent?.toString() ?: "unavailable"} percent" }) {
             val r=size.minDimension*.42f*s.sentinel.reactorScale; val center=Offset(size.width/2,size.height/2)
-            drawCircle(Brush.radialGradient(listOf(color.copy(alpha=.24f*s.sentinel.ambientGlow*boot.core),color.copy(alpha=.02f),Color.Transparent),center,r),r,center)
+            drawCircle(Brush.radialGradient(listOf(color.copy(alpha=(.24f*s.sentinel.ambientGlow*boot.core*CoreMotionPolicy.breathing(frameNow,mode,fps>0)).coerceIn(0f,1f)),color.copy(alpha=.02f),Color.Transparent),center,r),r,center)
             ticks.forEachIndexed { i,v -> if(s.sentinel.detail=="minimal" && i%3!=0)return@forEachIndexed; val outer=center+v*r;val inner=center+v*(r-if(i%5==0)8.dp.toPx() else 3.dp.toPx());drawLine(color.copy(alpha=if(i%5==0).8f else .4f),inner,outer,if(i%5==0)1.2.dp.toPx() else .6.dp.toPx()) }
-            val energy=if(state.playback.active)state.playback.level else if(state.audio.recording && state.phase==AssistantPhase.LISTENING)state.audio.level else 0f
+            val energy=CoreMotionPolicy.visualLevel(if(state.playback.active)state.playback.level else if(state.audio.recording && state.phase==AssistantPhase.LISTENING)state.audio.level else 0f)
             drawCircle(color.copy(alpha=.09f+energy*.22f),r*.52f,center,style=Stroke((5+energy*4).dp.toPx()))
             for(i in 0 until (s.sentinel.particleDensity*(if(s.sentinel.detail=="minimal")8 else 24)).toInt()){val rad=(i*30f+angle*.35f)*PI/180;val rr=r*(.58f+(i%3)*.08f);drawCircle(color.copy(alpha=.35f),.8.dp.toPx(),center+Offset(cos(rad).toFloat()*rr,sin(rad).toFloat()*rr))}
             for(ring in 0..4){val rr=r*ReactorGeometry.ringScales[ring];drawCircle(color.copy(alpha=.25f),rr,center,style=Stroke(.6.dp.toPx()))}
@@ -225,7 +229,7 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
             }
             if(green.alpha>0){val rr=r*1.025f;drawArc(Color(ReactorPalette.green).copy(alpha=.9f*green.alpha),green.angle,36f,false,Offset(center.x-rr,center.y-rr),Size(rr*2,rr*2),style=Stroke(2.dp.toPx()))
                 drawArc(Color(ReactorPalette.green).copy(alpha=.35f*green.alpha),green.angle-30,22f,false,Offset(center.x-rr,center.y-rr),Size(rr*2,rr*2),style=Stroke(.8.dp.toPx()))}
-            val core=r*.49f
+            val core=r*.49f*(if(state.playback.active)1f+energy*.035f else CoreMotionPolicy.breathing(frameNow,mode,fps>0))
             drawCircle(Brush.radialGradient(listOf(Back,color.copy(alpha=.18f)),center,core),core,center)
             drawCircle(color,core,center,style=Stroke(1.4.dp.toPx()))
             val pointer=Path().apply{moveTo(center.x,center.y-r*.73f);lineTo(center.x-4.dp.toPx(),center.y-r*.80f);lineTo(center.x+4.dp.toPx(),center.y-r*.80f);close()}
@@ -233,7 +237,7 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
             // Mesh is decorative geometry. It never represents a sensor reading.
             for(i in -3..3){val y=center.y+i*core/4;val dx=sqrt(max(0f,core*core-(y-center.y).pow(2)));drawLine(color.copy(alpha=.10f),Offset(center.x-dx,y),Offset(center.x+dx,y),.6f)}
             if(state.audio.recording && state.phase==AssistantPhase.LISTENING || state.playback.active){val values=if(state.playback.active)state.playback.history else state.audio.history; val step=core*1.45f/32
-                values.forEachIndexed { i,value -> val x=center.x-core*.725f+i*step;val height=value*core*.28f;drawLine(Purple,Offset(x,center.y+core*.55f-height),Offset(x,center.y+core*.55f+height),1.4.dp.toPx()) }
+                values.forEachIndexed { i,value -> val x=center.x-core*.725f+i*step;val height=CoreMotionPolicy.visualLevel(value)*core*.28f;drawLine(Purple,Offset(x,center.y+core*.55f-height),Offset(x,center.y+core*.55f+height),1.4.dp.toPx()) }
             }
             for(i in 0..3){val rad=i*PI/2;val v=Offset(cos(rad).toFloat(),sin(rad).toFloat());drawLine(color,center+v*(r*.97f),center+v*(r*1.06f),1.3.dp.toPx())}
         }
@@ -244,7 +248,11 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
             Text(b.percent?.let {"$it%"} ?: "—",modifier=Modifier.clickable(enabled=actions!=null,role=Role.Button,onClickLabel="Battery details"){actions?.onInteraction?.invoke(SentinelSound.PANEL_OPEN);batteryDetails=true},color=Color(com.jarvis.assistant.titan.BatteryPolicy.band(b.percent).argb),fontSize=44.sp,fontWeight=FontWeight.Light)
             Text(if(b.full)"FULL" else if(b.charging)"CHARGING · ${b.source}" else "BATTERY",color=color,fontSize=9.sp,textAlign=TextAlign.Center)
         }
-        Text(if(state.playback.active)"LIVE PCM PLAYBACK · NEURAL VOICE" else if(state.audio.recording)"LIVE MIC · ${state.audio.source}" else if(state.phase==AssistantPhase.SPEAKING)"SPEAKING · DECORATIVE MOTION" else "${s.animationProfile.uppercase()} · ${if(fps==0)"STILL" else "$fps FPS CAP"}",color=Dim,fontSize=8.sp,modifier=Modifier.align(Alignment.BottomCenter))
+        Text(if(state.playback.active)"LIVE AUDIO · ${state.playback.source.uppercase()}" else if(state.audio.recording)"LIVE MIC · ${state.audio.source}" else if(state.phase==AssistantPhase.SPEAKING)"SPEAKING · DECORATIVE MOTION" else "${s.animationProfile.uppercase()} · ${if(fps==0)"STILL" else "$fps FPS CAP"}",color=Dim,fontSize=8.sp,modifier=Modifier.align(Alignment.BottomCenter))
+    }
+    CoreMotionPolicy.pauseReason(s,ValueAnimator.areAnimatorsEnabled())?.let{reason->
+        Text(reason,color=Dim,fontSize=11.sp)
+        if(actions!=null && ValueAnimator.areAnimatorsEnabled())TextButton(onClick={actions.onSaveHud(s.copy(reducedMotion=false,animationIntensity=.7f,sentinel=s.sentinel.copy(animationSpeed=1f)))}){Text("Restore core motion")}
     }
     if(batteryDetails)AlertDialog(onDismissRequest={batteryDetails=false},title={Text("Battery details")},text={Text("Charge: ${b.percent?.let{"$it%"} ?: "Unavailable"}\nCharging: ${b.charging}\nFull: ${b.full}\nSource: ${b.source}\nTemperature: ${b.temperatureC?.let{"$it °C"} ?: "Unavailable"}\nHealth: ${b.health}\nAndroid power saver: ${t.powerSaver}",Modifier.heightIn(max=420.dp).verticalScroll(rememberScrollState()))},confirmButton={TextButton(onClick={batteryDetails=false}){Text("Close")}})
 }
@@ -328,7 +336,7 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
         Text("Installed offline system voices for ${state.settings.language.label}",color=Dim)
         if(state.voices.isEmpty())Text("No suitable installed system voice. Optional neural download remains available below.",color=Dim,fontSize=12.sp)
         FlowRow(horizontalArrangement=Arrangement.spacedBy(6.dp)){state.voices.forEach {v->FilterChip(s.voiceId==v,{actions.onSaveHud(s.copy(voiceId=v))},label={Text(v,fontSize=10.sp)})}}
-        Text("Neural voices support rate and volume; pitch is controlled by the chosen voice model. System and cloud playback animations are decorative, not an output audio meter.",color=Dim,fontSize=11.sp)
+        Text("Voice motion follows actual decoded speech or neural playback PCM when available. Decorative motion is labeled when audio analysis is unavailable. It is not a measurement of speaker loudness.",color=Dim,fontSize=11.sp)
         TextButton(onClick=actions.onVoiceCheck){Text("Test voice")}
     }
 }

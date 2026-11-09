@@ -35,7 +35,7 @@ class JarvisWallpaperService:WallpaperService() {
             renderHandler.removeCallbacks(draw)
             if(visible && surfaceReady && interactive && !destroyed){
                 val s=frame
-                val fps=WallpaperRenderPolicy.fps(visible,surfaceReady,interactive,s.hud.settings,s.hud.telemetry.battery,s.hud.telemetry.powerSaver,s.hud.telemetry.systemMotion,s.visual.mode)
+                val fps=WallpaperRenderPolicy.fps(visible,surfaceReady,interactive,s.hud.settings,s.hud.telemetry.battery,s.hud.telemetry.powerSaver,s.hud.telemetry.systemMotion,s.visual.mode,s.restricted,s.hud.telemetry.thermalStatus,s.refreshRate)
                 renderHandler.postDelayed(draw,(lastFrameAt+(if(fps>0)1000L/fps else 80L)-SystemClock.elapsedRealtime()).coerceAtLeast(0))
             }
         }
@@ -61,7 +61,7 @@ class JarvisWallpaperService:WallpaperService() {
                 finally{canvas?.let{if(runCatching{surfaceHolder.unlockCanvasAndPost(it)}.isSuccess && drawn){frames.incrementAndGet();timings.record(if(lastMeasuredFrame>0)started-lastMeasuredFrame else 0,SystemClock.elapsedRealtime()-started);lastMeasuredFrame=started}}}
             }
             val snapshot=frame
-            val fps=WallpaperRenderPolicy.fps(visible,surfaceReady,interactive,snapshot.hud.settings,snapshot.hud.telemetry.battery,snapshot.hud.telemetry.powerSaver,snapshot.hud.telemetry.systemMotion,snapshot.visual.mode)
+            val fps=WallpaperRenderPolicy.fps(visible,surfaceReady,interactive,snapshot.hud.settings,snapshot.hud.telemetry.battery,snapshot.hud.telemetry.powerSaver,snapshot.hud.telemetry.systemMotion,snapshot.visual.mode,snapshot.restricted,snapshot.hud.telemetry.thermalStatus,snapshot.refreshRate)
             if(fps>0 && !destroyed && visible)renderHandler.postDelayed(this,(1000L/fps-(SystemClock.elapsedRealtime()-started)).coerceAtLeast(1))
             else if(snapshot.caption.visible(started) && snapshot.caption.expiresAt>0 && !destroyed && visible)renderHandler.postDelayed(this,if(snapshot.caption.expiresAt-started<1000 && !snapshot.hud.settings.reducedMotion)80L else 1000L)
         }}
@@ -91,7 +91,7 @@ class JarvisWallpaperService:WallpaperService() {
                 val audio=if(mode in listOf(SentinelMode.LISTENING,SentinelMode.ACTIVATING))state.audio else com.jarvis.assistant.hud.AudioReading()
                 val playback=if(mode==SentinelMode.SPEAKING)state.playback else PlaybackReading()
                 val safe=prefs.captions && getSystemService(android.app.KeyguardManager::class.java)?.isDeviceLocked==false && !com.jarvis.assistant.security.SystemCredentialPrivacy.pending(this@JarvisWallpaperService)
-                val next=WallpaperFrame(hud.copy(telemetry=telemetry,weather=if(hud.settings.sentinel.wallpaperWeather)hud.weather else com.jarvis.assistant.hud.WeatherState()),audio,state.sentinelVisual,state.settings.language,playback,state.followUpArming,state.voiceWindowDeadline,if(safe)phantom.caption else com.jarvis.assistant.phantom.LiveCaption(),prefs.lines)
+                val next=WallpaperFrame(hud.copy(telemetry=telemetry,weather=if(hud.settings.sentinel.wallpaperWeather)hud.weather else com.jarvis.assistant.hud.WeatherState()),audio,state.sentinelVisual,state.settings.language,playback,state.followUpArming,state.voiceWindowDeadline,if(safe)phantom.caption else com.jarvis.assistant.phantom.LiveCaption(),prefs.lines,state.performanceRestricted || getSystemService(android.app.ActivityManager::class.java).isLowRamDevice,getSystemService(android.hardware.display.DisplayManager::class.java).getDisplay(android.view.Display.DEFAULT_DISPLAY)?.refreshRate ?: 60f,state.voiceErrorAt,state.execution)
                 runtime.hud.weatherInterest(this@SentinelEngine,hud.settings.sentinel.wallpaperWeather)
                 if(next!=frame){frame=next;requestFrame()}
             }}

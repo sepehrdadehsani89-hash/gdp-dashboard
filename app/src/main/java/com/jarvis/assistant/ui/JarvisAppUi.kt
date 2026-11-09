@@ -700,7 +700,7 @@ private fun SettingsScreen(state: JarvisUiState, actions: JarvisUiActions, senti
             TextButton(onClick = { showClearConversation = true }) { Text(l.choose("Clear conversation", "Borrar conversación", "پاک کردن گفت‌وگو")) }
             TextButton(onClick = { showWipe = true }) { Text(l.choose("Erase Jarvis data & keys", "Borrar datos y claves de Jarvis", "حذف داده‌ها و کلیدهای جارویس"), color = MaterialTheme.colorScheme.error) }
             TextButton(onClick = { actions.onOpenPermission("licenses") }) { Text(l.choose("Open-source licenses", "Licencias de código abierto", "مجوزهای متن‌باز")) }
-            Text("JARVIS ${com.jarvis.assistant.BuildConfig.VERSION_NAME} · SEPARATE APP", color = Muted, style = MaterialTheme.typography.labelSmall, letterSpacing = 1.5.sp)
+            Text("JARVIS ${com.jarvis.assistant.BuildConfig.VERSION_NAME}", color = Muted, style = MaterialTheme.typography.labelSmall, letterSpacing = 1.5.sp)
         } }
         item { Spacer(Modifier.height(12.dp)) }
     }

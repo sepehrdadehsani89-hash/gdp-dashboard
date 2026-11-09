@@ -16,14 +16,16 @@ class SpeakerSampleBuffer(private val capacity:Int=16000*2*4){
         var offset=(count-capacity).coerceAtLeast(0)
         while(offset<count){val n=minOf(count-offset,capacity-position);System.arraycopy(bytes,offset,data,position,n);offset+=n;position=(position+n)%capacity;filled=minOf(capacity,filled+n)}
     }
-    @Synchronized fun take():CapturedVoice? {
+    @Synchronized fun hasEnoughAudio()=filled>=32000
+    @Synchronized fun take(minimumRms:Float=.008f):CapturedVoice? {
+        require(minimumRms in 0f..1f)
         val data=buffer ?: return null
         if(filled<32000){clear();return null}
         val start=if(filled==capacity)position else 0
         val result=ByteArray(filled);val tail=minOf(filled,capacity-start)
         System.arraycopy(data,start,result,0,tail);if(tail<filled)System.arraycopy(data,0,result,tail,filled-tail)
         clear()
-        if(com.jarvis.assistant.hud.PcmLevel.pcm16(result,result.size)<.008f){result.fill(0);return null}
+        if(com.jarvis.assistant.hud.PcmLevel.pcm16(result,result.size)<minimumRms){result.fill(0);return null}
         return CapturedVoice(result)
     }
     @Synchronized fun clear(){buffer?.fill(0);buffer=null;position=0;filled=0}
