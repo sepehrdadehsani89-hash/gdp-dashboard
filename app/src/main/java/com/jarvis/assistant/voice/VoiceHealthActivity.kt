@@ -12,10 +12,11 @@ class VoiceHealthActivity:PrivateModuleActivity(){
     override fun onCreate(savedInstanceState:Bundle?){super.onCreate(savedInstanceState);if(isFinishing)return
         screen("VOICE HEALTH · LANGUAGE & PICKUP"){
             val shared by runtime.state.collectAsStateWithLifecycle()
+            val wake by WakeListenerService.state.collectAsStateWithLifecycle()
             val diagnostic by RecognitionDiagnostics.state.collectAsStateWithLifecycle()
             val sensors by com.jarvis.assistant.pickup.PickupMonitor.state.collectAsStateWithLifecycle()
             var pickup by remember{mutableStateOf(runtime.pickupPreferences.enabled)}
-            Text("Selected language: ${shared.settings.language.label}. Listening language: ${WakeListenerService.state.value.language.label}. ${shared.wakeStatus}")
+            Text("Selected language: ${shared.settings.language.label}. Listening language: ${wake.language.label}. ${shared.wakeStatus}")
             Text(diagnostic)
             Text("Metadata only; no audio, transcript or secret is stored in this diagnostic. Exact AI-call start and language-mode controls are handled locally. Phone/contact calls and protected actions keep their confidence/owner/confirmation checks.")
             val preferences=remember{com.jarvis.assistant.titan.VoicePreferences(this@VoiceHealthActivity)}
