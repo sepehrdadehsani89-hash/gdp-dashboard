@@ -15,6 +15,7 @@ object LanguageRules {
         if (Regex("\\b(hey|hello|news|yesterday|remember|open|what|please|tell|english|speak)\\b").containsMatchIn(lowered)) return AppLanguage.EN
         return if(fallback in AppLanguage.supported)fallback else AppLanguage.EN
     }
+    fun replyLanguage(text:String,selected:AppLanguage,selectedMode:Boolean)=if(selectedMode)selected else detect(text,selected)
     fun languageRequest(text: String): AppLanguage? {
         val normalized=com.jarvis.assistant.neural.AppMatching.normalize(text)
             .removePrefix("hey jarvis ").removePrefix("oye jarvis ").removePrefix("jarvis ")

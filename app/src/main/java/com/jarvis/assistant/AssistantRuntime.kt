@@ -575,7 +575,7 @@ class AssistantRuntime(private val context: Context) {
         val modelReady=models.modelPath(target)!=null
         if(wasRunning && !modelReady)stopWake()
         cancelSession();pauseWake()
-        store.updateSettings(store.settings.value.copy(language=target));refreshCapabilities()
+        store.updateSettings(store.settings.value.copy(language=target));com.jarvis.assistant.titan.VoicePreferences(context).selectedLanguageMode=true;refreshCapabilities()
         privateTurn=false;lastRequestWasVoice=voiced;lastReplyLanguage=target
         val generation=sessionGeneration
         val reply=if(wasRunning && !modelReady)target.choose("English mode is selected with your saved English voice. Download the English speech pack in Settings before voice listening can resume.","Modo español seleccionado con tu voz española guardada. Descarga el paquete de reconocimiento en español en Ajustes para volver a escuchar.","")else target.choose("Of course, sir. English mode is on. I'm using your saved English voice.","Por supuesto, señor. Modo español activado. Estoy usando tu voz española guardada.","")
@@ -972,7 +972,7 @@ class AssistantRuntime(private val context: Context) {
         privateTurn = !isLocked
         lastRequestWasVoice = voiced
         mutableState.update{it.copy(voiceInteraction=voiced)}
-        val lang = LanguageRules.languageRequest(text) ?: LanguageRules.detect(text, language())
+        val lang = LanguageRules.languageRequest(text) ?: LanguageRules.replyLanguage(text,language(),com.jarvis.assistant.titan.VoicePreferences(context).selectedLanguageMode)
         lastReplyLanguage = lang
         val generation = sessionGeneration
         suggestSpeaker(if(voiced && !isLocked)speakerSampleId else null,generation)

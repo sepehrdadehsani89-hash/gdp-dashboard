@@ -50,6 +50,14 @@ class SpokenControlsTest {
         var now=0L;val turn=UtteranceAssembler({now});turn.partial("change to Spanish");assertEquals("",turn.acceptedText());assertFalse(turn.ready())
         now=1100;assertTrue(turn.needsFinalization());turn.segment("change to Spanish");assertTrue(UtteranceAssembler.fastCommand(turn.acceptedText()))
     }
+    @Test fun explicitSpanishModeKeepsTheSpanishVoiceLanguageForEnglishWordedQuestions(){
+        for(text in listOf("what causes rain","hello what can you do","tell me a story"))assertEquals(AppLanguage.ES,LanguageRules.replyLanguage(text,AppLanguage.ES,true))
+        assertEquals(AppLanguage.EN,LanguageRules.replyLanguage("dime una historia",AppLanguage.EN,true))
+    }
+    @Test fun automaticReplyLanguageDetectionRemainsAvailableWhenModeIsNotPinned(){
+        assertEquals(AppLanguage.EN,LanguageRules.replyLanguage("what causes rain",AppLanguage.ES,false))
+        assertEquals(AppLanguage.ES,LanguageRules.replyLanguage("hola dime una historia",AppLanguage.EN,false))
+    }
     @Test fun diagnosticsKeepOnlyMetadataWithoutStoringTheHeardWords(){
         val privateText="my private password is secret"
         RecognitionDiagnostics.record(final(privateText),.55,"wake/en")

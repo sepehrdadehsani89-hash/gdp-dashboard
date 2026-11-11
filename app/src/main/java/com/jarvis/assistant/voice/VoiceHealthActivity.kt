@@ -19,6 +19,10 @@ class VoiceHealthActivity:PrivateModuleActivity(){
             Text(diagnostic)
             Text("Metadata only; no audio, transcript or secret is stored in this diagnostic. Exact AI-call start and language-mode controls are handled locally. Phone/contact calls and protected actions keep their confidence/owner/confirmation checks.")
             val preferences=remember{com.jarvis.assistant.titan.VoicePreferences(this@VoiceHealthActivity)}
+            var selectedMode by remember{mutableStateOf(preferences.selectedLanguageMode)}
+            LaunchedEffect(shared.settings.language,shared.phase){selectedMode=preferences.selectedLanguageMode}
+            Switch(selectedMode,{enabled->authorize{preferences.selectedLanguageMode=enabled;selectedMode=enabled}})
+            Text("Keep the selected language for answers. Spoken mode changes enable this; turn it off to restore automatic reply-language detection.")
             Text("Recognition: ${preferences.sensitivity}; word threshold ${(preferences.confidence*100).toInt()}%. First-speaker focus: ${if(preferences.conversationFocus)"enabled (optional speaker model required)" else "off"}.")
             OutlinedButton(onClick={authorize{preferences.sensitivity="BALANCED";preferences.noiseReduction=true;preferences.echoCancellation=true;status="Balanced recognition restored. Stop and restart listening to apply microphone processing. Voices, private-speech consent and owner profiles were preserved."}}){Text("Restore balanced speech settings")}
             Button(onClick={runtime.requestAiCall(showUi=true)}){Text("Test local AI call · ring / Answer / End")}
@@ -26,7 +30,7 @@ class VoiceHealthActivity:PrivateModuleActivity(){
                 val modelMegabytes=runtime.wakeModelMegabytes(language)
                 val installed=runtime.wakeModelInstalled(language)
                 Text("${language.label}: speech pack ${if(installed)"installed" else "missing"}; saved Fish voice ${runtime.customVoice.config(language).let{if(it.enabled)"enabled · ${it.id}" else "disabled"}}")
-                OutlinedButton(onClick={runtime.switchSpokenLanguage(language,false)}){Text("Select ${language.label} and its saved voice")}
+                OutlinedButton(onClick={runtime.switchSpokenLanguage(language,false);selectedMode=preferences.selectedLanguageMode}){Text("Select ${language.label} and its saved voice")}
                 if(language==shared.settings.language && !installed)Button(enabled=shared.modelProgress==null,onClick={runtime.downloadWake()}){Text("Download selected speech pack · about ${modelMegabytes} MB")}
             }
             shared.modelProgress?.let{LinearProgressIndicator(progress={it});Text("Downloading selected speech model…")}
