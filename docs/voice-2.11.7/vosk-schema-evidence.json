@@ -1,0 +1,11 @@
+{
+  "kind": "OFFICIAL_UPSTREAM_SOURCE_SCHEMA_INSPECTION_NOT_PHONE_AUDIO",
+  "android_dependency": "com.alphacephei:vosk-android:0.3.47",
+  "inspected_tag": "v0.3.45 (no v0.3.47 source tag advertised)",
+  "upstream_commit": "cf2560c9f8a49d3d366b433fdabd78c518231bec",
+  "url": "https://github.com/alphacep/vosk-api/blob/cf2560c9f8a49d3d366b433fdabd78c518231bec/src/recognizer.cc#L597",
+  "file_sha256": "8d481c75efa60d7195e69c3b62871d6ba699013e0c1af25adcd8496930e98c01",
+  "finding": "NbestResult includes word/start/end and whole-hypothesis confidence likelihood, without per-word conf. MbrResult supplies per-word conf. Existing setMaxAlternatives(3) requests N-best.",
+  "also_inspected_current_master": "4ab9821510b488efb7740094714a130bd3545e90",
+  "hardware_reproduction": false
+}

@@ -58,6 +58,27 @@ class SpokenControlsTest {
         assertEquals(AppLanguage.EN,LanguageRules.replyLanguage("what causes rain",AppLanguage.ES,false))
         assertEquals(AppLanguage.ES,LanguageRules.replyLanguage("hola dime una historia",AppLanguage.EN,false))
     }
+    @Test fun actualVoskNbestSchemaWithTimingsButNoWordScoresReachesTheCallHandler(){
+        val payload=RecognitionPayload.vosk(JSONObject("""{"alternatives":[{"confidence":-127.84,"text":"call me now","result":[{"word":"call","start":0.0,"end":0.3},{"word":"me","start":0.3,"end":0.5},{"word":"now","start":0.5,"end":0.8}]}]}"""))
+        assertEquals(FinalRecognitionKind.ACCEPTED,RecognitionConfidence.kind(payload.primary,.9))
+        assertEquals(AiCallCommand.START,AiCallPolicy.command(payload.primary.getString("text")))
+        RecognitionDiagnostics.record(payload.primary,.9,"wake/en")
+        assertTrue(RecognitionDiagnostics.state.value.contains("not supplied by Vosk"));assertFalse(RecognitionDiagnostics.state.value.contains("127"))
+    }
+    @Test fun validNbestFinalsAreNotRejectedForMissingWordPosteriorsForOtherExistingAbilities(){
+        for(text in listOf("what time is it","open calculator","lock my screen","why is the sky blue")){
+            val j=JSONObject().put("text",text).put("confidence",127.84).put("result",JSONArray(text.split(" ").map{JSONObject().put("word",it).put("start",0.0).put("end",.2)}))
+            assertEquals(text,FinalRecognitionKind.ACCEPTED,RecognitionConfidence.kind(j))
+        }
+    }
+    @Test fun malformedOrPartiallySuppliedWordScoresAreStillRejected(){
+        for(conf in listOf<Any>(JSONObject.NULL,-1.0,2.0,"invalid")){
+            val j=JSONObject().put("text","call me now").put("result",JSONArray().put(JSONObject().put("word","call").put("conf",conf)))
+            assertEquals(FinalRecognitionKind.UNCERTAIN,RecognitionConfidence.kind(j))
+        }
+        val mixed=JSONObject("""{"text":"call me now","result":[{"word":"call","conf":0.95},{"word":"me"},{"word":"now"}]}""")
+        assertEquals(FinalRecognitionKind.UNCERTAIN,RecognitionConfidence.kind(mixed))
+    }
     @Test fun diagnosticsKeepOnlyMetadataWithoutStoringTheHeardWords(){
         val privateText="my private password is secret"
         RecognitionDiagnostics.record(final(privateText),.55,"wake/en")

@@ -11,7 +11,8 @@ object RecognitionDiagnostics {
     fun record(json:JSONObject,threshold:Double,source:String){
         val words=json.optJSONArray("result")
         val values=(0 until (words?.length() ?: 0)).map{words?.optJSONObject(it)?.optDouble("conf",Double.NaN) ?: Double.NaN}
-        val score=if(values.isNotEmpty() && values.all{it.isFinite() && it in 0.0..1.0}) "${(values.average()*100).toInt()}%" else "not supplied / invalid"
+        val supplied=(0 until (words?.length() ?: 0)).count{words?.optJSONObject(it)?.has("conf")==true}
+        val score=if(words!=null && words.length()>0 && supplied==0)"not supplied by Vosk (N-best)" else if(values.isNotEmpty() && values.all{it.isFinite() && it in 0.0..1.0}) "${(values.average()*100).toInt()}%" else if(values.isEmpty())"not supplied" else "invalid / incomplete"
         mutable.value="$source · ${RecognitionConfidence.kind(json,threshold)} · ${json.optString("text").trim().split(Regex("\\s+")).count{it.isNotBlank()}} words · mean $score · threshold ${(threshold*100).toInt()}%"
     }
 }
