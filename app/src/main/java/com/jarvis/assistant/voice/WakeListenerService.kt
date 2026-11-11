@@ -37,6 +37,8 @@ class WakeListenerService : Service() {
     @Volatile private var recorder: AudioRecord? = null
     private val audioLock = Any()
     private var worker: Thread? = null
+    @Volatile private var languageChangeTicket=0L
+    private var pickupMonitor:com.jarvis.assistant.pickup.PickupMonitor?=null
     @Volatile private var capture:ManagedMicrophone?=null
     private val speakerBuffer=com.jarvis.assistant.omnisystem.SpeakerSampleBuffer()
     private val speakerFocus by lazy{com.jarvis.assistant.phantom.SpeakerFocusEngine((application as com.jarvis.assistant.JarvisApplication).runtime.speakers,SystemClock::elapsedRealtime)}
@@ -79,6 +81,16 @@ class WakeListenerService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
+            ACTION_REFRESH_PICKUP -> {
+                pickupMonitor?.close();pickupMonitor=null
+                if(running)pickupMonitor=com.jarvis.assistant.pickup.PickupMonitor(this).also{it.start()}
+                return if(running)START_STICKY else START_NOT_STICKY
+            }
+            ACTION_CHANGE_LANGUAGE -> {
+                val target=AppLanguage.fromCode(intent.getStringExtra(EXTRA_LANGUAGE).orEmpty())
+                if(running && target!=language)restartLanguage(target,startId)
+                return START_STICKY
+            }
             ACTION_STOP -> {
                 disableRecovery(this)
                 sendBroadcast(Intent(ACTION_STOP).setPackage(packageName))
@@ -132,7 +144,8 @@ class WakeListenerService : Service() {
             publish(language.choose("Microphone permission and an offline model are required.", "Se necesitan permiso del micrófono y un modelo local.", "اجازهٔ میکروفن و مدل آفلاین لازم است."), false)
             stopSelf(); return START_NOT_STICKY
         }
-        running = true; paused = false; window.enable()
+        running = true; paused = intent?.getBooleanExtra("start_paused",false)==true; window.enable();if(paused)window.pause()
+        pickupMonitor?.close();pickupMonitor=com.jarvis.assistant.pickup.PickupMonitor(this).also{it.start()}
         publish(text,false)
         recovery.edit().putBoolean("enabled", true).putString("language", language.code).apply()
         cpuLock = getSystemService(PowerManager::class.java).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Jarvis:WakeListening").apply { setReferenceCounted(false) }
@@ -280,6 +293,7 @@ class WakeListenerService : Service() {
             } catch (_: InterruptedException) {
                 break
             } catch (error: Throwable) {
+                if(!running)break
                 capture?.close();capture=null
                 val focusFailure=error.message?.startsWith("SPEAKER_FOCUS_")==true
                 val allowed=running && !paused && !focusFailure && error !is SecurityException && error !is LinkageError && error !is OutOfMemoryError && ContextCompat.checkSelfPermission(this,Manifest.permission.RECORD_AUDIO)==PackageManager.PERMISSION_GRANTED && !com.jarvis.assistant.security.SystemCredentialPrivacy.pending(this)
@@ -308,7 +322,9 @@ class WakeListenerService : Service() {
     private fun consumeFinal(payload:com.jarvis.assistant.rebirth.RecognitionPayload,serial:Long,endpoint:Boolean){
         if(serial!=window.snapshot().resetSerial)return
         val text=payload.primary.optString("text")
-        val kind=RecognitionConfidence.kind(payload.primary,com.jarvis.assistant.titan.VoicePreferences(this).confidence.toDouble())
+        val confidence=com.jarvis.assistant.titan.VoicePreferences(this).confidence.toDouble()
+        RecognitionDiagnostics.record(payload.primary,confidence,"wake/${language.code}")
+        val kind=RecognitionConfidence.kind(payload.primary,confidence)
         if(kind==FinalRecognitionKind.EMPTY){
             utterance.emptyFinal(endpoint)
             return
@@ -442,7 +458,31 @@ class WakeListenerService : Service() {
             .build()
     }
 
+    /** Retain the visible foreground service; fully close the old decoder/recorder first. */
+    private fun restartLanguage(target:AppLanguage,startId:Int){
+        val ticket=++languageChangeTicket
+        getSharedPreferences("wake_session",MODE_PRIVATE).edit().putString("language",target.code).apply()
+        pickupMonitor?.close();pickupMonitor=null
+        clearPlaybackControls();greetingGate.cancel();speakerFocus.reset()
+        synchronized(audioLock){running=false;paused=true;window.disable();runCatching{recorder?.stop()}}
+        main.removeCallbacks(windowTimeout);main.removeCallbacks(renewCpu)
+        cpuLock?.let{if(it.isHeld)it.release()};cpuLock=null
+        publish("Changing offline recognition language · releasing previous microphone",false)
+        val previous=worker;previous?.interrupt()
+        Thread({
+            try{previous?.join(3500)}catch(_:InterruptedException){return@Thread}
+            main.post{
+                if(current.get()!==this || ticket!=languageChangeTicket)return@post
+                if(previous?.isAlive==true){failureReason="Previous speech engine could not close. Listening stopped; open Voice health and retry.";stopSelf();return@post}
+                worker=null
+                onStartCommand(Intent(this,WakeListenerService::class.java).setAction(ACTION_START).putExtra(EXTRA_LANGUAGE,target.code).putExtra("start_paused",true),0,startId)
+            }
+        },"JarvisLanguageHandoff").start()
+    }
+
     private fun stopCaptureImmediately(){
+        ++languageChangeTicket
+        pickupMonitor?.close();pickupMonitor=null
         clearPlaybackControls()
         greetingGate.cancel()
         speakerFocus.reset()
@@ -469,6 +509,8 @@ class WakeListenerService : Service() {
 
     data class WakeState(val running: Boolean = false, val listening: Boolean = false, val status: String = "", val language: AppLanguage = AppLanguage.EN, val awaitingCommand: Boolean = false, val commandDeadlineElapsed: Long = 0, val waitingForCapture:Boolean=false,val interrupted:Boolean=false)
     companion object {
+        const val ACTION_REFRESH_PICKUP="com.jarvis.next.WAKE_REFRESH_PICKUP"
+        const val ACTION_CHANGE_LANGUAGE="com.jarvis.next.WAKE_CHANGE_LANGUAGE"
         const val ACTION_START = "com.jarvis.next.WAKE_START"
         const val ACTION_STOP = "com.jarvis.next.WAKE_STOP"
         const val ACTION_PAUSE = "com.jarvis.next.WAKE_PAUSE"

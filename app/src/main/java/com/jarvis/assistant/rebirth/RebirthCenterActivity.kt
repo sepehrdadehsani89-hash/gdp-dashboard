@@ -11,7 +11,8 @@ import kotlinx.coroutines.*
 class RebirthCenterActivity:PrivateModuleActivity(){
     private var diagnostics by mutableStateOf("")
     override fun onCreate(savedInstanceState:Bundle?){super.onCreate(savedInstanceState);if(isFinishing)return
-        screen("REBIRTH 11.2 · CONTENT & LISTENING"){
+        screen("REBIRTH · CONTENT & LISTENING"){
+            Button(onClick={startActivity(Intent(this@RebirthCenterActivity,com.jarvis.assistant.voice.VoiceHealthActivity::class.java))}){Text("Voice health · fix recognition, language & pickup greetings")}
             Button(onClick={runtime.requestAiCall(showUi=true)}){Text("Call Jarvis now · ring, answer and talk")}
             Button(onClick={startActivity(Intent(this@RebirthCenterActivity,com.jarvis.assistant.checkin.CallMeActivity::class.java))}){Text("Call me · editable date/time voice check-ins")}
             Button(onClick={startActivity(Intent(this@RebirthCenterActivity,com.jarvis.assistant.sentinel.WallpaperRepairActivity::class.java))}){Text("Fix / select moving Jarvis wallpaper")}

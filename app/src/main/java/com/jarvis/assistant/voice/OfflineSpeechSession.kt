@@ -82,7 +82,9 @@ internal class OfflineSpeechSession(
                                 main.post{if(!closed.get())onAlternatives(payload.alternatives)}
                                 val result=payload.primary
                                 val text=result.optString("text")
-                                val kind=RecognitionConfidence.kind(result,com.jarvis.assistant.titan.VoicePreferences(context).confidence.toDouble())
+                                val threshold=com.jarvis.assistant.titan.VoicePreferences(context).confidence.toDouble()
+                                RecognitionDiagnostics.record(result,threshold,"foreground")
+                                val kind=RecognitionConfidence.kind(result,threshold)
                                 if(kind==FinalRecognitionKind.EMPTY){
                                     // Vosk emits empty endpoints for silence/noise. They are not a failed
                                     // command and cannot invalidate an earlier accepted final segment.

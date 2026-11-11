@@ -11,6 +11,12 @@ object RecognitionConfidence {
         acceptsFinal(json,threshold)->FinalRecognitionKind.ACCEPTED
         else->FinalRecognitionKind.UNCERTAIN
     }
+    /** Exact public UI controls only. A call still requires explicit pickup; contact calls,
+     * compounds, device controls and owner verification keep their existing gates. */
+    fun publicControl(text:String):Boolean =
+        com.jarvis.assistant.call.AiCallPolicy.command(text)==com.jarvis.assistant.call.AiCallCommand.START ||
+        com.jarvis.assistant.core.LanguageRules.languageRequest(text)!=null ||
+        com.jarvis.assistant.core.AppLanguage.supported.any{WakePhraseMatcher.extractCommand(text,it)==""}
     fun acceptsFinal(json:JSONObject,threshold:Double=.55):Boolean {
         if(json.optString("text").isBlank())return false
         val words=json.optJSONArray("result") ?: return true
@@ -23,6 +29,6 @@ object RecognitionConfidence {
         }
         // Reading public device facts is harmless even when one short function word has
         // low acoustic confidence. This does not relax app/action or speaker-owner checks.
-        return total/words.length()>=threshold || LocalVoiceQueries.readOnly(json.optString("text")) || LocalVoiceQueries.ordinaryQuestion(json.optString("text"))
+        return total/words.length()>=threshold || LocalVoiceQueries.readOnly(json.optString("text")) || LocalVoiceQueries.ordinaryQuestion(json.optString("text")) || publicControl(json.optString("text"))
     }
 }

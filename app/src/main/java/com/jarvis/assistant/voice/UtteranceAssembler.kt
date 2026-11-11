@@ -30,7 +30,7 @@ class UtteranceAssembler(private val now:()->Long,private val threshold:Float=.0
             now()-lastText>=(if(incomplete)4000 else 1800)
     }
     companion object {
-        fun fastCommand(text:String)=LocalVoiceQueries.readOnly(text) || com.jarvis.assistant.rebirth.ConversationCompletionPolicy.matches(text) || com.jarvis.assistant.security.ScreenCommandPolicy.parse(text)!=null || Regex("^(?:open|abre|call|llama|lock my|unlock my|bloquea|desbloquea|turn (?:on|off) (?:the )?flashlight|start (?:a )?\\d+.+timer|inicia (?:un )?temporizador)\\b",RegexOption.IGNORE_CASE).containsMatchIn(text.trim()) &&
+        fun fastCommand(text:String)=com.jarvis.assistant.core.LanguageRules.languageRequest(text)!=null || LocalVoiceQueries.readOnly(text) || com.jarvis.assistant.rebirth.ConversationCompletionPolicy.matches(text) || com.jarvis.assistant.security.ScreenCommandPolicy.parse(text)!=null || Regex("^(?:open|abre|call|llama|lock my|unlock my|bloquea|desbloquea|turn (?:on|off) (?:the )?flashlight|start (?:a )?\\d+.+timer|inicia (?:un )?temporizador)\\b",RegexOption.IGNORE_CASE).containsMatchIn(text.trim()) &&
             !Regex("\\b(and|then|y|despues|después)\\b|[,;]",RegexOption.IGNORE_CASE).containsMatchIn(text)
     }
 }

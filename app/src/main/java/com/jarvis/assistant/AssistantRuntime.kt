@@ -76,6 +76,8 @@ class AssistantRuntime(private val context: Context) {
     val features = com.jarvis.assistant.omnisystem.FeatureVault(context)
     val companion by lazy{com.jarvis.assistant.companion.CompanionClient(features)}
     val aiCall=com.jarvis.assistant.call.AiCallController(SystemClock::elapsedRealtime)
+    val pickupPreferences by lazy{com.jarvis.assistant.pickup.PickupPreferences(context)}
+    private var languageHandoffSerial:Long?=null
     val callMe by lazy{com.jarvis.assistant.checkin.CallMeStore(context,features)}
     private var activeCallMe:Triple<String,String,Long>?=null
     private var callMeFinished:(()->Unit)?=null
@@ -282,7 +284,7 @@ class AssistantRuntime(private val context: Context) {
         } }
         scope.launch { store.messages.collectLatest { messages -> mutableState.update { it.copy(messages = messages) } } }
         scope.launch { store.memories.collectLatest { memories -> mutableState.update { it.copy(memories = memories, memoryCategories=memories.associate { m -> m.id to categories.getString(m.id.toString(), "Notes").orEmpty() }) } } }
-        scope.launch{WakeListenerService.state.collectLatest{wake->val c=aiCall.state.value;if(!wake.running && c.connected && c.audioConnected)endAiCall(c.id,"MICROPHONE_STOPPED",true)}}
+        scope.launch{WakeListenerService.state.collectLatest{wake->val c=aiCall.state.value;if(!wake.running && c.connected && c.audioConnected && languageHandoffSerial==null)endAiCall(c.id,"MICROPHONE_STOPPED",true)}}
         scope.launch { WakeListenerService.state.collectLatest { wake -> mutableState.update { it.copy(wakeStatus = wake.status, wakeEnabled=wake.running, followUpArming=wake.waitingForCapture, voiceWindowDeadline= wake.commandDeadlineElapsed, transcript=if(!wake.awaitingCommand && it.phase==AssistantPhase.LISTENING)"" else it.transcript, phase=if(wake.awaitingCommand && it.phase in setOf(AssistantPhase.READY,AssistantPhase.ERROR,AssistantPhase.PAUSED)) AssistantPhase.LISTENING else if(!wake.awaitingCommand && it.phase==AssistantPhase.LISTENING && (wake.listening || !wake.running || wake.interrupted)) AssistantPhase.READY else it.phase) } } }
         ContextCompat.registerReceiver(context, object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
@@ -435,7 +437,7 @@ class AssistantRuntime(private val context: Context) {
         return true
     }
     fun cancelCallMe(id:String,revision:String){if(activeCallMe?.let{it.first==id && it.second==revision && it.third==sessionGeneration}==true){cancelSession();resumeWake()}}
-    fun greetWake(sampleId:Long?,wakeTicket:Long=com.jarvis.assistant.voice.VoiceSessionStateMachine.nextWakeTicket()){
+    fun greetWake(sampleId:Long?,wakeTicket:Long=com.jarvis.assistant.voice.VoiceSessionStateMachine.nextWakeTicket(),pickupGreeting:String?=null){
         if(cameraOwner!=null || !voiceSession.claimGreeting(wakeTicket))return
         cancelSession();pauseWake()
         val generation=sessionGeneration
@@ -448,7 +450,7 @@ class AssistantRuntime(private val context: Context) {
         }}
         val preferences=com.jarvis.assistant.titan.VoicePreferences(context)
         val validHours=com.jarvis.assistant.titan.GreetingPolicy.validBounds(preferences.morning,preferences.afternoon,preferences.evening,preferences.night)
-        val text=if(preferences.timeAwareGreeting && validHours)com.jarvis.assistant.titan.GreetingPolicy.greeting(java.time.ZonedDateTime.now().hour,lang,true,true,null,preferences.morning,preferences.afternoon,preferences.evening,preferences.night)
+        val text=pickupGreeting ?: if(preferences.timeAwareGreeting && validHours)com.jarvis.assistant.titan.GreetingPolicy.greeting(java.time.ZonedDateTime.now().hour,lang,true,true,null,preferences.morning,preferences.afternoon,preferences.evening,preferences.night)
             else com.jarvis.assistant.rebirth.ConversationGreetingPolicy.text(lang)
         privateTurn=false;lastTurnAt=SystemClock.elapsedRealtime()
         store.addEphemeral(ChatMessage(role=MessageRole.ASSISTANT,text=text))
@@ -539,6 +541,65 @@ class AssistantRuntime(private val context: Context) {
         stopWake()
         store.updateSettings(store.settings.value.copy(language = value))
         refreshCapabilities()
+    }
+
+    fun pickupEligible():Boolean {
+        val audio=context.getSystemService(android.media.AudioManager::class.java)
+        val notification=context.getSystemService(android.app.NotificationManager::class.java)
+        return pickupPreferences.enabled && !locked() && !context.getSystemService(android.app.KeyguardManager::class.java).isKeyguardLocked && context.getSystemService(android.os.PowerManager::class.java).isInteractive &&
+            WakeListenerService.state.value.running && WakeListenerService.state.value.listening && !WakeListenerService.state.value.awaitingCommand && !WakeListenerService.state.value.waitingForCapture &&
+            state.value.phase==AssistantPhase.READY && !aiCall.state.value.active && session?.isActive!=true && cloudVoiceJob?.isActive!=true && cameraOwner==null &&
+            state.value.pendingAction==null && state.value.authorization==null && !com.jarvis.assistant.security.SystemCredentialPrivacy.pending(context) &&
+            audio.mode==android.media.AudioManager.MODE_NORMAL && audio.ringerMode==android.media.AudioManager.RINGER_MODE_NORMAL && !audio.isMusicActive &&
+            notification.currentInterruptionFilter==android.app.NotificationManager.INTERRUPTION_FILTER_ALL &&
+            !(batteryAlerts.preferences.let{it.quiet && com.jarvis.assistant.titan.BatteryPolicy.quiet(java.time.ZonedDateTime.now().hour,it.start,it.end)})
+    }
+    fun setPickupEnabled(enabled:Boolean){
+        if(locked())return
+        pickupPreferences.enabled=enabled
+        if(WakeListenerService.state.value.running)context.startService(Intent(context,WakeListenerService::class.java).setAction(WakeListenerService.ACTION_REFRESH_PICKUP))
+    }
+    fun greetPickup(test:Boolean=false):Boolean {
+        if(!pickupEligible() || !test && pickupPreferences.coolingDown(System.currentTimeMillis()))return false
+        val line=com.jarvis.assistant.pickup.PickupGreetings.text(pickupPreferences.next,language())
+        pickupPreferences.lastAt=System.currentTimeMillis();pickupPreferences.next+=1
+        wakeActivated();greetWake(null,pickupGreeting=line)
+        return true
+    }
+    fun switchSpokenLanguage(target:AppLanguage,voiced:Boolean=true){
+        if(aiCall.state.value.phase==com.jarvis.assistant.call.AiCallPhase.RINGING){mutableState.update{it.copy(error="Answer or decline the ringing AI call before changing language.")};return}
+        if(languageHandoffSerial!=null){mutableState.update{it.copy(error="Finishing the current language change. Please wait before selecting another language.")};return}
+        if(locked()){lockedRequestDenied(voiced,false);return}
+        val wasRunning=WakeListenerService.state.value.running
+        val changed=language()!=target
+        val modelReady=models.modelPath(target)!=null
+        if(wasRunning && !modelReady)stopWake()
+        cancelSession();pauseWake()
+        store.updateSettings(store.settings.value.copy(language=target));refreshCapabilities()
+        privateTurn=false;lastRequestWasVoice=voiced;lastReplyLanguage=target
+        val generation=sessionGeneration
+        val reply=if(wasRunning && !modelReady)target.choose("English mode is selected with your saved English voice. Download the English speech pack in Settings before voice listening can resume.","Modo español seleccionado con tu voz española guardada. Descarga el paquete de reconocimiento en español en Ajustes para volver a escuchar.","")else target.choose("Of course, sir. English mode is on. I'm using your saved English voice.","Por supuesto, señor. Modo español activado. Estoy usando tu voz española guardada.","")
+        mutableState.update{it.copy(phase=AssistantPhase.THINKING,voiceInteraction=voiced,transcript="",liveReply=reply,error=if(wasRunning && !modelReady)"SPANISH_OR_ENGLISH_SPEECH_PACK_REQUIRED: Open Voice health to install the selected language pack." else null)}
+        if(wasRunning && changed && modelReady)languageHandoffSerial=generation
+        session=scope.launch{
+            try{
+                if(wasRunning && changed && modelReady){
+                    context.startService(Intent(context,WakeListenerService::class.java).setAction(WakeListenerService.ACTION_CHANGE_LANGUAGE).putExtra(WakeListenerService.EXTRA_LANGUAGE,target.code))
+                    val ready=withTimeoutOrNull(10_000){WakeListenerService.state.first{it.running && it.language==target}}
+                    if(generation!=sessionGeneration)return@launch
+                    if(ready==null){
+                        if(aiCall.state.value.connected)endAiCall(aiCall.state.value.id,"LANGUAGE_MICROPHONE_HANDOFF_FAILED",true)else stopWake()
+                        mutableState.update{it.copy(phase=AssistantPhase.ERROR,error="Language selected, but the microphone could not restart with its speech pack. Open Voice health and retry.")};return@launch
+                    }
+                    pauseWake()
+                }
+                if(generation!=sessionGeneration)return@launch
+                if(voiced)speak(reply,target,generation,allowCloudSpeech=true,followUpOnDone=modelReady && wasRunning,privateSpeech=false,publicOnly=true,allowPlaybackControls=false,failure={if(aiCall.state.value.connected)endAiCall(aiCall.state.value.id,"LANGUAGE_OUTPUT_VOICE_UNAVAILABLE",true)})
+                else{mutableState.update{it.copy(phase=AssistantPhase.READY)};if(wasRunning && modelReady)resumeWake(followUp=true)}
+            }catch(e:CancellationException){throw e}
+            catch(_:Exception){if(generation==sessionGeneration){if(aiCall.state.value.connected)endAiCall(aiCall.state.value.id,"LANGUAGE_MICROPHONE_HANDOFF_FAILED",true)else stopWake();mutableState.update{it.copy(phase=AssistantPhase.ERROR,error="Android could not change the listening language. Open Voice health and retry.")}}}
+            finally{if(languageHandoffSerial==generation)languageHandoffSerial=null}
+        }
     }
 
     suspend fun listGeminiModels(key: String): List<String> {
@@ -768,6 +829,7 @@ class AssistantRuntime(private val context: Context) {
         }
         if(callCommand==com.jarvis.assistant.call.AiCallCommand.START){requestAiCall(preserveFocus=voiced);return}
         if(callCommand==com.jarvis.assistant.call.AiCallCommand.ANSWER){openAiCall(aiCall.state.value.id,true);return}
+        LanguageRules.languageRequest(text)?.let{switchSpokenLanguage(it,voiced);return}
         if(com.jarvis.assistant.rebirth.ConversationCompletionPolicy.matches(text)){if(aiCall.state.value.active)endAiCall(aiCall.state.value.id,"CONVERSATION_FINISHED")else finishConversation(voiced);return}
         if(com.jarvis.assistant.checkin.CallMePolicy.isRequest(text)){
             if(locked()){lockedRequestDenied(voiced,false);return}
@@ -1447,6 +1509,8 @@ class AssistantRuntime(private val context: Context) {
 
     fun invalidateMemoryContext(){conversation.clear();neural.conversation.clear()}
     fun recognitionLocaleStatus()=speech.lastRecognitionLocale
+    fun wakeModelInstalled(language:AppLanguage)=models.modelPath(language)!=null
+    fun wakeModelMegabytes(language:AppLanguage)=models.spec(language).approximateMegabytes
     fun installedWakeModelForCalibration()=models.modelPath(language())
     fun deleteMemory(id: Long) { conversation.clear(); neural.conversation.clear(); scope.launch { store.forget(id); categories.edit().remove(id.toString()).apply() } }
     fun clearConversation() { sessionNoteDraft.clear(); selectModule(com.jarvis.assistant.omnisystem.HudModule.ASSISTANT); cancelSession(); tools.infinity.clearContext();conversation.clear(); neural.conversation.clear(); clearScreenContext(); scope.launch { store.clearConversation() } }
@@ -1474,6 +1538,7 @@ class AssistantRuntime(private val context: Context) {
             com.jarvis.assistant.security.ScreenSecurityPreferences(context).clear();com.jarvis.assistant.security.ScreenUnlockRequests.clear()
             locations.clearTransient()
             categories.edit().clear().apply()
+            pickupPreferences.clear()
             com.jarvis.assistant.titan.VoicePreferences(context).clear()
             com.jarvis.assistant.titan.NavigationPreferences(context).clear()
             context.getSharedPreferences("jarvis_titan_memory_cards_v1",Context.MODE_PRIVATE).edit().clear().apply()
