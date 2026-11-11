@@ -125,7 +125,9 @@ class BatteryAlerts(private val context:Context,private val hud:HudRepository,pr
             if(valid(item))save(com.jarvis.assistant.power.PowerAlertPolicy.completed(state,item,preferences.config(),System.currentTimeMillis()))
             preferences.lastStatus="${item.kind} playback completed";trace("${item.kind}_AUDIO_COMPLETED");schedule();scope.launch{delay(500);drain()}
         },{_->if(playbackSerial==serial)failed(item)})
-        watchdog=scope.launch{delay(45_000);if(playbackSerial==serial && active!=null){failed(item);stopPlayback()}}
+        // A conversation invitation includes up to 45s ringing and 30s connecting before speech.
+        // Do not cut off a late pickup with the legacy direct-playback 45s deadline.
+        watchdog=scope.launch{delay(if(item.kind==com.jarvis.assistant.power.PowerAlertKind.LOW_20)120_000L else 45_000L);if(playbackSerial==serial && active!=null){failed(item);stopPlayback()}}
     }
     private fun failed(item:com.jarvis.assistant.power.PowerAlert){
         active=null;serial++;watchdog?.cancel();watchdog=null
