@@ -1,4 +1,12 @@
-# Current development build: Jarvis 11.5 — voice and core repair
+# Current development build: Jarvis 2.11.6
+
+[**Download the signed ARM64 APK**](v2-2.11.6/Jarvis-2.11.6-arm64-update.apk) · [Phone guide](../docs/v2/PHONE-GUIDE.md) · [Changes and limits](../docs/v2/REPORT.md) · [Verification](v2-2.11.6/VERIFICATION.md).
+
+Ringing in-app AI calls with Answer/End, dated check-ins, 20% battery conversation invitations, first-speaker focus, fixed-greeting warmup and real live-wallpaper repair. Existing features and the retained newer package/signing identity remain. Install over a matching newer build without clearing data; preserve the installed app if its certificate is rejected.
+
+527 JVM tests, 30 companion tests and 4 catalog tests passed; zero lint errors/fatals. Physical phone behavior remains unverified. General answers need the configured AI backend or installed local model. [Optional companion source ZIP](v2-2.11.6/JarvisCompanion-source-2.11.6.zip).
+
+# Previous development build: Jarvis 11.5 — voice and core repair
 
 [Download the signed ARM64 APK](voice-11.5/Jarvis-11.5.0-arm64-reinstall.apk) · [Changes, owner training and phone test](../docs/voice-11.5/REPORT.md) · [Verification](voice-11.5/VERIFICATION.md).
 

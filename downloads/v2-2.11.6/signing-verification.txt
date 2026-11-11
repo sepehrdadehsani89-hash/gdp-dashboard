@@ -1,0 +1,17 @@
+Verifies
+Verified using v1 scheme (JAR signing): false
+Verified using v2 scheme (APK Signature Scheme v2): true
+Verified using v3 scheme (APK Signature Scheme v3): false
+Verified using v3.1 scheme (APK Signature Scheme v3.1): false
+Verified using v4 scheme (APK Signature Scheme v4): false
+Verified for SourceStamp: false
+Number of signers: 1
+Signer #1 certificate DN: CN=Jarvis Reinstall, OU=Retained Update Identity
+Signer #1 certificate SHA-256 digest: 1094ecc1e01dfb873a8e63689b09dc156fff9d41f77ffdfae27e702991711bda
+Signer #1 certificate SHA-1 digest: 5f8a64de1321bccc6b53b255534c2e705a2c4771
+Signer #1 certificate MD5 digest: bcf6fdca8e066353e72c1875d54ca14e
+Signer #1 key algorithm: RSA
+Signer #1 key size (bits): 3072
+Signer #1 public key SHA-256 digest: 19ccb1f8eacb84009e562b62151c710c8442371f108c82bd221367ca7e7444d0
+Signer #1 public key SHA-1 digest: cc602cd31cb055309273c8802dbc8719be32e88c
+Signer #1 public key MD5 digest: ed9613ffc1307470ccfd06725a1b9158
