@@ -66,6 +66,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.ensureActive
 import kotlin.coroutines.resume
 import android.os.SystemClock
 import com.jarvis.assistant.phantom.*
@@ -74,6 +75,12 @@ import com.jarvis.assistant.phantom.*
 class AssistantRuntime(private val context: Context) {
     val store = JarvisStore(context)
     val features = com.jarvis.assistant.omnisystem.FeatureVault(context)
+    val polishActions=com.jarvis.assistant.finishpolish.shared.PolishActionJournal()
+    val learning by lazy{com.jarvis.assistant.finishpolish.learning.LearningStore(features)}
+    val predictive by lazy{com.jarvis.assistant.finishpolish.predictive.PredictiveEngine(context,features)}
+    val mission by lazy{com.jarvis.assistant.finishpolish.mission.MissionController(companion,features)}
+    val doctor by lazy{com.jarvis.assistant.finishpolish.doctor.SystemDoctor(context,this)}
+    private var announcedSuggestion:String?=null
     val companion by lazy{com.jarvis.assistant.companion.CompanionClient(features)}
     val aiCall=com.jarvis.assistant.call.AiCallController(SystemClock::elapsedRealtime)
     val pickupPreferences by lazy{com.jarvis.assistant.pickup.PickupPreferences(context)}
@@ -191,7 +198,7 @@ class AssistantRuntime(private val context: Context) {
         scope.launch{while(true){
             delay(1000)
             if(lastTurnAt>0 && SystemClock.elapsedRealtime()-lastTurnAt>com.jarvis.assistant.rebirth.LiveConversationPolicy.IDLE_EXPIRY_MS && session?.isActive!=true && cloudVoiceJob?.isActive!=true && state.value.phase in setOf(AssistantPhase.READY,AssistantPhase.PAUSED,AssistantPhase.ERROR) && !state.value.followUpArming && state.value.voiceWindowDeadline<=SystemClock.elapsedRealtime())clearTemporaryConversation()
-            if(locked() || com.jarvis.assistant.security.SystemCredentialPrivacy.pending(context))phantom.clearCaption()
+            if(locked() || com.jarvis.assistant.security.SystemCredentialPrivacy.pending(context)){phantom.clearCaption();predictive.hide();mutableState.update{it.copy(futureSuggestion=null)}}
             if(phantom.timedOut()){
                 val partial=state.value.liveReply
                 cancelSession();if(!locked() && partial.isNotBlank())phantom.response(partial);phantom.finish(ExecutionState.FAILED)
@@ -207,6 +214,19 @@ class AssistantRuntime(private val context: Context) {
         }}
         scope.launch{while(true){delay(500);val call=aiCall.state.value;com.jarvis.assistant.call.AiCallPolicy.timeout(call,SystemClock.elapsedRealtime())?.let{endAiCall(call.id,it)}}}
         batteryAlerts.start()
+        scope.launch{predictive.state.collect{suggestion->mutableState.update{it.copy(futureSuggestion=suggestion)}}}
+        scope.launch{while(true){
+            delay(15_000)
+            run{
+                val idle=!locked() && !com.jarvis.assistant.security.SystemCredentialPrivacy.pending(context) && state.value.phase==AssistantPhase.READY && !aiCall.state.value.active && session?.isActive!=true && cloudVoiceJob?.isActive!=true && state.value.pendingAction==null && state.value.authorization==null && state.value.voiceWindowDeadline<=SystemClock.elapsedRealtime()
+                predictive.refresh(hud.powerSource.state.value,idle)
+                val suggestion=predictive.state.value
+                if(idle && suggestion!=null && announcedSuggestion!=suggestion.id && predictive.store.state.value.config.delivery==com.jarvis.assistant.finishpolish.predictive.SuggestionDelivery.VOICE){
+                    announcedSuggestion=suggestion.id;pauseWake();privateTurn=false
+                    speak(suggestion.announcement,language(),allowCloudSpeech=true,followUpOnDone=WakeListenerService.state.value.running,privateSpeech=false,publicOnly=true,allowPlaybackControls=false)
+                }
+            }
+        }}
         // WorkManager restores opt-in work across process restarts; no microphone/LLM is started.
         com.jarvis.assistant.neural.BriefingScheduler.sync(context,keepExisting=true)
         scope.launch(Dispatchers.IO){if(knowledge.list().none{it.id=="builtin-help-v4" && (it.version=="10.9" || it.kind!="OFFLINE_KNOWLEDGE")})knowledge.index("Jarvis offline help","Jarvis uses a local model only after its explicit download. Say Hey Jarvis once for an adaptive command session. After a completed spoken answer an adaptive follow-up session opens without a new wake phrase. A timed-out window returns to wake-only detection. Stop disables microphone listening. Choose documents explicitly to index them. App aliases refer only to Android-visible installed apps. Codex is not a password: Android authentication is required. Daily briefings are opt-in and may run late. Google quota is independent from local inference.","OFFLINE_KNOWLEDGE","Bundled original help","10.9","2026-11-03","CC0-1.0","builtin-help-v4")}
@@ -782,6 +802,74 @@ class AssistantRuntime(private val context: Context) {
         val generation=sessionGeneration;phantom.submitted(input,voiced);store.addEphemeral(ChatMessage(role=MessageRole.USER,text=input));mutableState.update{it.copy(phase=AssistantPhase.THINKING,voiceInteraction=voiced,transcript=input,activeTask="INTERFACE")}
         session=scope.launch{deliver(AssistantReply(message,allowCloudSpeech=true),language(),voiced,generation)}
     }
+    fun runLearnedRecipe(id:String,voiced:Boolean=false){
+        if(locked()){fail(unlockMessage());return}
+        try{
+            val profile=learning.reload();val recipe=learning.find(id) ?: error("RECIPE_UNAVAILABLE")
+            require(profile.enabled && recipe.enabled){"LEARNING_DISABLED"}
+            val steps=recipe.steps.map{step->com.jarvis.assistant.finishpolish.shared.ActionStep(when(step.action){
+                com.jarvis.assistant.finishpolish.learning.LearnedAction.LOCAL_APP_OPEN->"local.open_app"
+                com.jarvis.assistant.finishpolish.learning.LearnedAction.DESKTOP_CHROME->"desktop.open_chrome"
+                com.jarvis.assistant.finishpolish.learning.LearnedAction.DESKTOP_SEARCH->"desktop.search"
+            },step.argument,step.targetDeviceId,if(step.targetDeviceId!=null)companion.paired()?.sessionId else null)}
+            lastRequestWasVoice=voiced;lastReplyLanguage=language()
+            proposePolishPlan(com.jarvis.assistant.finishpolish.shared.ActionPlan(steps=steps,createdAt=System.currentTimeMillis(),recipeId=recipe.id,recipeRevision=recipe.revision,profileRevision=profile.revision.toLong()),"Review saved recipe: ${recipe.title}")
+        }catch(_:Exception){mutableState.update{it.copy(error="The approved recipe is unavailable, disabled or changed. Review Teach Jarvis. No action executed.")}}
+    }
+    private fun proposePolishPlan(plan:com.jarvis.assistant.finishpolish.shared.ActionPlan,title:String){
+        com.jarvis.assistant.finishpolish.shared.PolishActionRegistry.validate(plan,System.currentTimeMillis(),runCatching{companion.paired()?.deviceId}.getOrNull(),runCatching{companion.paired()?.sessionId}.getOrNull())
+        cancelSession();pauseWake();privateTurn=true
+        val preview=title+"\n"+plan.steps.mapIndexed{i,s->"${i+1}. ${s.id}: ${s.argument}"}.joinToString("\n")+"\nReview before running. Android app foreground verification uses package identity only if Screen access is already enabled. Unverified dispatch stops dependent steps."
+        val proposal=com.jarvis.assistant.core.PendingAction(description=preview,kind="polish_plan",payload=plan.json())
+        mutableState.update{it.copy(pendingAction=proposal,phase=AssistantPhase.READY,liveReply=preview,error=null)}
+        polishActions.record("plan.review","REQUESTED")
+        if(com.jarvis.assistant.rebirth.AppVisibility.visible)runCatching{context.startActivity(Intent(context,MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP))}
+    }
+    fun handleSuggestion(id:String,operation:String){
+        if(locked()){fail(unlockMessage());return}
+        try{when(operation){
+            "dismiss"->predictive.dismiss(id)
+            "snooze"->predictive.snooze(id)
+            "never"->predictive.never(id)
+            "review"->{val action=predictive.accept(id) ?: return
+                when(action.kind){
+                    com.jarvis.assistant.finishpolish.predictive.SuggestionActionKind.BATTERY_SETTINGS->proposePolishPlan(com.jarvis.assistant.finishpolish.shared.ActionPlan(steps=listOf(com.jarvis.assistant.finishpolish.shared.ActionStep("local.battery_settings")),createdAt=System.currentTimeMillis()),"Open Android battery saver settings? No setting is toggled automatically.")
+                    com.jarvis.assistant.finishpolish.predictive.SuggestionActionKind.REVIEW_RECIPE->{val recipe=if(action.referenceId.isNotBlank())learning.find(action.referenceId)?.takeIf{learning.match(action.target)?.id==it.id}else learning.find(action.target) ?: learning.match(action.target);if(recipe==null)fail("That approved recipe is unavailable. Review Teach Jarvis.")else runLearnedRecipe(recipe.id)}
+                    com.jarvis.assistant.finishpolish.predictive.SuggestionActionKind.REVIEW_CALENDAR->proposePolishPlan(com.jarvis.assistant.finishpolish.shared.ActionPlan(steps=listOf(com.jarvis.assistant.finishpolish.shared.ActionStep("local.calendar_review",action.target)),createdAt=System.currentTimeMillis()),"Review the authorized calendar event? No calendar edit is requested.")
+                }
+            }
+        }}catch(_:Exception){fail("Suggestion unavailable or changed. No action was completed.")}
+    }
+    private suspend fun executePolishPlan(raw:String,generation:Long):String {
+        val plan=com.jarvis.assistant.finishpolish.shared.ActionPlan.parse(raw)
+        com.jarvis.assistant.finishpolish.shared.PolishActionRegistry.validate(plan,System.currentTimeMillis(),runCatching{companion.paired()?.deviceId}.getOrNull(),runCatching{companion.paired()?.sessionId}.getOrNull())
+        plan.recipeId?.let{id->val profile=learning.reload();val recipe=learning.find(id);require(profile.enabled && profile.revision.toLong()==plan.profileRevision && recipe?.enabled==true && recipe.revision==plan.recipeRevision){"RECIPE_CHANGED_REVIEW_AGAIN"}}
+        var completed=0
+        for(step in plan.steps){
+            plan.recipeId?.let{id->val profile=learning.reload();val recipe=learning.find(id);require(profile.enabled && profile.revision.toLong()==plan.profileRevision && recipe?.enabled==true && recipe.revision==plan.recipeRevision){"RECIPE_CHANGED_REVIEW_AGAIN"}}
+            currentCoroutineContext().ensureActive();require(generation==sessionGeneration && !locked()){"ACTION_CANCELLED_OR_LOCKED"}
+            com.jarvis.assistant.finishpolish.shared.PolishActionRegistry.validate(plan,System.currentTimeMillis(),runCatching{companion.paired()?.deviceId}.getOrNull(),runCatching{companion.paired()?.sessionId}.getOrNull())
+            polishActions.record(step.id,"AUTHORIZED")
+            if(step.id.startsWith("desktop.")){
+                val outcome=mission.execute(com.jarvis.assistant.companion.DesktopRequest(if(step.id=="desktop.search")step.argument else null),true,step.targetDeviceId,step.targetSessionId)
+                polishActions.record(step.id,if(outcome.verified)"VERIFIED" else "FAILED",if(outcome.verified)"SIGNED_POSTCONDITION" else "NO_VERIFIED_COMPLETION")
+                if(!outcome.verified)return language().choose("${outcome.message} Stopped the remaining steps; $completed verified.","No se pudo verificar la acción en el equipo. Se detuvieron los pasos pendientes; $completed verificados.","تأیید عملیات کامل نشد.")
+            }else{
+                val result=when(step.id){
+                    "local.open_app"->{val app=appRegistry.apps().firstOrNull{it.packageId==step.argument} ?: error("APP_UNAVAILABLE");tools.launches.launchPackage(app.packageId,app.label)}
+                    "local.battery_settings"->tools.launches.open(Intent(android.provider.Settings.ACTION_BATTERY_SAVER_SETTINGS),"Android battery saver settings")
+                    "local.calendar_review"->tools.launches.open(Intent(Intent.ACTION_VIEW,android.content.ContentUris.withAppendedId(android.provider.CalendarContract.Events.CONTENT_URI,step.argument.toLong())),"authorized calendar event")
+                    else->error("UNSUPPORTED_ACTION")
+                }
+                polishActions.record(step.id,"DISPATCHED_UNVERIFIED")
+                val verified=if(step.id=="local.open_app" && result.status==com.jarvis.assistant.rebirth.LaunchStatus.DISPATCHED && com.jarvis.assistant.tools.JarvisAccessibilityService.connected){withTimeoutOrNull(2000){while(!locked() && com.jarvis.assistant.tools.JarvisAccessibilityService.activePackage()!=step.argument)delay(100);!locked() && com.jarvis.assistant.tools.JarvisAccessibilityService.activePackage()==step.argument}==true}else false
+                if(!verified)return language().choose("Android launch status: ${result.status}. Foreground completion was not verified. Remaining dependent steps stopped; $completed verified.","Estado de apertura en Android: ${result.status}. No se verificó la aplicación en primer plano. Pasos pendientes detenidos; $completed verificados.","وضعیت برنامه تأیید نشد.")
+                polishActions.record(step.id,"VERIFIED","FOREGROUND_PACKAGE_OBSERVED")
+            }
+            completed++
+        }
+        return language().choose("Verified $completed of ${plan.steps.size} approved steps.","Se verificaron $completed de ${plan.steps.size} pasos aprobados.","مراحل تأیید شدند.")
+    }
     fun offerContactFollowUp(){if(!locked())mutableState.update{it.copy(contactFollowUp=true)}}
     fun dismissContactFollowUp(){mutableState.update{it.copy(contactFollowUp=false)}}
     private fun verifyOwnerCommand(text:String,sampleId:Long?,alternatives:List<com.jarvis.assistant.rebirth.RecognitionHypothesis>){
@@ -843,12 +931,33 @@ class AssistantRuntime(private val context: Context) {
             if(locked()){lockedRequestDenied(voiced,false);return}
             reportNative(tools.launches.open(Intent(context,com.jarvis.assistant.companion.CompanionActivity::class.java),"paired computer settings").detail,voiced,text);return
         }
+        val polished=com.jarvis.assistant.neural.AppMatching.normalize(text).removePrefix("hey jarvis ").removePrefix("jarvis ")
+        if(polished in setOf("why didn t you hear me","why didn t you understand my last command","why aren t you understanding my voice","system doctor","diagnose voice","diagnose jarvis")){
+            if(locked()){lockedRequestDenied(voiced,false);return}
+            reportNative(doctor.explain(language()==AppLanguage.ES),voiced,text);return
+        }
+        if(com.jarvis.assistant.finishpolish.learning.LearningPolicy.parseTeachingDraft(text)!=null){
+            if(locked()){lockedRequestDenied(voiced,false);return}
+            reportNative(tools.launches.open(Intent(context,com.jarvis.assistant.finishpolish.learning.LearningActivity::class.java).putExtra("request",text),"Teach Jarvis recipe review").detail,voiced,text);return
+        }
+        if(polished in setOf("open mission control","mission control","open system doctor","teach jarvis","open future actions","intelligence settings")){
+            if(locked()){lockedRequestDenied(voiced,false);return}
+            val target=when(polished){"open mission control","mission control"->com.jarvis.assistant.finishpolish.mission.MissionControlActivity::class.java;"open system doctor"->com.jarvis.assistant.finishpolish.doctor.SystemDoctorActivity::class.java;"teach jarvis"->com.jarvis.assistant.finishpolish.learning.LearningActivity::class.java;"open future actions"->com.jarvis.assistant.finishpolish.predictive.PredictiveActivity::class.java;else->com.jarvis.assistant.finishpolish.FinishPolishActivity::class.java}
+            reportNative(tools.launches.open(Intent(context,target),"requested intelligence settings").detail,voiced,text);return
+        }
+        if(!locked()){
+            try{learning.match(text)?.let{recipe->runLearnedRecipe(recipe.id,voiced);return}}catch(_:Exception){polishActions.record("learning.store","FAILED","PRIVATE_STORE_UNAVAILABLE")}
+        }
+        com.jarvis.assistant.voice.LocalKnowledge.answer(text,language())?.let{answer->reportNative(answer,voiced,text);return}
         com.jarvis.assistant.companion.CompanionPolicy.parse(text)?.let{request->
             if(locked()){lockedRequestDenied(voiced,false);return}
             cancelSession(preserveCapture=voiced);pauseWake();privateTurn=false;lastRequestWasVoice=voiced;lastReplyLanguage=language()
             if(voiced)voiceSession.recognized(sessionGeneration,text.length)
             val description=if(request.query==null)"Open Chrome in the paired computer's dedicated Jarvis browser window?" else "Search in Chrome on the paired computer for: ${request.query}?"
-            val proposal=com.jarvis.assistant.core.PendingAction(description=description,kind="desktop_chrome",payload=request.parameters().toString())
+            val pair=runCatching{companion.paired()}.getOrNull()
+            if(pair==null){reportNative("No readable paired computer is available. Open Mission Control to pair or review its status. No command was sent.",voiced,text);return}
+            val plan=com.jarvis.assistant.finishpolish.shared.ActionPlan(steps=listOf(com.jarvis.assistant.finishpolish.shared.ActionStep(if(request.query==null)"desktop.open_chrome" else "desktop.search",request.query.orEmpty(),pair.deviceId,pair.sessionId)),createdAt=System.currentTimeMillis())
+            val proposal=com.jarvis.assistant.core.PendingAction(description=description,kind="polish_plan",payload=plan.json())
             session=scope.launch{deliver(AssistantReply(description,action=proposal,allowCloudSpeech=false),language(),voiced,sessionGeneration)}
             return
         }
@@ -1280,13 +1389,19 @@ class AssistantRuntime(private val context: Context) {
         pauseWake()
         mutableState.update { it.copy(pendingAction = null, phase = AssistantPhase.THINKING) }
         session = scope.launch {
+            if(proposal.kind=="polish_plan"){
+                privateTurn=true
+                val result=try{executePolishPlan(proposal.payload,generation)}catch(e:CancellationException){polishActions.record("plan.review","CANCELLED");throw e}catch(_:Exception){polishActions.record("plan.review","FAILED","PRECONDITION_OR_EXECUTION_FAILED");"The approved plan could not be verified. No further step ran. Review permissions, installed apps and paired-device status."}
+                if(generation==sessionGeneration){privateTurn=false;deliver(AssistantReply(result,allowCloudSpeech=true),lastReplyLanguage,lastRequestWasVoice,generation)}
+                return@launch
+            }
             if(proposal.kind=="desktop_chrome"){
                 privateTurn=false
                 val result=try{
                     val j=org.json.JSONObject(proposal.payload)
                     val r=if(j.has("query"))com.jarvis.assistant.companion.DesktopRequest(j.getString("query"))else com.jarvis.assistant.companion.DesktopRequest(null)
                     if(r.query!=null)require(r.query.length in 1..300 && r.query.none(Char::isISOControl))
-                    companion.execute(r)
+                    mission.execute(r,true).message
                 }catch(e:CancellationException){throw e}catch(e:com.jarvis.assistant.companion.CompanionFailure){"Paired computer: ${e.code}. No verified completion is claimed."}catch(_:Exception){"The desktop receipt could not be verified. Check the computer; no completed result is claimed."}
                 if(generation==sessionGeneration)deliver(AssistantReply(result,allowCloudSpeech=true),lastReplyLanguage,lastRequestWasVoice,generation)
                 return@launch
@@ -1532,7 +1647,7 @@ class AssistantRuntime(private val context: Context) {
             com.jarvis.assistant.widgets.WidgetRepository(context).clear()
             knowledge.clear();appRegistry.clear();neuralPreferences.clear();brain.preferences.clear();briefing.clear();com.jarvis.assistant.neural.BriefingScheduler.sync(context)
             store.clearAll()
-            features.clear()
+            predictive.hide();features.clear();learning.reload();predictive.forgetAfterUserErase();mission.refresh()
             customVoice.clearGreetingCache()
             com.jarvis.assistant.security.SystemCredentialPrivacy.end(context)
             com.jarvis.assistant.security.ScreenSecurityPreferences(context).clear();com.jarvis.assistant.security.ScreenUnlockRequests.clear()
@@ -1571,7 +1686,7 @@ class AssistantRuntime(private val context: Context) {
         captureStarted = 0; clearScreenContext(); awaitScreenQuestion = false
         context.stopService(Intent(context, ScreenCaptureService::class.java))
         providerCheck?.cancel()
-        cancelSession();phantomOverlay.hide()
+        cancelSession();mission.cancel();phantomOverlay.hide()
         wakeDownload?.cancel(); brainDownload?.cancel(); voiceDownload?.cancel()
         stopWake()
         mutableState.update { it.copy(phase = AssistantPhase.PAUSED, voiceInteraction=false,voiceWindowDeadline=0,followUpArming=false, transcript = "", pendingAction = null, modelProgress = null, brainProgress = null, voiceProgress = null) }

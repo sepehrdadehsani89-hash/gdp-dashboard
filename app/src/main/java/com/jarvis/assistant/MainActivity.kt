@@ -157,6 +157,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
             JarvisAppUi(state, JarvisUiActions(
+                onSuggestion=runtime::handleSuggestion,
                 onOpenRebirth={startActivity(Intent(this,com.jarvis.assistant.rebirth.RebirthCenterActivity::class.java))},
                 onOpenPhantom={startActivity(Intent(this,com.jarvis.assistant.phantom.PhantomSettingsActivity::class.java))},
                 onOpenTitan={page->startActivity(Intent(this,com.jarvis.assistant.titan.TitanCenterActivity::class.java).putExtra("page",page))},

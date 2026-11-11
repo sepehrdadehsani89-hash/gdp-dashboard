@@ -39,3 +39,11 @@ The Android token is encrypted in the existing Android Keystore-backed vault. Th
 The included GitHub Actions workflow **Build Jarvis companion on native hosts** is manually triggered. It tests the protocol and packages a CLI binary with PyInstaller on Windows, macOS and Linux, then records checksums. This cloud release supplies the source bundle and tested Linux protocol/browser fixture; it does not claim that Windows EXE, macOS signing/notarization, iOS distribution, or a production native installer has already been built or approved. Native installers and platform UI/permissions remain a later milestone.
 
 Tests: `python -m unittest discover -s tests -v`. The actual-browser fixture is Linux-only and uses a local test page, not Google or a personal browser profile. The `--no-sandbox` argument exists only in that isolated cloud test fixture; production launchers retain the browser's sandbox.
+
+## Mission Control readiness update
+
+The current companion adds an authenticated, nonce-bound capability manifest for Android Mission Control. It checks Chrome presence without opening a browser and separately reports unsupported file/app/screen/shell capabilities as unavailable. Each action still needs review and its own verified browser receipt; a health/capability check is never completion. Revocation immediately disables capability access too.
+
+Stop the old visible process and replace its source files, preserving the existing private state directory and IP/TLS identity, then restart normally. Do not delete pairing data or generate a new identity to update it. The new Android client keeps the legacy Chrome command path working when an older agent lacks readiness discovery, while clearly marking that readiness unknown.
+
+Current controlled verification: 36 Python tests, including local HTTPS and an actual isolated Chromium fixture, passed. Windows/macOS native runs, installers, Google results pages and Android audio round trips remain unverified. See [Mission Control implementation and capability matrix](../docs/finish-polish/Mission.md).

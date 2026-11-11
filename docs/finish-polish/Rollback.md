@@ -1,0 +1,3 @@
+# Rollback and data preservation
+
+Baseline source: edf4464971926e30004885d1e118eed511b4d154. All new source changes will be committed on jarvis-next without force or changing protected branches. New stores must use new encrypted FeatureVault keys and versioned formats; no deletion or conversion of old models, profiles, pairings or chat settings. Disable opt-ins or delete individual new recipes/suggestions to revert behavior. Do not downgrade over a higher Android version code: rebuild baseline source with a higher code and the same retained signer when an installed rollback is needed. Keep installed data on certificate mismatch. No signing key or private export is published.

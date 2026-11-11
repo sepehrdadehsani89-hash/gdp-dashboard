@@ -12,6 +12,7 @@ import javax.crypto.spec.GCMParameterSpec
 
 /** Independent additive store. Tokens/templates never enter backups, logs or LLM context. */
 class FeatureVault internal constructor(context:Context,private val alias:String="jarvis_omnisystem_private_v1") {
+    companion object{fun validName(name:String)=name.matches(Regex("[a-z_]{1,60}"))}
     private val prefs=context.applicationContext.getSharedPreferences(alias,Context.MODE_PRIVATE)
     @Synchronized private fun key():SecretKey {
         val store=KeyStore.getInstance("AndroidKeyStore").apply{load(null)}
@@ -33,7 +34,7 @@ class FeatureVault internal constructor(context:Context,private val alias:String
         } catch(_:Exception){null} // Invalidated keys are unavailable, never treated as plaintext.
     }
     @Synchronized fun write(name:String,value:String){
-        require(name.matches(Regex("[a-z_]{1,60}")) && value.toByteArray().size<=1_000_000)
+        require(validName(name) && value.toByteArray().size<=1_000_000)
         val cipher=Cipher.getInstance("AES/GCM/NoPadding")
         cipher.init(Cipher.ENCRYPT_MODE,key());cipher.updateAAD(name.toByteArray(Charsets.UTF_8))
         val encoded=Base64.encodeToString(cipher.iv+cipher.doFinal(value.toByteArray(Charsets.UTF_8)),Base64.NO_WRAP)

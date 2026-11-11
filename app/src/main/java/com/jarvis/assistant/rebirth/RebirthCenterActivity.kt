@@ -12,6 +12,7 @@ class RebirthCenterActivity:PrivateModuleActivity(){
     private var diagnostics by mutableStateOf("")
     override fun onCreate(savedInstanceState:Bundle?){super.onCreate(savedInstanceState);if(isFinishing)return
         screen("REBIRTH · CONTENT & LISTENING"){
+            Button(onClick={startActivity(Intent(this@RebirthCenterActivity,com.jarvis.assistant.finishpolish.FinishPolishActivity::class.java))}){Text("Intelligence & Systems · Doctor, Teach, Future Actions, Mission Control")}
             Button(onClick={startActivity(Intent(this@RebirthCenterActivity,com.jarvis.assistant.voice.VoiceHealthActivity::class.java))}){Text("Voice health · fix recognition, language & pickup greetings")}
             Button(onClick={runtime.requestAiCall(showUi=true)}){Text("Call Jarvis now · ring, answer and talk")}
             Button(onClick={startActivity(Intent(this@RebirthCenterActivity,com.jarvis.assistant.checkin.CallMeActivity::class.java))}){Text("Call me · editable date/time voice check-ins")}

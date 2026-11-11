@@ -273,7 +273,7 @@ class WakeListenerService : Service() {
                                     val text=json.optString(if(final)"text" else "partial")
                                     if(window.speechProgress(text))scheduleTimeout()
                                     if(!final && window.acceptsCommand(serial)){
-                                        val partial=WakePhraseMatcher.extractCommand(text,language) ?: text
+                                        val partial=WakePhraseMatcher.extractCommand(text,language,com.jarvis.assistant.titan.VoicePreferences(this).customWakePhrase) ?: text
                                         utterance.partial(partial)
                                         sendBroadcast(Intent(ACTION_PARTIAL).setPackage(packageName).putExtra(EXTRA_TEXT,utterance.text()).putExtra("runtime_generation",windowRuntimeGeneration))
                                     }
@@ -350,7 +350,7 @@ class WakeListenerService : Service() {
         if (text.isBlank() || serial != window.snapshot().resetSerial) return
         // A result recognized before expiry must not reactivate itself after the deadline.
         if (expireCommandWindow()) return
-        val afterWake = WakePhraseMatcher.extractCommand(text, language)
+        val afterWake = WakePhraseMatcher.extractCommand(text, language,com.jarvis.assistant.titan.VoicePreferences(this).customWakePhrase)
         if (afterWake != null) {
             if (window.wake()) {
                 greetingTicket=VoiceSessionStateMachine.nextWakeTicket()

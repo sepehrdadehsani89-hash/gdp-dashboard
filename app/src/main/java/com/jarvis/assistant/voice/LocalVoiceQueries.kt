@@ -8,14 +8,16 @@ import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.Locale
 
-enum class LocalVoiceQuery { TIME, DATE }
+enum class LocalVoiceQuery { TIME, DATE, IDENTITY, TIME_ZONE }
 object LocalVoiceQueries {
     fun parse(text:String):LocalVoiceQuery?=when(AppMatching.normalize(text).removePrefix("hey jarvis ").removePrefix("oye jarvis ").removePrefix("jarvis ").removePrefix("please ")){
         "what time is it","what is the time","tell me the time","what s the time","time","what time","que hora es","dime la hora","hora actual"->LocalVoiceQuery.TIME
         "what date is it","what is the date","what is today s date","today s date","what day is it","what day is today","tell me the date","fecha de hoy","que dia es hoy","cual es la fecha"->LocalVoiceQuery.DATE
+        "what is your name","what s your name","who are you","what are you called","tell me your name","your name","como te llamas","cual es tu nombre","quien eres"->LocalVoiceQuery.IDENTITY
+        "what time zone is it","what is my time zone","what time zone am i in","what s my time zone","what is the time zone","zona horaria","cual es mi zona horaria","en que zona horaria estoy"->LocalVoiceQuery.TIME_ZONE
         else->null
     }
-    fun readOnly(text:String)=parse(text)!=null || com.jarvis.assistant.power.PowerCommands.parse(text) in setOf(com.jarvis.assistant.power.PowerCommand.STATUS,com.jarvis.assistant.power.PowerCommand.TEMPERATURE)
+    fun readOnly(text:String)=parse(text)!=null || LocalArithmetic.request(text)!=null || com.jarvis.assistant.power.PowerCommands.parse(text) in setOf(com.jarvis.assistant.power.PowerCommand.STATUS,com.jarvis.assistant.power.PowerCommand.TEMPERATURE)
     fun ordinaryQuestion(text:String):Boolean {
         val n=AppMatching.normalize(text)
         if(n.length !in 8..4000)return false
@@ -26,6 +28,8 @@ object LocalVoiceQueries {
     }
     fun answer(query:LocalVoiceQuery,language:AppLanguage,clock:Clock=Clock.systemDefaultZone(),use24Hour:Boolean=false):String {
         val now=ZonedDateTime.now(clock);val locale=Locale.forLanguageTag(language.tag)
+        if(query==LocalVoiceQuery.IDENTITY)return if(language==AppLanguage.ES)"Soy J.A.R.V.I.S., tu asistente personal de IA." else "I'm J.A.R.V.I.S., your personal AI assistant."
+        if(query==LocalVoiceQuery.TIME_ZONE){val zone="${now.zone.id} (UTC${if(now.offset.id=="Z")"+00:00" else now.offset.id})";return if(language==AppLanguage.ES)"La zona horaria de tu teléfono es $zone." else "Your phone's time zone is $zone."}
         val value=if(query==LocalVoiceQuery.TIME)now.format(DateTimeFormatter.ofPattern(if(use24Hour)"HH:mm" else "h:mm a",locale))
             else now.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL).withLocale(locale))
         return if(language==AppLanguage.ES){if(query==LocalVoiceQuery.TIME)"Señor, son las $value." else "Señor, hoy es $value."}

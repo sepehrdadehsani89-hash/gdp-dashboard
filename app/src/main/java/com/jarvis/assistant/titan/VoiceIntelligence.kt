@@ -17,6 +17,7 @@ class VoicePreferences(context:Context){
     var playbackInterruption:Boolean get()=p.getBoolean("playback_interruption",true);set(v){p.edit().putBoolean("playback_interruption",v).apply()}
     var timeAwareGreeting:Boolean get()=p.getBoolean("time_aware_greeting",false);set(v){p.edit().putBoolean("time_aware_greeting",v).apply()}
     var conversationFocus:Boolean get()=p.getBoolean("conversation_focus",true);set(v){p.edit().putBoolean("conversation_focus",v).apply()}
+    var customWakePhrase:String get()=p.getString("custom_wake_phrase","").orEmpty();set(v){require(v.isBlank() || com.jarvis.assistant.voice.WakePhraseMatcher.validCustomPhrase(v));p.edit().putString("custom_wake_phrase",v.trim()).apply()}
     var selectedLanguageMode:Boolean get()=p.getBoolean("selected_language_mode",false);set(v){p.edit().putBoolean("selected_language_mode",v).apply()}
     var firstSpeakerModeApplied:Boolean get()=p.getBoolean("first_speaker_mode_applied",false);set(v){check(p.edit().putBoolean("first_speaker_mode_applied",v).commit())}
     var morning:Int get()=p.getInt("morning",5);set(v){p.edit().putInt("morning",v).apply()}

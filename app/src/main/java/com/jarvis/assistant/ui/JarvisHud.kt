@@ -94,6 +94,18 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
             WeatherPanel(state,actions,Modifier.weight(1f),compact=true)
         }
         CommandCountdown(state)
+        state.futureSuggestion?.let{suggestion->
+            HudPanel("FUTURE ACTION · ${suggestion.source.name}",Modifier.fillMaxWidth()){
+                Text(suggestion.title,color=Ice,maxLines=2)
+                Text(suggestion.explanation,color=Dim,fontSize=11.sp,maxLines=3)
+                Row{
+                    TextButton(onClick={actions.onSuggestion(suggestion.id,"review")}){Text("Review")}
+                    TextButton(onClick={actions.onSuggestion(suggestion.id,"snooze")}){Text("Snooze")}
+                    TextButton(onClick={actions.onSuggestion(suggestion.id,"dismiss")}){Text("Not now")}
+                    TextButton(onClick={actions.onSuggestion(suggestion.id,"never")}){Text("Never")}
+                }
+            }
+        }
         if(state.aiCall.active){
             HudPanel("JARVIS AI CALL · ${state.aiCall.phase.name}",Modifier.fillMaxWidth()){
                 Text(if(state.aiCall.phase==com.jarvis.assistant.call.AiCallPhase.RINGING)"Jarvis is calling. Pick up to talk." else "Your AI conversation is active.",color=Ice)
@@ -196,7 +208,7 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
     var batteryDetails by remember{mutableStateOf(false)}
     val boot=if(state.sentinelVisual.mode==SentinelMode.ACTIVATING && fps>0)ReactorGeometry.awakening(frameNow-state.sentinelVisual.activatedAt) else Awakening(1f,1f,1f,0f,true)
     val speed by rememberUpdatedState(ReactorGeometry.speed(s,mode,state.execution==com.jarvis.assistant.phantom.ExecutionState.EXECUTING))
-    val actualCharging=(state.hud.power.connected==true && (state.hud.power.charging || state.hud.power.condition==com.jarvis.assistant.power.PowerCondition.FULL) && s.sentinel.chargingEffects)
+    val actualCharging=ReactorPalette.chargingAccent(state.hud.power.connected,state.hud.power.charging,s.sentinel.chargingEffects)
     val chargeActive by rememberUpdatedState(actualCharging)
     val chargeSpeed by rememberUpdatedState(s.sentinel.animationSpeed)
     val green=if(fps>0)chargingFrame else com.jarvis.assistant.power.ChargingVisual(chargingFrame.angle,if(actualCharging)1f else 0f)

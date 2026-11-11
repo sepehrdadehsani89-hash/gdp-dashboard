@@ -80,6 +80,11 @@
         <activity android:name=".quantum.ControlCenterActivity" android:exported="false" />
         <activity android:name=".titan.TitanCenterActivity" android:exported="false" />
         <activity android:name=".titan.MemoryCardsActivity" android:exported="false" />
+        <activity android:name=".finishpolish.FinishPolishActivity" android:exported="false" />
+        <activity android:name=".finishpolish.doctor.SystemDoctorActivity" android:exported="false" />
+        <activity android:name=".finishpolish.learning.LearningActivity" android:exported="false" />
+        <activity android:name=".finishpolish.predictive.PredictiveActivity" android:exported="false" />
+        <activity android:name=".finishpolish.mission.MissionControlActivity" android:exported="false" />
         <activity android:name=".voice.VoiceHealthActivity" android:exported="false" />
         <activity android:name=".voice.VoiceSettingsActivity" android:exported="false" />
         <activity android:name=".neural.SafeActivationActivity" android:exported="false" android:theme="@style/Theme.Jarvis" />

@@ -1,0 +1,275 @@
+J.A.R.V.I.S. — FINAL POLISH & INTELLIGENCE UPGRADE
+
+You are an elite team of Android engineers, AI architects, speech-recognition specialists, machine-learning engineers, security experts, desktop integration developers, quality assurance engineers, and futuristic UI designers.
+
+Your mission is to complete the finishing touches on my existing J.A.R.V.I.S. Android assistant.
+
+I have attached the comprehensive J.A.R.V.I.S. Four Engines + Video 6158 Master Development Prompt.
+
+Read the entire attached specification and use it as the primary development reference.
+
+ABSOLUTE REQUIREMENTS
+
+Do not rebuild my application.
+
+Do not change the existing wallpaper, circular core design, application identity, or approved interface layout.
+
+Do not delete working functionality.
+
+Do not replace the current project with a demonstration or mockup.
+
+Do not mark unfinished features as completed.
+
+Implement actual source-code improvements and verify the results.
+
+PRIORITY 1 — REPAIR EVERYTHING IDENTIFIED IN VIDEO 6158
+
+Inspect the full video and source code.
+
+Fix the voice-recognition system so I can say “Hey Jarvis” or “Jarvis, are you up?” once and immediately give a command.
+
+Stop microphone sessions from overlapping.
+
+Fix recognition timeouts and incorrect speech errors.
+
+Distinguish speech recognition failures from AI model failures, permission problems, and command execution errors.
+
+Make ordinary requests such as time, date, battery, identity, basic mathematics, and supported Android commands work locally without requiring an HTTPS gateway.
+
+Use a real offline language model for broader conversations when compatible hardware resources and an installed model are available.
+
+Ensure commands actually execute and verify the result before reporting success.
+
+Preserve background voice activation where Android legitimately permits it, with an explicitly enabled microphone service, visible notification, and privacy controls.
+
+PRIORITY 2 — REPAIR THE EXISTING HOLOGRAPHIC CORE
+
+Preserve the existing core exactly in its overall appearance.
+
+Make the existing animation respond to real application states.
+
+CYAN: Idle, available, gently rotating.
+
+PURPLE: Wake word detected and actively listening. The visualizer reacts to actual microphone input.
+
+BLUE: Speaking. Rings and waveforms respond to actual audio playback.
+
+GREEN PARTICLES: A secondary charging effect that appears only when the actual battery charging state requires it.
+
+AMBER: A subtle error indicator for real system failures.
+
+Display the actual battery percentage in the center.
+
+Never use hardcoded battery information.
+
+Do not create a separate new Living Intelligence Core module. This requirement is strictly a repair and improvement of the existing interface.
+
+Animations must be smooth, optimized, and tied to real events. Do not waste battery continuously rendering effects while the interface is not visible.
+
+PRIORITY 3 — IMPLEMENT AUTO-REPAIR INTELLIGENCE
+
+Build a real System Doctor capable of examining:
+
+* Microphone status and permissions.
+* Wake-word recognition.
+* Speech recognition callbacks.
+* Text-to-speech initialization.
+* Local AI model availability.
+* Backend configuration when enabled.
+* Android command execution.
+* Device and desktop connections.
+* Animation and rendering states.
+* Battery and memory conditions.
+* Application crashes and relevant system errors.
+
+Identify the actual cause of failures whenever sufficient diagnostic information exists.
+
+Create an intelligent repair system with:
+
+* Issue detection.
+* Evidence collection.
+* Failure classification.
+* Safe repair proposals.
+* User confirmation when necessary.
+* Bounded retries.
+* Recovery from unsuccessful repairs.
+* Post-repair verification.
+* Clear explanations.
+
+Never claim a repair succeeded unless it was verified.
+
+Do not bypass Android permissions or secretly change protected settings.
+
+Use an elegant, integrated System Doctor interface matching the existing futuristic design.
+
+PRIORITY 4 — IMPLEMENT NEURAL EVOLUTION
+
+Create an opt-in personal learning system.
+
+J.A.R.V.I.S. should improve its understanding of user-approved commands, nicknames, terminology, and response preferences.
+
+Example:
+
+“When I say coding time, prepare my programming workspace.”
+
+The assistant should show the proposed automation, request appropriate authorization, save it, and correctly execute it when triggered later.
+
+Support:
+
+* Custom command phrases.
+* Multiple alternative pronunciations.
+* Application nicknames.
+* Personal technical vocabulary.
+* Explicit correction learning.
+* Editable command recipes.
+* Contextual intent recognition.
+* Conflict detection.
+* Learning history.
+* Undo and deletion controls.
+* Local data protection.
+* Measured accuracy improvements.
+
+Use actual personal preference storage and command interpretation.
+
+Do not pretend a correction automatically retrains a language model.
+
+Do not collect private conversations or ambient microphone recordings for training without explicit consent.
+
+PRIORITY 5 — IMPLEMENT PREDICTIVE INTELLIGENCE
+
+Make J.A.R.V.I.S. capable of offering useful suggestions based on user-authorized information.
+
+For example:
+
+“Sir, your programming session starts in 20 minutes. Would you like me to prepare your workspace?”
+
+Or:
+
+“Your phone has reached 10% battery. Would you like to open battery saver settings?”
+
+Use actual schedule information, battery readings, connected services, and configured routines.
+
+Implement:
+
+* Optional proactive suggestions.
+* Calendar-aware preparation.
+* User-configured routines.
+* Battery-based reminders.
+* Appropriate task preparation.
+* Quiet hours.
+* Suggestion frequency limits.
+* Snooze and dismiss actions.
+* Transparent explanations of suggestion sources.
+* Full opt-out controls.
+
+Never send messages, make purchases, access sensitive information, or execute significant external actions simply because J.A.R.V.I.S. predicts the user may want them.
+
+Require appropriate authorization before execution.
+
+Maintain a clean, minimal interface. Do not flood the existing dashboard with cards.
+
+PRIORITY 6 — IMPLEMENT UNIVERSAL MISSION CONTROL
+
+Make J.A.R.V.I.S. capable of securely coordinating authorized actions on paired Windows, macOS, and Linux computers.
+
+My Android phone should function as the main microphone and speaker even when the paired computer has no audio hardware.
+
+Example:
+
+“Hey Jarvis, open Chrome on my computer and search for ChatGPT.”
+
+Expected workflow:
+
+1. Android recognizes the command.
+2. J.A.R.V.I.S. identifies the selected paired computer.
+3. It checks connection status and permissions.
+4. The command is transmitted securely to the desktop companion.
+5. The computer performs the supported operation.
+6. The desktop companion verifies its result.
+7. The verified result returns to Android.
+8. J.A.R.V.I.S. reports the outcome through my phone.
+
+Implement secure pairing, authenticated transport, device registration, capability discovery, task previews, cancellation, and permission management.
+
+Support selected application launching, browser searches, authorized file access, workspace preparation, and other explicitly permitted actions.
+
+Do not implement unrestricted remote shell execution, hidden screen monitoring, or unauthorized device access.
+
+Create a small, futuristic Mission Control view showing connected devices and actual execution progress.
+
+PRIORITY 7 — CONNECT ALL SYSTEMS
+
+These four engines must work together rather than operating independently.
+
+The Auto-Repair Engine diagnoses problems that occur during voice recognition or device execution.
+
+The Neural Evolution Engine improves command understanding from approved corrections.
+
+The Predictive Intelligence Engine suggests useful next actions using authorized information.
+
+Universal Mission Control performs approved operations on paired devices.
+
+All four systems use one consistent action registry, one permissions architecture, shared event reporting, verified execution results, and the existing J.A.R.V.I.S. visual-state system.
+
+PRIORITY 8 — PERFORMANCE, SECURITY & FINAL TESTING
+
+Optimize for Android devices with limited RAM and processing power.
+
+Use efficient background operation, lightweight wake detection, careful language-model memory management, and responsive animations.
+
+Avoid unnecessary network requests and continuous GPU activity.
+
+Test voice recognition, local questions, app launching, animation, charging status, permissions, diagnostic repairs, saved commands, proactive reminders, and desktop communication.
+
+Reproduce all verifiable failures from Video 6158.
+
+Run repeated wake-word tests and report actual recognition rates.
+
+Verify that completed commands genuinely succeeded.
+
+Test offline behavior and failure recovery.
+
+Test on real Android hardware wherever available.
+
+Provide a report containing:
+
+* Files changed.
+* Bugs reproduced.
+* Bugs fixed.
+* Features implemented.
+* Features verified.
+* Tests passed and failed.
+* Actual performance measurements.
+* Remaining limitations.
+* Any required device permissions.
+* Build and installation instructions.
+
+Do not invent test results.
+
+FINAL PRODUCT EXPECTATION
+
+I want an exceptionally polished J.A.R.V.I.S. that feels like a professional AI operating assistant.
+
+Its microphone understands my commands.
+
+Its local brain provides useful responses.
+
+Its interface reacts to real activity.
+
+It diagnoses technical failures.
+
+It remembers approved corrections.
+
+It suggests useful actions at appropriate times.
+
+It controls authorized paired devices.
+
+Most importantly, it does what it says it has done.
+
+Preserve the existing J.A.R.V.I.S. interface and functionality.
+
+Do not add the previously removed fifth feature as a separate upgrade.
+
+This is the final polish stage—not another application rebuild.
+
+Begin by inspecting the project, reproducing the Video 6158 issues, and implementing verifiable fixes before advancing through the four intelligence engines.

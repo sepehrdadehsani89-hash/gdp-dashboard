@@ -38,7 +38,7 @@ class WallpaperRenderer {
         val mode=when{CoreMotionPolicy.errorVisible(frame.voiceErrorAt,now)->SentinelMode.ERROR;frame.visual.mode==SentinelMode.ERROR && frame.voiceErrorAt>0->SentinelMode.DORMANT;else->frame.visual.mode}
         val motion=frame.hud.telemetry.systemMotion && !s.reducedMotion && v.animationSpeed>0
         val power=frame.hud.power
-        val green=energyClock.frame(now,power.connected==true && (power.charging || power.condition==com.jarvis.assistant.power.PowerCondition.FULL) && v.chargingEffects,motion,v.animationSpeed)
+        val green=energyClock.frame(now,ReactorPalette.chargingAccent(power.connected,power.charging,v.chargingEffects),motion,v.animationSpeed)
         val strip=stripClock.frame(now,power.stripVisible,motion)
         val stripPresent=strip.alpha>0f
         val dormant=mode==SentinelMode.DORMANT
@@ -135,7 +135,7 @@ class WallpaperRenderer {
             SentinelMode.ACTIVATING->frame.language.choose("J.A.R.V.I.S. · AWAKENING","J.A.R.V.I.S. · ACTIVANDO","جارویس · فعال‌سازی")
             SentinelMode.LISTENING->if(frame.followUpArming)frame.language.choose("MIC REARMING","PREPARANDO MICRÓFONO","آماده‌سازی میکروفن") else frame.language.choose("LISTENING · ADAPTIVE","ESCUCHANDO · ADAPTATIVO","در حال شنیدن · فرصت ۱۰ ثانیه")
             SentinelMode.PROCESSING->frame.language.choose("PROCESSING","PROCESANDO","در حال پردازش")
-            SentinelMode.SPEAKING->if(frame.playback.active)"SPEAKING · LIVE PCM PLAYBACK" else frame.language.choose("SPEAKING · DECORATIVE MOTION","HABLANDO · MOVIMIENTO DECORATIVO","در حال گفتن · حرکت تزئینی")
+            SentinelMode.SPEAKING->if(frame.playback.active)"SPEAKING · LIVE PCM PLAYBACK" else frame.language.choose("SPEAKING · PLAYBACK LEVEL UNAVAILABLE","HABLANDO · NIVEL DE AUDIO NO DISPONIBLE","در حال گفتن · حرکت تزئینی")
             SentinelMode.AUTHORIZATION_REQUIRED->"CODEX · IDENTITY REQUIRED"
             SentinelMode.ERROR->frame.language.choose("ATTENTION · OPEN JARVIS","ATENCIÓN · ABRE JARVIS","توجه · جارویس را باز کنید")
             SentinelMode.RETURNING_TO_WALLPAPER->frame.language.choose("RETURNING TO STANDBY","VOLVIENDO A ESPERA","بازگشت به آماده‌باش")

@@ -206,6 +206,21 @@ class Companion:
         with self.lock:
             self.db.execute('UPDATE commands SET receipt=? WHERE id=?',(json.dumps(result),request['command_id']));self.db.commit();self.cancels.pop(request['command_id'],None)
         return result
+    def capabilities(self,token,request):
+        row=self.authenticate(token)
+        require(isinstance(request,dict) and set(request)=={'nonce'} and uid(request['nonce']))
+        with self.lock:self._rate(self.rates['capabilities:'+row[0]],20)
+        locate=getattr(self.adapter,'locate',None)
+        try:chrome=bool(locate()) if locate else None
+        except Exception:chrome=None
+        status='REQUIRES_CONFIRMATION' if chrome else 'UNAVAILABLE'
+        reason=None if chrome else 'CHROME_NOT_INSTALLED' if chrome is False else 'ADAPTER_READINESS_UNAVAILABLE'
+        platform='windows' if sys.platform=='win32' else 'macos' if sys.platform=='darwin' else 'linux' if sys.platform.startswith('linux') else 'unsupported'
+        capabilities=[{'action_id':action,'status':status,'reason':reason,'app':'chrome','verification':'CHROME_DOCUMENT_LOADED'} for action in CAPABILITIES]
+        capabilities += [{'action_id':action,'status':'UNAVAILABLE','reason':'NOT_IMPLEMENTED','verification':None} for action in ('desktop.open_document','desktop.transfer_file','desktop.arbitrary_app','desktop.screen_capture','desktop.remote_shell')]
+        value={'schema_version':1,'agent_version':'1.1','service':'jarvis-companion','device_id':self.device_id,'client_id':row[0],'session_id':row[1],'request_nonce':request['nonce'],'sampled_at':self.now(),'platform':platform,'capabilities':capabilities}
+        raw=canonical(value)
+        return {'manifest':base64.urlsafe_b64encode(raw).decode().rstrip('='),'signature':hmac.new(bytes.fromhex(row[2]),raw,hashlib.sha256).hexdigest()}
     def receipt(self,token,command_id):
         row=self.authenticate(token)
         with self.lock:r=self.db.execute('SELECT receipt FROM commands WHERE id=? AND client=?',(command_id,row[0])).fetchone()
@@ -254,6 +269,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
             if self.path=='/v1/pair/request':value=app.request_pair(json.loads(body))
             elif self.path=='/v1/pair/complete':value=app.finish_pair(json.loads(body))
             elif self.path=='/v1/commands':value=app.command(self.token(),body)
+            elif self.path=='/v1/capabilities':value=app.capabilities(self.token(),json.loads(body))
             elif self.path=='/v1/revoke':value=app.revoke(self.token())
             elif self.path.startswith('/v1/cancel/'):value=app.cancel(self.token(),self.path.removeprefix('/v1/cancel/'))
             else:self.reply(404,{'error':'ROUTE_NOT_FOUND'});return

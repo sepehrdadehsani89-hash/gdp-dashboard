@@ -32,6 +32,31 @@ class CompanionTest(unittest.TestCase):
     def assertFailure(self,code,fn):
         with self.assertRaises(Failure) as c:fn()
         self.assertEqual(code,c.exception.code)
+    def manifest(self,envelope,token):
+        raw=base64.urlsafe_b64decode(envelope['manifest']+'==')
+        self.assertTrue(hmac.compare_digest(envelope['signature'],hmac.new(hashlib.sha256(token.encode()).digest(),raw,hashlib.sha256).hexdigest()))
+        return json.loads(raw)
+    def test_capabilities_require_a_current_paired_token(self):
+        self.assertFailure('UNAUTHORIZED',lambda:self.app.capabilities('invalid',{'nonce':str(uuid.uuid4())}))
+    def test_capabilities_are_signed_nonce_bound_and_do_not_launch_chrome(self):
+        p=self.pair();nonce=str(uuid.uuid4());self.adapter.locate=lambda:'/private/browser/path'
+        e=self.app.capabilities(p['token'],{'nonce':nonce});v=self.manifest(e,p['token'])
+        self.assertEqual(nonce,v['request_nonce']);self.assertEqual(p['client_id'],v['client_id']);self.assertEqual(p['session_id'],v['session_id']);self.assertEqual(self.app.device_id,v['device_id'])
+        self.assertEqual('REQUIRES_CONFIRMATION',v['capabilities'][0]['status']);self.assertEqual(0,self.adapter.calls)
+        self.assertNotIn('/private/browser/path',json.dumps(v));self.assertNotIn(p['token'],json.dumps(v))
+    def test_missing_chrome_is_unavailable_before_any_action(self):
+        p=self.pair();self.adapter.locate=lambda:None;v=self.manifest(self.app.capabilities(p['token'],{'nonce':str(uuid.uuid4())}),p['token'])
+        self.assertTrue(all(c['status']=='UNAVAILABLE' for c in v['capabilities']));self.assertEqual('CHROME_NOT_INSTALLED',v['capabilities'][0]['reason']);self.assertEqual(0,self.adapter.calls)
+    def test_capability_manifest_does_not_authorize_unimplemented_actions(self):
+        p=self.pair();self.adapter.locate=lambda:'/trusted/chrome';v=self.manifest(self.app.capabilities(p['token'],{'nonce':str(uuid.uuid4())}),p['token'])
+        for c in v['capabilities']:
+            if c['action_id'] not in CAPABILITIES:self.assertEqual('UNAVAILABLE',c['status'])
+    def test_capability_requests_are_rate_limited_and_validate_nonce(self):
+        p=self.pair();self.assertFailure('INVALID_REQUEST',lambda:self.app.capabilities(p['token'],{'nonce':'not-uuid'}))
+        for _ in range(20):self.app.capabilities(p['token'],{'nonce':str(uuid.uuid4())})
+        self.assertFailure('RATE_LIMITED',lambda:self.app.capabilities(p['token'],{'nonce':str(uuid.uuid4())}))
+    def test_revoking_a_pair_revokes_capability_access(self):
+        p=self.pair();self.app.revoke(p['token']);self.assertFailure('UNAUTHORIZED',lambda:self.app.capabilities(p['token'],{'nonce':str(uuid.uuid4())}))
     def test_pairing_requires_desktop_approval(self):
         i=self.invite;proof=hmac.new(i['code'].encode(),(i['pairing_id']+'\n'+self.client+'\n'+self.nonce).encode(),hashlib.sha256).hexdigest();p=self.app.request_pair(dict(pairing_id=i['pairing_id'],client_id=self.client,nonce=self.nonce,proof=proof));self.assertFailure('DESKTOP_APPROVAL_REQUIRED',lambda:self.app.finish_pair(dict(ticket=p['ticket'],client_id=self.client,nonce=self.nonce,proof=proof)))
     def test_invalid_proof_never_pairs(self):self.assertFailure('PAIRING_PROOF_INVALID',lambda:self.app.request_pair(dict(pairing_id=self.invite['pairing_id'],client_id=self.client,nonce=self.nonce,proof='0'*64)))
@@ -115,6 +140,10 @@ class ActualTlsTest(unittest.TestCase):
                 req=urllib.request.Request(url+path,data=canonical(data),headers={'Content-Type':'application/json',**({'Authorization':'Bearer '+token} if token else {})});return json.loads(opener.open(req,timeout=5).read())
             try:
                 health=json.loads(opener.open(url+'/v1/health').read());self.assertEqual('jarvis-companion',health['service'])
-                i=app.new_invitation(url,pin);client=str(uuid.uuid4());nonce=str(uuid.uuid4());proof=hmac.new(i['code'].encode(),(i['pairing_id']+'\n'+client+'\n'+nonce).encode(),hashlib.sha256).hexdigest();p=post('/v1/pair/request',dict(pairing_id=i['pairing_id'],client_id=client,nonce=nonce,proof=proof));app.approve(p['ticket']);paired=post('/v1/pair/complete',dict(ticket=p['ticket'],client_id=client,nonce=nonce,proof=proof));self.assertEqual(app.device_id,paired['device_id']);self.assertTrue(post('/v1/revoke',{},paired['token'])['revoked'])
+                i=app.new_invitation(url,pin);client=str(uuid.uuid4());nonce=str(uuid.uuid4());proof=hmac.new(i['code'].encode(),(i['pairing_id']+'\n'+client+'\n'+nonce).encode(),hashlib.sha256).hexdigest();p=post('/v1/pair/request',dict(pairing_id=i['pairing_id'],client_id=client,nonce=nonce,proof=proof));app.approve(p['ticket']);paired=post('/v1/pair/complete',dict(ticket=p['ticket'],client_id=client,nonce=nonce,proof=proof));self.assertEqual(app.device_id,paired['device_id'])
+                capnonce=str(uuid.uuid4());envelope=post('/v1/capabilities',{'nonce':capnonce},paired['token']);raw=base64.urlsafe_b64decode(envelope['manifest']+'==')
+                self.assertTrue(hmac.compare_digest(envelope['signature'],hmac.new(hashlib.sha256(paired['token'].encode()).digest(),raw,hashlib.sha256).hexdigest()))
+                manifest=json.loads(raw);self.assertEqual(capnonce,manifest['request_nonce']);self.assertEqual(paired['session_id'],manifest['session_id'])
+                self.assertTrue(post('/v1/revoke',{},paired['token'])['revoked'])
             finally:server.shutdown();server.server_close();app.close()
 if __name__=='__main__':unittest.main()

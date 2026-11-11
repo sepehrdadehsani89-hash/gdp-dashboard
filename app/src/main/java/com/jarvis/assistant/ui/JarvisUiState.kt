@@ -9,6 +9,7 @@ import com.jarvis.assistant.core.PendingAction
 import com.jarvis.assistant.core.ConnectionCheck
 
 data class JarvisUiState(
+    val futureSuggestion:com.jarvis.assistant.finishpolish.predictive.FutureSuggestion?=null,
     val aiCall:com.jarvis.assistant.call.AiCallState=com.jarvis.assistant.call.AiCallState(),
     val voiceStage:com.jarvis.assistant.voice.VoiceStage=com.jarvis.assistant.voice.VoiceStage.IDLE,
     val voiceErrorAt:Long=0,
@@ -61,6 +62,7 @@ data class JarvisUiState(
 )
 
 data class JarvisUiActions(
+    val onSuggestion:(String,String)->Unit={_,_->},
     val onOpenRebirth:()->Unit={},
     val onOpenPhantom:()->Unit={},
     val onOpenTitan:(String)->Unit={},

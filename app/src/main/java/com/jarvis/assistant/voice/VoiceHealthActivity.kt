@@ -20,6 +20,10 @@ class VoiceHealthActivity:PrivateModuleActivity(){
             Text(diagnostic)
             Text("Metadata only; no audio, transcript or secret is stored in this diagnostic. Exact AI-call start and language-mode controls are handled locally. Phone/contact calls and protected actions keep their confidence/owner/confirmation checks.")
             val preferences=remember{com.jarvis.assistant.titan.VoicePreferences(this@VoiceHealthActivity)}
+            var wakePhrase by remember{mutableStateOf(preferences.customWakePhrase)}
+            OutlinedTextField(wakePhrase,{wakePhrase=it.take(80)},label={Text("Optional short wake phrase · blank disables")})
+            OutlinedButton(onClick={authorize{if((wakePhrase.isBlank() || WakePhraseMatcher.validCustomPhrase(wakePhrase)) && (wakePhrase.isBlank() || runCatching{runtime.learning.reload().recipes.flatMap{it.aliases}.none{alias->com.jarvis.assistant.neural.AppMatching.normalize(alias)==com.jarvis.assistant.neural.AppMatching.normalize(wakePhrase)}}.getOrDefault(false))){preferences.customWakePhrase=wakePhrase;status="Wake phrase saved. This is local transcript matching, not new acoustic model training."}else status="Use a distinctive phrase that does not collide with system commands or an existing recipe. Personal command storage must be readable to check conflicts."}}){Text("Save optional wake phrase")}
+            Text("Hey Jarvis and Jarvis, are you up? remain available. Optional phrases depend on the installed recognizer understanding their words.")
             var selectedMode by remember{mutableStateOf(preferences.selectedLanguageMode)}
             LaunchedEffect(shared.settings.language,shared.phase){selectedMode=preferences.selectedLanguageMode}
             Switch(selectedMode,{enabled->authorize{preferences.selectedLanguageMode=enabled;selectedMode=enabled}})
