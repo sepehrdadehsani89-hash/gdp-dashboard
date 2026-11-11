@@ -1,16 +1,14 @@
 # Jarvis for Android
 
-Current development update: [**Jarvis 2.11.7 — signed ARM64 APK**](downloads/v2-2.11.7/Jarvis-2.11.7-arm64-update.apk). [Changes and phone setup](docs/voice-2.11.7/REPORT.md) · [Verification](downloads/v2-2.11.7/VERIFICATION.md) · [Build/checksum](downloads/v2-2.11.7/build-info.json).
+Current development milestone: [**Jarvis2.11.8 — signed ARM64 APK**](downloads/polish-2.11.8/Jarvis-2.11.8-arm64-update.apk). [Combined-prompt report](docs/finish-polish/REPORT.md) · [Phone guide](docs/finish-polish/Phone_Guide.md) · [Full scope/limits](docs/finish-polish/Feature_Matrix.md) · [Verification](downloads/polish-2.11.8/VERIFICATION.md).
 
-Corrects valid Vosk alternative-result words being rejected for omitted confidence fields, including “call me now.” Adds spoken English/Spanish mode switching with each language's saved Fish voice and a bounded decoder/microphone handoff. Six pickup greetings per language use motion plus uncovered proximity, an unlocked idle screen, quiet/audio guards and a five-minute cooldown. **Settings → Rebirth → Voice health** provides status, speech-settings repair, model downloads and a local call test.
+Integrates System Doctor, opt-in taught recipes, optional source-backed Future Actions and verified paired-computer Mission Control under **Settings → Rebirth → Intelligence & Systems**. Adds local identity/time-zone/basic math, “Jarvis, are you up?”, optional wake phrases, blue speaking and true-charging accents. Original core geometry, wallpaper, theme and prior features remain; no separate fifth Living Core module.
 
-Preserves the existing core identity and prior calls/check-ins, charging, moving-core/wallpaper repairs, widgets, panels, owner profiles, local AI and privacy controls. Gmail stays removed. General questions need a configured secure backend or installed local model. The full master backlog remains staged. [Paired computer setup](companion/README.md) and its existing source distribution remain available.
+619 JVM tests and36 companion tests passed; zero lint errors/fatals. Android instrumentation compiled only; no phone/native Windows/macOS tests or supplied Video6158. This is a scoped development release; broader desktop app/file/workspace actions, semantic learning and full hardware acceptance remain unfinished. General conversation still needs the configured backend or installed local model. [Companion source ZIP](downloads/polish-2.11.8/JarvisCompanion-source-2.11.8.zip) · [setup](companion/README.md).
 
-**548 JVM tests passed; zero lint errors/fatals. No physical phone tests ran.** Redmi 9 microphone/noise, Fish audio, language handoff, pickup/proximity, lock-screen behavior and latency still require hardware acceptance. See the report for exact checks and limits.
+Package `com.jarvis.next`, code25, retained newer signer unchanged. Update a matching newer installation without clearing data; preserve installed app/data if its certificate is rejected. No replacement Android signing key was generated. Learning/prediction are opt-in and new stores additive. Gmail remains removed.
 
-Package `com.jarvis.next`, version code **24**, retained newer certificate unchanged. Install over a matching newer build without clearing data. Preserve the installed app/data if Android rejects its signature; do not uninstall to force an update. No replacement Android key was generated.
-
-Previous: [2.11.6 AI calls](downloads/v2-2.11.6/Jarvis-2.11.6-arm64-update.apk) · [11.5 voice/core](downloads/voice-11.5/Jarvis-11.5.0-arm64-reinstall.apk) · [11.4 charging](downloads/overcharge-11.4/Jarvis-11.4.0-arm64-reinstall.apk) · [11.3](downloads/rebirth-11.3/Jarvis-11.3.0-arm64-reinstall.apk) · [lock/widgets setup](docs/rebirth-11.2/LOCK-AND-WIDGETS.md). Historical artifacts remain preserved.
+Previous: [2.11.7](downloads/v2-2.11.7/Jarvis-2.11.7-arm64-update.apk) · [2.11.6](downloads/v2-2.11.6/Jarvis-2.11.6-arm64-update.apk) · [11.5](downloads/voice-11.5/Jarvis-11.5.0-arm64-reinstall.apk) · [11.4](downloads/overcharge-11.4/Jarvis-11.4.0-arm64-reinstall.apk). Historical artifacts remain preserved.
 
 ## Historical original-signature 7.0 release
 

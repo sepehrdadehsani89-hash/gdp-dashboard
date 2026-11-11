@@ -1,4 +1,10 @@
-# Current development update: Jarvis 2.11.7
+# Current development milestone: Jarvis2.11.8
+
+[**Download signed ARM64 APK**](polish-2.11.8/Jarvis-2.11.8-arm64-update.apk) · [Phone guide](../docs/finish-polish/Phone_Guide.md) · [Combined report and limits](../docs/finish-polish/REPORT.md) · [Verification](polish-2.11.8/VERIFICATION.md).
+
+Four scoped engines in the existing app, local answer/wake improvements and state-driven core repairs. 619 JVM tests +36 companion tests passed; zero lint errors/fatals. No real phone/native desktop test or Video6158 reproduction is claimed. Full master acceptance remains open; see the matrix. Retained newer signing identity unchanged; preserve installed data on signature mismatch.
+
+# Previous development update: Jarvis 2.11.7
 
 [**Download the signed ARM64 APK**](v2-2.11.7/Jarvis-2.11.7-arm64-update.apk) · [Changes and phone setup](../docs/voice-2.11.7/REPORT.md) · [Verification](v2-2.11.7/VERIFICATION.md).
 
