@@ -78,6 +78,8 @@ class WallpaperRenderer {
         val speed=ReactorGeometry.speed(s,mode,frame.execution==com.jarvis.assistant.phantom.ExecutionState.EXECUTING)
         if(!motion)reactorClock.pause()
         val reactorAngle=reactorClock.frame(now,if(motion)speed else 0f)
+        // A visible orbit marker makes continuous motion legible even on dim/low-detail launchers.
+        if(motion){val orbit=reactorAngle*PI/180;fill.color=colorWithAlpha(color,(brightness*220).toInt());canvas.drawCircle(cx+cos(orbit).toFloat()*radius*.8f,cy+sin(orbit).toFloat()*radius*.8f,max(2f,radius*.018f),fill)}
         ReactorGeometry.arcScales.forEachIndexed { index,factor ->
             val r=radius*factor
             ring.set(cx-r,cy-r,cx+r,cy+r)

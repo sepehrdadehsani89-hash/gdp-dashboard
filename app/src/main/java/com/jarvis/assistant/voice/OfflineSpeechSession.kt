@@ -38,6 +38,8 @@ internal class OfflineSpeechSession(
 
     fun start() {
         Thread({
+            val profiles=(context.applicationContext as com.jarvis.assistant.JarvisApplication).runtime.speakers
+            val focusedAudio=SpeakerAudioFocus(profiles.liveFocusReady(),profiles.firstSpeakerFocus,profiles::liveEmbedding)
             try {
                 if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) throw SecurityException("Microphone permission is required.")
                 RecognitionModelCache.acquire(modelDirectory).use { modelReference ->
@@ -104,6 +106,10 @@ internal class OfflineSpeechSession(
                                 val count = audio.read(bytes, 0, bytes.size)
                                 check(count >= 0) { "Microphone capture interrupted." }
                                 if (count == 0) continue
+                                com.jarvis.assistant.hud.AudioSignals.level(this,com.jarvis.assistant.hud.PcmLevel.pcm16(bytes,count))
+                                val focusedPackets=focusedAudio.packets(bytes,count)
+                                try{for(packet in focusedPackets){
+                                val bytes=packet.pcm;val count=packet.count
                                 val level=com.jarvis.assistant.hud.PcmLevel.pcm16(bytes,count)
                                 speakerSample.feed(bytes,count,captureSpeaker)
                                 com.jarvis.assistant.hud.AudioSignals.level(this,level);timing.energy(level);utterance.energy(level)
@@ -124,6 +130,7 @@ internal class OfflineSpeechSession(
                                     recognizer.reset()
                                 }
                                 if((utterance.ready() || !utterance.hasUnfinishedSpeech && UtteranceAssembler.fastCommand(utterance.acceptedText())) && (!captureSpeaker || speakerSample.hasEnoughAudio())){emitResult(utterance.acceptedText());return@Thread}
+                                }}finally{focusedPackets.filter{it.owned}.forEach{it.pcm.fill(0)}}
                             }
                             if (!closed.get()) {
                                 emitError("Speech inactivity or two-minute utterance limit reached. Tap the microphone or say your wake phrase again.")
@@ -132,8 +139,8 @@ internal class OfflineSpeechSession(
                     }
                 }
             } catch (error: Throwable) {
-                if (!closed.get()) emitError(if(error is SecurityException)"PERMISSION_REQUIRED: microphone access unavailable." else if(error.message?.startsWith("RECOGNIZER_BUSY")==true)error.message!! else "AUDIO_ERROR: offline recognition stopped. Check input route and model, then retry.")
-            }finally{capture?.close();capture=null}
+                if (!closed.get()) emitError(if(error.message?.startsWith("SPEAKER_FOCUS_")==true)"SPEAKER_FOCUS_UNAVAILABLE: Check the local model or disable conversation focus, then restart listening. No command was executed." else if(error is SecurityException)"PERMISSION_REQUIRED: microphone access unavailable." else if(error.message?.startsWith("RECOGNIZER_BUSY")==true)error.message!! else "AUDIO_ERROR: offline recognition stopped. Check input route and model, then retry.")
+            }finally{focusedAudio.close();capture?.close();capture=null}
         }, "JarvisOfflineSpeech").start()
     }
 

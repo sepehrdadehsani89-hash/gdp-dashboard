@@ -21,8 +21,8 @@ object CoreMotionPolicy {
             (thermal ?: 0)>=3->20
             settings.autoBatterySaver && (battery.percent ?: 100)<10->if(battery.charging)16 else 8
             (battery.percent ?: 100)<20->20
-            restricted->if(mode==SentinelMode.DORMANT)12 else 30
-            mode==SentinelMode.DORMANT->if(settings.animationProfile=="cinematic")30 else 20
+            restricted->if(mode==SentinelMode.DORMANT)20 else 30
+            mode==SentinelMode.DORMANT->30
             else->60
         }
         return minOf(display,target)

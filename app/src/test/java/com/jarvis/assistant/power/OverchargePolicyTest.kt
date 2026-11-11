@@ -246,7 +246,7 @@ class OverchargePolicyTest {
     }
     @Test fun chargingColorDoesNotOverwriteThePercentageBand(){
         assertEquals(0xFFFF1744,BatteryPolicy.band(3).argb);assertEquals(0xFFF8FAFC,BatteryPolicy.band(80).argb)
-        assertEquals(20,WallpaperRenderPolicy.fps(true,true,true,HudSettings(),BatteryReading(80,true),false,true,SentinelMode.DORMANT))
+        assertEquals(30,WallpaperRenderPolicy.fps(true,true,true,HudSettings(),BatteryReading(80,true),false,true,SentinelMode.DORMANT))
         assertEquals(0,WallpaperRenderPolicy.fps(false,true,true,HudSettings(),BatteryReading(80,true),false,true,SentinelMode.SPEAKING))
     }
     @Test fun renderDiagnosticsStayUnavailableUntilRealSamplesAreRecorded(){

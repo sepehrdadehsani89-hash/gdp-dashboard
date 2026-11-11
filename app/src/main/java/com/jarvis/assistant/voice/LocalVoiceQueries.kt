@@ -21,8 +21,8 @@ object LocalVoiceQueries {
         if(n.length !in 8..4000)return false
         if(!Regex("^(?:what|why|how|when|where|who|which|tell me|explain|que|por que|como|cuando|donde|quien|cual|explica|dime)\\b").containsMatchIn(n))return false
         // Confidence is advisory for ordinary questions, but never relax it for a
-        // possible action, credential, recipient or numeric instruction.
-        return !Regex("\\b(?:open|close|call|send|delete|erase|transfer|pay|buy|tap|type|lock|unlock|start|stop|set|remind|turn|switch|dial|message|publish|share|run|execute|password|passcode|pin|token|secret|api key|abre|cierra|llama|llamar|envia|enviar|borra|elimina|compra|paga|escribe|toca|bloquea|desbloquea|inicia|activa|apaga|enciende|contrasena)\\b|\\d").containsMatchIn(n)
+        // possible action, credential, recipient or sensitive instruction.
+        return !Regex("\\b(?:open|close|call|send|delete|erase|transfer|pay|buy|tap|type|lock|unlock|start|stop|set|remind|turn|switch|dial|message|publish|share|run|execute|password|passcode|pin|token|secret|api key|abre|cierra|llama|llamar|envia|enviar|borra|elimina|compra|paga|escribe|toca|bloquea|desbloquea|inicia|activa|apaga|enciende|contrasena)\\b").containsMatchIn(n)
     }
     fun answer(query:LocalVoiceQuery,language:AppLanguage,clock:Clock=Clock.systemDefaultZone(),use24Hour:Boolean=false):String {
         val now=ZonedDateTime.now(clock);val locale=Locale.forLanguageTag(language.tag)

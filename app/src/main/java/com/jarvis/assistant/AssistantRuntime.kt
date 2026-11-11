@@ -53,6 +53,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.currentCoroutineContext
@@ -73,6 +74,11 @@ import com.jarvis.assistant.phantom.*
 class AssistantRuntime(private val context: Context) {
     val store = JarvisStore(context)
     val features = com.jarvis.assistant.omnisystem.FeatureVault(context)
+    val companion by lazy{com.jarvis.assistant.companion.CompanionClient(features)}
+    val aiCall=com.jarvis.assistant.call.AiCallController(SystemClock::elapsedRealtime)
+    val callMe by lazy{com.jarvis.assistant.checkin.CallMeStore(context,features)}
+    private var activeCallMe:Triple<String,String,Long>?=null
+    private var callMeFinished:(()->Unit)?=null
     val crashDiagnostics=com.jarvis.assistant.rebirth.CrashDiagnostics(context)
     val customVoice by lazy{com.jarvis.assistant.voice.CustomVoice(features,greetingCache=com.jarvis.assistant.voice.PublicGreetingCache(File(context.cacheDir,"public-greetings")))}
 
@@ -147,8 +153,8 @@ class AssistantRuntime(private val context: Context) {
     private var privateTurn = false
     val batteryAlerts by lazy{com.jarvis.assistant.titan.BatteryAlerts(context,hud,scope,
         ready={cameraOwner==null && state.value.phase==AssistantPhase.READY && session?.isActive!=true && state.value.authorization==null && !state.value.followUpArming && state.value.voiceWindowDeadline<=SystemClock.elapsedRealtime() && !com.jarvis.assistant.security.SystemCredentialPrivacy.pending(context)},
-        play={text,volume,started,done,error->pauseWake();speak(text,language(),allowCloudSpeech=true,volumeOverride=volume,completion=done,failure=error,privateSpeech=false,publicOnly=true,onAudioStarted=started)},language=::language,
-        stopPlayback={cloudVoiceJob?.cancel();cloudVoiceJob=null;speech.stop();mutableState.update{it.copy(phase=AssistantPhase.READY)};resumeWake()})}
+        play={text,volume,conversation,started,done,error->if(conversation){if(!requestAiCall(com.jarvis.assistant.call.AiCallSource.BATTERY_20,showUi=false,onStarted=started,onDone=done,onFailed=error))error("An AI call is already active; battery invitation remains pending.")}else{pauseWake();speak(text,language(),allowCloudSpeech=true,volumeOverride=volume,completion=done,failure=error,privateSpeech=false,publicOnly=true,onAudioStarted=started)}},language=::language,
+        stopPlayback={val c=aiCall.state.value;if(c.active && c.source==com.jarvis.assistant.call.AiCallSource.BATTERY_20)endAiCall(c.id,"BATTERY_CONDITION_CHANGED")else{cloudVoiceJob?.cancel();cloudVoiceJob=null;speech.stop();mutableState.update{it.copy(phase=AssistantPhase.READY)};resumeWake()}})}
     val sessionNotePreferences by lazy{com.jarvis.assistant.rebirth.SessionNotePreferences(context)}
     private val sessionNoteDraft=com.jarvis.assistant.rebirth.SessionNoteDraft()
     private var sessionNoteWrite:Job?=null
@@ -192,6 +198,12 @@ class AssistantRuntime(private val context: Context) {
             }
         }}
         scope.launch{sessionNotePreferences.enabled.collectLatest{enabled->mutableState.update{it.copy(automaticSessionNotes=enabled)}}}
+        scope.launch{aiCall.state.collect{call->mutableState.update{it.copy(aiCall=call)}}}
+        scope.launch{state.map{it.phase}.distinctUntilChanged().collect{phase->
+            val c=aiCall.state.value
+            if(c.connected)aiCall.stage(c.id,when(phase){AssistantPhase.LISTENING->com.jarvis.assistant.call.AiCallPhase.LISTENING;AssistantPhase.SPEAKING->com.jarvis.assistant.call.AiCallPhase.SPEAKING;AssistantPhase.THINKING->com.jarvis.assistant.call.AiCallPhase.THINKING;else->com.jarvis.assistant.call.AiCallPhase.CONNECTING})
+        }}
+        scope.launch{while(true){delay(500);val call=aiCall.state.value;com.jarvis.assistant.call.AiCallPolicy.timeout(call,SystemClock.elapsedRealtime())?.let{endAiCall(call.id,it)}}}
         batteryAlerts.start()
         // WorkManager restores opt-in work across process restarts; no microphone/LLM is started.
         com.jarvis.assistant.neural.BriefingScheduler.sync(context,keepExisting=true)
@@ -270,13 +282,14 @@ class AssistantRuntime(private val context: Context) {
         } }
         scope.launch { store.messages.collectLatest { messages -> mutableState.update { it.copy(messages = messages) } } }
         scope.launch { store.memories.collectLatest { memories -> mutableState.update { it.copy(memories = memories, memoryCategories=memories.associate { m -> m.id to categories.getString(m.id.toString(), "Notes").orEmpty() }) } } }
+        scope.launch{WakeListenerService.state.collectLatest{wake->val c=aiCall.state.value;if(!wake.running && c.connected && c.audioConnected)endAiCall(c.id,"MICROPHONE_STOPPED",true)}}
         scope.launch { WakeListenerService.state.collectLatest { wake -> mutableState.update { it.copy(wakeStatus = wake.status, wakeEnabled=wake.running, followUpArming=wake.waitingForCapture, voiceWindowDeadline= wake.commandDeadlineElapsed, transcript=if(!wake.awaitingCommand && it.phase==AssistantPhase.LISTENING)"" else it.transcript, phase=if(wake.awaitingCommand && it.phase in setOf(AssistantPhase.READY,AssistantPhase.ERROR,AssistantPhase.PAUSED)) AssistantPhase.LISTENING else if(!wake.awaitingCommand && it.phase==AssistantPhase.LISTENING && (wake.listening || !wake.running || wake.interrupted)) AssistantPhase.READY else it.phase) } } }
         ContextCompat.registerReceiver(context, object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 when (intent?.action) {
                     WakeListenerService.ACTION_PARTIAL -> {
                         if(intent.getLongExtra("runtime_generation",-1)==sessionGeneration && !locked() && state.value.phase==AssistantPhase.LISTENING && state.value.voiceWindowDeadline>SystemClock.elapsedRealtime())
-                            {val text=intent.getStringExtra(WakeListenerService.EXTRA_TEXT).orEmpty().take(4000);phantom.partial(text);mutableState.update{it.copy(confirmedEntity=null,transcript=text)}}
+                            {val text=intent.getStringExtra(WakeListenerService.EXTRA_TEXT).orEmpty().take(4000);if(text.isNotBlank())aiCall.activity();phantom.partial(text);mutableState.update{it.copy(confirmedEntity=null,transcript=text)}}
                     }
                     WakeListenerService.ACTION_COMMAND -> {
                         val text = intent.getStringExtra(WakeListenerService.EXTRA_TEXT).orEmpty()
@@ -311,6 +324,7 @@ class AssistantRuntime(private val context: Context) {
 
     fun wakeActivated(){
         if(cameraOwner!=null)return
+        speakers.firstSpeakerFocus.reset()
         voiceSession.wake(sessionGeneration)
         mutableState.update{it.copy(voiceInteraction=true,error=null,phase=if(it.phase in setOf(AssistantPhase.ERROR,AssistantPhase.PAUSED))AssistantPhase.READY else it.phase)}
         visuals.activate();effects.userPlay(com.jarvis.assistant.sentinel.SentinelSound.WAKE)
@@ -321,6 +335,106 @@ class AssistantRuntime(private val context: Context) {
             delay(1700);if(visuals.state.value.activationId==activation){visuals.settle();effects.play(com.jarvis.assistant.sentinel.SentinelSound.READY)}
         }
     }
+    private data class CallAlertCallbacks(val id:String,val started:()->Unit,val done:()->Unit,val failed:(String)->Unit)
+    private var callAlertCallbacks:CallAlertCallbacks?=null
+    private var callAnswerJob:Job?=null
+    private var callWarmup:Job?=null
+    fun requestAiCall(source:com.jarvis.assistant.call.AiCallSource=com.jarvis.assistant.call.AiCallSource.USER,referenceId:String?=null,referenceRevision:String?=null,showUi:Boolean=true,answerOnOpen:Boolean=false,preserveFocus:Boolean=false,onStarted:()->Unit={},onDone:()->Unit={},onFailed:((String)->Unit)?=null):Boolean {
+        val previous=aiCall.state.value
+        if(previous.active){if(showUi)openAiCall(previous.id,answerOnOpen && source==previous.source && referenceId==previous.referenceId && referenceRevision==previous.referenceRevision);return false}
+        if(com.jarvis.assistant.security.SystemCredentialPrivacy.pending(context) || cameraOwner!=null)return false
+        if(source==com.jarvis.assistant.call.AiCallSource.CHECK_IN){val entry=runCatching{callMe.reload().firstOrNull{it.id==referenceId && it.revision==referenceRevision}}.getOrNull() ?: return false;if(entry.at>System.currentTimeMillis())return false}
+        if(source!=com.jarvis.assistant.call.AiCallSource.BATTERY_20)cancelSession()
+        pauseWake()
+        if(!preserveFocus)speakers.firstSpeakerFocus.reset()
+        val call=aiCall.start(source,WakeListenerService.state.value.running,referenceId,referenceRevision) ?: return false
+        if(onFailed!=null)callAlertCallbacks=CallAlertCallbacks(call.id,onStarted,onDone,onFailed)
+        mutableState.update{it.copy(voiceInteraction=false,phase=AssistantPhase.READY,error=null)}
+        try{ContextCompat.startForegroundService(context,Intent(context,com.jarvis.assistant.call.AiCallService::class.java).putExtra("call_id",call.id))}catch(_:Exception){com.jarvis.assistant.call.AiCallService.showFallback(context,call);mutableState.update{it.copy(error="Android limited background ringing. Tap the AI-call notification or open Jarvis to answer.")}}
+        if(showUi)openAiCall(call.id,answerOnOpen)
+        val text=aiCallGreeting(call)
+        if(com.jarvis.assistant.voice.PublicGreetingCache.eligible(text)){
+            callWarmup?.cancel();callWarmup=scope.launch(Dispatchers.IO){try{val c=customVoice.config(language());if(c.enabled && c.key.isNotBlank())customVoice.synthesize(c,text).fill(0)}catch(_:Exception){/* Pickup reports an actual voice failure; ringing never claims a connection. */}}
+        }
+        return true
+    }
+    fun openAiCall(id:String=aiCall.state.value.id,answer:Boolean=false){
+        if(!com.jarvis.assistant.rebirth.AppVisibility.visible)return
+        runCatching{context.startActivity(Intent(context,com.jarvis.assistant.call.AiCallActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP).putExtra("call_id",id).putExtra("answer",answer))}
+    }
+    private fun aiCallGreeting(c:com.jarvis.assistant.call.AiCallState):String=when(c.source){
+        com.jarvis.assistant.call.AiCallSource.USER->com.jarvis.assistant.call.AiCallPolicy.greeting(language()==AppLanguage.ES)
+        com.jarvis.assistant.call.AiCallSource.CHECK_IN->com.jarvis.assistant.checkin.CallMePolicy.invitation(c.referenceId.orEmpty(),language()==AppLanguage.ES)
+        com.jarvis.assistant.call.AiCallSource.BATTERY_20->{
+            val power=hud.powerSource.state.value
+            val level=power.battery.percent.takeIf{SystemClock.elapsedRealtime()-power.observedAt in 0..150_000L}
+            if(level==null)language().choose("Sir, the current battery reading is unavailable. I'm here; how can I help?","Señor, no está disponible la batería actual. Estoy aquí; ¿en qué te ayudo?","خوانش باتری در دسترس نیست.")
+            else language().choose("Sir, your battery is at $level percent. This is a good time to charge. I'm here; what can I help you with?","Señor, tu batería está al $level por ciento. Es un buen momento para cargarla. Estoy aquí; ¿en qué te ayudo?","باتری $level درصد است.")
+        }
+    }
+    fun answerAiCall(id:String):Boolean {
+        val c=aiCall.state.value
+        if(c.id!=id || c.phase!=com.jarvis.assistant.call.AiCallPhase.RINGING)return false
+        val audio=context.getSystemService(android.media.AudioManager::class.java)
+        if(audio.mode!=android.media.AudioManager.MODE_NORMAL){endAiCall(id,"OTHER_AUDIO_CALL_ACTIVE",true);return false}
+        if(ContextCompat.checkSelfPermission(context,Manifest.permission.RECORD_AUDIO)!=PackageManager.PERMISSION_GRANTED)return false
+        if(!WakeListenerService.state.value.running && (!com.jarvis.assistant.rebirth.AppVisibility.visible || locked()))return false
+        if(!aiCall.answer(id))return false
+        com.jarvis.assistant.call.AiCallService.silenceRinging()
+        runCatching{ContextCompat.startForegroundService(context,Intent(context,com.jarvis.assistant.call.AiCallService::class.java).putExtra("call_id",id))}
+        val expected=sessionGeneration
+        if(c.source==com.jarvis.assistant.call.AiCallSource.CHECK_IN){c.referenceId?.let{callMe.mark(it,c.referenceRevision.orEmpty(),"DELIVERING");context.getSystemService(android.app.NotificationManager::class.java).cancel(it.hashCode())}}
+        callAnswerJob?.cancel();callAnswerJob=scope.launch{
+            if(!WakeListenerService.state.value.running)startWake()
+            val ready=withTimeoutOrNull(5000){WakeListenerService.state.first{it.running}}
+            if(ready==null){endAiCall(id,"OFFLINE_SPEECH_PACK_OR_MICROPHONE_REQUIRED",true);return@launch}
+            if(aiCall.state.value.id!=id || !aiCall.state.value.connected || sessionGeneration!=expected)return@launch
+            pauseWake();privateTurn=false;lastRequestWasVoice=true;lastReplyLanguage=language()
+            mutableState.update{it.copy(phase=AssistantPhase.THINKING,voiceInteraction=true,error=null)}
+            val greeting=aiCallGreeting(c)
+            speak(greeting,language(),expected,allowCloudSpeech=true,followUpOnDone=true,volumeOverride=if(c.source==com.jarvis.assistant.call.AiCallSource.BATTERY_20)batteryAlerts.preferences.volume else null,privateSpeech=false,publicOnly=true,allowPlaybackControls=false,
+                onAudioStarted={aiCall.stage(id,com.jarvis.assistant.call.AiCallPhase.SPEAKING);callAlertCallbacks?.takeIf{it.id==id}?.started?.invoke()},
+                completion={
+                    aiCall.activity()
+                    if(c.source==com.jarvis.assistant.call.AiCallSource.CHECK_IN)c.referenceId?.let{callMe.mark(it,c.referenceRevision.orEmpty(),"SPOKEN")}
+                    val callbacks=callAlertCallbacks?.takeIf{it.id==id};if(callbacks!=null){callAlertCallbacks=null;callbacks.done()}
+                    if(!WakeListenerService.state.value.running)endAiCall(id,"MICROPHONE_STOPPED",true)
+                },failure={endAiCall(id,"OUTPUT_VOICE_UNAVAILABLE",true)})
+        }
+        return true
+    }
+    fun endAiCall(id:String,reason:String="ENDED_BY_USER",error:Boolean=false){
+        val previous=aiCall.finish(id,reason,error) ?: return
+        callAnswerJob?.cancel();callAnswerJob=null;callWarmup?.cancel();callWarmup=null
+        com.jarvis.assistant.call.AiCallService.silenceRinging()
+        val callbacks=callAlertCallbacks?.takeIf{it.id==id};callAlertCallbacks=null;callbacks?.failed?.invoke(reason)
+        if(previous.source==com.jarvis.assistant.call.AiCallSource.CHECK_IN)previous.referenceId?.let{runCatching{callMe.mark(it,previous.referenceRevision.orEmpty(),"TEXT_ONLY")}}
+        cancelSession();clearTemporaryConversation()
+        context.stopService(Intent(context,com.jarvis.assistant.call.AiCallService::class.java))
+        context.getSystemService(android.app.NotificationManager::class.java).cancel(com.jarvis.assistant.call.AiCallService.NOTIFICATION)
+        if(previous.wakeWasRunning)resumeWake()else stopWake()
+    }
+
+    fun beginCallMe(id:String,revision:String,manual:Boolean=false,done:()->Unit):Boolean {
+        if(!callMe.alertsAllowed() || context.getSystemService(android.media.AudioManager::class.java).mode!=android.media.AudioManager.MODE_NORMAL)return false
+        if(cameraOwner!=null || state.value.phase!=AssistantPhase.READY || state.value.pendingAction!=null || state.value.authorization!=null || session?.isActive==true || com.jarvis.assistant.security.SystemCredentialPrivacy.pending(context))return false
+        val entry=runCatching{callMe.reload().firstOrNull{it.id==id && it.revision==revision}}.getOrNull() ?: return false
+        if(entry.at>System.currentTimeMillis() || entry.status !in (if(manual)setOf("NOTIFIED","TEXT_ONLY","SPOKEN")else setOf("NOTIFIED")))return false
+        if(!callMe.mark(id,revision,"DELIVERING"))return false
+        val expected=sessionGeneration;activeCallMe=Triple(id,revision,expected);callMeFinished=done
+        speakers.firstSpeakerFocus.reset()
+        pauseWake();privateTurn=false
+        val text=com.jarvis.assistant.checkin.CallMePolicy.invitation(id,language()==AppLanguage.ES)
+        mutableState.update{it.copy(voiceInteraction=true,liveReply=text,phase=AssistantPhase.THINKING,error=null)}
+        fun finished(ok:Boolean){
+            if(activeCallMe!=Triple(id,revision,expected))return
+            activeCallMe=null;runCatching{callMe.mark(id,revision,if(ok)"SPOKEN" else "TEXT_ONLY")}
+            val callback=callMeFinished;callMeFinished=null;callback?.invoke()
+        }
+        speak(text,language(),expected,allowCloudSpeech=true,followUpOnDone=true,completion={finished(true)},failure={finished(false)},privateSpeech=false,publicOnly=true,allowPlaybackControls=false)
+        return true
+    }
+    fun cancelCallMe(id:String,revision:String){if(activeCallMe?.let{it.first==id && it.second==revision && it.third==sessionGeneration}==true){cancelSession();resumeWake()}}
     fun greetWake(sampleId:Long?,wakeTicket:Long=com.jarvis.assistant.voice.VoiceSessionStateMachine.nextWakeTicket()){
         if(cameraOwner!=null || !voiceSession.claimGreeting(wakeTicket))return
         cancelSession();pauseWake()
@@ -328,7 +442,10 @@ class AssistantRuntime(private val context: Context) {
         voiceSession.greeting(generation)
         val lang=language()
         // Courtesy text does not need voice inference. Matching belongs to the command gate.
-        sampleId?.let{com.jarvis.assistant.omnisystem.SpeakerSamples.take(it)?.pcm?.fill(0)}
+        sampleId?.let{id->com.jarvis.assistant.omnisystem.SpeakerSamples.take(id)?.let{audio->
+            val focusGeneration=speakers.firstSpeakerFocus.generation()
+            scope.launch(Dispatchers.IO){var vector:FloatArray?=null;try{if(speakers.liveFocusReady()){vector=speakers.liveEmbedding(audio);speakers.firstSpeakerFocus.decide(vector,focusGeneration)}}catch(_:Exception){}catch(_:LinkageError){}catch(_:OutOfMemoryError){}finally{vector?.fill(0f);audio.pcm.fill(0)}}
+        }}
         val preferences=com.jarvis.assistant.titan.VoicePreferences(context)
         val validHours=com.jarvis.assistant.titan.GreetingPolicy.validBounds(preferences.morning,preferences.afternoon,preferences.evening,preferences.night)
         val text=if(preferences.timeAwareGreeting && validHours)com.jarvis.assistant.titan.GreetingPolicy.greeting(java.time.ZonedDateTime.now().hour,lang,true,true,null,preferences.morning,preferences.afternoon,preferences.evening,preferences.night)
@@ -346,7 +463,7 @@ class AssistantRuntime(private val context: Context) {
         cancelSession();pauseWake();privateTurn=false
         val text=if(retry)language().choose("I didn't catch that command, sir. Please try it again.","No entendí el comando, señor. Inténtalo de nuevo.","فرمان واضح نبود. لطفاً دوباره بگویید.")else language().choose("Speech recognition could not finish that command. Please check the microphone or use the keyboard.","El reconocimiento no pudo finalizar el comando. Revisa el micrófono o usa el teclado.","تشخیص گفتار فرمان را کامل نکرد.")
         mutableState.update{it.copy(liveReply=text,transcript="",phase=AssistantPhase.THINKING,error=null,voiceWindowDeadline=0,followUpArming=false)}
-        speak(text,language(),allowCloudSpeech=true,privateSpeech=false,publicOnly=true,followUpOnDone=retry,allowPlaybackControls=false)
+        speak(text,language(),allowCloudSpeech=true,privateSpeech=false,publicOnly=true,followUpOnDone=retry,allowPlaybackControls=false,completion={if(!retry && aiCall.state.value.connected)endAiCall(aiCall.state.value.id,"SPEECH_RECOGNITION_FAILED",true)})
     }
     fun speakerMatchUnavailable(expected:Long=currentCommandSerial()){
         if(expected!=sessionGeneration)return
@@ -456,6 +573,7 @@ class AssistantRuntime(private val context: Context) {
     private fun listenAttempt(attempt:Int,preserveError:Boolean=false) {
         if(cameraOwner!=null || com.jarvis.assistant.security.SystemCredentialPrivacy.pending(context))return
         if (locked() && !store.settings.value.allowLockedChat) { fail(unlockMessage()); return }
+        configureConversationFocus()
         cancelSession()
         phantom.begin(true)
         val listeningGeneration=sessionGeneration
@@ -641,11 +759,37 @@ class AssistantRuntime(private val context: Context) {
         if(cameraOwner!=null)return
         val text = input.trim().take(8000)
         if (text.isBlank()) return
-        if(voiced)voiceSession.recognized(sessionGeneration,text.length)
+        val callCommand=com.jarvis.assistant.call.AiCallPolicy.command(text)
+        if(callCommand==com.jarvis.assistant.call.AiCallCommand.END && aiCall.state.value.active){endAiCall(aiCall.state.value.id);return}
+        if(aiCall.state.value.phase==com.jarvis.assistant.call.AiCallPhase.RINGING && callCommand==null)endAiCall(aiCall.state.value.id,"ANOTHER_REQUEST_STARTED")
+        if(voiced){voiceSession.recognized(sessionGeneration,text.length);aiCall.activity()}
         if(voiced && speakers.ownerOnlyRequested && !LanguageRules.isStop(text) && ownerPermit?.valid(sessionGeneration,speakers.ownerRevision,SystemClock.elapsedRealtime())!=true){
             verifyOwnerCommand(text,speakerSampleId,recognitionAlternatives);return
         }
-        if(com.jarvis.assistant.rebirth.ConversationCompletionPolicy.matches(text)){finishConversation(voiced);return}
+        if(callCommand==com.jarvis.assistant.call.AiCallCommand.START){requestAiCall(preserveFocus=voiced);return}
+        if(callCommand==com.jarvis.assistant.call.AiCallCommand.ANSWER){openAiCall(aiCall.state.value.id,true);return}
+        if(com.jarvis.assistant.rebirth.ConversationCompletionPolicy.matches(text)){if(aiCall.state.value.active)endAiCall(aiCall.state.value.id,"CONVERSATION_FINISHED")else finishConversation(voiced);return}
+        if(com.jarvis.assistant.checkin.CallMePolicy.isRequest(text)){
+            if(locked()){lockedRequestDenied(voiced,false);return}
+            reportNative(tools.launches.open(Intent(context,com.jarvis.assistant.checkin.CallMeActivity::class.java).putExtra("request",text),"editable Jarvis voice check-in date/time").detail,voiced,text);return
+        }
+        if(com.jarvis.assistant.neural.AppMatching.normalize(text) in setOf("fix my wallpaper","fix the core","open moving wallpaper")){
+            if(locked()){lockedRequestDenied(voiced,false);return}
+            reportNative(tools.launches.open(Intent(context,com.jarvis.assistant.sentinel.WallpaperRepairActivity::class.java),"moving wallpaper settings").detail,voiced,text);return
+        }
+        if(com.jarvis.assistant.neural.AppMatching.normalize(text) in setOf("pair my computer","open paired computer","connect my computer","empareja mi computadora")){
+            if(locked()){lockedRequestDenied(voiced,false);return}
+            reportNative(tools.launches.open(Intent(context,com.jarvis.assistant.companion.CompanionActivity::class.java),"paired computer settings").detail,voiced,text);return
+        }
+        com.jarvis.assistant.companion.CompanionPolicy.parse(text)?.let{request->
+            if(locked()){lockedRequestDenied(voiced,false);return}
+            cancelSession(preserveCapture=voiced);pauseWake();privateTurn=false;lastRequestWasVoice=voiced;lastReplyLanguage=language()
+            if(voiced)voiceSession.recognized(sessionGeneration,text.length)
+            val description=if(request.query==null)"Open Chrome in the paired computer's dedicated Jarvis browser window?" else "Search in Chrome on the paired computer for: ${request.query}?"
+            val proposal=com.jarvis.assistant.core.PendingAction(description=description,kind="desktop_chrome",payload=request.parameters().toString())
+            session=scope.launch{deliver(AssistantReply(description,action=proposal,allowCloudSpeech=false),language(),voiced,sessionGeneration)}
+            return
+        }
         phantomOverlay.reveal()
         com.jarvis.assistant.voice.ConversationInterruptPolicy.replacement(text)?.let{replacement->submit(replacement,voiced,speakerSampleId,recognitionAlternatives,ownerPermit);return}
         mutableState.update{it.copy(confirmedEntity=null,recognition=null)}
@@ -968,7 +1112,7 @@ class AssistantRuntime(private val context: Context) {
             if(com.jarvis.assistant.voice.SpeechFeedbackPolicy.needsPublicAcknowledgement(contentRoute,publicRoute)){
                 speak(com.jarvis.assistant.voice.SpeechFeedbackPolicy.publicAcknowledgement(lang,reply.action!=null),lang,generation,allowCloudSpeech=true,
                     followUpOnDone=allowVoiceFollowUp(voiced || awaitScreenQuestion),privateSpeech=false,publicOnly=true)
-            }else speak(reply.text,lang,generation,reply.allowCloudSpeech,followUpOnDone=voiced || awaitScreenQuestion)
+            }else speak(reply.text,lang,generation,reply.allowCloudSpeech,followUpOnDone=voiced || awaitScreenQuestion,publicOnly=!privateTurn && reply.allowCloudSpeech)
         }
     }
 
@@ -979,7 +1123,7 @@ class AssistantRuntime(private val context: Context) {
         volumeOverride:Float?=null,completion:(()->Unit)?=null,failure:((String)->Unit)?=null,privateSpeech:Boolean=privateTurn,publicOnly:Boolean=false,resumeListening:Boolean=true,onAudioStarted:()->Unit={},allowPlaybackControls:Boolean=true){
         fun allowed()=generation==sessionGeneration && (!locked() || publicOnly || !privateSpeech && store.settings.value.allowLockedChat) && !com.jarvis.assistant.security.SystemCredentialPrivacy.pending(context)
         if(!allowed()){
-            if(generation==sessionGeneration){failure?.invoke(unlockMessage());if(resumeListening){mutableState.update{it.copy(phase=AssistantPhase.READY)};resumeWake()}}
+            if(generation==sessionGeneration){failure?.invoke(unlockMessage());if(resumeListening && generation==sessionGeneration){mutableState.update{it.copy(phase=AssistantPhase.READY)};resumeWake()}}
             return
         }
         if(resumeListening && phantom.state.value.execution in setOf(ExecutionState.IDLE,ExecutionState.COMPLETED,ExecutionState.FAILED,ExecutionState.CANCELLED))phantom.begin()
@@ -990,14 +1134,14 @@ class AssistantRuntime(private val context: Context) {
             if(resumeListening)lastTurnAt=SystemClock.elapsedRealtime()
             mutableState.update{it.copy(phase=if(resumeListening)AssistantPhase.READY else AssistantPhase.THINKING)}
             if(resumeListening)phantom.finish(if(state.value.pendingAction!=null)ExecutionState.WAITING_USER else ExecutionState.COMPLETED) else phantom.stage(ExecutionState.GENERATING_RESPONSE,traceId)
-            completion?.invoke();if(resumeListening)resumeWake(followUp=allowVoiceFollowUp(followUpOnDone,publicOnly,privateSpeech))
+            completion?.invoke();if(resumeListening && generation==sessionGeneration)resumeWake(followUp=allowVoiceFollowUp(followUpOnDone,publicOnly,privateSpeech))
         }}
         val error:(String)->Unit={message->if(generation==sessionGeneration){
             voiceSession.audioFailed(generation)
             if(resumeListening)lastTurnAt=SystemClock.elapsedRealtime()
             mutableState.update{it.copy(error=message,phase=if(resumeListening)AssistantPhase.READY else AssistantPhase.THINKING)}
             if(resumeListening)phantom.finish(ExecutionState.FAILED) else phantom.stage(ExecutionState.GENERATING_RESPONSE,traceId)
-            failure?.invoke(message);if(resumeListening)resumeWake(followUp=allowVoiceFollowUp(followUpOnDone,publicOnly,privateSpeech))
+            failure?.invoke(message);if(resumeListening && generation==sessionGeneration)resumeWake(followUp=allowVoiceFollowUp(followUpOnDone,publicOnly,privateSpeech))
         }}
         cloudVoiceJob=scope.launch{
             var file:File?=null
@@ -1042,9 +1186,9 @@ class AssistantRuntime(private val context: Context) {
                 }
                 done()
             }catch(e:CancellationException){throw e}
-            catch(_:Exception){
+            catch(e:Exception){
                 if(com.jarvis.assistant.voice.PublicGreetingCache.eligible(text))withContext(Dispatchers.IO){customVoice.clearGreetingCache()}
-                error(if(lang==AppLanguage.ES)"Fish Audio no pudo reproducir la voz. Revisa clave, voz, conexión y cuota. El texto sigue disponible; no se sustituyó otra voz." else "Fish Audio could not play the configured voice. Check the key, voice, connection and quota, then retry. Text remains available; no substitute voice was used.")
+                error(com.jarvis.assistant.voice.VoiceOutputErrors.message(e,lang))
             }
             finally{file?.delete()}
         }
@@ -1074,6 +1218,17 @@ class AssistantRuntime(private val context: Context) {
         pauseWake()
         mutableState.update { it.copy(pendingAction = null, phase = AssistantPhase.THINKING) }
         session = scope.launch {
+            if(proposal.kind=="desktop_chrome"){
+                privateTurn=false
+                val result=try{
+                    val j=org.json.JSONObject(proposal.payload)
+                    val r=if(j.has("query"))com.jarvis.assistant.companion.DesktopRequest(j.getString("query"))else com.jarvis.assistant.companion.DesktopRequest(null)
+                    if(r.query!=null)require(r.query.length in 1..300 && r.query.none(Char::isISOControl))
+                    companion.execute(r)
+                }catch(e:CancellationException){throw e}catch(e:com.jarvis.assistant.companion.CompanionFailure){"Paired computer: ${e.code}. No verified completion is claimed."}catch(_:Exception){"The desktop receipt could not be verified. Check the computer; no completed result is claimed."}
+                if(generation==sessionGeneration)deliver(AssistantReply(result,allowCloudSpeech=true),lastReplyLanguage,lastRequestWasVoice,generation)
+                return@launch
+            }
             withContext(Dispatchers.IO){knowledge.audit(proposal.kind,"execution_requested")}
                 val result = tools.execute(proposal)
                 withContext(Dispatchers.IO){knowledge.audit(proposal.kind,"result_returned")}
@@ -1094,6 +1249,7 @@ class AssistantRuntime(private val context: Context) {
         phantomOverlay.reveal()
         if(cameraOwner!=null)return
         if (locked()) { fail(unlockMessage()); return }
+        configureConversationFocus()
         if(speakers.ownerOnlyRequested)runCatching{speakers.armOwnerSession()}.onFailure{fail("OWNER_SETUP_REQUIRED: Train the owner voice in Voice recognition settings before enabling owner-only listening.");return}
         com.jarvis.assistant.security.SystemCredentialPrivacy.end(context)
         if (models.modelPath(language()) == null) {
@@ -1114,6 +1270,8 @@ class AssistantRuntime(private val context: Context) {
     }
 
     fun stopWake() {
+        if(aiCall.state.value.active)endAiCall(aiCall.state.value.id,"MICROPHONE_STOPPED")
+        speakers.endConversationFocus()
         speakers.endOwnerSession()
         speakers.releaseAsync()
         val awaiting=WakeListenerService.state.value.awaitingCommand || WakeListenerService.state.value.waitingForCapture
@@ -1277,6 +1435,13 @@ class AssistantRuntime(private val context: Context) {
     fun saveHud(value:com.jarvis.assistant.hud.HudSettings) {
         if(value.codexEnabled!=hud.state.value.settings.codexEnabled) protect("Change Codex protection") { hud.save(value) } else hud.save(value)
     }
+    fun restoreCoreMotion(){val s=hud.state.value.settings;saveHud(s.copy(reducedMotion=false,animationIntensity=1f,sentinel=s.sentinel.copy(animationSpeed=1f,cinematicWallpaper=true)))}
+    fun configureConversationFocus(){
+        if(locked())return
+        val p=com.jarvis.assistant.titan.VoicePreferences(context)
+        if(!p.firstSpeakerModeApplied){if(speakers.ownerOnlyRequested)speakers.setOwnerOnly(false);p.firstSpeakerModeApplied=true}
+        if(p.conversationFocus && speakers.present()){speakers.armConversationFocus();scope.launch(Dispatchers.IO){runCatching{speakers.prepare()}}}
+    }
     fun saveMemory(text:String, category:String) { if(text.isBlank())return; scope.launch { val id=store.remember(text); setCategory(id,category) } }
     fun setCategory(id:Long, category:String) { val value=category.takeIf { it in com.jarvis.assistant.titan.MemoryCardPolicy.categories } ?: "Notes"; categories.edit().putString(id.toString(),value).apply(); mutableState.update { it.copy(memoryCategories=it.memoryCategories+(id to value)) } }
 
@@ -1298,6 +1463,7 @@ class AssistantRuntime(private val context: Context) {
             brain.release()
             speakers.resetOptions();speakers.removeModel()
             timers.clear()
+            callMe.clear()
             com.jarvis.assistant.core.ConnectedFolders(context).disconnect()
             com.jarvis.assistant.widgets.WidgetRepository(context).clear()
             knowledge.clear();appRegistry.clear();neuralPreferences.clear();brain.preferences.clear();briefing.clear();com.jarvis.assistant.neural.BriefingScheduler.sync(context)
@@ -1323,11 +1489,13 @@ class AssistantRuntime(private val context: Context) {
     }
 
     fun clearTemporaryConversation(){
+        speakers.firstSpeakerFocus.reset()
         saveSessionNote()
         lastTurnAt=0;store.clearEphemeral();conversation.clear();neural.conversation.clear();clearScreenContext();phantom.clearCaption()
         mutableState.update{it.copy(transcript="",liveReply="",moduleResponse="",confirmedEntity=null,recognition=null,activeTask="ASSISTANT")}
     }
     fun stopEverything() {
+        if(aiCall.state.value.active)endAiCall(aiCall.state.value.id,"STOPPED")
         clearAttachmentSelection(false);clearTemporaryConversation()
         locationAssistant.cancel()
         batteryAlerts.cancel()
@@ -1345,6 +1513,8 @@ class AssistantRuntime(private val context: Context) {
     }
 
     private fun cancelSession(preserveCapture:Boolean=false) {
+        activeCallMe?.let{runCatching{callMe.mark(it.first,it.second,"TEXT_ONLY")}};activeCallMe=null
+        val checkinDone=callMeFinished;callMeFinished=null;checkinDone?.invoke()
         batteryAlerts.cancel()
         lockCountdownJob?.cancel();lockCountdownJob=null
         foregroundFollowUp?.cancel();foregroundFollowUp=null

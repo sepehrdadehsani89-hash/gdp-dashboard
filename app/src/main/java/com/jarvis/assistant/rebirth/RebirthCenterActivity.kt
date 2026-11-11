@@ -12,6 +12,10 @@ class RebirthCenterActivity:PrivateModuleActivity(){
     private var diagnostics by mutableStateOf("")
     override fun onCreate(savedInstanceState:Bundle?){super.onCreate(savedInstanceState);if(isFinishing)return
         screen("REBIRTH 11.2 · CONTENT & LISTENING"){
+            Button(onClick={runtime.requestAiCall(showUi=true)}){Text("Call Jarvis now · ring, answer and talk")}
+            Button(onClick={startActivity(Intent(this@RebirthCenterActivity,com.jarvis.assistant.checkin.CallMeActivity::class.java))}){Text("Call me · editable date/time voice check-ins")}
+            Button(onClick={startActivity(Intent(this@RebirthCenterActivity,com.jarvis.assistant.sentinel.WallpaperRepairActivity::class.java))}){Text("Fix / select moving Jarvis wallpaper")}
+            Button(onClick={startActivity(Intent(this@RebirthCenterActivity,com.jarvis.assistant.companion.CompanionActivity::class.java))}){Text("Paired computer · phone voice, verified Chrome actions")}
             val shared by runtime.state.collectAsStateWithLifecycle()
             val phantom by runtime.phantom.state.collectAsStateWithLifecycle()
             val notes by runtime.sessionNotePreferences.enabled.collectAsStateWithLifecycle()

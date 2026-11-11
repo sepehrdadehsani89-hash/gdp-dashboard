@@ -94,6 +94,15 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
             WeatherPanel(state,actions,Modifier.weight(1f),compact=true)
         }
         CommandCountdown(state)
+        if(state.aiCall.active){
+            HudPanel("JARVIS AI CALL · ${state.aiCall.phase.name}",Modifier.fillMaxWidth()){
+                Text(if(state.aiCall.phase==com.jarvis.assistant.call.AiCallPhase.RINGING)"Jarvis is calling. Pick up to talk." else "Your AI conversation is active.",color=Ice)
+                Row{
+                    if(state.aiCall.phase==com.jarvis.assistant.call.AiCallPhase.RINGING)TextButton(onClick={actions.onSend("answer Jarvis call")}){Text("Answer")}
+                    TextButton(onClick={actions.onSend("end Jarvis call")}){Text(if(state.aiCall.phase==com.jarvis.assistant.call.AiCallPhase.RINGING)"Decline" else "End call")}
+                }
+            }
+        }
         val hour=java.time.Instant.ofEpochMilli(t.epochMillis).atZone(java.time.ZoneId.of(t.timezone)).hour
         Text(when(hour){in 5..11->l.choose("Good morning","Buenos días","صبح بخیر");in 12..17->l.choose("Good afternoon","Buenas tardes","عصر بخیر");else->l.choose("Good evening","Buenas noches","شب بخیر")}+state.settings.name.takeIf(String::isNotBlank)?.let {", $it"}.orEmpty(),color=Dim,fontSize=11.sp)
         BoxWithConstraints(Modifier.fillMaxWidth()) {

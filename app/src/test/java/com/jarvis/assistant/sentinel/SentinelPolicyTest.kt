@@ -56,8 +56,8 @@ class SentinelPolicyTest {
     }
     @Test fun dormantAndErrorScenesStayCheap(){
         val s=HudSettings();val b=BatteryReading(80)
-        assertEquals(12,WallpaperRenderPolicy.fps(true,true,true,s,b,false,true,SentinelMode.DORMANT))
-        assertEquals(20,WallpaperRenderPolicy.fps(true,true,true,s,b.copy(charging=true),false,true,SentinelMode.DORMANT))
+        assertEquals(30,WallpaperRenderPolicy.fps(true,true,true,s,b,false,true,SentinelMode.DORMANT))
+        assertEquals(30,WallpaperRenderPolicy.fps(true,true,true,s,b.copy(charging=true),false,true,SentinelMode.DORMANT))
         assertEquals(12,WallpaperRenderPolicy.fps(true,true,true,s,b,false,true,SentinelMode.ERROR))
     }
     @Test fun soundNeverOverridesMuteDndCallsOrCommandSpeech(){

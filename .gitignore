@@ -22,3 +22,11 @@ downloads/*.apk
 *.p12
 *.jks
 *.keystore
+
+# Python companion build/cache and private runtime state
+__pycache__/
+*.py[cod]
+.venv/
+.jarvis-companion/
+companion/dist/
+companion/*.spec

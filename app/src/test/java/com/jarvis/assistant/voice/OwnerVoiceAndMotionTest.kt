@@ -84,7 +84,7 @@ class OwnerVoiceAndMotionTest {
         val s=HudSettings()
         assertTrue(ReactorGeometry.speed(s,SentinelMode.DORMANT)>=1f)
         assertTrue(ReactorGeometry.speed(s,SentinelMode.PROCESSING,true)>ReactorGeometry.speed(s,SentinelMode.DORMANT))
-        assertEquals(12,WallpaperRenderPolicy.fps(true,true,true,s,BatteryReading(80),false,true,SentinelMode.DORMANT))
+        assertEquals(30,WallpaperRenderPolicy.fps(true,true,true,s,BatteryReading(80),false,true,SentinelMode.DORMANT))
         assertEquals(0,WallpaperRenderPolicy.fps(false,true,true,s,BatteryReading(80),false,true,SentinelMode.SPEAKING))
     }
     @Test fun microphoneAndPlaybackVisualizationHasNoInventedEnergyWhenSilent(){

@@ -1,0 +1,10 @@
+{
+  "kind": "ACTUAL_CHROMIUM_PLUS_HTTPS_ON_LOCAL_FIXTURE",
+  "completed_receipt_verified": true,
+  "duplicate_idempotent": true,
+  "actual_404_failed_truthfully": true,
+  "google_search_tested": false,
+  "windows_tested": false,
+  "android_voice_tested": false,
+  "sandbox_disabled_only_for_cloud_headless_fixture": true
+}

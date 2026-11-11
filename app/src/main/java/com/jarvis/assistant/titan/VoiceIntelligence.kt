@@ -16,6 +16,8 @@ class VoicePreferences(context:Context){
     var gainControl:Boolean get()=p.getBoolean("agc",false);set(v){p.edit().putBoolean("agc",v).apply()}
     var playbackInterruption:Boolean get()=p.getBoolean("playback_interruption",true);set(v){p.edit().putBoolean("playback_interruption",v).apply()}
     var timeAwareGreeting:Boolean get()=p.getBoolean("time_aware_greeting",false);set(v){p.edit().putBoolean("time_aware_greeting",v).apply()}
+    var conversationFocus:Boolean get()=p.getBoolean("conversation_focus",true);set(v){p.edit().putBoolean("conversation_focus",v).apply()}
+    var firstSpeakerModeApplied:Boolean get()=p.getBoolean("first_speaker_mode_applied",false);set(v){check(p.edit().putBoolean("first_speaker_mode_applied",v).commit())}
     var morning:Int get()=p.getInt("morning",5);set(v){p.edit().putInt("morning",v).apply()}
     var afternoon:Int get()=p.getInt("afternoon",12);set(v){p.edit().putInt("afternoon",v).apply()}
     var evening:Int get()=p.getInt("evening",18);set(v){p.edit().putInt("evening",v).apply()}

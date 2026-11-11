@@ -11,6 +11,7 @@ class ConversationWindow(private val now: () -> Long) {
     private var resetSerial = 0L
     private var lastActivation: Long? = null
     private val inactivity=SpeechInactivityClock(now)
+    @Synchronized fun callMode(active:Boolean){inactivity.callMode(active)}
 
     @Synchronized fun snapshot() = Snapshot(mode, deadline, resetSerial)
     @Synchronized fun enable() { change(Mode.WAKE_ONLY) }

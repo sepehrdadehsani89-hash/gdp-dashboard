@@ -5,8 +5,10 @@ class SpeechInactivityClock(private val now:()->Long,private val threshold:Float
     private var opened=now()
     private var last=opened
     private var recognized=""
+    private var idleMs=IDLE_MS
+    @Synchronized fun callMode(active:Boolean){idleMs=if(active)45_000 else IDLE_MS}
     @Synchronized fun start(){opened=now();last=opened;recognized=""}
-    @Synchronized fun deadline()=minOf(last+IDLE_MS,opened+MAX_MS)
+    @Synchronized fun deadline()=minOf(last+idleMs,opened+MAX_MS)
     @Synchronized fun expired()=now()<opened || now()>=deadline()
     @Synchronized fun progress(text:String):Boolean{
         val clean=text.trim().take(8000)

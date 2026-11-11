@@ -6,6 +6,7 @@ import com.jarvis.assistant.omnisystem.ModuleHttp
 import okhttp3.Request
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
+import kotlinx.coroutines.sync.withLock
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
 
@@ -31,6 +32,7 @@ object CustomVoicePolicy {
 }
 class CustomVoiceConfig(val id:String=CustomVoicePolicy.REQUESTED_ID,val model:String="s2.1-pro",val key:String="",val enabled:Boolean=false,val privateAllowed:Boolean=false)
 class CustomVoice(private val vault:FeatureVault,private val http:ModuleHttp=ModuleHttp(okhttp3.OkHttpClient.Builder().connectTimeout(8,java.util.concurrent.TimeUnit.SECONDS).readTimeout(20,java.util.concurrent.TimeUnit.SECONDS).callTimeout(25,java.util.concurrent.TimeUnit.SECONDS).retryOnConnectionFailure(false).followRedirects(false).followSslRedirects(false).build()),private val greetingCache:PublicGreetingCache?=null) {
+    private val greetingMutex=kotlinx.coroutines.sync.Mutex()
     private fun namespace(language:AppLanguage)=if(language==AppLanguage.ES)"spanish_output_voice" else "custom_output_voice"
     fun config(language:AppLanguage=AppLanguage.EN):CustomVoiceConfig {
         val default=if(language==AppLanguage.ES)CustomVoiceConfig(id=CustomVoicePolicy.SPANISH_ID) else CustomVoiceConfig()
@@ -53,7 +55,8 @@ class CustomVoice(private val vault:FeatureVault,private val http:ModuleHttp=Mod
         check(metadata.optString("_id")==c.id){"Voice service returned a different identity."}
         return synthesize(c,if(language==AppLanguage.ES)"Hola. Esta es una prueba de la voz española exclusiva de Jarvis." else "Hello. This is a preview of your selected Jarvis voice.")
     }
-    suspend fun synthesize(c:CustomVoiceConfig,text:String):ByteArray {
+    suspend fun synthesize(c:CustomVoiceConfig,text:String):ByteArray = if(PublicGreetingCache.eligible(text))greetingMutex.withLock{cachedOrFetch(c,text)}else cachedOrFetch(c,text)
+    private suspend fun cachedOrFetch(c:CustomVoiceConfig,text:String):ByteArray {
         require(c.key.isNotBlank() && c.model.matches(Regex("[A-Za-z0-9._-]{1,60}")))
         kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO){greetingCache?.read(c,text)}?.let{return it}
         return http.bytes(Request.Builder().url("https://api.fish.audio/v1/tts")

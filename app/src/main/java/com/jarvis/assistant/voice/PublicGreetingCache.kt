@@ -6,7 +6,7 @@ import java.security.MessageDigest
 /** Only fixed public courtesy clips. No conversation, user names or private results are cached. */
 class PublicGreetingCache(private val directory:File,private val now:()->Long=System::currentTimeMillis){
     companion object {
-        fun eligible(text:String)=text in setOf("Hello sir, how can I help you?","Hola, señor. ¿Cómo puedo ayudarte?")
+        fun eligible(text:String)=text in setOf("Hello sir, how can I help you?","Hola, señor. ¿Cómo puedo ayudarte?",com.jarvis.assistant.call.AiCallPolicy.greeting(false),com.jarvis.assistant.call.AiCallPolicy.greeting(true)) || listOf("0","1","2").any{itId->text==com.jarvis.assistant.checkin.CallMePolicy.invitation(itId,false) || text==com.jarvis.assistant.checkin.CallMePolicy.invitation(itId,true)}
     }
     private fun file(c:CustomVoiceConfig,text:String):File {
         val key=listOf(c.id,c.model,c.key,text).joinToString("\u0000")

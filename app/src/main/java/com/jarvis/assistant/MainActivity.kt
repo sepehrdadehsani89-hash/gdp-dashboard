@@ -253,7 +253,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    override fun onResume() { super.onResume(); runtime.refreshCapabilities();if(intent.getBooleanExtra("rebirth_home",false) && !getSystemService(android.app.KeyguardManager::class.java).isDeviceLocked){intent.removeExtra("rebirth_home");runtime.selectModule(com.jarvis.assistant.omnisystem.HudModule.ASSISTANT)} }
+    override fun onResume() { super.onResume(); runtime.configureConversationFocus(); runtime.refreshCapabilities();if(intent.getBooleanExtra("rebirth_home",false) && !getSystemService(android.app.KeyguardManager::class.java).isDeviceLocked){intent.removeExtra("rebirth_home");runtime.selectModule(com.jarvis.assistant.omnisystem.HudModule.ASSISTANT)} }
 
     private fun openPermission(name: String) {
         runtime.effects.play(if(name=="licenses")com.jarvis.assistant.sentinel.SentinelSound.PANEL_OPEN else com.jarvis.assistant.sentinel.SentinelSound.PERMISSION)

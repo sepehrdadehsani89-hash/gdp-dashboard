@@ -21,6 +21,8 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
@@ -58,6 +60,21 @@
         <activity android:name=".widgets.WidgetCenterActivity" android:exported="false" android:launchMode="singleTop" />
         <activity android:name=".rebirth.AndroidSettingsActivity" android:exported="false" />
         <activity android:name=".rebirth.RebirthCenterActivity" android:exported="false" />
+        <activity android:name=".companion.CompanionActivity" android:exported="false" />
+        <activity android:name=".checkin.CallMeActivity" android:exported="false" />
+        <activity android:name=".call.AiCallActivity" android:exported="false" android:launchMode="singleTop" />
+        <service android:name=".call.AiCallService" android:exported="false" android:foregroundServiceType="mediaPlayback" />
+        <receiver android:name=".call.AiCallActionReceiver" android:exported="false" />
+        <service android:name=".checkin.CallMeService" android:exported="false" android:foregroundServiceType="mediaPlayback" />
+        <receiver android:name=".checkin.CallMeReceiver" android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+            </intent-filter>
+        </receiver>
+        <activity android:name=".sentinel.WallpaperRepairActivity" android:exported="false" />
         <activity android:name=".rebirth.PersonalContentActivity" android:exported="false" />
         <activity android:name=".phantom.PhantomSettingsActivity" android:exported="false" />
         <activity android:name=".quantum.ControlCenterActivity" android:exported="false" />

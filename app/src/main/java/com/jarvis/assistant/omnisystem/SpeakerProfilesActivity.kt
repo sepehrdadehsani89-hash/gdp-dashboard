@@ -23,7 +23,7 @@ class SpeakerProfilesActivity:PrivateModuleActivity(){
     private var installed by mutableStateOf(false)
     private var auto by mutableStateOf(false)
     private var ownerOnly by mutableStateOf(false)
-    private var restrictAfterTraining by mutableStateOf(true)
+    private var restrictAfterTraining by mutableStateOf(false)
     private var fraction by mutableFloatStateOf(0f)
     private val microphone=registerForActivityResult(ActivityResultContracts.RequestPermission()){granted->
         status=if(granted)words("Microphone allowed. Review capture consent before continuing.","Micrófono permitido. Revisa el consentimiento antes de continuar.","میکروفون مجاز شد. پیش از ادامه، رضایت ضبط را تأیید کنید.") else words("Microphone denied; no sample recorded.","Micrófono denegado; no se grabó muestra.","مجوز میکروفون رد شد؛ نمونه‌ای ضبط نشد.")
@@ -33,6 +33,12 @@ class SpeakerProfilesActivity:PrivateModuleActivity(){
         reload()
         if(intent.getBooleanExtra("voice_setup",false) && profiles.none{it.owner})name=runtime.store.settings.value.name
         screen(words("JARVIS · OPTIONAL VOICE PROFILES","JARVIS · PERFILES DE VOZ OPCIONALES","جارویس · نمایه‌های صوتی اختیاری")){
+            val focus by runtime.speakers.firstSpeakerFocus.state.collectAsState()
+            var sessionFocus by remember{mutableStateOf(com.jarvis.assistant.titan.VoicePreferences(this@SpeakerProfilesActivity).conversationFocus)}
+            Text("Conversation mode accepts any first speaker and temporarily follows that voice. Owner-only mode remains a separate optional restriction. No voice is an Android unlock credential.")
+            Row{Switch(sessionFocus,{value->authorize{com.jarvis.assistant.titan.VoicePreferences(this@SpeakerProfilesActivity).conversationFocus=value;sessionFocus=value;runtime.speakers.firstSpeakerFocus.reset();runtime.configureConversationFocus();status="Restart listening to apply this capture setting."}});Text("First-speaker focus · ignore other voices during a turn")}
+            Text(if(!installed)"First-speaker filtering needs the optional local model below. Ordinary ASR remains available without it." else focus.status)
+            Text("A one-second PCM window is checked before speech recognition. Silence or a different voice does not extend your turn. The reference is temporary, not an enrolled identity. Mixed overlapping voices cannot be reliably separated from one microphone; test in your actual room.")
             Text(words("One owner and up to five additional consenting people. Voice similarity is personalization only, never Android authentication. No voice profile unlocks the phone or grants access to private actions.","Un propietario y hasta cinco personas adicionales con consentimiento. La similitud solo personaliza; nunca autentica Android ni autoriza acciones privadas.","یک مالک و حداکثر پنج فرد دیگر با رضایت. شباهت صدا فقط برای شخصی‌سازی است؛ قفل گوشی را باز نمی‌کند و مجوز اقدام خصوصی نمی‌دهد."))
             Text("WeSpeaker VoxCeleb ResNet34 LM · 26.5 MB · CC BY 4.0")
             Text(words("The model was trained in an English/VoxCeleb domain. Spanish/Persian and Redmi 9 identification accuracy have not been measured. There is no probability or security guarantee.","El modelo usa dominio inglés/VoxCeleb. No se midió precisión en español/persa ni Redmi 9. No hay garantía de identidad o seguridad.","مدل در دامنهٔ انگلیسی و VoxCeleb آموزش دیده است. دقت اسپانیایی، فارسی و Redmi 9 اندازه‌گیری نشده است. تضمین هویت یا امنیت وجود ندارد."))

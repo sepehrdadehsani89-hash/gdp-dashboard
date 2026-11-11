@@ -32,7 +32,8 @@ class BatteryAlertPreferences(context:Context){
     var disconnectVoice:Boolean get()=prefs.getBoolean("disconnect_voice",false);set(v){prefs.edit().putBoolean("disconnect_voice",v).apply()}
     var cinematicFull:Boolean get()=prefs.getBoolean("cinematic_full",false);set(v){prefs.edit().putBoolean("cinematic_full",v).apply()}
     var progressMinutes:Int get()=prefs.getInt("progress_minutes",0).takeIf{it in listOf(0,15,30,60)} ?: 0;set(v){require(v in listOf(0,15,30,60));prefs.edit().putInt("progress_minutes",v).apply()}
-    fun config()=com.jarvis.assistant.power.PowerAlertConfig(enabled,critical,chargingStart,fullEnabled,if(repeatFull)interval else 0,disconnectVoice,progressMinutes)
+    var conversationAt20:Boolean get()=prefs.getBoolean("conversation_at_20",true);set(v){prefs.edit().putBoolean("conversation_at_20",v).apply()}
+    fun config()=com.jarvis.assistant.power.PowerAlertConfig(enabled,critical,chargingStart,fullEnabled,if(repeatFull)interval else 0,disconnectVoice,progressMinutes,conversationAt20)
     fun powerState():com.jarvis.assistant.power.PowerAlertState {
         val saved=prefs.getString("overcharge_state",null)
         if(saved!=null)com.jarvis.assistant.power.PowerAlertCodec.decode(saved)?.let{return it}
@@ -46,7 +47,7 @@ class BatteryAlertPreferences(context:Context){
 }
 /** One bounded system-alert coordinator using the shared battery source and Fish output pipeline. */
 class BatteryAlerts(private val context:Context,private val hud:HudRepository,private val scope:CoroutineScope,
-    private val ready:()->Boolean,private val play:(String,Float,()->Unit,()->Unit,(String)->Unit)->Unit,
+    private val ready:()->Boolean,private val play:(String,Float,Boolean,()->Unit,()->Unit,(String)->Unit)->Unit,
     private val language:()->com.jarvis.assistant.core.AppLanguage,private val stopPlayback:()->Unit){
     val preferences=BatteryAlertPreferences(context)
     private var started=false
@@ -88,6 +89,7 @@ class BatteryAlerts(private val context:Context,private val hud:HudRepository,pr
         val c=preferences.config()
         if(!c.enabled)return false
         return when(a.kind){
+            com.jarvis.assistant.power.PowerAlertKind.LOW_20->c.conversationAt20 && a.key=="low20:${state.episode}" && state.twentyPending && !state.twentyDone && reading.battery.percent in 11..20 && !reading.charging
             com.jarvis.assistant.power.PowerAlertKind.CRITICAL->a.key.startsWith("critical:${state.episode}:") && reading.battery.percent==a.level && !reading.charging && reading.condition in setOf(com.jarvis.assistant.power.PowerCondition.DISCHARGING,com.jarvis.assistant.power.PowerCondition.PLUGGED_NOT_CHARGING) && (requireNotNull(a.level)>5 || c.critical)
             com.jarvis.assistant.power.PowerAlertKind.FULL,com.jarvis.assistant.power.PowerAlertKind.REMINDER->a.key.startsWith("charge:${state.session}:") && reading.verifiedFull && c.full && !state.dismissed && System.currentTimeMillis()>=state.snoozeUntil
             com.jarvis.assistant.power.PowerAlertKind.START,com.jarvis.assistant.power.PowerAlertKind.ESTIMATE->a.key.startsWith("charge:${state.session}:") && reading.charging && !reading.verifiedFull && c.chargingStart
@@ -115,7 +117,7 @@ class BatteryAlerts(private val context:Context,private val hud:HudRepository,pr
         preferences.lastStatus="${item.kind} playback requested; not yet completed";trace("${item.kind}_QUEUED")
         val playbackSerial=++serial
         val requested=android.os.SystemClock.elapsedRealtime()
-        play(phrase(item),preferences.volume,{
+        play(phrase(item),preferences.volume,item.kind==com.jarvis.assistant.power.PowerAlertKind.LOW_20,{
             if(playbackSerial==serial){lastLatencyMs=android.os.SystemClock.elapsedRealtime()-requested;trace("${item.kind}_AUDIO_STARTED")}
         },{
             if(playbackSerial!=serial)return@play
@@ -135,6 +137,7 @@ class BatteryAlerts(private val context:Context,private val hud:HudRepository,pr
     private fun phrase(a:com.jarvis.assistant.power.PowerAlert):String {
         val es=language()==com.jarvis.assistant.core.AppLanguage.ES
         return when(a.kind){
+            com.jarvis.assistant.power.PowerAlertKind.LOW_20->if(es)"Señor, tu batería está al ${reading.battery.percent} por ciento. Es un buen momento para cargarla. Estoy aquí; ¿en qué te ayudo?" else "Sir, your battery is at ${reading.battery.percent} percent. This is a good time to charge. I'm here; what can I help you with?"
             com.jarvis.assistant.power.PowerAlertKind.CRITICAL->BatteryPolicy.phrase(requireNotNull(a.level),language())
             com.jarvis.assistant.power.PowerAlertKind.REMINDER->if(es)"Señor, tu teléfono sigue completamente cargado y conectado a la corriente." else "Sir, your phone is still fully charged and connected to power."
             com.jarvis.assistant.power.PowerAlertKind.FULL->if(preferences.cinematicFull){if(es)"Energía restaurada, señor. Batería al cien por ciento. Todos los sistemas listos." else "Power restored, sir. Battery at one hundred percent. All systems ready."}

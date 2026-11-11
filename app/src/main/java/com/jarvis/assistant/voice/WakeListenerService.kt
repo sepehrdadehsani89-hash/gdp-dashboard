@@ -53,6 +53,8 @@ class WakeListenerService : Service() {
     private fun expireCommandWindow():Boolean {
         if(!window.expire())return false
         (application as com.jarvis.assistant.JarvisApplication).runtime.voiceSession.idle(windowRuntimeGeneration)
+        val call=(application as com.jarvis.assistant.JarvisApplication).runtime.aiCall.state.value
+        if(call.connected)main.post{(application as com.jarvis.assistant.JarvisApplication).runtime.endAiCall(call.id,"QUIET_TIMEOUT")}
         publish(listeningText(),true);return true
     }
     private val audioManager by lazy { getSystemService(android.media.AudioManager::class.java) }
@@ -91,6 +93,7 @@ class WakeListenerService : Service() {
             ACTION_RESUME -> {
                 clearPlaybackControls()
                 if (running) {
+                    window.callMode((application as com.jarvis.assistant.JarvisApplication).runtime.aiCall.state.value.connected)
                     window.resume(intent.getBooleanExtra("follow_up", false))
                     main.removeCallbacks(windowTimeout)
                     paused = false
@@ -163,6 +166,8 @@ class WakeListenerService : Service() {
                             }
                         })
                         check(audio.state == AudioRecord.STATE_INITIALIZED) { "Microphone is unavailable." }
+                        val focusProfiles=(application as com.jarvis.assistant.JarvisApplication).runtime.speakers
+                        val focusedAudio=SpeakerAudioFocus(focusProfiles.liveFocusReady(),focusProfiles.firstSpeakerFocus,focusProfiles::liveEmbedding)
                         try {
                             Recognizer(model, 16000f).use { recognizer ->
                                 recognizer.setWords(true);recognizer.setMaxAlternatives(3)
@@ -216,10 +221,24 @@ class WakeListenerService : Service() {
                                         continue
                                     }
                                     if (suppressed) { recognizer.reset(); suppressed = false }
+                                    val serial=window.snapshot().resetSerial
+                                    if(greetingGate.due(serial) && window.snapshot().mode==ConversationWindow.Mode.COMMAND)acknowledgeWake(serial)
+                                    if(paused || !running)break
+                                    if (window.captureReady()) {
+                                        windowRuntimeGeneration=(application as com.jarvis.assistant.JarvisApplication).runtime.currentCommandSerial()
+                                        (application as com.jarvis.assistant.JarvisApplication).runtime.voiceSession.captureReady(windowRuntimeGeneration,true)
+                                        (application as com.jarvis.assistant.JarvisApplication).runtime.phantom.apply{begin(true);event(com.jarvis.assistant.phantom.TraceEvent.CAPTURE_STARTED)}
+                                        utterance.reset();
+                                        publish(language.choose("Follow-up · adaptive inactivity", "Siguiente pregunta · inactividad adaptativa", "پرسش بعدی · ۱۰ ثانیه گوش می‌دهم"), true, awaitingCommand = true)
+                                        scheduleTimeout()
+                                    }
+                                    val focusedPackets=focusedAudio.packets(bytes,count,window.acceptsCommand(serial))
+                                    try{for(packet in focusedPackets){
+                                        if(paused || !running)break
+                                        val bytes=packet.pcm;val count=packet.count
                                     // Opt-in tap of this existing authorized recorder; never a second microphone.
-                                    runCatching{val profiles=(application as com.jarvis.assistant.JarvisApplication).runtime.speakers;speakerBuffer.feed(bytes,count,profiles.ownerOnlyRequested || profiles.autoEnabled)}.onFailure{speakerBuffer.clear()}
+                                    runCatching{val profiles=(application as com.jarvis.assistant.JarvisApplication).runtime.speakers;speakerBuffer.feed(bytes,count,profiles.ownerOnlyRequested || profiles.autoEnabled || profiles.liveFocusReady())}.onFailure{speakerBuffer.clear()}
                                     if (expireCommandWindow()) { recognizer.reset(); recognizerSerial = window.snapshot().resetSerial; continue }
-                                    val serial = window.snapshot().resetSerial
                                     speakerFocus.setSerial(serial)
                                     for(decision in speakerFocus.drain()){
                                         if(!window.acceptsCommand(decision.serial))continue
@@ -232,14 +251,7 @@ class WakeListenerService : Service() {
                                         }
                                     }
                                     if (recognizerSerial != serial) { recognizer.reset(); recognizerSerial = serial; utterance.reset() }
-                                    if (window.captureReady()) {
-                                        windowRuntimeGeneration=(application as com.jarvis.assistant.JarvisApplication).runtime.currentCommandSerial()
-                                        (application as com.jarvis.assistant.JarvisApplication).runtime.voiceSession.captureReady(windowRuntimeGeneration,true)
-                                        (application as com.jarvis.assistant.JarvisApplication).runtime.phantom.apply{begin(true);event(com.jarvis.assistant.phantom.TraceEvent.CAPTURE_STARTED)}
-                                        utterance.reset();
-                                        publish(language.choose("Follow-up · adaptive inactivity", "Siguiente pregunta · inactividad adaptativa", "پرسش بعدی · ۱۰ ثانیه گوش می‌دهم"), true, awaitingCommand = true)
-                                        scheduleTimeout()
-                                    }
+
                                     if(window.acceptsCommand(serial))utterance.energy(com.jarvis.assistant.hud.PcmLevel.pcm16(bytes,count))
                                     if(window.speechProgress("",com.jarvis.assistant.hud.PcmLevel.pcm16(bytes,count)))scheduleTimeout()
                                     val final = recognizer.acceptWaveForm(bytes, count)
@@ -259,22 +271,24 @@ class WakeListenerService : Service() {
                                         recognizer.reset()
                                     }
                                     if(window.acceptsCommand(serial) && !speakerFocus.hasPending(serial) && (utterance.ready() || !utterance.hasUnfinishedSpeech && UtteranceAssembler.fastCommand(utterance.acceptedText())))deliver(utterance.acceptedText(),serial)
+                                    }}finally{focusedPackets.filter{it.owned}.forEach{it.pcm.fill(0)}}
                                 }
                             }
-                        } finally { speakerBuffer.clear();com.jarvis.assistant.hud.AudioSignals.stop(audio); runCatching { audio.stop() }; capture?.close();capture=null;recorder=null }
+                        } finally { focusedAudio.close();speakerBuffer.clear();com.jarvis.assistant.hud.AudioSignals.stop(audio); runCatching { audio.stop() }; capture?.close();capture=null;recorder=null }
                     }
                 }
             } catch (_: InterruptedException) {
                 break
             } catch (error: Throwable) {
                 capture?.close();capture=null
-                val allowed=running && !paused && error !is SecurityException && error !is LinkageError && error !is OutOfMemoryError && ContextCompat.checkSelfPermission(this,Manifest.permission.RECORD_AUDIO)==PackageManager.PERMISSION_GRANTED && !com.jarvis.assistant.security.SystemCredentialPrivacy.pending(this)
+                val focusFailure=error.message?.startsWith("SPEAKER_FOCUS_")==true
+                val allowed=running && !paused && !focusFailure && error !is SecurityException && error !is LinkageError && error !is OutOfMemoryError && ContextCompat.checkSelfPermission(this,Manifest.permission.RECORD_AUDIO)==PackageManager.PERMISSION_GRANTED && !com.jarvis.assistant.security.SystemCredentialPrivacy.pending(this)
                 val wait=if(allowed)recovery.retryDelay() else null
                 if(wait!=null){
                     publish("Recovering offline recognition · bounded retry",false,interrupted=true)
                     try{Thread.sleep(wait)}catch(_:InterruptedException){break}
                 }else{
-                    failureReason="Offline listening stopped. Check microphone permission, input route and model, then tap Start listening to retry."
+                    failureReason=if(focusFailure)"Local speaker focus stopped: model unavailable or too slow. Check the model or disable first-speaker focus, then restart listening. No command was executed." else "Offline listening stopped. Check microphone permission, input route and model, then tap Start listening to retry."
                     publish(failureReason!!,false,interrupted=true);main.post{stopSelf()};break
                 }
             }finally{capture?.close();capture=null}}
@@ -346,13 +360,13 @@ class WakeListenerService : Service() {
     private fun acknowledgeWake(serial:Long){
         if(paused || !window.accept(serial))return
         greetingGate.cancel();paused=true;main.removeCallbacks(windowTimeout)
-        val sample=runCatching{speakerBuffer.take()?.let(com.jarvis.assistant.omnisystem.SpeakerSamples::deposit)}.getOrNull()
+        val sample=runCatching{speakerBuffer.take(.002f)?.let(com.jarvis.assistant.omnisystem.SpeakerSamples::deposit)}.getOrNull()
         val expected=windowRuntimeGeneration
         val ticket=greetingTicket
         main.post{val runtime=(application as com.jarvis.assistant.JarvisApplication).runtime;if(running && runtime.currentCommandSerial()==expected)runtime.greetWake(sample,ticket)}
     }
     private fun segmentCommand(text:String,serial:Long){
-        if((application as com.jarvis.assistant.JarvisApplication).runtime.speakers.let{it.focusEnabled && !it.ownerOnlyRequested}){
+        if((application as com.jarvis.assistant.JarvisApplication).runtime.speakers.let{it.focusEnabled && !it.ownerOnlyRequested && !it.liveFocusReady()}){
             utterance.clearPartial()
             if(!speakerFocus.offer(text,serial,speakerBuffer.take()))rejectHeardCommand(serial,speakerFailure=true)
             return

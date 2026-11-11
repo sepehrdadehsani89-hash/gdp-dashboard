@@ -17,8 +17,8 @@ android {
         applicationId = "com.jarvis.next"
         minSdk = 29
         targetSdk = 35
-        versionCode = 21
-        versionName = "11.5.0"
+        versionCode = 23
+        versionName = "2.11.6"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
         ndk { abiFilters += providers.gradleProperty("jarvisAbis").getOrElse("arm64-v8a").split(",") }
@@ -63,7 +63,6 @@ android {
             signingConfig = signingConfigs.getByName("reinstall")
             isDebuggable = false
             isMinifyEnabled = false
-            versionNameSuffix = "-reinstall"
             matchingFallbacks += listOf("release")
         }
         release {
@@ -84,6 +83,7 @@ android {
 }
 
 dependencies {
+    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
     implementation("androidx.camera:camera-camera2:1.4.1")
     implementation("androidx.camera:camera-lifecycle:1.4.1")
     implementation("androidx.camera:camera-view:1.4.1")

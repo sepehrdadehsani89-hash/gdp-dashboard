@@ -92,7 +92,7 @@ object WallpaperRenderPolicy {
         if(target==0)return 0
         if((battery.percent ?:100)<20)return minOf(8,target)
         if(mode in setOf(SentinelMode.ERROR,SentinelMode.AUTHORIZATION_REQUIRED))return minOf(12,target)
-        if(mode==SentinelMode.DORMANT && !battery.charging && !battery.full)return minOf(12,target)
+        if(mode==SentinelMode.DORMANT && !battery.charging && !battery.full)return minOf(if(restricted)20 else 30,target)
         return target
     }
 }

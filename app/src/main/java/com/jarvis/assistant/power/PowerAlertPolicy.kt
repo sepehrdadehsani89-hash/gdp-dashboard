@@ -2,9 +2,9 @@ package com.jarvis.assistant.power
 
 data class PowerAlertConfig(
     val enabled:Boolean=true,val critical:Boolean=true,val chargingStart:Boolean=true,
-    val full:Boolean=true,val repeatMinutes:Int=15,val disconnect:Boolean=false,val progressMinutes:Int=0,
+    val full:Boolean=true,val repeatMinutes:Int=15,val disconnect:Boolean=false,val progressMinutes:Int=0,val conversationAt20:Boolean=true,
 )
-enum class PowerAlertKind { CRITICAL, FULL, REMINDER, START, ESTIMATE, PROGRESS, DISCONNECTED }
+enum class PowerAlertKind { CRITICAL, FULL, REMINDER, START, ESTIMATE, PROGRESS, DISCONNECTED, LOW_20 }
 data class PowerAttempt(val count:Int=0,val retryAt:Long=0)
 data class PowerAlert(val kind:PowerAlertKind,val key:String,val level:Int?=null,val hadEstimate:Boolean=false)
 data class PowerAlertState(
@@ -12,7 +12,7 @@ data class PowerAlertState(
     val session:Long=0,val startDone:Boolean=false,val fullDone:Boolean=false,val estimateDone:Boolean=false,
     val dismissed:Boolean=false,val snoozeUntil:Long=0,val reminderAt:Long=0,
     val criticalPending:Int?=null,val disconnectPending:Boolean=false,
-    val attempts:Map<String,PowerAttempt> = emptyMap(),val progressAt:Long=0,val reliable:Boolean=false,
+    val attempts:Map<String,PowerAttempt> = emptyMap(),val progressAt:Long=0,val reliable:Boolean=false,val twentyPending:Boolean=false,val twentyDone:Boolean=false,
 )
 
 /** Pure transition/queue policy. One latest observed critical level; no missed-level replay.
@@ -28,7 +28,11 @@ object PowerAlertPolicy {
         val critical=if(r.condition==PowerCondition.UNKNOWN)old.criticalPending else if(r.condition in setOf(PowerCondition.DISCHARGING,PowerCondition.PLUGGED_NOT_CHARGING) && percent in 1..10 &&
             (!old.reliable || old.percent==null || newDischarge || percent!!<old.percent || old.criticalPending==percent) && mask and (1 shl percent!!)==0)percent else null
         val reset=newCharge || r.connected==false
+        val resetTwenty=newCharge || r.charging || percent?.let{it>=25}==true
+        val crossedTwenty=percent in 11..20 && (percent==20 || old.percent?.let{it>20}==true)
         return old.copy(percent=percent ?: old.percent,connected=r.connected ?: old.connected,episode=episode,session=session,mask=mask,
+            twentyDone=if(resetTwenty)false else old.twentyDone,
+            twentyPending=!resetTwenty && !old.twentyDone && (old.twentyPending || crossedTwenty),
             criticalPending=critical,startDone=if(reset)false else old.startDone,
             fullDone=if(reset)false else old.fullDone,estimateDone=if(reset)false else old.estimateDone,
             dismissed=if(reset)false else old.dismissed,snoozeUntil=if(reset)0 else old.snoozeUntil,
@@ -36,7 +40,7 @@ object PowerAlertPolicy {
             progressAt=if(reset)0 else old.progressAt,
             reliable=r.condition!=PowerCondition.UNKNOWN && percent!=null,
             disconnectPending=old.connected==true && r.connected==false || !newCharge && old.disconnectPending,
-            attempts=old.attempts.filterKeys{it.startsWith("critical:$episode:") || it.startsWith("charge:$session:")}.entries.toList().takeLast(16).associate{it.toPair()})
+            attempts=old.attempts.filterKeys{it.startsWith("critical:$episode:") || it.startsWith("charge:$session:") || !resetTwenty && it=="low20:$episode"}.entries.toList().takeLast(16).associate{it.toPair()})
     }
     fun next(s:PowerAlertState,r:PowerReading,c:PowerAlertConfig,now:Long):PowerAlert? {
         if(!c.enabled)return null
@@ -44,6 +48,7 @@ object PowerAlertPolicy {
             s.criticalPending?.takeIf{it==r.battery.percent && !r.charging && r.condition in setOf(PowerCondition.DISCHARGING,PowerCondition.PLUGGED_NOT_CHARGING) && (it>5 || c.critical)}?.let{
                 add(PowerAlert(PowerAlertKind.CRITICAL,"critical:${s.episode}:$it",it))
             }
+            if(c.conversationAt20 && s.twentyPending && !s.twentyDone && r.battery.percent in 11..20 && !r.charging && r.condition in setOf(PowerCondition.DISCHARGING,PowerCondition.PLUGGED_NOT_CHARGING))add(PowerAlert(PowerAlertKind.LOW_20,"low20:${s.episode}",r.battery.percent))
             if(r.connected==true && !s.dismissed && now>=s.snoozeUntil){
                 if(r.verifiedFull && c.full){
                     if(!s.fullDone)add(PowerAlert(PowerAlertKind.FULL,"charge:${s.session}:full",100))
@@ -69,6 +74,7 @@ object PowerAlertPolicy {
     fun failed(s:PowerAlertState,a:PowerAlert,now:Long)=s.copy(attempts=s.attempts+(a.key to (s.attempts[a.key] ?: PowerAttempt(1)).copy(retryAt=now+if((s.attempts[a.key]?.count ?: 1)>1)120_000 else 30_000)))
     fun completed(s:PowerAlertState,a:PowerAlert,c:PowerAlertConfig,now:Long):PowerAlertState {
         val base=s.copy(attempts=s.attempts-a.key)
+        if(a.kind==PowerAlertKind.LOW_20)return if(a.key=="low20:${s.episode}")base.copy(twentyPending=false,twentyDone=true)else base
         if(a.kind!=PowerAlertKind.CRITICAL && !a.key.startsWith("charge:${s.session}:"))return base
         return when(a.kind){
             PowerAlertKind.CRITICAL->if(a.key.startsWith("critical:${s.episode}:"))base.copy(mask=base.mask or (1 shl requireNotNull(a.level)),criticalPending=base.criticalPending.takeUnless{it==a.level})else base
@@ -77,6 +83,7 @@ object PowerAlertPolicy {
             PowerAlertKind.ESTIMATE->base.copy(estimateDone=true)
             PowerAlertKind.FULL,PowerAlertKind.REMINDER->base.copy(fullDone=true,reminderAt=if(c.repeatMinutes>0)now+c.repeatMinutes*60_000L else 0)
             PowerAlertKind.DISCONNECTED->base.copy(disconnectPending=false)
+            PowerAlertKind.LOW_20->base
         }
     }
     fun dismiss(s:PowerAlertState)=s.copy(dismissed=true,snoozeUntil=0,reminderAt=0)

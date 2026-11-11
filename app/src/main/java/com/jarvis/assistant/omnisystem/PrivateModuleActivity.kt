@@ -74,6 +74,7 @@ abstract class PrivateModuleActivity:ComponentActivity() {
         operation=lifecycleScope.launch {
             try{block();if(status==initialStatus)status=""}
             catch(e:CancellationException){status=words("Cancelled","Cancelado","لغو شد");throw e}
+            catch(e:com.jarvis.assistant.companion.CompanionFailure){status="Paired computer: ${e.code}. No verified completion is claimed."}
             catch(e:ModuleServiceFailure){status=words("Service rejected the request (${e.code}). Check account access, credentials or quota.","El servicio rechazó la solicitud (${e.code}). Revisa cuenta, credenciales o cuota.","سرویس درخواست را رد کرد (${e.code}). حساب، کلید و سهمیه را بررسی کنید.")}
             catch(_:OutOfMemoryError){status=words("Android could not allocate this operation. Close the feature and retry.","Android no pudo asignar memoria. Cierra la función y reintenta.","اندروید نتوانست حافظهٔ این عملیات را تخصیص دهد. قابلیت را ببندید و دوباره امتحان کنید.")}
             catch(_:LinkageError){status=words("This native capability is unavailable in this build/device.","Esta función nativa no está disponible en esta versión o dispositivo.","این قابلیت بومی در این نسخه یا دستگاه در دسترس نیست.")}

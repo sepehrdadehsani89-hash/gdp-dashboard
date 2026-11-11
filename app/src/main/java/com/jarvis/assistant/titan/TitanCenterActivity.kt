@@ -133,6 +133,7 @@ class TitanCenterActivity:PrivateModuleActivity(){
         OutlinedButton(onClick={runtime.hud.powerSource.refresh();revision++}){Text("Refresh actual battery and Android estimate")}
         Toggle("BATTERY VOICE ALERTS",p.enabled){p.enabled=it;revision++;runtime.batteryAlerts.settingsChanged()}
         Toggle("CRITICAL ALERTS · 5% through 1%",p.critical){p.critical=it;revision++;runtime.batteryAlerts.settingsChanged()}
+        Toggle("20% battery · invite me into a conversation",p.conversationAt20){p.conversationAt20=it;revision++;runtime.batteryAlerts.settingsChanged()}
         Toggle("Announce charging start and first available estimate",p.chargingStart){p.chargingStart=it;revision++;runtime.batteryAlerts.settingsChanged()}
         Toggle("FULL CHARGE VOICE ALERT",p.fullEnabled){p.fullEnabled=it;revision++;runtime.batteryAlerts.settingsChanged()}
         Toggle("REPEAT WHILE PLUGGED IN",p.repeatFull){p.repeatFull=it;revision++;runtime.batteryAlerts.settingsChanged()}

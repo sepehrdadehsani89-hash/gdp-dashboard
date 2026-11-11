@@ -1,0 +1,27 @@
+package com.jarvis.assistant.checkin
+
+import com.jarvis.assistant.hud.BatteryReading
+import com.jarvis.assistant.power.*
+import org.junit.Assert.*
+import org.junit.Test
+import java.time.*
+import java.util.UUID
+
+class CallMeAndBatteryTest {
+    private val now=ZonedDateTime.of(2026,11,10,15,0,0,0,ZoneId.of("America/Guayaquil"))
+    private fun reading(level:Int,charging:Boolean=false)=PowerReading(battery=BatteryReading(level,charging),condition=if(charging)PowerCondition.CHARGING else PowerCondition.DISCHARGING,connected=charging,observedAt=1000)
+    private fun entry()=CallMeEntry(UUID.randomUUID().toString(),UUID.randomUUID().toString(),now.toInstant().toEpochMilli(),now.zone.id,"My check-in",true,true)
+    @Test fun callMeMeansAJarvisCheckInNotAnOutgoingTelephoneCall(){assertTrue(CallMePolicy.isRequest("call me at 4"));assertTrue(CallMePolicy.isRequest("Jarvis, call me in 5 minutes"));assertFalse(CallMePolicy.isRequest("call Sofia"));assertFalse(CallMePolicy.isRequest("what time is it"))}
+    @Test fun relativeAndDatedSuggestionsUseTheActualProvidedClockAndZone(){assertEquals(now.plusMinutes(5),CallMePolicy.suggested("call me in 5 minutes",now));assertEquals(now.plusHours(2),CallMePolicy.suggested("Hey Jarvis, call me in 2 hours",now));assertEquals(now.plusDays(1).withHour(16),CallMePolicy.suggested("call me tomorrow at 4:00 pm",now));assertEquals(LocalDate.of(2026,11,12),CallMePolicy.suggested("call me on 2026-11-12 at 18:30",now)?.toLocalDate())}
+    @Test fun ambiguousOrPastRequestsNeedReviewInsteadOfASilentGuess(){assertNull(CallMePolicy.suggested("call me at four",now));assertNull(CallMePolicy.suggested("call me at 4",now));assertNull(CallMePolicy.suggested("call me in 0 minutes",now));assertNull(CallMePolicy.suggested("call me on 2020-01-01 at 12:00",now));assertNull(CallMePolicy.suggested("call me at 25:75",now))}
+    @Test fun daylightSavingGapsAndAmbiguousTimesAreNotSilentlyChanged(){val zone=ZoneId.of("America/New_York");assertThrows(IllegalArgumentException::class.java){CallMePolicy.strict(LocalDate.of(2026,3,8),LocalTime.of(2,30),zone)};assertThrows(IllegalArgumentException::class.java){CallMePolicy.strict(LocalDate.of(2026,11,1),LocalTime.of(1,30),zone)}}
+    @Test fun staleEditedCancelledOrEarlyAlarmCannotClaimDue(){val c=entry();assertFalse(CallMePolicy.due(c,UUID.randomUUID().toString(),c.at));assertFalse(CallMePolicy.due(c,c.revision,c.at-1));assertTrue(CallMePolicy.due(c,c.revision,c.at));assertFalse(CallMePolicy.due(c.copy(status="SPOKEN"),c.revision,c.at+1));assertFalse(CallMePolicy.due(c.copy(status="NOTIFIED"),c.revision,c.at+1))}
+    @Test fun friendlyInvitationsContainNoPrivateReminderLabel(){val c=entry();val text=CallMePolicy.invitation(c.id,false);assertFalse(text.contains(c.title));assertTrue(text.contains("sir"));assertTrue(CallMePolicy.invitation(c.id,true).isNotBlank());CallMePolicy.validate(c)}
+    @Test fun twentyPercentCreatesOneConversationAlertFromRealObservedLevel(){val r=reading(20);val s=PowerAlertPolicy.observe(PowerAlertPolicy.observe(PowerAlertState(),reading(21)),r);val a=requireNotNull(PowerAlertPolicy.next(s,r,PowerAlertConfig(),1000));assertEquals(PowerAlertKind.LOW_20,a.kind);assertEquals(20,a.level)}
+    @Test fun onlyCompletedPlaybackAcknowledgesTheTwentyPercentAlert(){val r=reading(20);var s=PowerAlertPolicy.observe(PowerAlertState(),r);val a=requireNotNull(PowerAlertPolicy.next(s,r,PowerAlertConfig(),1000));s=PowerAlertPolicy.requested(s,a,1000);assertFalse(s.twentyDone);s=PowerAlertPolicy.failed(s,a,1000);assertFalse(s.twentyDone);s=PowerAlertPolicy.completed(s,a,PowerAlertConfig(),2000);assertTrue(s.twentyDone);assertNull(PowerAlertPolicy.next(s,r,PowerAlertConfig(),3000));assertTrue(PowerAlertCodec.decode(PowerAlertCodec.encode(s))!!.twentyDone)}
+    @Test fun twentyAlertHandlesSkippedReadingsWithoutInventingTwentyPercent(){val r=reading(19);val s=PowerAlertPolicy.observe(PowerAlertPolicy.observe(PowerAlertState(),reading(21)),r);assertEquals(19,PowerAlertPolicy.next(s,r,PowerAlertConfig(),1000)?.level)}
+    @Test fun chargingOrDisabledSettingsDoNotCallAtTwenty(){val s=PowerAlertPolicy.observe(PowerAlertState(),reading(20));assertNull(PowerAlertPolicy.next(s,reading(20),PowerAlertConfig(conversationAt20=false),1000));val charge=reading(20,true);val c=PowerAlertPolicy.observe(s,charge);assertFalse(c.twentyPending);assertFalse(c.twentyDone)}
+    @Test fun twentyAlertRearmsAfterChargeButDoesNotSpamOnSmallOscillations(){val r=reading(20);var s=PowerAlertPolicy.observe(PowerAlertState(),r);val a=requireNotNull(PowerAlertPolicy.next(s,r,PowerAlertConfig(),0));s=PowerAlertPolicy.completed(s,a,PowerAlertConfig(),0);s=PowerAlertPolicy.observe(s,reading(21));s=PowerAlertPolicy.observe(s,r);assertNull(PowerAlertPolicy.next(s,r,PowerAlertConfig(),1000));s=PowerAlertPolicy.observe(s,reading(25));s=PowerAlertPolicy.observe(s,r);assertEquals(PowerAlertKind.LOW_20,PowerAlertPolicy.next(s,r,PowerAlertConfig(),2000)?.kind)}
+    @Test fun criticalThreeTwoOneAlertsStillTakePriority(){for(level in 1..3){val r=reading(level);val s=PowerAlertPolicy.observe(PowerAlertState(twentyPending=true),r);assertEquals(PowerAlertKind.CRITICAL,PowerAlertPolicy.next(s,r,PowerAlertConfig(),1000)?.kind)}}
+    @Test fun legacyAlertStateLoadsWithNoFabricatedTwentyAcknowledgement(){val s=PowerAlertCodec.decode("{\"percent\":20,\"connected\":false}");assertNotNull(s);assertFalse(s!!.twentyDone)}
+}

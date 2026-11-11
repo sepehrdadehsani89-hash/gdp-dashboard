@@ -30,13 +30,14 @@ class JarvisWallpaperService:WallpaperService() {
         private var observation:Job?=null
         private var registered=false
         private var lastFrameAt=0L
+        private var recoverAfter=0L
         @Volatile private var lastMeasuredFrame=0L
         private val schedule=Runnable {
             renderHandler.removeCallbacks(draw)
             if(visible && surfaceReady && interactive && !destroyed){
                 val s=frame
                 val fps=WallpaperRenderPolicy.fps(visible,surfaceReady,interactive,s.hud.settings,s.hud.telemetry.battery,s.hud.telemetry.powerSaver,s.hud.telemetry.systemMotion,s.visual.mode,s.restricted,s.hud.telemetry.thermalStatus,s.refreshRate)
-                renderHandler.postDelayed(draw,(lastFrameAt+(if(fps>0)1000L/fps else 80L)-SystemClock.elapsedRealtime()).coerceAtLeast(0))
+                renderHandler.postDelayed(draw,(maxOf(recoverAfter,lastFrameAt+(if(fps>0)1000L/fps else 80L))-SystemClock.elapsedRealtime()).coerceAtLeast(0))
             }
         }
         private val screenReceiver=object:BroadcastReceiver(){override fun onReceive(context:Context?,intent:Intent?){
@@ -58,11 +59,13 @@ class JarvisWallpaperService:WallpaperService() {
                     }
                 }catch(_:IllegalArgumentException){/* Surface is being replaced by Android. */}
                 catch(_:IllegalStateException){/* A hidden/destroyed surface is not a render target. */}
+                catch(_:RuntimeException){recoveryErrors.incrementAndGet();recoverAfter=SystemClock.elapsedRealtime()+1000;renderer.pause()}
+                catch(_:OutOfMemoryError){recoveryErrors.incrementAndGet();recoverAfter=SystemClock.elapsedRealtime()+2000;renderer.pause()}
                 finally{canvas?.let{if(runCatching{surfaceHolder.unlockCanvasAndPost(it)}.isSuccess && drawn){frames.incrementAndGet();timings.record(if(lastMeasuredFrame>0)started-lastMeasuredFrame else 0,SystemClock.elapsedRealtime()-started);lastMeasuredFrame=started}}}
             }
             val snapshot=frame
             val fps=WallpaperRenderPolicy.fps(visible,surfaceReady,interactive,snapshot.hud.settings,snapshot.hud.telemetry.battery,snapshot.hud.telemetry.powerSaver,snapshot.hud.telemetry.systemMotion,snapshot.visual.mode,snapshot.restricted,snapshot.hud.telemetry.thermalStatus,snapshot.refreshRate)
-            if(fps>0 && !destroyed && visible)renderHandler.postDelayed(this,(1000L/fps-(SystemClock.elapsedRealtime()-started)).coerceAtLeast(1))
+            if(fps>0 && !destroyed && visible)renderHandler.postDelayed(this,maxOf(recoverAfter-SystemClock.elapsedRealtime(),1000L/fps-(SystemClock.elapsedRealtime()-started),1L))
             else if(snapshot.caption.visible(started) && snapshot.caption.expiresAt>0 && !destroyed && visible)renderHandler.postDelayed(this,if(snapshot.caption.expiresAt-started<1000 && !snapshot.hud.settings.reducedMotion)80L else 1000L)
         }}
         override fun onCreate(holder:SurfaceHolder){super.onCreate(holder);setTouchEventsEnabled(false);setOffsetNotificationsEnabled(false);engines.incrementAndGet()}
@@ -120,6 +123,7 @@ class JarvisWallpaperService:WallpaperService() {
         private val visibleHomeEngines=AtomicInteger()
         private val engines=AtomicInteger()
         private val frames=AtomicInteger()
+        private val recoveryErrors=AtomicInteger()
         private val timings=com.jarvis.assistant.power.RenderMeasurements()
         val frameTimingSummary:String get()=timings.summary()
         val homeVisible:Boolean get()=visibleHomeEngines.get()>0
@@ -127,6 +131,7 @@ class JarvisWallpaperService:WallpaperService() {
         val activeEngineCount:Int get()=engines.get()
         val visibleEngineCount:Int get()=visibleEngines.get()
         val renderedFrames:Int get()=frames.get()
+        val recoveredErrors:Int get()=recoveryErrors.get()
     }
 }
 

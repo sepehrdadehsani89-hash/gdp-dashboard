@@ -70,6 +70,12 @@ class SpeakerProfiles(private val context:Context,private val vault:FeatureVault
     private val mutex=Mutex()
     @Volatile private var extractor:SpeakerEmbeddingExtractor?=null
     val isWarm get()=extractor!=null
+    val firstSpeakerFocus=com.jarvis.assistant.voice.FirstSpeakerFocus(android.os.SystemClock::elapsedRealtime)
+    @Volatile private var conversationCaptureAllowed=false
+    fun liveFocusReady()=conversationCaptureAllowed && present() && com.jarvis.assistant.titan.VoicePreferences(context).conversationFocus
+    fun armConversationFocus(){check(unlocked());if(present() && com.jarvis.assistant.titan.VoicePreferences(context).conversationFocus)conversationCaptureAllowed=true}
+    fun endConversationFocus(){conversationCaptureAllowed=false;firstSpeakerFocus.reset()}
+    suspend fun liveEmbedding(audio:CapturedVoice):FloatArray=computeEmbedding(audio,false,true)
     val focusEnabled:Boolean get()=options.getBoolean("segment_focus",false) && autoEnabled
     fun setFocus(enabled:Boolean){check(unlocked());if(enabled)check(autoEnabled);check(options.edit().putBoolean("segment_focus",enabled).commit())}
     private val cleanupScope=CoroutineScope(SupervisorJob()+Dispatchers.IO)
@@ -164,17 +170,18 @@ class SpeakerProfiles(private val context:Context,private val vault:FeatureVault
         if(extractor==null){verify();extractor=SpeakerEmbeddingExtractor(config=SpeakerEmbeddingExtractorConfig(model=model.absolutePath,numThreads=1,debug=false,provider="cpu"))}
         return extractor ?: error("Speaker engine unavailable.")
     }
-    private fun releaseLater(){releaseJob?.cancel();if(ownerSessionReady())return;releaseJob=cleanupScope.launch{delay(60_000);release()}}
+    private fun releaseLater(){releaseJob?.cancel();if(ownerSessionReady() || liveFocusReady() && com.jarvis.assistant.voice.WakeListenerService.state.value.running)return;releaseJob=cleanupScope.launch{delay(60_000);release()}}
     suspend fun prepare()=mutex.withLock{withContext(Dispatchers.IO){check(unlocked());engine();releaseLater();Unit}}
     suspend fun embedding(audio:CapturedVoice):FloatArray=computeEmbedding(audio,false)
-    private suspend fun computeEmbedding(audio:CapturedVoice,forOwner:Boolean):FloatArray=mutex.withLock{withContext(Dispatchers.IO){
-        check(if(forOwner)ownerSessionReady()else unlocked());require(audio.sampleRate==16000 && audio.pcm.size in 32_000..800_000)
+    private suspend fun computeEmbedding(audio:CapturedVoice,forOwner:Boolean,forConversation:Boolean=false):FloatArray=mutex.withLock{withContext(Dispatchers.IO){
+        fun permitted()=if(forOwner)ownerSessionReady()else if(forConversation)liveFocusReady()else unlocked()
+        check(permitted());require(audio.sampleRate==16000 && audio.pcm.size in 32_000..800_000)
         releaseJob?.cancel()
         val engine=engine()
         val stream=engine.createStream();val samples=audio.floats()
         try {
             stream.acceptWaveform(samples,16000);stream.inputFinished();check(engine.isReady(stream)){"More clear speech is needed."}
-            val vector=engine.compute(stream);require(vector.size==engine.dim());check(if(forOwner)ownerSessionReady()else unlocked())
+            val vector=engine.compute(stream);require(vector.size==engine.dim());check(permitted())
             SpeakerProfilePolicy.normalized(vector)
         } finally {
             samples.fill(0f);stream.release()
@@ -192,6 +199,6 @@ class SpeakerProfiles(private val context:Context,private val vault:FeatureVault
         }finally{query?.fill(0f);snapshot.first.fill(0f);snapshot.second.forEach{it.fill(0f)}}
     }
     suspend fun release()=mutex.withLock{withContext(Dispatchers.IO){extractor?.release();extractor=null}}
-    fun releaseAsync(){if(ownerSessionReady() && com.jarvis.assistant.voice.WakeListenerService.state.value.running)return;cleanupScope.launch{release()}}
-    suspend fun removeModel()=mutex.withLock{withContext(Dispatchers.IO){endOwnerSession();check(options.edit().putBoolean("auto",false).commit());releaseJob?.cancel();extractor?.release();extractor=null;check(!directory.exists() || directory.deleteRecursively());Unit}}
+    fun releaseAsync(){if((ownerSessionReady() || liveFocusReady()) && com.jarvis.assistant.voice.WakeListenerService.state.value.running)return;cleanupScope.launch{release()}}
+    suspend fun removeModel()=mutex.withLock{withContext(Dispatchers.IO){endOwnerSession();endConversationFocus();check(options.edit().putBoolean("auto",false).commit());releaseJob?.cancel();extractor?.release();extractor=null;check(!directory.exists() || directory.deleteRecursively());Unit}}
 }
