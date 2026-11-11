@@ -21,6 +21,7 @@ object LocalArithmetic {
         s=s.removePrefix("hey jarvis ").removePrefix("oye jarvis ").removePrefix("jarvis ").removePrefix("please ").replace("what's","what is")
         s=s.replace(Regex("^(?:what is|how much is|calculate|compute|cuanto es|cuanto da|calcula)\\s+"),"")
         s=s.replace('×','*').replace('÷','/').replace('−','-').replace(',','.')
+        if(s.contains("**") || s.contains("^"))return null // Advanced exponent syntax is not this bounded calculator grammar.
         val percentage=Regex("^(.+?)\\s*(?:percent of|por ciento de|%\\s*(?:of|de))\\s+(.+)$").matchEntire(s)
         if(percentage!=null)s="(${percentage.groupValues[1]}) / 100 * (${percentage.groupValues[2]})"
         s=s.replace(Regex("\\b(?:multiplied by|times|multiplicado por|por)\\b"),"*")
