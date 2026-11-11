@@ -1,4 +1,10 @@
-# Current development build: Jarvis 2.11.6
+# Current development update: Jarvis 2.11.7
+
+[**Download the signed ARM64 APK**](v2-2.11.7/Jarvis-2.11.7-arm64-update.apk) · [Changes and phone setup](../docs/voice-2.11.7/REPORT.md) · [Verification](v2-2.11.7/VERIFICATION.md).
+
+Corrects Vosk alternative-result parsing and exact spoken AI-call starts; adds English/Spanish saved-voice switching, six guarded pickup greetings per language and Voice health settings. Existing capabilities and retained newer signing identity remain. 548 JVM tests passed; zero lint errors/fatals. Actual phone audio, language handoff and sensor behavior remain unverified.
+
+# Previous development build: Jarvis 2.11.6
 
 [**Download the signed ARM64 APK**](v2-2.11.6/Jarvis-2.11.6-arm64-update.apk) · [Phone guide](../docs/v2/PHONE-GUIDE.md) · [Changes and limits](../docs/v2/REPORT.md) · [Verification](v2-2.11.6/VERIFICATION.md).
 
