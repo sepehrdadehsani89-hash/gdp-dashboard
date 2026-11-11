@@ -813,17 +813,18 @@ class AssistantRuntime(private val context: Context) {
                 com.jarvis.assistant.finishpolish.learning.LearnedAction.DESKTOP_SEARCH->"desktop.search"
             },step.argument,step.targetDeviceId,if(step.targetDeviceId!=null)companion.paired()?.sessionId else null)}
             lastRequestWasVoice=voiced;lastReplyLanguage=language()
-            proposePolishPlan(com.jarvis.assistant.finishpolish.shared.ActionPlan(steps=steps,createdAt=System.currentTimeMillis(),recipeId=recipe.id,recipeRevision=recipe.revision,profileRevision=profile.revision.toLong()),"Review saved recipe: ${recipe.title}")
+            proposePolishPlan(com.jarvis.assistant.finishpolish.shared.ActionPlan(steps=steps,createdAt=System.currentTimeMillis(),recipeId=recipe.id,recipeRevision=recipe.revision,profileRevision=profile.revision.toLong()),"Review saved recipe: ${recipe.title}",voiced)
         }catch(_:Exception){mutableState.update{it.copy(error="The approved recipe is unavailable, disabled or changed. Review Teach Jarvis. No action executed.")}}
     }
-    private fun proposePolishPlan(plan:com.jarvis.assistant.finishpolish.shared.ActionPlan,title:String){
+    private fun proposePolishPlan(plan:com.jarvis.assistant.finishpolish.shared.ActionPlan,title:String,voiced:Boolean=false){
         com.jarvis.assistant.finishpolish.shared.PolishActionRegistry.validate(plan,System.currentTimeMillis(),runCatching{companion.paired()?.deviceId}.getOrNull(),runCatching{companion.paired()?.sessionId}.getOrNull())
         cancelSession();pauseWake();privateTurn=true
         val preview=title+"\n"+plan.steps.mapIndexed{i,s->"${i+1}. ${s.id}: ${s.argument}"}.joinToString("\n")+"\nReview before running. Android app foreground verification uses package identity only if Screen access is already enabled. Unverified dispatch stops dependent steps."
         val proposal=com.jarvis.assistant.core.PendingAction(description=preview,kind="polish_plan",payload=plan.json())
-        mutableState.update{it.copy(pendingAction=proposal,phase=AssistantPhase.READY,liveReply=preview,error=null)}
+        mutableState.update{it.copy(pendingAction=proposal,phase=AssistantPhase.READY,voiceInteraction=voiced,liveReply=preview,error=null)}
         polishActions.record("plan.review","REQUESTED")
-        if(com.jarvis.assistant.rebirth.AppVisibility.visible)runCatching{context.startActivity(Intent(context,MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP))}
+        tools.launches.open(Intent(context,MainActivity::class.java),"review the approved Jarvis plan")
+        if(voiced){lastRequestWasVoice=true;lastReplyLanguage=language();speak(language().choose("Please review this plan in Jarvis, sir. Nothing has run yet. Confirm when ready.","Revisa el plan en Jarvis, señor. Aún no se ejecutó nada. Confirma cuando estés listo.","طرح را بررسی و تأیید کنید."),language(),allowCloudSpeech=true,followUpOnDone=true,privateSpeech=false,publicOnly=true,allowPlaybackControls=false)}
     }
     fun handleSuggestion(id:String,operation:String){
         if(locked()){fail(unlockMessage());return}
