@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.hud.HudLogicTest" tests="15" skipped="0" failures="0" errors="0" timestamp="2026-11-16T23:51:05" hostname="db840c36714e" time="0.122">
+  <properties/>
+  <testcase name="weatherRejectsProviderErrors" classname="com.jarvis.assistant.hud.HudLogicTest" time="0.003"/>
+  <testcase name="authorizationCancelExpiryAndReplacementAreIsolated" classname="com.jarvis.assistant.hud.HudLogicTest" time="0.008"/>
+  <testcase name="clockHonorsDstAndSelectedLocale" classname="com.jarvis.assistant.hud.HudLogicTest" time="0.08"/>
+  <testcase name="clockUsesZoneMinuteRolloverAndBothFormats" classname="com.jarvis.assistant.hud.HudLogicTest" time="0.0"/>
+  <testcase name="cacheExpiryAndClockRollbackAreExplicit" classname="com.jarvis.assistant.hud.HudLogicTest" time="0.001"/>
+  <testcase name="motionRespectsSystemReducedLowBatteryAndPowerSaver" classname="com.jarvis.assistant.hud.HudLogicTest" time="0.01"/>
+  <testcase name="codeWordAndWakePhrasesStaySeparate" classname="com.jarvis.assistant.hud.HudLogicTest" time="0.0"/>
+  <testcase name="codexIsTriggerOnlyAndActionCannotReplay" classname="com.jarvis.assistant.hud.HudLogicTest" time="0.004"/>
+  <testcase name="weatherUsesObservedFieldsAndMatchingHour" classname="com.jarvis.assistant.hud.HudLogicTest" time="0.0"/>
+  <testcase name="batteryPercentUsesScaleAndRejectsInvalidSamples" classname="com.jarvis.assistant.hud.HudLogicTest" time="0.0"/>
+  <testcase name="calculationSupportsPrecedenceParenthesesAndPersianDigits" classname="com.jarvis.assistant.hud.HudLogicTest" time="0.006"/>
+  <testcase name="pcmMeterReadsActualSignedSamplesAndClearsSilence" classname="com.jarvis.assistant.hud.HudLogicTest" time="0.001"/>
+  <testcase name="weatherMissingMeasurementsStayMissing" classname="com.jarvis.assistant.hud.HudLogicTest" time="0.0"/>
+  <testcase name="calculationRejectsCodeAndUnboundedInput" classname="com.jarvis.assistant.hud.HudLogicTest" time="0.003"/>
+  <testcase name="weatherRejectsMissingTimestamp" classname="com.jarvis.assistant.hud.HudLogicTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

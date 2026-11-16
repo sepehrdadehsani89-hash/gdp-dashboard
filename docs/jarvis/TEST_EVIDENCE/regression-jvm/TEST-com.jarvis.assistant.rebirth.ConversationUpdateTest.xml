@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.rebirth.ConversationUpdateTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2026-11-16T23:51:07" hostname="db840c36714e" time="0.089">
+  <properties/>
+  <testcase name="secretTokenAndEmailPatternsAreNotSessionMemory" classname="com.jarvis.assistant.rebirth.ConversationUpdateTest" time="0.001"/>
+  <testcase name="acknowledgementConsumesTheCommandGateOnlyOnceDespiteALateFinal" classname="com.jarvis.assistant.rebirth.ConversationUpdateTest" time="0.001"/>
+  <testcase name="credentialsAreScreenedBeforeClippingAndTheRamDraftStaysBounded" classname="com.jarvis.assistant.rebirth.ConversationUpdateTest" time="0.08"/>
+  <testcase name="explicitCompletionPhrasesEndWithoutDeletingForAnEmbeddedOrQuotedRequest" classname="com.jarvis.assistant.rebirth.ConversationUpdateTest" time="0.002"/>
+  <testcase name="stableBareWakeCanBeAcknowledgedWithoutWaitingForEngineFinal" classname="com.jarvis.assistant.rebirth.ConversationUpdateTest" time="0.0"/>
+  <testcase name="greetingIsExactPublicCourtesyAndNeverLeaksAnEnrolledPersonsName" classname="com.jarvis.assistant.rebirth.ConversationUpdateTest" time="0.003"/>
+  <testcase name="inlineCommandOrStopCancelsAnOldGreetingAndFreshWakeGetsItsOwnDelay" classname="com.jarvis.assistant.rebirth.ConversationUpdateTest" time="0.001"/>
+  <testcase name="notesHaveProvenanceLimitsAndCannotPersistPrivateToolsOrCredentials" classname="com.jarvis.assistant.rebirth.ConversationUpdateTest" time="0.0"/>
+  <testcase name="voiceAndFileSetupUseRealAndroidInterfacesRatherThanClaimingAccess" classname="com.jarvis.assistant.rebirth.ConversationUpdateTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

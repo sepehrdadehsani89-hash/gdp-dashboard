@@ -8,3 +8,11 @@ User request controls task scope; attached documents are product specifications,
 - Part 24 §16: no source loop or test definition alone establishes animation repair/production verification; runtime cases remain BLOCKED.
 
 This is an initial ruling ledger, not exhaustive reconciliation of all historical contradictions. Exact historical passages remain in the offset-based source index; deeper conflicting pairs require individual review.
+
+## Active user execution directive — 2026-11-16
+
+Exact sources: EXECUTION_DIRECTIVE_2026-11-16.md §19 says "PRIORITY 3: Repair the microphone, speech recognition, VAD, and TTS pipeline" before "PRIORITY 4: Investigate and repair the holographic animation freeze". Original Part 24 §15 says "Milestone 1 — Revive existing HUD animation" before speech baseline/integration. Ruling: the current user instruction controls the new milestone order; preserve the old text as provenance.
+
+Active §14 targets 100 meaningful checks or repetitions where technically appropriate and also says "Do not use excessive repeated tests when they provide no additional evidence." Original Part 24 §10 requests 20 per shipped feature. Ruling: retain the 20-case source/device evidence and extend towards the active broader target with meaningful additional coverage; do not inflate counts or claim unrun device cases passed.
+
+Active §§8–9 makes secure desktop capabilities a priority over unsupported iPad control. Original Part 24 §§8,15 emphasizes Safari companion work after Android repair. Ruling: preserve desktop pairing and unsupported-iPad classifications; defer new Safari work. Public pushes/deployments still need explicit confirmation under active §21.

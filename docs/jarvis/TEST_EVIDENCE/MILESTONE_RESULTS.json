@@ -1,0 +1,41 @@
+{
+  "repair_commit": "36f2c271bad44b73e6d4d9b0fb9a9b75b0eda94b",
+  "baseline_jvm": {
+    "passed": 201,
+    "failed": 0,
+    "skipped": 0
+  },
+  "focused_new_jvm": {
+    "passed": 20,
+    "failed": 0,
+    "skipped": 0
+  },
+  "full_jvm": {
+    "total": 639,
+    "passed": 638,
+    "failed": 0,
+    "skipped": 1
+  },
+  "companion": {
+    "total": 36,
+    "passed": 36,
+    "failed": 0,
+    "skipped": 0,
+    "local_https_and_chromium_executed": true
+  },
+  "lint": {
+    "errors": 0,
+    "fatal": 0,
+    "warnings": 48,
+    "information": 1
+  },
+  "device_drain_cases": {
+    "blocked": 20
+  },
+  "original_animation_cases": {
+    "blocked": 20
+  },
+  "physical_device_tests_executed": 0,
+  "new_apk_built": false,
+  "remote_push": false
+}

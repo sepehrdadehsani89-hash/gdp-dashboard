@@ -1,0 +1,71 @@
+Picked up JAVA_TOOL_OPTIONS: -Djava.util.prefs.userRoot=/workspace/.jarvis-toolchain/java-prefs -Duser.home=/workspace/.jarvis-toolchain/java-home -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080 -Dhttps.proxyHost=proxy -Dhttps.proxyPort=8080
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.9/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+Warning: SDK processing. This version only understands SDK XML versions up to 3 but an SDK XML file of version 4 was encountered. This can happen if you use versions of Android Studio and the command-line tools that were released at different times.
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:generateDebugBuildConfig UP-TO-DATE
+> Task :app:checkDebugAarMetadata UP-TO-DATE
+> Task :app:generateDebugResValues UP-TO-DATE
+> Task :app:mapDebugSourceSetPaths UP-TO-DATE
+> Task :app:generateDebugResources UP-TO-DATE
+> Task :app:mergeDebugResources UP-TO-DATE
+> Task :app:packageDebugResources UP-TO-DATE
+> Task :app:parseDebugLocalResources UP-TO-DATE
+> Task :app:createDebugCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksDebug UP-TO-DATE
+> Task :app:processDebugMainManifest UP-TO-DATE
+> Task :app:processDebugManifest UP-TO-DATE
+> Task :app:processDebugManifestForPackage UP-TO-DATE
+> Task :app:processDebugResources UP-TO-DATE
+> Task :app:kspDebugKotlin
+> Task :app:compileDebugKotlin
+w: file:///workspace/gdp-dashboard/app/src/main/java/com/jarvis/assistant/JarvisApplication.kt:12:29 'static field TRIM_MEMORY_RUNNING_LOW: Int' is deprecated. Deprecated in Java.
+w: file:///workspace/gdp-dashboard/app/src/main/java/com/jarvis/assistant/JarvisApplication.kt:12:53 'static field TRIM_MEMORY_RUNNING_CRITICAL: Int' is deprecated. Deprecated in Java.
+w: file:///workspace/gdp-dashboard/app/src/main/java/com/jarvis/assistant/JarvisApplication.kt:12:82 'static field TRIM_MEMORY_MODERATE: Int' is deprecated. Deprecated in Java.
+w: file:///workspace/gdp-dashboard/app/src/main/java/com/jarvis/assistant/JarvisApplication.kt:12:103 'static field TRIM_MEMORY_COMPLETE: Int' is deprecated. Deprecated in Java.
+w: file:///workspace/gdp-dashboard/app/src/main/java/com/jarvis/assistant/MainActivity.kt:67:14 'fun setDeviceCredentialAllowed(p0: Boolean): BiometricPrompt.Builder' is deprecated. Deprecated in Java.
+w: file:///workspace/gdp-dashboard/app/src/main/java/com/jarvis/assistant/hud/HudRepository.kt:146:27 'fun requestSingleUpdate(p0: String, p1: LocationListener, p2: Looper?): Unit' is deprecated. Deprecated in Java.
+w: file:///workspace/gdp-dashboard/app/src/main/java/com/jarvis/assistant/omnisystem/LocationFix.kt:48:53 'fun requestSingleUpdate(p0: String, p1: LocationListener, p2: Looper?): Unit' is deprecated. Deprecated in Java.
+w: file:///workspace/gdp-dashboard/app/src/main/java/com/jarvis/assistant/omnisystem/LocationHudActivity.kt:113:136 'var databaseEnabled: Boolean' is deprecated. Deprecated in Java.
+w: file:///workspace/gdp-dashboard/app/src/main/java/com/jarvis/assistant/omnisystem/PrivateModuleActivity.kt:63:28 'fun createConfirmDeviceCredentialIntent(p0: CharSequence!, p1: CharSequence!): Intent!' is deprecated. Deprecated in Java.
+w: file:///workspace/gdp-dashboard/app/src/main/java/com/jarvis/assistant/phantom/PhantomOverlay.kt:96:83 'val stableInsetTop: Int' is deprecated. Deprecated in Java.
+w: file:///workspace/gdp-dashboard/app/src/main/java/com/jarvis/assistant/phantom/PhantomOverlay.kt:96:235 'val stableInsetBottom: Int' is deprecated. Deprecated in Java.
+w: file:///workspace/gdp-dashboard/app/src/main/java/com/jarvis/assistant/titan/BatteryAlerts.kt:104:117 'val callState: Int' is deprecated. Deprecated in Java.
+w: file:///workspace/gdp-dashboard/app/src/main/java/com/jarvis/assistant/widgets/WidgetCenterActivity.kt:77:47 'fun updateAppWidgetSize(p0: Bundle!, p1: Int, p2: Int, p3: Int, p4: Int): Unit' is deprecated. Deprecated in Java.
+w: file:///workspace/gdp-dashboard/app/src/main/java/com/jarvis/assistant/widgets/WidgetCenterActivity.kt:120:17 'fun startActivityForResult(intent: Intent, requestCode: Int): Unit' is deprecated. This method has been deprecated in favor of using the Activity Result API
+      which brings increased type safety via an {@link ActivityResultContract} and the prebuilt
+      contracts for common intents available in
+      {@link androidx.activity.result.contract.ActivityResultContracts}, provides hooks for
+      testing, and allow receiving results in separate, testable classes independent from your
+      activity. Use
+      {@link #registerForActivityResult(ActivityResultContract, ActivityResultCallback)}
+      passing in a {@link StartActivityForResult} object for the {@link ActivityResultContract}.
+w: file:///workspace/gdp-dashboard/app/src/main/java/com/jarvis/assistant/widgets/WidgetCenterActivity.kt:148:86 'fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Unit' is deprecated. This method has been deprecated in favor of using the Activity Result API
+      which brings increased type safety via an {@link ActivityResultContract} and the prebuilt
+      contracts for common intents available in
+      {@link androidx.activity.result.contract.ActivityResultContracts}, provides hooks for
+      testing, and allow receiving results in separate, testable classes independent from your
+      activity. Use
+      {@link #registerForActivityResult(ActivityResultContract, ActivityResultCallback)}
+      with the appropriate {@link ActivityResultContract} and handling the result in the
+      {@link ActivityResultCallback#onActivityResult(Object) callback}.
+
+> Task :app:javaPreCompileDebug UP-TO-DATE
+> Task :app:compileDebugJavaWithJavac UP-TO-DATE
+> Task :app:bundleDebugClassesToRuntimeJar
+> Task :app:bundleDebugClassesToCompileJar
+> Task :app:kspDebugUnitTestKotlin
+> Task :app:compileDebugUnitTestKotlin
+> Task :app:preDebugUnitTestBuild UP-TO-DATE
+> Task :app:javaPreCompileDebugUnitTest UP-TO-DATE
+> Task :app:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :app:processDebugJavaRes UP-TO-DATE
+> Task :app:processDebugUnitTestJavaRes UP-TO-DATE
+
+> Task :app:testDebugUnitTest
+Picked up JAVA_TOOL_OPTIONS: -Djava.util.prefs.userRoot=/workspace/.jarvis-toolchain/java-prefs -Duser.home=/workspace/.jarvis-toolchain/java-home -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080 -Dhttps.proxyHost=proxy -Dhttps.proxyPort=8080
+
+BUILD SUCCESSFUL in 2m 54s
+26 actionable tasks: 7 executed, 19 up-to-date

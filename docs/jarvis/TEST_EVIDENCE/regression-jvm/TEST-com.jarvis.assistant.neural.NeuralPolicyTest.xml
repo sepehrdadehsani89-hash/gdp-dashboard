@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.neural.NeuralPolicyTest" tests="24" skipped="0" failures="0" errors="0" timestamp="2026-11-16T23:51:06" hostname="db840c36714e" time="0.02">
+  <properties/>
+  <testcase name="phoneticAndPersonalAliasesAreBoundToRealApps" classname="com.jarvis.assistant.neural.NeuralPolicyTest" time="0.001"/>
+  <testcase name="politeMultilingualCommands" classname="com.jarvis.assistant.neural.NeuralPolicyTest" time="0.0"/>
+  <testcase name="compatibilityChecksOnlyArchitectureAvailabilityAndThermals" classname="com.jarvis.assistant.neural.NeuralPolicyTest" time="0.001"/>
+  <testcase name="rollingSummaryIsEphemeralAndBounded" classname="com.jarvis.assistant.neural.NeuralPolicyTest" time="0.001"/>
+  <testcase name="evaluationHasSeparateLanguageCoverageWithoutFakeScores" classname="com.jarvis.assistant.neural.NeuralPolicyTest" time="0.001"/>
+  <testcase name="dailyWorkUsesLocalTimezoneAndDst" classname="com.jarvis.assistant.neural.NeuralPolicyTest" time="0.0"/>
+  <testcase name="ambiguityIsNotHidden" classname="com.jarvis.assistant.neural.NeuralPolicyTest" time="0.001"/>
+  <testcase name="spokenCorrectionsDoNotDependOnAsrPunctuation" classname="com.jarvis.assistant.neural.NeuralPolicyTest" time="0.0"/>
+  <testcase name="quietHoursCrossMidnightAndCanBeDisabled" classname="com.jarvis.assistant.neural.NeuralPolicyTest" time="0.0"/>
+  <testcase name="missingRainNeverInventsRecommendation" classname="com.jarvis.assistant.neural.NeuralPolicyTest" time="0.005"/>
+  <testcase name="extraModelAuthorityIsRejected" classname="com.jarvis.assistant.neural.NeuralPolicyTest" time="0.0"/>
+  <testcase name="followupWeatherIsBoundedAndExpires" classname="com.jarvis.assistant.neural.NeuralPolicyTest" time="0.0"/>
+  <testcase name="structuredPlanHasKnownSchemaAndBoundedSteps" classname="com.jarvis.assistant.neural.NeuralPolicyTest" time="0.0"/>
+  <testcase name="forecastIntentDoesNotHijackExplanations" classname="com.jarvis.assistant.neural.NeuralPolicyTest" time="0.001"/>
+  <testcase name="modelCannotSubstituteAnotherApp" classname="com.jarvis.assistant.neural.NeuralPolicyTest" time="0.0"/>
+  <testcase name="weatherThenUmbrellaUsesOneGroundedForecast" classname="com.jarvis.assistant.neural.NeuralPolicyTest" time="0.001"/>
+  <testcase name="forecastDateAndRainAreSourceFields" classname="com.jarvis.assistant.neural.NeuralPolicyTest" time="0.0"/>
+  <testcase name="directPlanStopsAtUnsupportedLanguageInsteadOfInventingTools" classname="com.jarvis.assistant.neural.NeuralPolicyTest" time="0.0"/>
+  <testcase name="unrelatedMemoriesNeverEnterTheRequestContext" classname="com.jarvis.assistant.neural.NeuralPolicyTest" time="0.003"/>
+  <testcase name="availableAppsOnlyAndObviousNames" classname="com.jarvis.assistant.neural.NeuralPolicyTest" time="0.001"/>
+  <testcase name="nonTextArgumentsAreRejected" classname="com.jarvis.assistant.neural.NeuralPolicyTest" time="0.0"/>
+  <testcase name="documentTextDoesNotBecomeAToolProposal" classname="com.jarvis.assistant.neural.NeuralPolicyTest" time="0.0"/>
+  <testcase name="relevanceFindsLaterTextAndPersianNormalization" classname="com.jarvis.assistant.neural.NeuralPolicyTest" time="0.003"/>
+  <testcase name="unknownToolCannotExecute" classname="com.jarvis.assistant.neural.NeuralPolicyTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

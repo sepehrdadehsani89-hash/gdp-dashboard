@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.tools.LiveControlPolicyTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-11-16T23:51:07" hostname="db840c36714e" time="0.003">
+  <properties/>
+  <testcase name="whatsappKeepsOriginalDraftAndValidatesPhone" classname="com.jarvis.assistant.tools.LiveControlPolicyTest" time="0.001"/>
+  <testcase name="explicitCommandsOnly" classname="com.jarvis.assistant.tools.LiveControlPolicyTest" time="0.001"/>
+  <testcase name="commitsAndDestructionStayManual" classname="com.jarvis.assistant.tools.LiveControlPolicyTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

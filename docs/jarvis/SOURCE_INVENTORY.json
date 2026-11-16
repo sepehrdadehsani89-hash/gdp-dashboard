@@ -1,0 +1,537 @@
+{
+  "scope": "Complete owned Kotlin/Java pathname and manifest component inventory; not a claim of full semantic review or feature verification. Vendor/native/assets remain preserved and need their own reviews.",
+  "source_files": {
+    "app": [
+      "app/src/main/java/com/jarvis/assistant/AssistantRuntime.kt",
+      "app/src/main/java/com/jarvis/assistant/JarvisApplication.kt",
+      "app/src/main/java/com/jarvis/assistant/MainActivity.kt"
+    ],
+    "call": [
+      "app/src/main/java/com/jarvis/assistant/call/AiCallActivity.kt",
+      "app/src/main/java/com/jarvis/assistant/call/AiCallPolicy.kt",
+      "app/src/main/java/com/jarvis/assistant/call/AiCallService.kt"
+    ],
+    "checkin": [
+      "app/src/main/java/com/jarvis/assistant/checkin/CallMeActivity.kt",
+      "app/src/main/java/com/jarvis/assistant/checkin/CallMePolicy.kt",
+      "app/src/main/java/com/jarvis/assistant/checkin/CallMeStore.kt"
+    ],
+    "companion": [
+      "app/src/main/java/com/jarvis/assistant/companion/CompanionActivity.kt",
+      "app/src/main/java/com/jarvis/assistant/companion/CompanionClient.kt",
+      "app/src/main/java/com/jarvis/assistant/companion/CompanionPolicy.kt"
+    ],
+    "contacts": [
+      "app/src/main/java/com/jarvis/assistant/contacts/ContactShortcuts.kt",
+      "app/src/main/java/com/jarvis/assistant/contacts/ContactShortcutsActivity.kt",
+      "app/src/main/java/com/jarvis/assistant/contacts/PersonalMemoActivity.kt"
+    ],
+    "core": [
+      "app/src/main/java/com/jarvis/assistant/core/AttachmentLimits.kt",
+      "app/src/main/java/com/jarvis/assistant/core/AttachmentReader.kt",
+      "app/src/main/java/com/jarvis/assistant/core/Calculation.kt",
+      "app/src/main/java/com/jarvis/assistant/core/CaptionHighlightPolicy.kt",
+      "app/src/main/java/com/jarvis/assistant/core/ConnectedFolders.kt",
+      "app/src/main/java/com/jarvis/assistant/core/ConversationContext.kt",
+      "app/src/main/java/com/jarvis/assistant/core/LanguageRules.kt",
+      "app/src/main/java/com/jarvis/assistant/core/LocalContextBudget.kt",
+      "app/src/main/java/com/jarvis/assistant/core/Models.kt",
+      "app/src/main/java/com/jarvis/assistant/core/PhoneContext.kt",
+      "app/src/main/java/com/jarvis/assistant/core/PhoneRequestParser.kt"
+    ],
+    "data": [
+      "app/src/main/java/com/jarvis/assistant/data/BrainProtocol.kt",
+      "app/src/main/java/com/jarvis/assistant/data/JarvisStore.kt",
+      "app/src/main/java/com/jarvis/assistant/data/LlmClient.kt"
+    ],
+    "finishpolish": [
+      "app/src/main/java/com/jarvis/assistant/finishpolish/FinishPolishActivity.kt",
+      "app/src/main/java/com/jarvis/assistant/finishpolish/doctor/DoctorPolicy.kt",
+      "app/src/main/java/com/jarvis/assistant/finishpolish/doctor/SystemDoctor.kt",
+      "app/src/main/java/com/jarvis/assistant/finishpolish/doctor/SystemDoctorActivity.kt",
+      "app/src/main/java/com/jarvis/assistant/finishpolish/learning/LearningActivity.kt",
+      "app/src/main/java/com/jarvis/assistant/finishpolish/learning/LearningPolicy.kt",
+      "app/src/main/java/com/jarvis/assistant/finishpolish/learning/LearningStore.kt",
+      "app/src/main/java/com/jarvis/assistant/finishpolish/mission/MissionControlActivity.kt",
+      "app/src/main/java/com/jarvis/assistant/finishpolish/mission/MissionController.kt",
+      "app/src/main/java/com/jarvis/assistant/finishpolish/mission/MissionPolicy.kt",
+      "app/src/main/java/com/jarvis/assistant/finishpolish/predictive/PredictiveActivity.kt",
+      "app/src/main/java/com/jarvis/assistant/finishpolish/predictive/PredictiveEngine.kt",
+      "app/src/main/java/com/jarvis/assistant/finishpolish/predictive/PredictivePolicy.kt",
+      "app/src/main/java/com/jarvis/assistant/finishpolish/predictive/PredictiveStore.kt",
+      "app/src/main/java/com/jarvis/assistant/finishpolish/shared/PolishActionRegistry.kt"
+    ],
+    "hud": [
+      "app/src/main/java/com/jarvis/assistant/hud/AudioSignals.kt",
+      "app/src/main/java/com/jarvis/assistant/hud/Authorization.kt",
+      "app/src/main/java/com/jarvis/assistant/hud/HudModels.kt",
+      "app/src/main/java/com/jarvis/assistant/hud/HudPreferences.kt",
+      "app/src/main/java/com/jarvis/assistant/hud/HudRepository.kt",
+      "app/src/main/java/com/jarvis/assistant/hud/WeatherClient.kt",
+      "app/src/main/java/com/jarvis/assistant/hud/WeatherRepository.kt"
+    ],
+    "infinity": [
+      "app/src/main/java/com/jarvis/assistant/infinity/AlarmDatePolicy.kt",
+      "app/src/main/java/com/jarvis/assistant/infinity/ConnectivityRepository.kt",
+      "app/src/main/java/com/jarvis/assistant/infinity/DevicePolicy.kt",
+      "app/src/main/java/com/jarvis/assistant/infinity/InfinityControlsActivity.kt",
+      "app/src/main/java/com/jarvis/assistant/infinity/InfinityPreferences.kt",
+      "app/src/main/java/com/jarvis/assistant/infinity/InfinityTools.kt",
+      "app/src/main/java/com/jarvis/assistant/infinity/InternetSpeedTest.kt",
+      "app/src/main/java/com/jarvis/assistant/infinity/SystemPanels.kt"
+    ],
+    "local": [
+      "app/src/main/java/com/jarvis/assistant/local/LocalBrain.kt",
+      "app/src/main/java/com/jarvis/assistant/local/LocalPromptBuilder.kt",
+      "app/src/main/java/com/jarvis/assistant/local/ModelDownloadPolicy.kt",
+      "app/src/main/java/com/jarvis/assistant/local/ModelFileTransfer.kt",
+      "app/src/main/java/com/jarvis/assistant/local/ModelInstallPolicy.kt"
+    ],
+    "neural": [
+      "app/src/main/java/com/jarvis/assistant/neural/AppMatching.kt",
+      "app/src/main/java/com/jarvis/assistant/neural/AppRegistry.kt",
+      "app/src/main/java/com/jarvis/assistant/neural/BaselinePromptBuilder.kt",
+      "app/src/main/java/com/jarvis/assistant/neural/BrainProfiles.kt",
+      "app/src/main/java/com/jarvis/assistant/neural/Briefing.kt",
+      "app/src/main/java/com/jarvis/assistant/neural/ContextPrivacyPolicy.kt",
+      "app/src/main/java/com/jarvis/assistant/neural/ConversationState.kt",
+      "app/src/main/java/com/jarvis/assistant/neural/DownloadResumePolicy.kt",
+      "app/src/main/java/com/jarvis/assistant/neural/Evaluation.kt",
+      "app/src/main/java/com/jarvis/assistant/neural/Forecast.kt",
+      "app/src/main/java/com/jarvis/assistant/neural/InferenceMetrics.kt",
+      "app/src/main/java/com/jarvis/assistant/neural/KnowledgeIndex.kt",
+      "app/src/main/java/com/jarvis/assistant/neural/KnowledgePacks.kt",
+      "app/src/main/java/com/jarvis/assistant/neural/NeuralEvents.kt",
+      "app/src/main/java/com/jarvis/assistant/neural/NeuralOrchestrator.kt",
+      "app/src/main/java/com/jarvis/assistant/neural/NeuralPreferences.kt",
+      "app/src/main/java/com/jarvis/assistant/neural/NeuralSettingsActivity.kt",
+      "app/src/main/java/com/jarvis/assistant/neural/NeuralStrings.kt",
+      "app/src/main/java/com/jarvis/assistant/neural/PrivateMemoryBackup.kt",
+      "app/src/main/java/com/jarvis/assistant/neural/SafeActivationActivity.kt",
+      "app/src/main/java/com/jarvis/assistant/neural/ToolRegistry.kt",
+      "app/src/main/java/com/jarvis/assistant/neural/WebResearch.kt"
+    ],
+    "omnisystem": [
+      "app/src/main/java/com/jarvis/assistant/omnisystem/CameraHudActivity.kt",
+      "app/src/main/java/com/jarvis/assistant/omnisystem/ClockHudActivity.kt",
+      "app/src/main/java/com/jarvis/assistant/omnisystem/FeatureVault.kt",
+      "app/src/main/java/com/jarvis/assistant/omnisystem/LocationFix.kt",
+      "app/src/main/java/com/jarvis/assistant/omnisystem/LocationHudActivity.kt",
+      "app/src/main/java/com/jarvis/assistant/omnisystem/LocationIntelligence.kt",
+      "app/src/main/java/com/jarvis/assistant/omnisystem/ModuleHttp.kt",
+      "app/src/main/java/com/jarvis/assistant/omnisystem/ModuleHud.kt",
+      "app/src/main/java/com/jarvis/assistant/omnisystem/ModuleRoute.kt",
+      "app/src/main/java/com/jarvis/assistant/omnisystem/ModuleVisuals.kt",
+      "app/src/main/java/com/jarvis/assistant/omnisystem/MusicHudActivity.kt",
+      "app/src/main/java/com/jarvis/assistant/omnisystem/MusicRecognition.kt",
+      "app/src/main/java/com/jarvis/assistant/omnisystem/OwnedTimers.kt",
+      "app/src/main/java/com/jarvis/assistant/omnisystem/PrivateAudioCapture.kt",
+      "app/src/main/java/com/jarvis/assistant/omnisystem/PrivateModuleActivity.kt",
+      "app/src/main/java/com/jarvis/assistant/omnisystem/SelectedImageReader.kt",
+      "app/src/main/java/com/jarvis/assistant/omnisystem/SpeakerProfiles.kt",
+      "app/src/main/java/com/jarvis/assistant/omnisystem/SpeakerProfilesActivity.kt",
+      "app/src/main/java/com/jarvis/assistant/omnisystem/SpeakerSamples.kt",
+      "app/src/main/java/com/jarvis/assistant/omnisystem/SpotifyLink.kt",
+      "app/src/main/java/com/jarvis/assistant/omnisystem/VisionHudActivity.kt"
+    ],
+    "phantom": [
+      "app/src/main/java/com/jarvis/assistant/phantom/PhantomOverlay.kt",
+      "app/src/main/java/com/jarvis/assistant/phantom/PhantomPreferences.kt",
+      "app/src/main/java/com/jarvis/assistant/phantom/PhantomSession.kt",
+      "app/src/main/java/com/jarvis/assistant/phantom/PhantomSettingsActivity.kt",
+      "app/src/main/java/com/jarvis/assistant/phantom/SpeakerFocusEngine.kt"
+    ],
+    "pickup": [
+      "app/src/main/java/com/jarvis/assistant/pickup/PickupMonitor.kt",
+      "app/src/main/java/com/jarvis/assistant/pickup/PickupPolicy.kt"
+    ],
+    "power": [
+      "app/src/main/java/com/jarvis/assistant/power/BatteryStateRepository.kt",
+      "app/src/main/java/com/jarvis/assistant/power/ChargingModels.kt",
+      "app/src/main/java/com/jarvis/assistant/power/ChargingVisuals.kt",
+      "app/src/main/java/com/jarvis/assistant/power/PowerAlertPolicy.kt",
+      "app/src/main/java/com/jarvis/assistant/power/PowerAlertStore.kt",
+      "app/src/main/java/com/jarvis/assistant/power/PowerAudioPolicy.kt",
+      "app/src/main/java/com/jarvis/assistant/power/PowerCommands.kt",
+      "app/src/main/java/com/jarvis/assistant/power/PowerReminderWorker.kt",
+      "app/src/main/java/com/jarvis/assistant/power/RenderMeasurements.kt"
+    ],
+    "quantum": [
+      "app/src/main/java/com/jarvis/assistant/quantum/ControlCenterActivity.kt",
+      "app/src/main/java/com/jarvis/assistant/quantum/DeviceControl.kt"
+    ],
+    "rebirth": [
+      "app/src/main/java/com/jarvis/assistant/rebirth/AndroidSettingsActivity.kt",
+      "app/src/main/java/com/jarvis/assistant/rebirth/AppLaunchCoordinator.kt",
+      "app/src/main/java/com/jarvis/assistant/rebirth/ConversationCommands.kt",
+      "app/src/main/java/com/jarvis/assistant/rebirth/CrashDiagnostics.kt",
+      "app/src/main/java/com/jarvis/assistant/rebirth/NativeNavigation.kt",
+      "app/src/main/java/com/jarvis/assistant/rebirth/PersonalContentActivity.kt",
+      "app/src/main/java/com/jarvis/assistant/rebirth/RebirthCenterActivity.kt",
+      "app/src/main/java/com/jarvis/assistant/rebirth/RecognitionPayload.kt",
+      "app/src/main/java/com/jarvis/assistant/rebirth/RemovedMailIntegration.kt",
+      "app/src/main/java/com/jarvis/assistant/rebirth/SemanticAutocorrector.kt",
+      "app/src/main/java/com/jarvis/assistant/rebirth/SessionNotes.kt",
+      "app/src/main/java/com/jarvis/assistant/rebirth/SessionPrimitives.kt",
+      "app/src/main/java/com/jarvis/assistant/rebirth/SpeechSegments.kt",
+      "app/src/main/java/com/jarvis/assistant/rebirth/WorldClocks.kt"
+    ],
+    "screen": [
+      "app/src/main/java/com/jarvis/assistant/screen/ScreenCaptureActivity.kt",
+      "app/src/main/java/com/jarvis/assistant/screen/ScreenCaptureService.kt"
+    ],
+    "security": [
+      "app/src/main/java/com/jarvis/assistant/security/LockCountdown.kt",
+      "app/src/main/java/com/jarvis/assistant/security/ScreenSecurityController.kt",
+      "app/src/main/java/com/jarvis/assistant/security/ScreenSecurityPreferences.kt",
+      "app/src/main/java/com/jarvis/assistant/security/ScreenUnlockActivity.kt",
+      "app/src/main/java/com/jarvis/assistant/security/SecurityPolicy.kt",
+      "app/src/main/java/com/jarvis/assistant/security/SecurityReactor.kt",
+      "app/src/main/java/com/jarvis/assistant/security/SecuritySettingsActivity.kt",
+      "app/src/main/java/com/jarvis/assistant/security/SystemCredentialPrivacy.kt"
+    ],
+    "sentinel": [
+      "app/src/main/java/com/jarvis/assistant/sentinel/ActivationPolicy.kt",
+      "app/src/main/java/com/jarvis/assistant/sentinel/CompressedPlaybackMeter.kt",
+      "app/src/main/java/com/jarvis/assistant/sentinel/CoreMotionPolicy.kt",
+      "app/src/main/java/com/jarvis/assistant/sentinel/JarvisSoundEffects.kt",
+      "app/src/main/java/com/jarvis/assistant/sentinel/JarvisWallpaperService.kt",
+      "app/src/main/java/com/jarvis/assistant/sentinel/PcmPlaybackEnvelope.kt",
+      "app/src/main/java/com/jarvis/assistant/sentinel/PlaybackEnergyQueue.kt",
+      "app/src/main/java/com/jarvis/assistant/sentinel/PlaybackLevels.kt",
+      "app/src/main/java/com/jarvis/assistant/sentinel/ReactorPalette.kt",
+      "app/src/main/java/com/jarvis/assistant/sentinel/SentinelModels.kt",
+      "app/src/main/java/com/jarvis/assistant/sentinel/WallpaperRenderer.kt",
+      "app/src/main/java/com/jarvis/assistant/sentinel/WallpaperRepairActivity.kt",
+      "app/src/main/java/com/jarvis/assistant/sentinel/WeatherQuestion.kt"
+    ],
+    "titan": [
+      "app/src/main/java/com/jarvis/assistant/titan/BatteryAlerts.kt",
+      "app/src/main/java/com/jarvis/assistant/titan/BatteryPolicy.kt",
+      "app/src/main/java/com/jarvis/assistant/titan/CapabilityCenter.kt",
+      "app/src/main/java/com/jarvis/assistant/titan/LocationAssistant.kt",
+      "app/src/main/java/com/jarvis/assistant/titan/MemoryCardsActivity.kt",
+      "app/src/main/java/com/jarvis/assistant/titan/Routines.kt",
+      "app/src/main/java/com/jarvis/assistant/titan/SpeechRoutePolicy.kt",
+      "app/src/main/java/com/jarvis/assistant/titan/TitanCenterActivity.kt",
+      "app/src/main/java/com/jarvis/assistant/titan/TitanLaunch.kt",
+      "app/src/main/java/com/jarvis/assistant/titan/VoiceIntelligence.kt",
+      "app/src/main/java/com/jarvis/assistant/titan/WeatherGlobe.kt"
+    ],
+    "tools": [
+      "app/src/main/java/com/jarvis/assistant/tools/DeviceTools.kt",
+      "app/src/main/java/com/jarvis/assistant/tools/JarvisAccessibilityService.kt",
+      "app/src/main/java/com/jarvis/assistant/tools/JarvisNotificationService.kt",
+      "app/src/main/java/com/jarvis/assistant/tools/LiveControlPolicy.kt",
+      "app/src/main/java/com/jarvis/assistant/tools/MediaCommand.kt",
+      "app/src/main/java/com/jarvis/assistant/tools/NewsParser.kt",
+      "app/src/main/java/com/jarvis/assistant/tools/ToolPolicy.kt",
+      "app/src/main/java/com/jarvis/assistant/tools/UtilityIntentParser.kt",
+      "app/src/main/java/com/jarvis/assistant/tools/WeatherTool.kt",
+      "app/src/main/java/com/jarvis/assistant/tools/WhatsAppDraft.kt"
+    ],
+    "ui": [
+      "app/src/main/java/com/jarvis/assistant/ui/ConfirmedCaption.kt",
+      "app/src/main/java/com/jarvis/assistant/ui/JarvisAppUi.kt",
+      "app/src/main/java/com/jarvis/assistant/ui/JarvisHud.kt",
+      "app/src/main/java/com/jarvis/assistant/ui/JarvisUiState.kt",
+      "app/src/main/java/com/jarvis/assistant/ui/SentinelSettingsUi.kt"
+    ],
+    "voice": [
+      "app/src/main/java/com/jarvis/assistant/voice/BackendVoiceErrors.kt",
+      "app/src/main/java/com/jarvis/assistant/voice/ConversationInterruptPolicy.kt",
+      "app/src/main/java/com/jarvis/assistant/voice/ConversationWindow.kt",
+      "app/src/main/java/com/jarvis/assistant/voice/CustomVoice.kt",
+      "app/src/main/java/com/jarvis/assistant/voice/FirstSpeakerFocus.kt",
+      "app/src/main/java/com/jarvis/assistant/voice/LocalArithmetic.kt",
+      "app/src/main/java/com/jarvis/assistant/voice/LocalKnowledge.kt",
+      "app/src/main/java/com/jarvis/assistant/voice/LocalVoiceQueries.kt",
+      "app/src/main/java/com/jarvis/assistant/voice/ManagedMicrophone.kt",
+      "app/src/main/java/com/jarvis/assistant/voice/MicrophoneProcessing.kt",
+      "app/src/main/java/com/jarvis/assistant/voice/OfflinePlaybackDrain.kt",
+      "app/src/main/java/com/jarvis/assistant/voice/OfflineSpeechSession.kt",
+      "app/src/main/java/com/jarvis/assistant/voice/OfflineVoiceManager.kt",
+      "app/src/main/java/com/jarvis/assistant/voice/OwnerVoicePolicy.kt",
+      "app/src/main/java/com/jarvis/assistant/voice/PlaybackInterruptPolicy.kt",
+      "app/src/main/java/com/jarvis/assistant/voice/PublicGreetingCache.kt",
+      "app/src/main/java/com/jarvis/assistant/voice/RecognitionConfidence.kt",
+      "app/src/main/java/com/jarvis/assistant/voice/RecognitionDiagnostics.kt",
+      "app/src/main/java/com/jarvis/assistant/voice/RecognitionModelCache.kt",
+      "app/src/main/java/com/jarvis/assistant/voice/SpeechController.kt",
+      "app/src/main/java/com/jarvis/assistant/voice/SpeechFeedbackPolicy.kt",
+      "app/src/main/java/com/jarvis/assistant/voice/SpeechInactivityClock.kt",
+      "app/src/main/java/com/jarvis/assistant/voice/UtteranceAssembler.kt",
+      "app/src/main/java/com/jarvis/assistant/voice/VoiceContinuationPolicy.kt",
+      "app/src/main/java/com/jarvis/assistant/voice/VoiceHealthActivity.kt",
+      "app/src/main/java/com/jarvis/assistant/voice/VoiceOutputErrors.kt",
+      "app/src/main/java/com/jarvis/assistant/voice/VoiceSessionStateMachine.kt",
+      "app/src/main/java/com/jarvis/assistant/voice/VoiceSettingsActivity.kt",
+      "app/src/main/java/com/jarvis/assistant/voice/WakeGreetingGate.kt",
+      "app/src/main/java/com/jarvis/assistant/voice/WakeListenerService.kt",
+      "app/src/main/java/com/jarvis/assistant/voice/WakeModelManager.kt",
+      "app/src/main/java/com/jarvis/assistant/voice/WakePhraseMatcher.kt"
+    ],
+    "widgets": [
+      "app/src/main/java/com/jarvis/assistant/widgets/WidgetCenterActivity.kt",
+      "app/src/main/java/com/jarvis/assistant/widgets/WidgetHostPolicy.kt",
+      "app/src/main/java/com/jarvis/assistant/widgets/WidgetRepository.kt"
+    ]
+  },
+  "manifest_components": [
+    {
+      "type": "provider",
+      "class": "androidx.core.content.FileProvider",
+      "exported": "false"
+    },
+    {
+      "type": "receiver",
+      "class": ".neural.BriefingTimeReceiver",
+      "exported": "true"
+    },
+    {
+      "type": "activity",
+      "class": ".widgets.WidgetCenterActivity",
+      "exported": "false"
+    },
+    {
+      "type": "activity",
+      "class": ".rebirth.AndroidSettingsActivity",
+      "exported": "false"
+    },
+    {
+      "type": "activity",
+      "class": ".rebirth.RebirthCenterActivity",
+      "exported": "false"
+    },
+    {
+      "type": "activity",
+      "class": ".companion.CompanionActivity",
+      "exported": "false"
+    },
+    {
+      "type": "activity",
+      "class": ".checkin.CallMeActivity",
+      "exported": "false"
+    },
+    {
+      "type": "activity",
+      "class": ".call.AiCallActivity",
+      "exported": "false"
+    },
+    {
+      "type": "service",
+      "class": ".call.AiCallService",
+      "exported": "false"
+    },
+    {
+      "type": "receiver",
+      "class": ".call.AiCallActionReceiver",
+      "exported": "false"
+    },
+    {
+      "type": "service",
+      "class": ".checkin.CallMeService",
+      "exported": "false"
+    },
+    {
+      "type": "receiver",
+      "class": ".checkin.CallMeReceiver",
+      "exported": "false"
+    },
+    {
+      "type": "activity",
+      "class": ".sentinel.WallpaperRepairActivity",
+      "exported": "false"
+    },
+    {
+      "type": "activity",
+      "class": ".rebirth.PersonalContentActivity",
+      "exported": "false"
+    },
+    {
+      "type": "activity",
+      "class": ".phantom.PhantomSettingsActivity",
+      "exported": "false"
+    },
+    {
+      "type": "activity",
+      "class": ".quantum.ControlCenterActivity",
+      "exported": "false"
+    },
+    {
+      "type": "activity",
+      "class": ".titan.TitanCenterActivity",
+      "exported": "false"
+    },
+    {
+      "type": "activity",
+      "class": ".titan.MemoryCardsActivity",
+      "exported": "false"
+    },
+    {
+      "type": "activity",
+      "class": ".finishpolish.FinishPolishActivity",
+      "exported": "false"
+    },
+    {
+      "type": "activity",
+      "class": ".finishpolish.doctor.SystemDoctorActivity",
+      "exported": "false"
+    },
+    {
+      "type": "activity",
+      "class": ".finishpolish.learning.LearningActivity",
+      "exported": "false"
+    },
+    {
+      "type": "activity",
+      "class": ".finishpolish.predictive.PredictiveActivity",
+      "exported": "false"
+    },
+    {
+      "type": "activity",
+      "class": ".finishpolish.mission.MissionControlActivity",
+      "exported": "false"
+    },
+    {
+      "type": "activity",
+      "class": ".voice.VoiceHealthActivity",
+      "exported": "false"
+    },
+    {
+      "type": "activity",
+      "class": ".voice.VoiceSettingsActivity",
+      "exported": "false"
+    },
+    {
+      "type": "activity",
+      "class": ".neural.SafeActivationActivity",
+      "exported": "false"
+    },
+    {
+      "type": "activity",
+      "class": ".neural.NeuralSettingsActivity",
+      "exported": "false"
+    },
+    {
+      "type": "activity",
+      "class": ".omnisystem.CameraHudActivity",
+      "exported": "false"
+    },
+    {
+      "type": "activity",
+      "class": ".omnisystem.MusicHudActivity",
+      "exported": "false"
+    },
+    {
+      "type": "activity",
+      "class": ".omnisystem.LocationHudActivity",
+      "exported": "false"
+    },
+    {
+      "type": "activity",
+      "class": ".omnisystem.VisionHudActivity",
+      "exported": "false"
+    },
+    {
+      "type": "activity",
+      "class": ".omnisystem.SpeakerProfilesActivity",
+      "exported": "false"
+    },
+    {
+      "type": "activity",
+      "class": ".contacts.ContactShortcutsActivity",
+      "exported": "false"
+    },
+    {
+      "type": "activity",
+      "class": ".contacts.PersonalMemoActivity",
+      "exported": "false"
+    },
+    {
+      "type": "activity",
+      "class": ".security.SecuritySettingsActivity",
+      "exported": "false"
+    },
+    {
+      "type": "activity",
+      "class": ".security.ScreenUnlockActivity",
+      "exported": "false"
+    },
+    {
+      "type": "receiver",
+      "class": ".security.JarvisLockAdminReceiver",
+      "exported": "true"
+    },
+    {
+      "type": "activity",
+      "class": ".omnisystem.ClockHudActivity",
+      "exported": "false"
+    },
+    {
+      "type": "receiver",
+      "class": ".omnisystem.OwnedTimerReceiver",
+      "exported": "false"
+    },
+    {
+      "type": "activity",
+      "class": ".omnisystem.SpotifyCallbackActivity",
+      "exported": "true"
+    },
+    {
+      "type": "activity",
+      "class": ".infinity.InfinityControlsActivity",
+      "exported": "false"
+    },
+    {
+      "type": "activity",
+      "class": ".MainActivity",
+      "exported": "true"
+    },
+    {
+      "type": "service",
+      "class": ".sentinel.JarvisWallpaperService",
+      "exported": "true"
+    },
+    {
+      "type": "activity",
+      "class": ".sentinel.SentinelWallpaperSettingsActivity",
+      "exported": "true"
+    },
+    {
+      "type": "receiver",
+      "class": ".power.PowerReminderAction",
+      "exported": "false"
+    },
+    {
+      "type": "service",
+      "class": ".voice.WakeListenerService",
+      "exported": "false"
+    },
+    {
+      "type": "activity",
+      "class": ".screen.ScreenCaptureActivity",
+      "exported": "false"
+    },
+    {
+      "type": "service",
+      "class": ".screen.ScreenCaptureService",
+      "exported": "false"
+    },
+    {
+      "type": "service",
+      "class": ".tools.JarvisAccessibilityService",
+      "exported": "true"
+    },
+    {
+      "type": "service",
+      "class": ".tools.JarvisNotificationService",
+      "exported": "true"
+    },
+    {
+      "type": "service",
+      "class": ".PanicTileService",
+      "exported": "true"
+    }
+  ]
+}
