@@ -18,8 +18,8 @@ c.execute('CREATE TABLE passages(id TEXT PRIMARY KEY,part INTEGER,byte_start INT
 c.execute('CREATE VIRTUAL TABLE search USING fts5(id UNINDEXED,text)')
 summary=[]; joined=hashlib.sha256(); total=0; global_offset=0
 with (root/'REFERENCES_01_TO_24_INDEX.csv').open('w') as sf,(root/'FEATURE_LEDGER.csv').open('w') as lf:
- sw=csv.writer(sf); sw.writerow(['part','file','bytes','words','sha256','matches_manifest','global_byte_start','passages'])
- lw=csv.writer(lf); lw.writerow(['reference_id','part','byte_start','byte_end','line','heading','status','review_state','excerpt'])
+ sw=csv.writer(sf,lineterminator="\n"); sw.writerow(['part','file','bytes','words','sha256','matches_manifest','global_byte_start','passages'])
+ lw=csv.writer(lf,lineterminator="\n"); lw.writerow(['reference_id','part','byte_start','byte_end','line','heading','status','review_state','excerpt'])
  for part in range(1,25):
   name=expected[part]['filename']; b=z.read(prefix+name); sha=hashlib.sha256(b).hexdigest()
   assert sha==expected[part]['sha256'] and len(b)==int(expected[part]['bytes'])
@@ -36,7 +36,7 @@ with (root/'REFERENCES_01_TO_24_INDEX.csv').open('w') as sf,(root/'FEATURE_LEDGE
    text=b''.join(chunk).decode('utf-8'); rid=f'P{part:02d}-B{start:08d}'
    c.execute('INSERT INTO passages VALUES(?,?,?,?,?,?,?,?)',(rid,part,start,start+size,startline,heading,text,'NEEDS_RESEARCH'))
    c.execute('INSERT INTO search VALUES(?,?)',(rid,text))
-   lw.writerow([rid,part,start,start+size,startline,heading,'NEEDS_RESEARCH','INDEXED_NOT_CODE_RECONCILED',text[:250].replace('\n',' ')])
+   lw.writerow([rid,part,start,start+size,startline,heading,'NEEDS_RESEARCH','INDEXED_NOT_CODE_RECONCILED',text[:250].replace('\n',' ').rstrip()])
    count+=1
   for raw in b.splitlines(keepends=True):
    txt=raw.decode('utf-8').strip()
