@@ -1,0 +1,128 @@
+{
+  "archive_sha256": "1b1d964bf6e59ae631a25659a0151ffd827bf59d145fc18625aff0d248700f93",
+  "original_words": 2386999,
+  "original_joined_sha256": "5ab5b16c240064db968d94e4e49b45895ef06b32cb7574ea7f11d93596e9c2ee",
+  "parts": [
+    {
+      "part": 1,
+      "passages": 677,
+      "hash_verified": true
+    },
+    {
+      "part": 2,
+      "passages": 469,
+      "hash_verified": true
+    },
+    {
+      "part": 3,
+      "passages": 928,
+      "hash_verified": true
+    },
+    {
+      "part": 4,
+      "passages": 660,
+      "hash_verified": true
+    },
+    {
+      "part": 5,
+      "passages": 565,
+      "hash_verified": true
+    },
+    {
+      "part": 6,
+      "passages": 1270,
+      "hash_verified": true
+    },
+    {
+      "part": 7,
+      "passages": 1519,
+      "hash_verified": true
+    },
+    {
+      "part": 8,
+      "passages": 1123,
+      "hash_verified": true
+    },
+    {
+      "part": 9,
+      "passages": 660,
+      "hash_verified": true
+    },
+    {
+      "part": 10,
+      "passages": 694,
+      "hash_verified": true
+    },
+    {
+      "part": 11,
+      "passages": 891,
+      "hash_verified": true
+    },
+    {
+      "part": 12,
+      "passages": 482,
+      "hash_verified": true
+    },
+    {
+      "part": 13,
+      "passages": 912,
+      "hash_verified": true
+    },
+    {
+      "part": 14,
+      "passages": 676,
+      "hash_verified": true
+    },
+    {
+      "part": 15,
+      "passages": 550,
+      "hash_verified": true
+    },
+    {
+      "part": 16,
+      "passages": 1271,
+      "hash_verified": true
+    },
+    {
+      "part": 17,
+      "passages": 1534,
+      "hash_verified": true
+    },
+    {
+      "part": 18,
+      "passages": 1110,
+      "hash_verified": true
+    },
+    {
+      "part": 19,
+      "passages": 1338,
+      "hash_verified": true
+    },
+    {
+      "part": 20,
+      "passages": 1220,
+      "hash_verified": true
+    },
+    {
+      "part": 21,
+      "passages": 372,
+      "hash_verified": true
+    },
+    {
+      "part": 22,
+      "passages": 1088,
+      "hash_verified": true
+    },
+    {
+      "part": 23,
+      "passages": 1217,
+      "hash_verified": true
+    },
+    {
+      "part": 24,
+      "passages": 105,
+      "hash_verified": true
+    }
+  ],
+  "interpretation": "Full deterministic sequential indexing; semantic/code reconciliation pending. Passages are provenance candidates, not individually validated feature requirements. Cross-part continuity is recoverable by numeric part and byte offsets."
+}
