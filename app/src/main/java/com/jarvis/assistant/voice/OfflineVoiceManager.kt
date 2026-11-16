@@ -190,9 +190,19 @@ class OfflineVoiceManager(private val context: Context) {
                         if (token == generation.get()) 1 else 0
                     }
                     check(!outputFailed || token!=generation.get()){ "Audio output interrupted" }
-                    val drainDeadline = System.currentTimeMillis() + 10_000
-                    while (token == generation.get() && audio.playbackHeadPosition.toLong() < writtenSamples && System.currentTimeMillis() < drainDeadline) Thread.sleep(20)
-                    if (token == generation.get()) main.post { if (token == generation.get()) onDone() }
+                    when (OfflinePlaybackDrain.awaitCompletion(
+                        writtenFrames = writtenSamples,
+                        // Android exposes an unsigned 32-bit frame count through a signed Int.
+                        playedFrames = { audio.playbackHeadPosition.toLong() and 0xffffffffL },
+                        cancelled = { token != generation.get() },
+                        now = android.os.SystemClock::elapsedRealtime,
+                    )) {
+                        OfflinePlaybackDrain.Result.COMPLETE -> main.post { if (token == generation.get()) onDone() }
+                        OfflinePlaybackDrain.Result.CANCELLED -> Unit
+                        OfflinePlaybackDrain.Result.TIMED_OUT -> main.post {
+                            if (token == generation.get()) onError("Offline voice playback did not finish. Check the audio output and retry.")
+                        }
+                    }
                 } finally { if(track===audio){playbackMeter?.close();playbackMeter=null;track=null}; runCatching { audio.stop() }; audio.release() }
             } catch (_: Throwable) {
                 if (token == generation.get()) main.post { if (token == generation.get()) onError("Offline voice could not run on this device. Check the model and available memory.") }
