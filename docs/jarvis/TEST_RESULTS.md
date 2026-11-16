@@ -26,3 +26,5 @@ Verification commands (source the isolated toolchain env first):
 ```
 
 The up-to-100 meaningful checks per significant feature target is open. Current repair has 20 executed policy cases and 20 blocked device scenarios; no artificial repetitions or production/device certification is claimed. Case evidence includes purpose/expected behavior, observed outcome, environment, repair commit and retest status.
+
+Committed console-log copies strip trailing whitespace only. Raw originals remain under /workspace/work/jarvis-milestone-voice/; XML receipts are unchanged.
