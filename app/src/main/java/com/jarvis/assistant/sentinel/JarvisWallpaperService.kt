@@ -21,6 +21,7 @@ class JarvisWallpaperService:WallpaperService() {
         private val worker=HandlerThread("JarvisWallpaper").apply{start()}
         private val renderHandler=Handler(worker.looper)
         private val renderer=WallpaperRenderer()
+        private val surfaceRetry=WallpaperSurfaceRetry()
         private val surfaceLock=Any()
         @Volatile private var visible=false
         @Volatile private var surfaceReady=false
@@ -35,6 +36,8 @@ class JarvisWallpaperService:WallpaperService() {
         private val schedule=Runnable {
             renderHandler.removeCallbacks(draw)
             if(visible && surfaceReady && interactive && !destroyed){
+                // A lifecycle/state request gets a fresh bounded recovery window.
+                surfaceRetry.reset()
                 val s=frame
                 val fps=WallpaperRenderPolicy.fps(visible,surfaceReady,interactive,s.hud.settings,s.hud.telemetry.battery,s.hud.telemetry.powerSaver,s.hud.telemetry.systemMotion,s.visual.mode,s.restricted,s.hud.telemetry.thermalStatus,s.refreshRate)
                 renderHandler.postDelayed(draw,(maxOf(recoverAfter,lastFrameAt+(if(fps>0)1000L/fps else 80L))-SystemClock.elapsedRealtime()).coerceAtLeast(0))
@@ -48,7 +51,18 @@ class JarvisWallpaperService:WallpaperService() {
             if(destroyed || !visible || !surfaceReady || !interactive)return
             val started=SystemClock.elapsedRealtime();lastFrameAt=started
             synchronized(surfaceLock){
-                if(destroyed || !surfaceReady || !surfaceHolder.surface.isValid)return
+                if(destroyed || !surfaceReady)return
+                if(!surfaceHolder.surface.isValid){
+                    // Surface readiness and Surface.isValid can briefly disagree during
+                    // recreation. Without a callback this loop stops until an unrelated
+                    // state/lifecycle request happens to restart it.
+                    renderer.pause()
+                    surfaceRetry.nextDelay(visible,surfaceReady,interactive,destroyed)?.let{delay->
+                        renderHandler.postDelayed(this,delay)
+                    }
+                    return
+                }
+                surfaceRetry.reset()
                 var canvas:android.graphics.Canvas?=null
                 var drawn=false
                 try {
