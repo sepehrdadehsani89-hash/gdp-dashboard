@@ -1,0 +1,143 @@
+{
+  "artifact": "app/build/outputs/apk/debug/app-debug.apk",
+  "sha256": "f49062fb7d2abfe14c208cb2befa222eea19d006eb4c1250ea12f83c3cd852e1",
+  "bytes": 55353313,
+  "retained_release_sha256": "ed7eddcb66d0a99aac34992098a1e36c47e400276732c286149ddc94f5fddf0a",
+  "previous_phoenix_sha256": "833a9687cb27378945e6ee612de39bd851a4c5199a140d2f905a29d83ae16305",
+  "environment": "Linux cloud Android SDK artifact inspection; no Android device or emulator",
+  "physical_device_tests_executed": 0,
+  "checks": [
+    {
+      "name": "Distinct preview application ID",
+      "status": "PASS",
+      "evidence": "com.jarvis.next.phoenix"
+    },
+    {
+      "name": "Version name",
+      "status": "PASS",
+      "evidence": "2.11.9-phoenix.2-debug"
+    },
+    {
+      "name": "Version code",
+      "status": "PASS",
+      "evidence": 27
+    },
+    {
+      "name": "SDK minimum and target",
+      "status": "PASS",
+      "evidence": "min 29 / target 35"
+    },
+    {
+      "name": "Distinct app labels in English Spanish Persian",
+      "status": "PASS",
+      "evidence": "Jarvis Phoenix Test"
+    },
+    {
+      "name": "Existing launch activity retained",
+      "status": "PASS",
+      "evidence": "com.jarvis.assistant.MainActivity"
+    },
+    {
+      "name": "No provider collision with release",
+      "status": "PASS",
+      "evidence": [
+        "com.jarvis.next.phoenix.androidx-startup",
+        "com.jarvis.next.phoenix.camera-files"
+      ]
+    },
+    {
+      "name": "No declared permission collision with release",
+      "status": "PASS",
+      "evidence": [
+        "com.jarvis.next.phoenix.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+      ]
+    },
+    {
+      "name": "No shared Android UID",
+      "status": "PASS",
+      "evidence": "No sharedUserId declaration"
+    },
+    {
+      "name": "Isolated screen capture task affinity",
+      "status": "PASS",
+      "evidence": [
+        "com.jarvis.next.phoenix.screen"
+      ]
+    },
+    {
+      "name": "Isolated Spotify callback",
+      "status": "PASS",
+      "evidence": [
+        "com.jarvis.next.phoenix",
+        "https"
+      ]
+    },
+    {
+      "name": "Wallpaper service retained",
+      "status": "PASS",
+      "evidence": "Existing service class present"
+    },
+    {
+      "name": "Signature v2 verified",
+      "status": "PASS",
+      "evidence": "apksigner exit 0"
+    },
+    {
+      "name": "Same debug certificate as previous Phoenix preview",
+      "status": "PASS",
+      "evidence": "f9f13af1f84515b787b89c0f3abc8695f1d0d45e8a647d1192966c4c810964c7"
+    },
+    {
+      "name": "Release certificate difference recorded honestly",
+      "status": "PASS",
+      "evidence": {
+        "preview": "f9f13af1f84515b787b89c0f3abc8695f1d0d45e8a647d1192966c4c810964c7",
+        "retained_release": "1094ecc1e01dfb873a8e63689b09dc156fff9d41f77ffdfae27e702991711bda"
+      }
+    },
+    {
+      "name": "APK alignment verified",
+      "status": "PASS",
+      "evidence": "zipalign exit 0"
+    },
+    {
+      "name": "ZIP entries pass CRC validation",
+      "status": "PASS",
+      "evidence": "zipfile.testzip"
+    },
+    {
+      "name": "ARM64 native architecture",
+      "status": "PASS",
+      "evidence": {
+        "lib/arm64-v8a/libandroidx.graphics.path.so": 183,
+        "lib/arm64-v8a/libimage_processing_util_jni.so": 183,
+        "lib/arm64-v8a/libjarvis-local.so": 183,
+        "lib/arm64-v8a/libjnidispatch.so": 183,
+        "lib/arm64-v8a/libjpeg.so": 183,
+        "lib/arm64-v8a/libleptonica.so": 183,
+        "lib/arm64-v8a/libonnxruntime.so": 183,
+        "lib/arm64-v8a/libpngx.so": 183,
+        "lib/arm64-v8a/libsherpa-onnx-c-api.so": 183,
+        "lib/arm64-v8a/libsherpa-onnx-cxx-api.so": 183,
+        "lib/arm64-v8a/libsherpa-onnx-jni.so": 183,
+        "lib/arm64-v8a/libsurface_util_jni.so": 183,
+        "lib/arm64-v8a/libtesseract.so": 183,
+        "lib/arm64-v8a/libvosk.so": 183
+      }
+    },
+    {
+      "name": "Previous Phoenix native libraries and assets preserved byte for byte",
+      "status": "PASS",
+      "evidence": {
+        "files_compared": 134
+      }
+    },
+    {
+      "name": "Artifact within GitHub file size limit",
+      "status": "PASS",
+      "evidence": 55353313
+    }
+  ],
+  "passed": 20,
+  "failed": 0
+}

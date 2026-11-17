@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.voice.VoiceReliabilityRepairTest" tests="19" skipped="0" failures="0" errors="0" timestamp="2026-11-17T02:55:09" hostname="db840c36714e" time="0.02">
+  <properties/>
+  <testcase name="providerHttpErrorsStayProviderErrorsAndDoNotMasqueradeAsNoMatch" classname="com.jarvis.assistant.voice.VoiceReliabilityRepairTest" time="0.001"/>
+  <testcase name="repeatedWakeGreetingTimeAnswerAndFollowUpHaveOneGreetingPerConversation" classname="com.jarvis.assistant.voice.VoiceReliabilityRepairTest" time="0.005"/>
+  <testcase name="oldPlaybackCompletionCannotOverwriteTheNewCaptureState" classname="com.jarvis.assistant.voice.VoiceReliabilityRepairTest" time="0.0"/>
+  <testcase name="expiredCachedGreetingCannotMaskAFailedCurrentVoiceConfiguration" classname="com.jarvis.assistant.voice.VoiceReliabilityRepairTest" time="0.003"/>
+  <testcase name="microphoneReadinessIsRejectedDuringProcessingAndSpeaking" classname="com.jarvis.assistant.voice.VoiceReliabilityRepairTest" time="0.0"/>
+  <testcase name="exactDateBatteryAndTemperatureRemainNativeWhileAppAndWorldQueriesKeepTheirRoutes" classname="com.jarvis.assistant.voice.VoiceReliabilityRepairTest" time="0.0"/>
+  <testcase name="duplicateAndReplayedGreetingTicketsDoNotRestartAGreeting" classname="com.jarvis.assistant.voice.VoiceReliabilityRepairTest" time="0.001"/>
+  <testcase name="metadataTraceNeverStoresRecognizedTextOrProviderSecretPayloads" classname="com.jarvis.assistant.voice.VoiceReliabilityRepairTest" time="0.003"/>
+  <testcase name="understandableOrdinaryQuestionsReachTheBackendInsteadOfAFalseNoMatch" classname="com.jarvis.assistant.voice.VoiceReliabilityRepairTest" time="0.001"/>
+  <testcase name="invalidWordScoresCannotBeAcceptedEvenForPublicFacts" classname="com.jarvis.assistant.voice.VoiceReliabilityRepairTest" time="0.0"/>
+  <testcase name="theReadOnlyExceptionDoesNotRelaxSideEffectfulOrCompoundActions" classname="com.jarvis.assistant.voice.VoiceReliabilityRepairTest" time="0.001"/>
+  <testcase name="oneRecognitionRetryDoesNotBecomeAnInfinitePromptLoop" classname="com.jarvis.assistant.voice.VoiceReliabilityRepairTest" time="0.0"/>
+  <testcase name="greetingCacheOnlyAcceptsFixedPublicCourtesyClips" classname="com.jarvis.assistant.voice.VoiceReliabilityRepairTest" time="0.001"/>
+  <testcase name="timeAndDateUseTheSuppliedRealClockAndZoneInsteadOfConstantValues" classname="com.jarvis.assistant.voice.VoiceReliabilityRepairTest" time="0.002"/>
+  <testcase name="restartingAWakeServiceGetsAFreshTicket" classname="com.jarvis.assistant.voice.VoiceReliabilityRepairTest" time="0.0"/>
+  <testcase name="noiseOnlyEmptyFinalsCannotBecomeCommandsOrImmediateRetryErrors" classname="com.jarvis.assistant.voice.VoiceReliabilityRepairTest" time="0.0"/>
+  <testcase name="backendAndOwnerFailuresDoNotGetClassifiedAsSpeechRecognitionFailures" classname="com.jarvis.assistant.voice.VoiceReliabilityRepairTest" time="0.0"/>
+  <testcase name="aLowConfidenceFunctionWordCannotDiscardAnExactHarmlessClockQuery" classname="com.jarvis.assistant.voice.VoiceReliabilityRepairTest" time="0.001"/>
+  <testcase name="emptyVoskFinalsAreSilenceBoundariesAndKeepPreviouslyAcceptedWords" classname="com.jarvis.assistant.voice.VoiceReliabilityRepairTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.rebirth.RebirthPolicyTest" tests="14" skipped="0" failures="0" errors="0" timestamp="2026-11-17T02:55:08" hostname="db840c36714e" time="0.08">
+  <properties/>
+  <testcase name="anAlternativeMustPreserveTheSameIntentAndHaveAnActualTarget" classname="com.jarvis.assistant.rebirth.RebirthPolicyTest" time="0.003"/>
+  <testcase name="recoveryCannotSpinForeverAndRequiresHealthyAudioToReplenish" classname="com.jarvis.assistant.rebirth.RebirthPolicyTest" time="0.0"/>
+  <testcase name="cookAndHomeScreenAreExactNativeCommandsRatherThanRecipeOrNavigation" classname="com.jarvis.assistant.rebirth.RebirthPolicyTest" time="0.001"/>
+  <testcase name="onlyOneMicrophoneSurvivesLateReleases" classname="com.jarvis.assistant.rebirth.RebirthPolicyTest" time="0.0"/>
+  <testcase name="ambiguityAndSensitiveTargetsCannotBeAutocorrectedIntoAnAction" classname="com.jarvis.assistant.rebirth.RebirthPolicyTest" time="0.001"/>
+  <testcase name="interfaceNavigationDoesNotHijackMailboxOrFileQuestions" classname="com.jarvis.assistant.rebirth.RebirthPolicyTest" time="0.0"/>
+  <testcase name="approvedAliasOverridesConflictingLabelsAndNeverFallsBackWhenTargetDisappears" classname="com.jarvis.assistant.rebirth.RebirthPolicyTest" time="0.0"/>
+  <testcase name="longNativeSpeechIsSegmentedWithoutDroppingAnEmailOrPhoneNumber" classname="com.jarvis.assistant.rebirth.RebirthPolicyTest" time="0.001"/>
+  <testcase name="simultaneousMicrophoneRequestsHaveExactlyOneWinner" classname="com.jarvis.assistant.rebirth.RebirthPolicyTest" time="0.04"/>
+  <testcase name="cloudClaudeCorrectionDependsOnOpeningIntentAndActualEntities" classname="com.jarvis.assistant.rebirth.RebirthPolicyTest" time="0.001"/>
+  <testcase name="worldClockUsesRealZoneRulesAndRefusesToGuessUnknownCities" classname="com.jarvis.assistant.rebirth.RebirthPolicyTest" time="0.001"/>
+  <testcase name="spanishLocaleUsesOnlyReportedSupportAndPrefersEcuadorWhenAvailable" classname="com.jarvis.assistant.rebirth.RebirthPolicyTest" time="0.001"/>
+  <testcase name="installedVariantsAndApprovedAliasesResolveWithoutInventingPackages" classname="com.jarvis.assistant.rebirth.RebirthPolicyTest" time="0.001"/>
+  <testcase name="ordinaryConversationIsBoundedByCharactersAndTurns" classname="com.jarvis.assistant.rebirth.RebirthPolicyTest" time="0.03"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

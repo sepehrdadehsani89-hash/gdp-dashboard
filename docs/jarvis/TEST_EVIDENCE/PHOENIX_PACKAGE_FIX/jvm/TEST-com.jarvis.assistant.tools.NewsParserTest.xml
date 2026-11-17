@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.tools.NewsParserTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-11-17T02:55:09" hostname="db840c36714e" time="0.087">
+  <properties/>
+  <testcase name="duplicateHeadlinesAreNotRepeated" classname="com.jarvis.assistant.tools.NewsParserTest" time="0.081"/>
+  <testcase name="oversizedFeedsAreRejected" classname="com.jarvis.assistant.tools.NewsParserTest" time="0.0"/>
+  <testcase name="rssPreservesAttributionAndFiltersRealPublicationDates" classname="com.jarvis.assistant.tools.NewsParserTest" time="0.005"/>
+  <testcase name="xmlExternalEntityDeclarationsAreRejected" classname="com.jarvis.assistant.tools.NewsParserTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

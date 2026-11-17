@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.phantom.PhantomSessionTest" tests="12" skipped="0" failures="0" errors="0" timestamp="2026-11-17T02:55:08" hostname="db840c36714e" time="0.012">
+  <properties/>
+  <testcase name="presentationIsHiddenForEveryLockCredentialAndStopCombination" classname="com.jarvis.assistant.phantom.PhantomSessionTest" time="0.0"/>
+  <testcase name="persistedPositionsClampAfterRotationOrSmallerDisplay" classname="com.jarvis.assistant.phantom.PhantomSessionTest" time="0.0"/>
+  <testcase name="tracesStayBoundedAndOnlyFirstMilestonesAreStored" classname="com.jarvis.assistant.phantom.PhantomSessionTest" time="0.003"/>
+  <testcase name="realProgressExtendsInferenceButHasABoundedTotal" classname="com.jarvis.assistant.phantom.PhantomSessionTest" time="0.0"/>
+  <testcase name="finalTextReplacesPartialAndTraceHasNoTranscript" classname="com.jarvis.assistant.phantom.PhantomSessionTest" time="0.004"/>
+  <testcase name="staleAudioCannotOverwriteTheNewRequest" classname="com.jarvis.assistant.phantom.PhantomSessionTest" time="0.001"/>
+  <testcase name="fastNativePathsDoNotHijackCompoundOrContextualRequests" classname="com.jarvis.assistant.phantom.PhantomSessionTest" time="0.0"/>
+  <testcase name="spokenRepairRequiresAnExplicitNewAppCommand" classname="com.jarvis.assistant.phantom.PhantomSessionTest" time="0.0"/>
+  <testcase name="terminalStagesCannotLeaveProcessingForever" classname="com.jarvis.assistant.phantom.PhantomSessionTest" time="0.0"/>
+  <testcase name="activeCaptureDoesNotInheritInferenceTimeLimit" classname="com.jarvis.assistant.phantom.PhantomSessionTest" time="0.0"/>
+  <testcase name="speakerAffinityRejectsCompetingSegmentsAndExpiresWithoutGuessingIdentity" classname="com.jarvis.assistant.phantom.PhantomSessionTest" time="0.001"/>
+  <testcase name="completedCaptionsExpireAndCancellationClearsPrivateText" classname="com.jarvis.assistant.phantom.PhantomSessionTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.voice.OfflinePlaybackDrainTest" tests="20" skipped="0" failures="0" errors="0" timestamp="2026-11-17T02:55:09" hostname="db840c36714e" time="0.011">
+  <properties/>
+  <testcase name="emptyOutputCompletesWithoutPolling" classname="com.jarvis.assistant.voice.OfflinePlaybackDrainTest" time="0.002"/>
+  <testcase name="normalProgressWaitsForTheLastFrame" classname="com.jarvis.assistant.voice.OfflinePlaybackDrainTest" time="0.001"/>
+  <testcase name="aCursorBeyondTheWrittenBufferAlsoConfirmsCompletion" classname="com.jarvis.assistant.voice.OfflinePlaybackDrainTest" time="0.0"/>
+  <testcase name="aLongSchedulingPauseCannotExtendTheTimeout" classname="com.jarvis.assistant.voice.OfflinePlaybackDrainTest" time="0.0"/>
+  <testcase name="cancellationBeforePollingDoesNotTouchTheTrack" classname="com.jarvis.assistant.voice.OfflinePlaybackDrainTest" time="0.0"/>
+  <testcase name="invalidPlaybackCursorsAreNotSuccess" classname="com.jarvis.assistant.voice.OfflinePlaybackDrainTest" time="0.0"/>
+  <testcase name="progressDoesNotResetTheAbsoluteDrainDeadline" classname="com.jarvis.assistant.voice.OfflinePlaybackDrainTest" time="0.001"/>
+  <testcase name="aCustomTimeoutControlsTheActualWaitBudget" classname="com.jarvis.assistant.voice.OfflinePlaybackDrainTest" time="0.0"/>
+  <testcase name="aTrackReadFailurePropagatesWithoutACompletionResult" classname="com.jarvis.assistant.voice.OfflinePlaybackDrainTest" time="0.002"/>
+  <testcase name="interruptionPropagatesToTheExistingOutputErrorHandler" classname="com.jarvis.assistant.voice.OfflinePlaybackDrainTest" time="0.0"/>
+  <testcase name="aStalledTrackTimesOutInsteadOfReportingCompletion" classname="com.jarvis.assistant.voice.OfflinePlaybackDrainTest" time="0.0"/>
+  <testcase name="observedCompletionAtTheDeadlineIsStillRealCompletion" classname="com.jarvis.assistant.voice.OfflinePlaybackDrainTest" time="0.001"/>
+  <testcase name="cancellationWhileReadingTheCursorCannotBecomeSuccess" classname="com.jarvis.assistant.voice.OfflinePlaybackDrainTest" time="0.0"/>
+  <testcase name="negativeWrittenFrameCountsAreRejected" classname="com.jarvis.assistant.voice.OfflinePlaybackDrainTest" time="0.001"/>
+  <testcase name="aClockMovingBackwardsFailsClosed" classname="com.jarvis.assistant.voice.OfflinePlaybackDrainTest" time="0.001"/>
+  <testcase name="cancellationTakesPriorityOverAnAlreadyCompleteCursor" classname="com.jarvis.assistant.voice.OfflinePlaybackDrainTest" time="0.0"/>
+  <testcase name="aPartlyPlayedTrackStillCannotReportCompletionAtTimeout" classname="com.jarvis.assistant.voice.OfflinePlaybackDrainTest" time="0.001"/>
+  <testcase name="aFullyPlayedBufferCompletesImmediately" classname="com.jarvis.assistant.voice.OfflinePlaybackDrainTest" time="0.0"/>
+  <testcase name="nonpositiveTimeoutsAreRejected" classname="com.jarvis.assistant.voice.OfflinePlaybackDrainTest" time="0.0"/>
+  <testcase name="cancellationDuringTheWaitStopsTheDrain" classname="com.jarvis.assistant.voice.OfflinePlaybackDrainTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

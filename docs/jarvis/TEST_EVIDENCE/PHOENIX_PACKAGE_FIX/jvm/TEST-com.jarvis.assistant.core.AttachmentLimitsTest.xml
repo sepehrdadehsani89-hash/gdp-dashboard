@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.core.AttachmentLimitsTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-11-17T02:55:04" hostname="db840c36714e" time="0.041">
+  <properties/>
+  <testcase name="imageDownsamplingRespectsPhoneMemoryBudget" classname="com.jarvis.assistant.core.AttachmentLimitsTest" time="0.001"/>
+  <testcase name="truncatesWithoutBreakingSurrogatePairs" classname="com.jarvis.assistant.core.AttachmentLimitsTest" time="0.003"/>
+  <testcase name="textIsBoundedBeforeParsing" classname="com.jarvis.assistant.core.AttachmentLimitsTest" time="0.003"/>
+  <testcase name="hashesAndModelUrlsArePinned" classname="com.jarvis.assistant.core.AttachmentLimitsTest" time="0.002"/>
+  <testcase name="preservesMultilingualTextAndUtf16Bom" classname="com.jarvis.assistant.core.AttachmentLimitsTest" time="0.003"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

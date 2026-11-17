@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.titan.TitanBatteryTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-11-17T02:55:09" hostname="db840c36714e" time="0.003">
+  <properties/>
+  <testcase name="coldStartAndUnknownSamplesNeverInventADecrement" classname="com.jarvis.assistant.titan.TitanBatteryTest" time="0.001"/>
+  <testcase name="exactEnglishWarningsAndCriticalBoundary" classname="com.jarvis.assistant.titan.TitanBatteryTest" time="0.001"/>
+  <testcase name="downwardObservedLevelsAreAnnouncedOnceIncludingAfterRestart" classname="com.jarvis.assistant.titan.TitanBatteryTest" time="0.0"/>
+  <testcase name="skippedLevelsAreNeverReplayed" classname="com.jarvis.assistant.titan.TitanBatteryTest" time="0.0"/>
+  <testcase name="everyPercentageHasExactlyTheSpecifiedBand" classname="com.jarvis.assistant.titan.TitanBatteryTest" time="0.0"/>
+  <testcase name="bouncingReadingsDoNotRepeatAndRecoveryAllowsNewAlerts" classname="com.jarvis.assistant.titan.TitanBatteryTest" time="0.0"/>
+  <testcase name="chargingSuppressesAndGenuineDischargeStartsANewEpisode" classname="com.jarvis.assistant.titan.TitanBatteryTest" time="0.0"/>
+  <testcase name="quietHoursCoverOvernightAndDaytimeWithoutSuppressingAllDay" classname="com.jarvis.assistant.titan.TitanBatteryTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

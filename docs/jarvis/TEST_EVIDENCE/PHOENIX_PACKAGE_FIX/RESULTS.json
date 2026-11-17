@@ -1,0 +1,55 @@
+{
+  "artifact": "Jarvis-2.11.9-phoenix.2-debug-arm64.apk",
+  "source_commit": "f60ae0b2a59b695d14f90caf77bdaeef2351c279",
+  "package": "com.jarvis.next.phoenix",
+  "app_label": "Jarvis Phoenix Test",
+  "version_name": "2.11.9-phoenix.2-debug",
+  "version_code": 27,
+  "abi": "arm64-v8a",
+  "min_sdk": 29,
+  "target_sdk": 35,
+  "bytes": 55353313,
+  "sha256": "f49062fb7d2abfe14c208cb2befa222eea19d006eb4c1250ea12f83c3cd852e1",
+  "build_type": "debug",
+  "debuggable": true,
+  "signature_v2_verified": true,
+  "zipalign_verified": true,
+  "certificate_sha256": "f9f13af1f84515b787b89c0f3abc8695f1d0d45e8a647d1192966c4c810964c7",
+  "release_application_id_unchanged": "com.jarvis.next",
+  "existing_release_update_compatible": false,
+  "separate_preview_package_verified": true,
+  "existing_installed_data_modified": false,
+  "device_install_executed": false,
+  "jvm": {
+    "total": 678,
+    "passed": 677,
+    "failed": 0,
+    "skipped": 1
+  },
+  "skipped_cases": [
+    "com.jarvis.assistant.neural.PrivateMemoryBackupTest.validatesUserExportPrivatelyWhenProvided"
+  ],
+  "lint": {
+    "Warning": 48,
+    "Information": 1
+  },
+  "artifact_checks": {
+    "passed": 20,
+    "failed": 0
+  },
+  "android_instrumentation_kotlin_and_java_compiled": true,
+  "android_instrumentation_tests_executed": 0,
+  "physical_device_tests_executed": 0,
+  "emulator_installed": false,
+  "build_result": "BUILD SUCCESSFUL in 10m 2s",
+  "tasks": {
+    "executed": 40,
+    "up_to_date": 28
+  },
+  "previous_apks_preserved": true,
+  "native_library_and_asset_files_preserved_byte_for_byte": 134,
+  "android_dependency_versions_changed": false,
+  "signing_keys_replaced": false,
+  "public_download_url": null,
+  "publication_status_at_build": "AWAITING_OWNER_CONFIRMATION"
+}

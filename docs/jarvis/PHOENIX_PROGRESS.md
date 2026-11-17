@@ -1,5 +1,7 @@
 # Phoenix evaluation milestone — not full product completion
 
+Package-conflict follow-up: see [the preview package repair](PHOENIX_PACKAGE_CONFLICT.md) and [Phoenix preview 2](../../downloads/phoenix-2.11.9-preview2/README.md). The first debug evaluation below shared the installed release's package ID with a different certificate. Preview 2 isolates debug identity as `com.jarvis.next.phoenix` / **Jarvis Phoenix Test** to preserve the original app and its data. The milestone details below record the earlier artifact's preparation.
+
 ## Actual artifacts and source
 
 New APK: downloads/phoenix-2.11.9-debug/Jarvis-2.11.9-phoenix.1-debug-arm64.apk. Version **2.11.9-phoenix.1-debug**, code **26**, ARM64 / min API29, target35, package com.jarvis.next. Size **55,353,197 bytes**. SHA256 **833a9687cb27378945e6ee612de39bd851a4c5199a140d2f905a29d83ae16305**. APK signature v2 and zip alignment verified. All 14 packaged native libraries report AArch64 ELF machine type183.
