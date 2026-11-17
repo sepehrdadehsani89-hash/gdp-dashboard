@@ -5,6 +5,8 @@ import android.os.SystemClock
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -189,6 +191,7 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
         Reading("HEALTH",b.health)
     }
 }
+@OptIn(ExperimentalFoundationApi::class)
 @Composable internal fun HudCore(state:JarvisUiState,modifier:Modifier=Modifier,actions:JarvisUiActions?=null) {
     val t=state.hud.telemetry; val s=state.hud.settings; val b=t.battery
     val lifecycle=LocalLifecycleOwner.current.lifecycle
@@ -206,6 +209,16 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
     var chargingFrame by remember{mutableStateOf(com.jarvis.assistant.power.ChargingVisual())}
     var angle by remember{mutableFloatStateOf(0f)}
     var batteryDetails by remember{mutableStateOf(false)}
+    val diagnostics=remember{CoreRenderDiagnostics()}
+    var diagnosticsVisible by remember{mutableStateOf(false)}
+    var diagnosticsSnapshot by remember{mutableStateOf(CoreRenderDiagnostics.Snapshot())}
+    LaunchedEffect(diagnosticsVisible,lifecycle){
+        if(com.jarvis.assistant.BuildConfig.DEBUG && diagnosticsVisible){
+            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED){
+                while(true){diagnosticsSnapshot=diagnostics.sample(SystemClock.elapsedRealtime());delay(500)}
+            }
+        }
+    }
     val boot=if(state.sentinelVisual.mode==SentinelMode.ACTIVATING && fps>0)ReactorGeometry.awakening(frameNow-state.sentinelVisual.activatedAt) else Awakening(1f,1f,1f,0f,true)
     val speed by rememberUpdatedState(ReactorGeometry.speed(s,mode,state.execution==com.jarvis.assistant.phantom.ExecutionState.EXECUTING))
     val actualCharging=ReactorPalette.chargingAccent(state.hud.power.connected,state.hud.power.charging,s.sentinel.chargingEffects)
@@ -217,10 +230,12 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
             frameClock.pause();chargingClock.pause()
             try{
                 if(fps>0){
-                    var previousFrame=0L
+                    val pacer=CoreFramePacer(fps)
                     while(true)withFrameNanos{nanos->
-                        if(previousFrame==0L || nanos-previousFrame>=1_000_000_000L/fps){
-                            previousFrame=nanos;frameNow=SystemClock.elapsedRealtime();angle=frameClock.frame(frameNow,speed)
+                        if(com.jarvis.assistant.BuildConfig.DEBUG)diagnostics.clockCallback()
+                        if(pacer.accept(nanos)){
+                            if(com.jarvis.assistant.BuildConfig.DEBUG)diagnostics.update()
+                            frameNow=SystemClock.elapsedRealtime();angle=frameClock.frame(frameNow,speed)
                             chargingFrame=chargingClock.frame(frameNow,chargeActive,true,chargeSpeed)
                         }
                     }
@@ -230,8 +245,10 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
     }
     val color=Color(ReactorPalette.core(mode,s.accent))
     val ticks=remember { ReactorGeometry.ticks.map{Offset(it.x,it.y)} }
-    Box(modifier.aspectRatio(1f).sizeIn(maxWidth=450.dp,maxHeight=450.dp).clickable(enabled=actions!=null,role=Role.Button,onClickLabel="Activate voice"){actions?.onMic?.invoke()},contentAlignment=Alignment.Center) {
+    val interaction=if(com.jarvis.assistant.BuildConfig.DEBUG)Modifier.combinedClickable(enabled=actions!=null,role=Role.Button,onClickLabel="Activate voice",onClick={actions?.onMic?.invoke()},onLongClickLabel="Toggle animation diagnostics",onLongClick={diagnosticsVisible=!diagnosticsVisible}) else Modifier.clickable(enabled=actions!=null,role=Role.Button,onClickLabel="Activate voice"){actions?.onMic?.invoke()}
+    Box(modifier.aspectRatio(1f).sizeIn(maxWidth=450.dp,maxHeight=450.dp).then(interaction),contentAlignment=Alignment.Center) {
         Canvas(Modifier.fillMaxSize().semantics { contentDescription="Battery reactor ${b.percent?.toString() ?: "unavailable"} percent" }) {
+            if(com.jarvis.assistant.BuildConfig.DEBUG)diagnostics.draw()
             val r=size.minDimension*.42f*s.sentinel.reactorScale; val center=Offset(size.width/2,size.height/2)
             drawCircle(Brush.radialGradient(listOf(color.copy(alpha=(.24f*s.sentinel.ambientGlow*boot.core*CoreMotionPolicy.breathing(frameNow,mode,fps>0)).coerceIn(0f,1f)),color.copy(alpha=.02f),Color.Transparent),center,r),r,center)
             ticks.forEachIndexed { i,v -> if(s.sentinel.detail=="minimal" && i%3!=0)return@forEachIndexed; val outer=center+v*r;val inner=center+v*(r-if(i%5==0)8.dp.toPx() else 3.dp.toPx());drawLine(color.copy(alpha=if(i%5==0).8f else .4f),inner,outer,if(i%5==0)1.2.dp.toPx() else .6.dp.toPx()) }
@@ -270,6 +287,15 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
             Text(if(b.full)"FULL" else if(b.charging)"CHARGING · ${b.source}" else "BATTERY",color=color,fontSize=9.sp,textAlign=TextAlign.Center)
         }
         Text(if(state.playback.active)"LIVE AUDIO · ${state.playback.source.uppercase()}" else if(state.audio.recording)"LIVE MIC · ${state.audio.source}" else if(state.phase==AssistantPhase.SPEAKING)"SPEAKING · DECORATIVE MOTION" else "${s.animationProfile.uppercase()} · ${if(fps==0)"STILL" else "$fps FPS CAP"}",color=Dim,fontSize=8.sp,modifier=Modifier.align(Alignment.BottomCenter))
+        if(com.jarvis.assistant.BuildConfig.DEBUG && diagnosticsVisible){
+            fun measured(value:Float?)=value?.let{String.format(Locale.ROOT,"%.1f",it)} ?: "collecting"
+            Column(Modifier.align(Alignment.TopCenter).background(Back.copy(alpha=.92f)).padding(5.dp)){
+                Text("CORE DEBUG · ${mode.name} · cap $fps",color=Ice,fontSize=9.sp)
+                Text("Canvas draws/s ${measured(diagnosticsSnapshot.drawsPerSecond)} · clock callbacks/s ${measured(diagnosticsSnapshot.callbacksPerSecond)}",color=Ice,fontSize=8.sp)
+                Text("Draw calls ${diagnosticsSnapshot.draws} · accepted updates ${diagnosticsSnapshot.updates}",color=Dim,fontSize=8.sp)
+                Text("Not display FPS · long-press to hide",color=Dim,fontSize=8.sp)
+            }
+        }
     }
     CoreMotionPolicy.pauseReason(s,ValueAnimator.areAnimatorsEnabled())?.let{reason->
         Text(reason,color=Dim,fontSize=11.sp)
