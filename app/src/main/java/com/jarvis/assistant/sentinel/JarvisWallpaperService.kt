@@ -50,32 +50,32 @@ class JarvisWallpaperService:WallpaperService() {
         private val draw=object:Runnable { override fun run(){
             if(destroyed || !visible || !surfaceReady || !interactive)return
             val started=SystemClock.elapsedRealtime();lastFrameAt=started
+            var posted=false
             synchronized(surfaceLock){
                 if(destroyed || !surfaceReady)return
-                if(!surfaceHolder.surface.isValid){
-                    // Surface readiness and Surface.isValid can briefly disagree during
-                    // recreation. Without a callback this loop stops until an unrelated
-                    // state/lifecycle request happens to restart it.
-                    renderer.pause()
-                    surfaceRetry.nextDelay(visible,surfaceReady,interactive,destroyed)?.let{delay->
-                        renderHandler.postDelayed(this,delay)
-                    }
-                    return
+                if(surfaceHolder.surface.isValid){
+                    var canvas:android.graphics.Canvas?=null
+                    var drawn=false
+                    try {
+                        canvas=try{surfaceHolder.lockHardwareCanvas()}catch(_:Exception){surfaceHolder.lockCanvas()}
+                        if(canvas!=null){
+                            val safe=runtime.phantomPreferences.state.value.captions && getSystemService(android.app.KeyguardManager::class.java)?.isDeviceLocked==false && !com.jarvis.assistant.security.SystemCredentialPrivacy.pending(this@JarvisWallpaperService)
+                            renderer.draw(canvas,if(safe)frame else frame.copy(caption=com.jarvis.assistant.phantom.LiveCaption()),started);drawn=true
+                        }
+                    }catch(_:IllegalArgumentException){/* Surface is being replaced by Android. */}
+                    catch(_:IllegalStateException){/* A hidden/destroyed surface is not a render target. */}
+                    catch(_:RuntimeException){recoveryErrors.incrementAndGet();recoverAfter=SystemClock.elapsedRealtime()+1000;renderer.pause()}
+                    catch(_:OutOfMemoryError){recoveryErrors.incrementAndGet();recoverAfter=SystemClock.elapsedRealtime()+2000;renderer.pause()}
+                    finally{canvas?.let{if(runCatching{surfaceHolder.unlockCanvasAndPost(it)}.isSuccess && drawn){posted=true;frames.incrementAndGet();timings.record(if(lastMeasuredFrame>0)started-lastMeasuredFrame else 0,SystemClock.elapsedRealtime()-started);lastMeasuredFrame=started}}}
                 }
-                surfaceRetry.reset()
-                var canvas:android.graphics.Canvas?=null
-                var drawn=false
-                try {
-                    canvas=try{surfaceHolder.lockHardwareCanvas()}catch(_:Exception){surfaceHolder.lockCanvas()}
-                    if(canvas!=null){
-                        val safe=runtime.phantomPreferences.state.value.captions && getSystemService(android.app.KeyguardManager::class.java)?.isDeviceLocked==false && !com.jarvis.assistant.security.SystemCredentialPrivacy.pending(this@JarvisWallpaperService)
-                        renderer.draw(canvas,if(safe)frame else frame.copy(caption=com.jarvis.assistant.phantom.LiveCaption()),started);drawn=true
-                    }
-                }catch(_:IllegalArgumentException){/* Surface is being replaced by Android. */}
-                catch(_:IllegalStateException){/* A hidden/destroyed surface is not a render target. */}
-                catch(_:RuntimeException){recoveryErrors.incrementAndGet();recoverAfter=SystemClock.elapsedRealtime()+1000;renderer.pause()}
-                catch(_:OutOfMemoryError){recoveryErrors.incrementAndGet();recoverAfter=SystemClock.elapsedRealtime()+2000;renderer.pause()}
-                finally{canvas?.let{if(runCatching{surfaceHolder.unlockCanvasAndPost(it)}.isSuccess && drawn){frames.incrementAndGet();timings.record(if(lastMeasuredFrame>0)started-lastMeasuredFrame else 0,SystemClock.elapsedRealtime()-started);lastMeasuredFrame=started}}}
+            }
+            val retryDelay=surfaceRetry.afterPost(posted,visible,surfaceReady,interactive,destroyed)
+            if(!posted){
+                // Null Canvas, transient lock exceptions and failed posts need the same
+                // bounded recovery as an invalid Surface, including when motion is off.
+                renderer.pause()
+                retryDelay?.let{renderHandler.postDelayed(this,maxOf(it,recoverAfter-SystemClock.elapsedRealtime()))}
+                return
             }
             val snapshot=frame
             val fps=WallpaperRenderPolicy.fps(visible,surfaceReady,interactive,snapshot.hud.settings,snapshot.hud.telemetry.battery,snapshot.hud.telemetry.powerSaver,snapshot.hud.telemetry.systemMotion,snapshot.visual.mode,snapshot.restricted,snapshot.hud.telemetry.thermalStatus,snapshot.refreshRate)

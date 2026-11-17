@@ -27,6 +27,7 @@ class WallpaperRenderer {
     private var captionLayout:android.text.StaticLayout?=null
     private val reactorClock=ReactorFrameClock()
     private val energyClock=com.jarvis.assistant.power.ChargingVisualClock()
+    private val chargingParticles=com.jarvis.assistant.power.ChargingParticleField()
     private val stripClock=com.jarvis.assistant.power.ChargingVisualClock()
     private var lastStrip=false
     private var powerLayout=com.jarvis.assistant.power.PowerWallpaperGeometry.layout(1f,1f,0f,0f,false,false)
@@ -36,9 +37,10 @@ class WallpaperRenderer {
     fun draw(canvas:Canvas,frame:WallpaperFrame,now:Long) {
         val s=frame.hud.settings;val v=s.sentinel;val battery=frame.hud.telemetry.battery
         val mode=when{CoreMotionPolicy.errorVisible(frame.voiceErrorAt,now)->SentinelMode.ERROR;frame.visual.mode==SentinelMode.ERROR && frame.voiceErrorAt>0->SentinelMode.DORMANT;else->frame.visual.mode}
-        val motion=frame.hud.telemetry.systemMotion && !s.reducedMotion && v.animationSpeed>0
+        val motion=CoreMotionPolicy.pauseReason(s,frame.hud.telemetry.systemMotion)==null
         val power=frame.hud.power
-        val green=energyClock.frame(now,ReactorPalette.chargingAccent(power.connected,power.charging,v.chargingEffects),motion,v.animationSpeed)
+        val actualCharging=ReactorPalette.chargingAccent(power.connected,power.charging,v.chargingEffects)
+        val green=energyClock.frame(now,actualCharging,motion,v.animationSpeed)
         val strip=stripClock.frame(now,power.stripVisible,motion)
         val stripPresent=strip.alpha>0f
         val dormant=mode==SentinelMode.DORMANT
@@ -54,6 +56,11 @@ class WallpaperRenderer {
             glow=RadialGradient(cx,cy,radius*1.1f,intArrayOf(Color.TRANSPARENT,colorWithAlpha(color,70),Color.TRANSPARENT),floatArrayOf(0f,.55f,1f),Shader.TileMode.CLAMP)
             pointer.reset();pointer.moveTo(cx,cy-radius*.74f);pointer.lineTo(cx-radius*.025f,cy-radius*.81f);pointer.lineTo(cx+radius*.025f,cy-radius*.81f);pointer.close()
         }
+        val particleCount=chargingParticles.update(com.jarvis.assistant.power.ChargingParticleField.budget(
+            power,v.chargingEffects,motion,v.particleDensity,lowCost=frame.restricted || frame.hud.telemetry.powerSaver ||
+                (frame.hud.telemetry.thermalStatus ?: 0)>=3 || s.animationProfile=="saver" || v.detail=="minimal"),
+            green.angle/90f,w.toFloat(),h.toFloat(),cx,cy,radius)
+        val chargeGlow=if(actualCharging)1f+green.alpha*(.2f+chargingParticles.absorption*.15f) else 1f
         canvas.drawColor(Color.BLACK)
         val brightness=v.brightness*(if((battery.percent ?:100)<20).7f else 1f)
         // Faint static grid remains behind normal launcher icons.
@@ -61,7 +68,13 @@ class WallpaperRenderer {
         val grid=max(32f,w/12f)
         var x=0f;while(x<w){canvas.drawLine(x,0f,x,h.toFloat(),line);x+=grid}
         var y=0f;while(y<h){canvas.drawLine(0f,y,w.toFloat(),y,line);y+=grid}
-        if(v.ambientGlow>0 && active>.2f){fill.shader=glow;fill.alpha=(v.ambientGlow*brightness*active*255).toInt();canvas.drawCircle(cx,cy,radius*1.1f,fill);fill.shader=null;fill.alpha=255}
+        if(v.ambientGlow>0 && active>.2f){fill.shader=glow;fill.alpha=(v.ambientGlow*brightness*active*255*chargeGlow).toInt().coerceIn(0,255);canvas.drawCircle(cx,cy,radius*1.1f,fill);fill.shader=null;fill.alpha=255}
+        for(i in 0 until particleCount){val particle=chargingParticles.particles[i];val opacity=particle.alpha*green.alpha*brightness.coerceIn(0f,1f)
+            line.color=colorWithAlpha(ReactorPalette.green,(opacity*80).toInt());line.strokeWidth=max(.8f,radius*.004f)
+            canvas.drawLine(particle.tailX,particle.tailY,particle.x,particle.y,line)
+            fill.color=colorWithAlpha(ReactorPalette.green,(opacity*30).toInt());canvas.drawCircle(particle.x,particle.y,particle.radius*2.6f,fill)
+            fill.color=colorWithAlpha(ReactorPalette.green,(opacity*255).toInt());canvas.drawCircle(particle.x,particle.y,particle.radius,fill)
+        }
         val charging=green.alpha>0f
         powerLayout=com.jarvis.assistant.power.PowerWallpaperGeometry.layout(w.toFloat(),h.toFloat(),cy,radius,stripPresent,v.wallpaperClock)
         val detail=when(v.detail){"minimal"->1;"cinematic"->3;else->2}
@@ -178,7 +191,7 @@ class WallpaperRenderer {
     private fun drawCaption(canvas:Canvas,frame:WallpaperFrame,now:Long){
         val caption=frame.caption
         if(!caption.visible(now)){captionLayout=null;captionKey="";return}
-        val value=(if(caption.user.isNotBlank())"${if(caption.provisional)"Heard (provisional)" else "You"} · ${caption.user.takeLast(240)}" else "")+(if(caption.assistant.isNotBlank())"\nJarvis · ${caption.assistant.takeLast(600)}" else "")
+        val value="Jarvis · ${caption.assistant.take(900)}"
         val width=(w*.88f).toInt().coerceAtLeast(1)
         val size=(min(w,h)*.031f).coerceAtLeast(16f)
         val key="$value|${caption.entity}|$width|$size|${frame.captionLines}|${powerLayout.captionHeight.toInt()}"

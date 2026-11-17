@@ -7,7 +7,7 @@ enum class ExecutionState { IDLE, WAKE, LISTENING, TRANSCRIBING, UNDERSTANDING, 
 enum class TraceEvent { WAKE_DETECTED, CAPTURE_STARTED, FIRST_PARTIAL, FINAL_TRANSCRIPT, AUTOCORRECT_STARTED, AUTOCORRECT_COMPLETED, INTENT_RESOLVED, CONTEXT_STARTED, CONTEXT_READY, MODEL_LOADING, INFERENCE_STARTED, FIRST_TOKEN, TOOL_STARTED, TOOL_COMPLETED, TTS_REQUESTED, AUDIO_BUFFERED, FIRST_AUDIO, WAITING_USER, COMPLETED, FAILED, CANCELLED }
 data class RequestTrace(val id:Long,val started:Long,val events:Map<TraceEvent,Long> = emptyMap())
 data class LiveCaption(val user:String="",val assistant:String="",val entity:String?=null,val expiresAt:Long=0,val provisional:Boolean=false) {
-    fun visible(now:Long)= (user.isNotBlank() || assistant.isNotBlank()) && (expiresAt==0L || now<expiresAt)
+    fun visible(now:Long)= assistant.isNotBlank() && (expiresAt==0L || now<expiresAt)
     fun alpha(now:Long,reducedMotion:Boolean):Float=if(!visible(now))0f else if(expiresAt==0L || reducedMotion)1f else ((expiresAt-now)/1000f).coerceIn(0f,1f)
 }
 data class PhantomState(val execution:ExecutionState=ExecutionState.IDLE,val caption:LiveCaption=LiveCaption(),val trace:RequestTrace?=null)
@@ -21,9 +21,12 @@ class PhantomSession(private val now:()->Long) {
     private var progressAt=0L
     private var stateAt=0L
     private var workAt=0L
+    private var lastSpeechId=Long.MIN_VALUE
+    private var activeSpeechId:Long?=null
     @Synchronized fun begin(capture:Boolean=false):Long {
         mutable.value.trace?.let{remember(it)}
         val time=now();progressAt=time;stateAt=time;workAt=time
+        activeSpeechId=null
         val trace=RequestTrace(++sequence,time)
         mutable.value=PhantomState(if(capture)ExecutionState.LISTENING else ExecutionState.UNDERSTANDING,trace=trace)
         return trace.id
@@ -41,25 +44,38 @@ class PhantomSession(private val now:()->Long) {
     }
     @Synchronized fun partial(text:String) {
         if(mutable.value.execution !in listOf(ExecutionState.WAKE,ExecutionState.LISTENING,ExecutionState.TRANSCRIBING))begin(true)
-        if(text.isNotBlank()){event(TraceEvent.FIRST_PARTIAL);stage(ExecutionState.TRANSCRIBING);mutable.value=mutable.value.copy(caption=LiveCaption(user=text.takeLast(600),provisional=true))}
-        else mutable.value=mutable.value.copy(caption=mutable.value.caption.copy(user="",entity=null))
+        if(text.isNotBlank()){event(TraceEvent.FIRST_PARTIAL);stage(ExecutionState.TRANSCRIBING)}
+        clearCaption()
     }
     @Synchronized fun submitted(text:String,voiced:Boolean):Long {
         if(!voiced || mutable.value.execution !in listOf(ExecutionState.WAKE,ExecutionState.LISTENING,ExecutionState.TRANSCRIBING))begin()
         workAt=now();event(TraceEvent.FINAL_TRANSCRIPT);stage(ExecutionState.UNDERSTANDING)
-        mutable.value=mutable.value.copy(caption=LiveCaption(user=text.takeLast(600)))
+        clearCaption()
         return mutable.value.trace!!.id
     }
-    @Synchronized fun corrected(text:String){mutable.value=mutable.value.copy(caption=mutable.value.caption.copy(user=text.takeLast(600),provisional=false))}
-    @Synchronized fun response(text:String,entity:String?=null) {
-        mutable.value=mutable.value.copy(caption=mutable.value.caption.copy(assistant=text.takeLast(1600),entity=entity,expiresAt=0))
+    @Synchronized fun corrected(text:String){clearCaption()}
+    /** Only actual audio onset may publish a caption. Speech IDs are monotonic per runtime. */
+    @Synchronized fun spokenStart(text:String,speechId:Long,id:Long?=null):Boolean {
+        if(id!=null && mutable.value.trace?.id!=id)return false
+        if(speechId<=lastSpeechId || text.isBlank() || mutable.value.execution in setOf(ExecutionState.CANCELLED,ExecutionState.FAILED,ExecutionState.COMPLETED))return false
+        lastSpeechId=speechId;activeSpeechId=speechId
+        mutable.value=mutable.value.copy(caption=LiveCaption(assistant=text.take(3500)))
+        return true
+    }
+    /** A stale completion cannot remove the caption belonging to a newer audio segment. */
+    @Synchronized fun spokenEnd(speechId:Long,lingerMs:Long=1200):Boolean {
+        if(activeSpeechId!=speechId)return false
+        activeSpeechId=null
+        val linger=lingerMs.coerceIn(0,5000)
+        mutable.value=mutable.value.copy(caption=if(linger==0L)LiveCaption() else mutable.value.caption.copy(expiresAt=now()+linger))
+        return true
     }
     @Synchronized fun finish(value:ExecutionState=ExecutionState.COMPLETED) {
         event(when(value){ExecutionState.FAILED->TraceEvent.FAILED;ExecutionState.CANCELLED->TraceEvent.CANCELLED;ExecutionState.WAITING_USER->TraceEvent.WAITING_USER;else->TraceEvent.COMPLETED})
         stage(value)
-        mutable.value=mutable.value.copy(caption=if(value==ExecutionState.CANCELLED)LiveCaption() else mutable.value.caption.copy(expiresAt=now()+8000))
+        if(value in setOf(ExecutionState.CANCELLED,ExecutionState.FAILED) || activeSpeechId!=null)clearCaption()
     }
-    @Synchronized fun clearCaption(){mutable.value=mutable.value.copy(caption=LiveCaption())}
+    @Synchronized fun clearCaption(){activeSpeechId=null;mutable.value=mutable.value.copy(caption=LiveCaption())}
     @Synchronized fun traces():List<RequestTrace> = (history.toList()+listOfNotNull(mutable.value.trace)).distinctBy{it.id}.takeLast(24)
     private fun remember(trace:RequestTrace){history.addLast(trace);while(history.size>23)history.removeFirst()}
     @Synchronized fun timedOut():Boolean {

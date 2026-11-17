@@ -68,4 +68,34 @@ class WallpaperSurfaceRetryTest {
         repeat(100) { assertTrue(requireNotNull(retry.ready()) in 1L..1000L) }
         assertNull(retry.ready())
     }
+    @Test fun failedPostsConsumeRecoveryEvenWhenTheSurfaceIsReportedReady() {
+        val retry = WallpaperSurfaceRetry(2)
+        assertEquals(50L, retry.afterPost(false, true, true, true, false))
+        assertEquals(100L, retry.afterPost(false, true, true, true, false))
+        assertNull(retry.afterPost(false, true, true, true, false))
+    }
+    @Test fun aSuccessfulPostReplenishesTheNextFailureWindow() {
+        val retry = WallpaperSurfaceRetry(1); retry.ready(); assertNull(retry.ready())
+        assertNull(retry.afterPost(true, true, true, true, false))
+        assertEquals(50L, retry.afterPost(false, true, true, true, false))
+    }
+    @Test fun unsuccessfulDrawingAfterVisibilityLossDoesNotQueueWork() {
+        val retry = WallpaperSurfaceRetry()
+        assertNull(retry.afterPost(false, false, true, true, false))
+        assertEquals(50L, retry.ready())
+    }
+    @Test fun aSuccessfulStaticFrameDoesNotCreateAnAnimationLoop() {
+        assertNull(WallpaperSurfaceRetry().afterPost(true, true, true, true, false))
+    }
+    @Test fun aFailedPostDoesNotResetAnExhaustedBudget() {
+        val retry = WallpaperSurfaceRetry(1)
+        assertNotNull(retry.afterPost(false, true, true, true, false))
+        repeat(3) { assertNull(retry.afterPost(false, true, true, true, false)) }
+    }
+    @Test fun explicitSurfaceRecreationCanRecoverAfterAnExhaustedPostFailure() {
+        val retry = WallpaperSurfaceRetry(1); retry.afterPost(false, true, true, true, false)
+        assertNull(retry.afterPost(false, true, false, true, false))
+        retry.reset()
+        assertEquals(50L, retry.afterPost(false, true, true, true, false))
+    }
 }

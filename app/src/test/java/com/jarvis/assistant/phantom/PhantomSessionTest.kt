@@ -26,16 +26,20 @@ class PhantomSessionTest {
         s.event(TraceEvent.FIRST_AUDIO,first);s.stage(ExecutionState.SPEAKING,first)
         assertFalse(TraceEvent.FIRST_AUDIO in s.state.value.trace!!.events);assertEquals(ExecutionState.UNDERSTANDING,s.state.value.execution)
     }
-    @Test fun finalTextReplacesPartialAndTraceHasNoTranscript(){
+    @Test fun recognitionNeverBecomesASpokenCaptionAndTraceHasNoTranscript(){
         var time=10L;val s=PhantomSession{time};s.begin(true);s.partial("open spot");time=50;s.submitted("open Spotify",true)
-        assertEquals("open Spotify",s.state.value.caption.user)
+        assertEquals(LiveCaption(),s.state.value.caption)
         val trace=s.traces().single();assertEquals(40L,trace.events.getValue(TraceEvent.FINAL_TRANSCRIPT)-trace.started)
         assertFalse(trace.toString().contains("Spotify"));assertFalse(trace.toString().contains("open spot"))
     }
     @Test fun completedCaptionsExpireAndCancellationClearsPrivateText(){
-        var time=0L;val s=PhantomSession{time};s.submitted("question",false);s.response("answer","answer");s.finish()
-        time=7500;assertEquals(.5f,s.state.value.caption.alpha(time,false),.01f);assertEquals(1f,s.state.value.caption.alpha(time,true),0f)
-        time=8000;assertFalse(s.state.value.caption.visible(time));s.finish(ExecutionState.CANCELLED);assertEquals(LiveCaption(),s.state.value.caption)
+        var time=0L;val s=PhantomSession{time};s.submitted("question",false);s.spokenStart("answer",1);s.spokenEnd(1);s.finish()
+        time=700;assertEquals(.5f,s.state.value.caption.alpha(time,false),.01f);assertEquals(1f,s.state.value.caption.alpha(time,true),0f)
+        time=1200;assertFalse(s.state.value.caption.visible(time));s.finish(ExecutionState.CANCELLED);assertEquals(LiveCaption(),s.state.value.caption)
+    }
+    @Test fun completionWithoutAnAudioEndCannotLeaveAnInfiniteCaption(){
+        val s=PhantomSession{100L};s.submitted("question",false);assertTrue(s.spokenStart("answer",1));s.finish()
+        assertEquals(LiveCaption(),s.state.value.caption);assertFalse(s.spokenEnd(1))
     }
     @Test fun tracesStayBoundedAndOnlyFirstMilestonesAreStored(){
         var time=1L;val s=PhantomSession{time}

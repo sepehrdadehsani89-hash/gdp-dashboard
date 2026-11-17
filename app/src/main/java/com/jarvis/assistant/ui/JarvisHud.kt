@@ -134,14 +134,24 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
             if(h.power.charging && remaining!=null)Text("~ "+com.jarvis.assistant.power.ChargingText.completion(remaining,System.currentTimeMillis(),t.timezone),color=Cyan,fontSize=11.sp)
             TextButton(onClick={actions.onSend("open power core")}){Text(l.choose("Charging details & reminders","Detalles de carga y avisos","جزئیات شارژ"))}
         }
-        val userCaption=state.transcript.ifBlank{state.messages.lastOrNull{it.role==MessageRole.USER}?.text.orEmpty()}
-        val assistantCaption=state.liveReply.ifBlank{state.messages.lastOrNull{it.role==MessageRole.ASSISTANT}?.text.orEmpty()}
+        var captionNow by remember{mutableLongStateOf(SystemClock.elapsedRealtime())}
+        LaunchedEffect(state.spokenCaption,lifecycle){
+            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED){
+                captionNow=SystemClock.elapsedRealtime()
+                while(state.spokenCaption.expiresAt>0 && state.spokenCaption.visible(captionNow)){
+                    delay(50);captionNow=SystemClock.elapsedRealtime()
+                }
+            }
+        }
+        val userCaption=state.transcript.takeIf{state.transcriptionPreview && state.phase==AssistantPhase.LISTENING}.orEmpty()
+        val assistantCaption=state.spokenCaption.takeIf{it.visible(captionNow)}?.assistant.orEmpty()
         val captions=rememberScrollState()
         LaunchedEffect(userCaption,assistantCaption,captions.maxValue){if(s.reducedMotion || !t.systemMotion)captions.scrollTo(captions.maxValue) else captions.animateScrollTo(captions.maxValue)}
         HudPanel(l.choose("Live captions · tap to expand","Subtítulos · toca para ampliar","زیرنویس زنده · لمس برای نمایش کامل"),Modifier.fillMaxWidth().clickable(role=Role.Button){actions.onInteraction(SentinelSound.PANEL_OPEN);conversation=true}){
             Column(Modifier.fillMaxWidth().heightIn(max=112.dp).verticalScroll(captions),verticalArrangement=Arrangement.spacedBy(6.dp)){
-                Text(confirmedCaption(l.choose("YOU: ","TÚ: ","شما: ")+userCaption.ifBlank{l.choose("Tap the microphone or use your enabled wake phrase.","Toca el micrófono o usa la frase de activación.","میکروفن یا عبارت بیدارباش را فعال کنید.")},state.confirmedEntity),color=Purple,fontSize=13.sp)
-                if(assistantCaption.isNotBlank())Text("JARVIS: $assistantCaption",color=Ice,fontSize=13.sp)
+                if(userCaption.isNotBlank())Text(l.choose("Heard (preview): ","Reconocido (vista previa): ","متن تشخیص آزمایشی: ")+userCaption,color=Purple,fontSize=13.sp)
+                if(assistantCaption.isNotBlank())Text("JARVIS: $assistantCaption",color=Ice.copy(alpha=state.spokenCaption.alpha(captionNow,s.reducedMotion || !t.systemMotion)),fontSize=13.sp)
+                else if(userCaption.isBlank())Text(l.choose("Tap the microphone or use your enabled wake phrase.","Toca el micrófono o usa la frase de activación.","میکروفن یا عبارت بیدارباش را فعال کنید."),color=Dim,fontSize=13.sp)
             }
             Text(if(state.automaticSessionNotes)l.choose("Temporary chat · local session summaries ON","Chat temporal · resúmenes locales ACTIVADOS","گفت‌وگوی موقت · یادداشت محلی روشن") else l.choose("Temporary chat · no automatic summaries","Chat temporal · sin resúmenes automáticos","گفت‌وگوی موقت · بدون یادداشت خودکار"),color=Dim,fontSize=10.sp)
             state.error?.takeIf{it.isNotBlank()}?.let{Text(it,color=Color(0xFFFFB3B3),fontSize=12.sp)}
@@ -206,6 +216,7 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
     val fps=CoreMotionPolicy.fps(s,b,t.powerSaver,ValueAnimator.areAnimatorsEnabled(),mode,lowRam || state.performanceRestricted,t.thermalStatus,refresh)
     val frameClock=remember{ReactorFrameClock()}
     val chargingClock=remember{com.jarvis.assistant.power.ChargingVisualClock()}
+    val chargingParticles=remember{com.jarvis.assistant.power.ChargingParticleField()}
     var chargingFrame by remember{mutableStateOf(com.jarvis.assistant.power.ChargingVisual())}
     var angle by remember{mutableFloatStateOf(0f)}
     var batteryDetails by remember{mutableStateOf(false)}
@@ -250,7 +261,17 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
         Canvas(Modifier.fillMaxSize().semantics { contentDescription="Battery reactor ${b.percent?.toString() ?: "unavailable"} percent" }) {
             if(com.jarvis.assistant.BuildConfig.DEBUG)diagnostics.draw()
             val r=size.minDimension*.42f*s.sentinel.reactorScale; val center=Offset(size.width/2,size.height/2)
-            drawCircle(Brush.radialGradient(listOf(color.copy(alpha=(.24f*s.sentinel.ambientGlow*boot.core*CoreMotionPolicy.breathing(frameNow,mode,fps>0)).coerceIn(0f,1f)),color.copy(alpha=.02f),Color.Transparent),center,r),r,center)
+            val particleCount=chargingParticles.update(com.jarvis.assistant.power.ChargingParticleField.budget(
+                state.hud.power,s.sentinel.chargingEffects,fps>0,s.sentinel.particleDensity,
+                lowCost=fps<=20 || lowRam || state.performanceRestricted || s.sentinel.detail=="minimal"),
+                green.angle/90f,size.width,size.height,center.x,center.y,r)
+            val chargeGlow=if(actualCharging)1f+green.alpha*(.2f+chargingParticles.absorption*.15f) else 1f
+            drawCircle(Brush.radialGradient(listOf(color.copy(alpha=(.24f*s.sentinel.ambientGlow*boot.core*CoreMotionPolicy.breathing(frameNow,mode,fps>0)*chargeGlow).coerceIn(0f,1f)),color.copy(alpha=.02f),Color.Transparent),center,r),r,center)
+            for(i in 0 until particleCount){val particle=chargingParticles.particles[i];val greenColor=Color(ReactorPalette.green);val opacity=particle.alpha*green.alpha
+                drawLine(greenColor.copy(alpha=opacity*.3f),Offset(particle.tailX,particle.tailY),Offset(particle.x,particle.y),.8.dp.toPx())
+                drawCircle(greenColor.copy(alpha=opacity*.12f),particle.radius*2.6f,Offset(particle.x,particle.y))
+                drawCircle(greenColor.copy(alpha=opacity),particle.radius,Offset(particle.x,particle.y))
+            }
             ticks.forEachIndexed { i,v -> if(s.sentinel.detail=="minimal" && i%3!=0)return@forEachIndexed; val outer=center+v*r;val inner=center+v*(r-if(i%5==0)8.dp.toPx() else 3.dp.toPx());drawLine(color.copy(alpha=if(i%5==0).8f else .4f),inner,outer,if(i%5==0)1.2.dp.toPx() else .6.dp.toPx()) }
             val energy=CoreMotionPolicy.visualLevel(if(state.playback.active)state.playback.level else if(state.audio.recording && state.phase==AssistantPhase.LISTENING)state.audio.level else 0f)
             drawCircle(color.copy(alpha=.09f+energy*.22f),r*.52f,center,style=Stroke((5+energy*4).dp.toPx()))
