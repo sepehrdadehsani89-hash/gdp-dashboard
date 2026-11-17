@@ -1,0 +1,156 @@
+{
+  "apk": "downloads/stabilization-2.11.9-debug/Jarvis-2.11.9-stabilize.1-debug-arm64.apk",
+  "sha256": "ad796f1920f4853ff855acd710d1360bfa32a1e185ca733d4850c071ab7261ed",
+  "dex_files": [
+    {
+      "entry": "classes.dex",
+      "version": "dex\n039\u0000",
+      "file_size_valid": true,
+      "checksum_valid": true,
+      "sha1_valid": true,
+      "android_dexdump_exit": 0
+    },
+    {
+      "entry": "classes10.dex",
+      "version": "dex\n039\u0000",
+      "file_size_valid": true,
+      "checksum_valid": true,
+      "sha1_valid": true,
+      "android_dexdump_exit": 0
+    },
+    {
+      "entry": "classes11.dex",
+      "version": "dex\n039\u0000",
+      "file_size_valid": true,
+      "checksum_valid": true,
+      "sha1_valid": true,
+      "android_dexdump_exit": 0
+    },
+    {
+      "entry": "classes12.dex",
+      "version": "dex\n039\u0000",
+      "file_size_valid": true,
+      "checksum_valid": true,
+      "sha1_valid": true,
+      "android_dexdump_exit": 0
+    },
+    {
+      "entry": "classes13.dex",
+      "version": "dex\n039\u0000",
+      "file_size_valid": true,
+      "checksum_valid": true,
+      "sha1_valid": true,
+      "android_dexdump_exit": 0
+    },
+    {
+      "entry": "classes14.dex",
+      "version": "dex\n039\u0000",
+      "file_size_valid": true,
+      "checksum_valid": true,
+      "sha1_valid": true,
+      "android_dexdump_exit": 0
+    },
+    {
+      "entry": "classes15.dex",
+      "version": "dex\n039\u0000",
+      "file_size_valid": true,
+      "checksum_valid": true,
+      "sha1_valid": true,
+      "android_dexdump_exit": 0
+    },
+    {
+      "entry": "classes16.dex",
+      "version": "dex\n039\u0000",
+      "file_size_valid": true,
+      "checksum_valid": true,
+      "sha1_valid": true,
+      "android_dexdump_exit": 0
+    },
+    {
+      "entry": "classes17.dex",
+      "version": "dex\n039\u0000",
+      "file_size_valid": true,
+      "checksum_valid": true,
+      "sha1_valid": true,
+      "android_dexdump_exit": 0
+    },
+    {
+      "entry": "classes18.dex",
+      "version": "dex\n039\u0000",
+      "file_size_valid": true,
+      "checksum_valid": true,
+      "sha1_valid": true,
+      "android_dexdump_exit": 0
+    },
+    {
+      "entry": "classes2.dex",
+      "version": "dex\n039\u0000",
+      "file_size_valid": true,
+      "checksum_valid": true,
+      "sha1_valid": true,
+      "android_dexdump_exit": 0
+    },
+    {
+      "entry": "classes3.dex",
+      "version": "dex\n039\u0000",
+      "file_size_valid": true,
+      "checksum_valid": true,
+      "sha1_valid": true,
+      "android_dexdump_exit": 0
+    },
+    {
+      "entry": "classes4.dex",
+      "version": "dex\n039\u0000",
+      "file_size_valid": true,
+      "checksum_valid": true,
+      "sha1_valid": true,
+      "android_dexdump_exit": 0
+    },
+    {
+      "entry": "classes5.dex",
+      "version": "dex\n039\u0000",
+      "file_size_valid": true,
+      "checksum_valid": true,
+      "sha1_valid": true,
+      "android_dexdump_exit": 0
+    },
+    {
+      "entry": "classes6.dex",
+      "version": "dex\n039\u0000",
+      "file_size_valid": true,
+      "checksum_valid": true,
+      "sha1_valid": true,
+      "android_dexdump_exit": 0
+    },
+    {
+      "entry": "classes7.dex",
+      "version": "dex\n039\u0000",
+      "file_size_valid": true,
+      "checksum_valid": true,
+      "sha1_valid": true,
+      "android_dexdump_exit": 0
+    },
+    {
+      "entry": "classes8.dex",
+      "version": "dex\n039\u0000",
+      "file_size_valid": true,
+      "checksum_valid": true,
+      "sha1_valid": true,
+      "android_dexdump_exit": 0
+    },
+    {
+      "entry": "classes9.dex",
+      "version": "dex\n039\u0000",
+      "file_size_valid": true,
+      "checksum_valid": true,
+      "sha1_valid": true,
+      "android_dexdump_exit": 0
+    }
+  ],
+  "dex_failures": [],
+  "zip_crc_valid": true,
+  "duplicate_zip_entries": false,
+  "resources_uncompressed": true,
+  "device_install_executed": false,
+  "diagnosis": "Static checks cannot identify the phone installer failure. Exact PackageManager error or installer detail is needed."
+}

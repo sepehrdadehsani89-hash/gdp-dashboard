@@ -1,0 +1,11 @@
+{
+  "baseline": "83adccdb8cee8d28b9a942438783c229c2188662",
+  "rollback_branch": "checkpoint/install-repair-start-83adccd",
+  "physical_device_install_attempted": false,
+  "emulator_install_attempted": false,
+  "new_apk_built": false,
+  "application_files_modified": false,
+  "signing_key_or_package_changed": false,
+  "cloud_adb": "unavailable: Cannot mkdir /home/agent/.android: Read-only file system",
+  "current_blocker": "Actual Redmi 9 PackageManager rejection and installed package version/signing identity are unavailable. Windows collection is required before choosing a correction."
+}

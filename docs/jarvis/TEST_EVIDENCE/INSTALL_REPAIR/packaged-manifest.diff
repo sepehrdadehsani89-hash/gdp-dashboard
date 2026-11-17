@@ -1,0 +1,12 @@
+--- previous-published-preview
++++ rejected-candidate
+@@ -1,7 +1,7 @@
+ N: android=http://schemas.android.com/apk/res/android (line=2)
+   E: manifest (line=2)
+-    A: http://schemas.android.com/apk/res/android:versionCode(0x0101021b)=29
+-    A: http://schemas.android.com/apk/res/android:versionName(0x0101021c)="2.11.9-brain.1-debug" (Raw: "2.11.9-brain.1-debug")
++    A: http://schemas.android.com/apk/res/android:versionCode(0x0101021b)=30
++    A: http://schemas.android.com/apk/res/android:versionName(0x0101021c)="2.11.9-stabilize.1-debug" (Raw: "2.11.9-stabilize.1-debug")
+     A: http://schemas.android.com/apk/res/android:compileSdkVersion(0x01010572)=35
+     A: http://schemas.android.com/apk/res/android:compileSdkVersionCodename(0x01010573)="15" (Raw: "15")
+     A: package="com.jarvis.next.phoenix" (Raw: "com.jarvis.next.phoenix")

@@ -1,0 +1,88 @@
+{
+  "repository_apks": [
+    {
+      "label": "rejected_candidate",
+      "artifact": "downloads/stabilization-2.11.9-debug/Jarvis-2.11.9-stabilize.1-debug-arm64.apk",
+      "package": "com.jarvis.next.phoenix",
+      "version_code": 30,
+      "version_name": "2.11.9-stabilize.1-debug",
+      "min_sdk": 29,
+      "target_sdk": 35,
+      "certificate_sha256": "f9f13af1f84515b787b89c0f3abc8695f1d0d45e8a647d1192966c4c810964c7",
+      "signature_verified": true,
+      "bytes": 56199459,
+      "sha256": "ad796f1920f4853ff855acd710d1360bfa32a1e185ca733d4850c071ab7261ed",
+      "abis": [
+        "arm64-v8a"
+      ],
+      "native_library_count": 14,
+      "native_elf_machine_ids": [
+        183
+      ],
+      "zip_crc_valid": true,
+      "shared_user_id": [],
+      "test_only_attribute": [],
+      "split_configuration": []
+    },
+    {
+      "label": "previous_published_preview",
+      "artifact": "downloads/brain-manager-2.11.9-debug/Jarvis-2.11.9-brain.1-debug-arm64.apk",
+      "package": "com.jarvis.next.phoenix",
+      "version_code": 29,
+      "version_name": "2.11.9-brain.1-debug",
+      "min_sdk": 29,
+      "target_sdk": 35,
+      "certificate_sha256": "f9f13af1f84515b787b89c0f3abc8695f1d0d45e8a647d1192966c4c810964c7",
+      "signature_verified": true,
+      "bytes": 55580535,
+      "sha256": "ecd1fd92c6360d427a4ddbf7368066a14475ab9b4c7dab4fc846a2bf36f32698",
+      "abis": [
+        "arm64-v8a"
+      ],
+      "native_library_count": 14,
+      "native_elf_machine_ids": [
+        183
+      ],
+      "zip_crc_valid": true,
+      "shared_user_id": [],
+      "test_only_attribute": [],
+      "split_configuration": []
+    },
+    {
+      "label": "historical_2_11_8",
+      "artifact": "downloads/polish-2.11.8/Jarvis-2.11.8-arm64-update.apk",
+      "package": "com.jarvis.next",
+      "version_code": 25,
+      "version_name": "2.11.8",
+      "min_sdk": 29,
+      "target_sdk": 35,
+      "certificate_sha256": "1094ecc1e01dfb873a8e63689b09dc156fff9d41f77ffdfae27e702991711bda",
+      "signature_verified": true,
+      "bytes": 85793661,
+      "sha256": "ed7eddcb66d0a99aac34992098a1e36c47e400276732c286149ddc94f5fddf0a",
+      "abis": [
+        "arm64-v8a"
+      ],
+      "native_library_count": 14,
+      "native_elf_machine_ids": [
+        183
+      ],
+      "zip_crc_valid": true,
+      "shared_user_id": [],
+      "test_only_attribute": [],
+      "split_configuration": []
+    }
+  ],
+  "comparison": {
+    "package_matches_previous_preview": true,
+    "certificate_matches_previous_preview": true,
+    "version_code_higher_than_previous_preview": true,
+    "sdk_requirements_unchanged": true,
+    "abis_unchanged": true,
+    "installed_phone_package_certificate_and_version_verified": false,
+    "exact_phone_install_failure_obtained": false,
+    "device_install_attempted": false,
+    "cause": "UNKNOWN: obtain actual PackageManager rejection on the existing Redmi 9; archive comparisons do not establish installed-app compatibility."
+  },
+  "cloud_adb_failure": "Cannot mkdir '/home/agent/.android': Read-only file system; adb aborted before connecting. No device-specific installation error was obtained."
+}
