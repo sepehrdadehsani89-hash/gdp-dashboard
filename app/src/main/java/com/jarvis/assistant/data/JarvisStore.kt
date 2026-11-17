@@ -152,6 +152,7 @@ class JarvisStore(context: Context) {
             .putBoolean("shareSavedMemories", safe.shareSavedMemories)
             .putBoolean("allowLockedChat", safe.allowLockedChat)
             .putBoolean("onboardingComplete", safe.onboardingComplete)
+            .putInt("setupRevision", safe.setupRevision.coerceAtLeast(0))
             .apply()
         mutableSettings.value = safe
     }
@@ -233,6 +234,7 @@ class JarvisStore(context: Context) {
             shareSavedMemories = preferences.getBoolean("shareSavedMemories", defaults.shareSavedMemories),
             allowLockedChat = preferences.getBoolean("allowLockedChat", defaults.allowLockedChat),
             onboardingComplete = preferences.getBoolean("onboardingComplete", defaults.onboardingComplete),
+            setupRevision = preferences.getInt("setupRevision", 0).coerceAtLeast(0),
         )
     }
 

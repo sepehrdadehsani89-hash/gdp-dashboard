@@ -40,7 +40,7 @@ class SentinelFlowTest {
             runtime=(it.application as JarvisApplication).runtime;runtime.stopEverything()
             originalHud=runtime.hud.state.value.settings;originalSettings=runtime.store.settings.value
             runtime.hud.save(HudSettings(reducedMotion=true,soundEffects=false))
-            runtime.store.updateSettings(AssistantSettings(onboardingComplete=true,speakReplies=false))
+            runtime.store.updateSettings(AssistantSettings(onboardingComplete=true,setupRevision=com.jarvis.assistant.setup.SetupPolicy.REVISION,speakReplies=false))
         }
         compose.waitUntil(30_000){runtime.state.value.settings.onboardingComplete}
     }
@@ -81,6 +81,8 @@ class SentinelFlowTest {
         val original=manager.wallpaperInfo?.component
         val launcher=context.packageManager.resolveActivity(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME),android.content.pm.PackageManager.MATCH_DEFAULT_ONLY)?.activityInfo?.packageName
         compose.onNodeWithText("Settings",useUnmergedTree=true).performClick()
+        compose.onNodeWithText("Account & Identity").performClick()
+        compose.onNodeWithText("Identity & saved preferences").performClick()
         compose.onNodeWithText("Sentinel · wallpaper & sound").performClick()
         compose.onNodeWithText("Preview / apply Jarvis wallpaper").performClick()
         compose.waitUntil(30_000){JarvisWallpaperService.activeEngineCount>0 && JarvisWallpaperService.renderedFrames>0}

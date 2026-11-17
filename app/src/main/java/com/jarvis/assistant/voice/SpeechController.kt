@@ -80,6 +80,7 @@ class SpeechController(context: Context) {
         onSpeakerSample:(Long)->Unit={},
     ) {
         main.post {
+            if((context as? com.jarvis.assistant.JarvisApplication)?.runtime?.voiceSession?.blocksRecognition()==true)return@post
             stopInternal()
             val preparation=EndpointDiagnostics.begin("Foreground speech",android.os.SystemClock.elapsedRealtime())
             recognitionDiagnosticToken=preparation
@@ -286,7 +287,7 @@ class SpeechController(context: Context) {
         }
     }
 
-    fun playAudio(file: File, onDone: () -> Unit, onError: (String) -> Unit,volumeOverride:Float?=null,onStarted:()->Unit={}) {
+    fun playAudio(file: File, onDone: () -> Unit, onError: (String) -> Unit,volumeOverride:Float?=null,onStarted:()->Unit={},onPrepared:()->Unit={}) {
         main.post {
             if (isQuietMode()) { onError("Voice reply paused by Silent or Do Not Disturb mode."); return@post }
             stopInternal(); temporaryPlayback=file; speakingDone = onDone; speakingError = onError
@@ -304,6 +305,8 @@ class SpeechController(context: Context) {
                         if(token!=generation || player!==p)return@setOnPreparedListener
                         try{
                             val controls=com.jarvis.assistant.hud.HudPreferences(context).read()
+                            check((volumeOverride ?: controls.voiceVolume)>0f && audio.getStreamVolume(android.media.AudioManager.STREAM_MUSIC)>0){"Voice or media volume is muted."}
+                            onPrepared()
                             p.setVolume(volumeOverride ?: controls.voiceVolume,volumeOverride ?: controls.voiceVolume)
                             runCatching { p.playbackParams = android.media.PlaybackParams().setSpeed(controls.voiceRate).setPitch(controls.voicePitch) }
                             val rate=runCatching{p.playbackParams.speed}.getOrDefault(1f).takeIf{it.isFinite() && it>0} ?: 1f
@@ -311,7 +314,7 @@ class SpeechController(context: Context) {
                             armPlaybackTimeout(p,token,duration,"Voice playback timed out. Listening can resume; no substitute voice was used.")
                             compressedPlaybackMeter=runCatching{com.jarvis.assistant.sentinel.CompressedPlaybackMeter(p,file)}.onFailure{android.util.Log.d("JarvisVoice","DECODED_SPEECH_LEVEL_UNAVAILABLE")}.getOrNull()
                             p.start();onStarted()
-                        }catch(_:Exception){failSpeaking("Cloud voice playback failed.")}
+                        }catch(_:Exception){failSpeaking("Voice playback could not start. Check media volume, the voice volume setting and audio output, then retry.")}
                     }
                     armPlaybackTimeout(this,token,15_000,"Voice audio could not start. Listening can resume; check Output voice and retry.")
                     prepareAsync()

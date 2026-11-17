@@ -21,7 +21,7 @@ class VoiceReliabilityRepairTest {
             assertTrue(machine.claimGreeting(ticket));machine.greeting(generation);greetings++
             assertEquals("Hello sir, how can I help you?",ConversationGreetingPolicy.text(AppLanguage.EN))
             assertFalse("Do not record a command during the greeting",machine.captureReady(generation,true))
-            machine.audioStarted(generation);machine.audioCompleted(generation);machine.armCapture(generation)
+            machine.audioStarted(generation);machine.audioCompleted(generation);now+=500;machine.ready(generation);machine.armCapture(generation)
             assertTrue(machine.captureReady(generation,true));assertFalse(machine.claimGreeting(ticket))
             val payload=RecognitionPayload.vosk(JSONObject("""{"alternatives":[{"text":"what time is it","result":[{"word":"what","conf":0.9},{"word":"time","conf":0.95}]}]}"""))
             assertEquals(FinalRecognitionKind.ACCEPTED,RecognitionConfidence.kind(payload.primary))
@@ -29,13 +29,13 @@ class VoiceReliabilityRepairTest {
             // Runtime retires the old capture session before dispatching a native or AI turn.
             val processingGeneration=generation+1
             machine.cancel(processingGeneration);machine.recognized(processingGeneration,payload.primary.getString("text").length)
-            assertEquals(VoiceStage.PROCESSING,machine.snapshot().stage)
+            assertEquals(VoiceStage.THINKING,machine.snapshot().stage)
             assertFalse(machine.captureReady(processingGeneration,true))
             val clock=Clock.fixed(Instant.parse("2026-11-09T20:15:00Z").plusSeconds(iteration*60L),ZoneId.of("America/Guayaquil"))
             val answer=LocalVoiceQueries.answer(requireNotNull(LocalVoiceQueries.parse(payload.primary.getString("text"))),AppLanguage.EN,clock,true)
             assertEquals("Sir, it's 15:${(15+iteration).toString().padStart(2,'0')}.",answer)
             machine.audioStarted(processingGeneration);assertEquals(VoiceStage.SPEAKING,machine.snapshot().stage)
-            machine.audioCompleted(processingGeneration);machine.armCapture(processingGeneration);assertTrue(machine.captureReady(processingGeneration,true))
+            machine.audioCompleted(processingGeneration);now+=500;machine.ready(processingGeneration);machine.armCapture(processingGeneration);assertTrue(machine.captureReady(processingGeneration,true))
             machine.recognized(processingGeneration,29);machine.backendFailed(processingGeneration)
             assertEquals(VoiceReason.BACKEND_FAILED,machine.recent().last().reason)
             machine.audioStarted(processingGeneration);machine.audioCompleted(processingGeneration);machine.idle(processingGeneration);now+=1000
@@ -58,8 +58,8 @@ class VoiceReliabilityRepairTest {
         assertEquals(VoiceStage.LISTENING,machine.snapshot().stage)
     }
     @Test fun microphoneReadinessIsRejectedDuringProcessingAndSpeaking(){
-        val machine=VoiceSessionStateMachine({0});machine.recognized(1,10);assertFalse(machine.captureReady(1,false))
-        machine.audioStarted(1);assertFalse(machine.captureReady(1,true));machine.audioCompleted(1);assertTrue(machine.captureReady(1,true))
+        var now=0L;val machine=VoiceSessionStateMachine({now});machine.recognized(1,10);assertFalse(machine.captureReady(1,false))
+        machine.audioStarted(1);assertFalse(machine.captureReady(1,true));machine.audioCompleted(1);assertFalse(machine.captureReady(1,true));now+=500;machine.ready(1);assertTrue(machine.captureReady(1,true))
     }
     @Test fun oneRecognitionRetryDoesNotBecomeAnInfinitePromptLoop(){
         val machine=VoiceSessionStateMachine({0});assertTrue(machine.asrFailed(1));machine.cancel(2)

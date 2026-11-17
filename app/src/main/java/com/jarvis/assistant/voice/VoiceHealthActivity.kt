@@ -3,6 +3,7 @@ package com.jarvis.assistant.voice
 import android.content.Intent
 import android.os.Bundle
 import androidx.compose.material3.*
+import androidx.compose.foundation.layout.Row
 import androidx.compose.runtime.*
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jarvis.assistant.core.AppLanguage
@@ -14,6 +15,16 @@ class VoiceHealthActivity:PrivateModuleActivity(){
             VoiceIntelligencePanel(runtime)
             HorizontalDivider()
             val shared by runtime.state.collectAsStateWithLifecycle()
+            val delivery by runtime.voiceDelivery.state.collectAsStateWithLifecycle()
+            Text("Inference: ${delivery.inference} · response characters: ${delivery.responseCharacters}")
+            Text("TTS engine prepared: ${delivery.engineReady}. Voice output: ${delivery.output}. Completion means the audio API callback, not a physical speaker test.")
+            if(shared.canRetrySpeech)OutlinedButton(onClick=runtime::retrySpeech){Text("Retry Voice Playback")}
+            OutlinedButton(onClick=runtime::stopSpeaking){Text("Stop Speaking")}
+            var continuous by remember{mutableStateOf(com.jarvis.assistant.titan.VoicePreferences(this@VoiceHealthActivity).continuousConversation)}
+            Row{Switch(continuous,{continuous=it;com.jarvis.assistant.titan.VoicePreferences(this@VoiceHealthActivity).continuousConversation=it});Text("Continuous conversation · off by default; microphone always pauses during replies")}
+            var cooldown by remember{mutableFloatStateOf(com.jarvis.assistant.titan.VoicePreferences(this@VoiceHealthActivity).speechCooldownMs.toFloat())}
+            Text("After-speech cooldown: ${cooldown.toInt()} ms")
+            Slider(cooldown,{cooldown=it},valueRange=250f..2000f,onValueChangeFinished={com.jarvis.assistant.titan.VoicePreferences(this@VoiceHealthActivity).speechCooldownMs=cooldown.toLong()})
             val wake by WakeListenerService.state.collectAsStateWithLifecycle()
             val diagnostic by RecognitionDiagnostics.state.collectAsStateWithLifecycle()
             val sensors by com.jarvis.assistant.pickup.PickupMonitor.state.collectAsStateWithLifecycle()

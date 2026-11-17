@@ -384,6 +384,7 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
         Text("Animation profile",color=Dim)
         FlowRow(horizontalArrangement=Arrangement.spacedBy(8.dp)){listOf("cinematic","balanced","saver").forEach {p->FilterChip(s.animationProfile==p,{actions.onSaveHud(s.copy(animationProfile=p))},label={Text(p)})}}
         HudToggle("Reduced motion",s.reducedMotion){actions.onSaveHud(s.copy(reducedMotion=it))}
+            Text(com.jarvis.assistant.hud.MotionSettingsPolicy.description(s.reducedMotion,state.hud.telemetry.systemMotion,state.hud.telemetry.powerSaver,state.performanceRestricted))
         HudToggle("Automatic low-battery saver",s.autoBatterySaver){actions.onSaveHud(s.copy(autoBatterySaver=it))}
         Text("Motion intensity ${(intensity*100).roundToInt()}%",color=Dim)
         Slider(intensity,{intensity=it},onValueChangeFinished={actions.onSaveHud(s.copy(animationIntensity=intensity))})

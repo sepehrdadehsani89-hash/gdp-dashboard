@@ -18,7 +18,7 @@ class OmnisystemFlowTest {
         runtime=(it.application as JarvisApplication).runtime;runtime.stopEverything()
         original=runtime.store.settings.value;hud=runtime.hud.state.value.settings
         runtime.hud.save(hud.copy(reducedMotion=true,weatherCity=""))
-        runtime.store.updateSettings(AssistantSettings(onboardingComplete=true,speakReplies=false,provider="local"))
+        runtime.store.updateSettings(AssistantSettings(onboardingComplete=true,setupRevision=com.jarvis.assistant.setup.SetupPolicy.REVISION,speakReplies=false,provider="local"))
         runtime.selectModule(HudModule.ASSISTANT)
     };compose.waitUntil(30_000){runtime.state.value.settings.onboardingComplete}}
     @After fun restore(){compose.activityRule.scenario.onActivity{runtime.stopEverything();runtime.selectModule(HudModule.ASSISTANT);runtime.store.updateSettings(original);runtime.hud.save(hud)}}

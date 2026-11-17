@@ -19,7 +19,7 @@ class CameraHudFlowTest {
     private lateinit var original:AssistantSettings
     private val context get()=InstrumentationRegistry.getInstrumentation().targetContext
     private fun shell(command:String)=ParcelFileDescriptor.AutoCloseInputStream(InstrumentationRegistry.getInstrumentation().uiAutomation.executeShellCommand(command)).bufferedReader().use{it.readText()}
-    @Before fun prepare(){compose.activityRule.scenario.onActivity{runtime=(it.application as JarvisApplication).runtime;runtime.stopEverything();runtime.clearAttachments();original=runtime.store.settings.value;runtime.store.updateSettings(AssistantSettings(onboardingComplete=true,speakReplies=false));runtime.hud.save(runtime.hud.state.value.settings.copy(reducedMotion=true))};compose.waitUntil(30_000){runtime.state.value.settings.onboardingComplete}}
+    @Before fun prepare(){compose.activityRule.scenario.onActivity{runtime=(it.application as JarvisApplication).runtime;runtime.stopEverything();runtime.clearAttachments();original=runtime.store.settings.value;runtime.store.updateSettings(AssistantSettings(onboardingComplete=true,setupRevision=com.jarvis.assistant.setup.SetupPolicy.REVISION,speakReplies=false));runtime.hud.save(runtime.hud.state.value.settings.copy(reducedMotion=true))};compose.waitUntil(30_000){runtime.state.value.settings.onboardingComplete}}
     @After fun restore(){compose.activityRule.scenario.onActivity{runtime.stopEverything();runtime.clearAttachments();runtime.store.updateSettings(original)}}
     @Test fun cameraCaptureDecodesAndRequiresExplicitAttachment(){
         shell("pm grant ${context.packageName} ${Manifest.permission.CAMERA}")

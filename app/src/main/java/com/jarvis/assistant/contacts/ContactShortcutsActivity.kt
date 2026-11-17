@@ -22,7 +22,9 @@ class ContactShortcutsActivity:PrivateModuleActivity(){
     private var editing:String?=null
     private var returned by mutableStateOf(false)
     private var pendingReturn=false
-    private val permission=registerForActivityResult(ActivityResultContracts.RequestPermission()){granted->status=if(granted)words("Contacts permission granted. Review the saved number before dialing.","Permiso concedido. Revisa el número antes de marcar.","مجوز مخاطبین داده شد. پیش از شماره‌گیری، شماره را بررسی کنید.") else words("Contacts permission denied. You can select a contact again or approve a manual number.","Permiso denegado. Puedes elegir un contacto de nuevo o aprobar un número manual.","مجوز رد شد. می‌توانید مخاطب را دوباره انتخاب کنید یا شماره‌ای را دستی تأیید کنید.")}
+    private val permission=registerForActivityResult(ActivityResultContracts.RequestPermission()){granted->
+        intent.getStringExtra("contact_permission_ticket")?.let{token->runtime.finishContactPermission(token,granted);finish();return@registerForActivityResult}
+        status=if(granted)words("Contacts permission granted. Review the saved number before dialing.","Permiso concedido. Revisa el número antes de marcar.","مجوز مخاطبین داده شد. پیش از شماره‌گیری، شماره را بررسی کنید.") else words("Contacts permission denied. You can select a contact again or approve a manual number.","Permiso denegado. Puedes elegir un contacto de nuevo o aprobar un número manual.","مجوز رد شد. می‌توانید مخاطب را دوباره انتخاب کنید یا شماره‌ای را دستی تأیید کنید.")}
     private val picker=registerForActivityResult(ActivityResultContracts.StartActivityForResult()){result->
         val uri=result.data?.data ?: return@registerForActivityResult
         if(result.resultCode!=RESULT_OK || uri.scheme!="content" || uri.authority!="com.android.contacts")return@registerForActivityResult
@@ -34,7 +36,13 @@ class ContactShortcutsActivity:PrivateModuleActivity(){
         }
     }
     override fun onCreate(savedInstanceState:Bundle?){
-        super.onCreate(savedInstanceState);if(isFinishing)return;reload()
+        super.onCreate(savedInstanceState);if(isFinishing)return
+        intent.getStringExtra("contact_permission_ticket")?.let{token->
+            if(!runtime.contactPermissionIsCurrent(token)){finish();return}
+            if(androidx.core.content.ContextCompat.checkSelfPermission(this,Manifest.permission.READ_CONTACTS)==android.content.pm.PackageManager.PERMISSION_GRANTED){runtime.finishContactPermission(token,true);finish()}
+            else if(savedInstanceState==null)permission.launch(Manifest.permission.READ_CONTACTS)
+            return
+        };reload()
         screen(words("JARVIS · FIFTEEN CONTACT SHORTCUTS","JARVIS · QUINCE ATAJOS DE CONTACTOS","جارویس · پانزده میانبر مخاطب")){
             Text(words("Numbers and nicknames are encrypted privately. Dialing opens Android's dialer for your final Call action; Jarvis does not claim a call connected or went unanswered.","Números y alias se cifran en privado. Se abre el marcador Android para que pulses Llamar; Jarvis no confirma conexión ni llamada sin respuesta.","شماره و نام مستعار به‌صورت خصوصی رمز می‌شوند. شماره‌گیر اندروید برای تأیید نهایی تماس شما باز می‌شود؛ جارویس ادعای وصل شدن یا بی‌پاسخ بودن تماس ندارد."))
             Text("${entries.size}/15")

@@ -37,7 +37,7 @@ class ScreenCaptureFlowTest {
             runtime.stopEverything()
         }
         runBlocking(Dispatchers.IO) { runtime.store.clearAll() }
-        compose.runOnUiThread { runtime.store.updateSettings(AssistantSettings(provider = "gemini", model = "gemini-fixture", onboardingComplete = true, speakReplies = false)) }
+        compose.runOnUiThread { runtime.store.updateSettings(AssistantSettings(provider = "gemini", model = "gemini-fixture", onboardingComplete = true, setupRevision = com.jarvis.assistant.setup.SetupPolicy.REVISION, speakReplies = false)) }
         compose.waitUntil(20_000) { runtime.state.value.settings.onboardingComplete && JarvisAccessibilityService.connected }
         compose.onNode(hasSetTextAction()).performTextInput("Analyze my screen")
         compose.onNode(hasSetTextAction()).performImeAction()

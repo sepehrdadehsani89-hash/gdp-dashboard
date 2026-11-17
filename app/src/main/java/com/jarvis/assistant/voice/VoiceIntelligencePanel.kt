@@ -60,7 +60,7 @@ import java.util.Locale
     Row{Switch(p.gainControl,{p.gainControl=it;revision++},enabled=!test.active);Text(words("Request automatic gain control","Solicitar ganancia automática"))}
     Text(words("Device availability","Disponibilidad del dispositivo")+": NS ${android.media.audiofx.NoiseSuppressor.isAvailable()} · AEC ${android.media.audiofx.AcousticEchoCanceler.isAvailable()}")
     Text(words("Changes apply to the next local recorder. Android recognition services manage their own processing; availability does not establish active noise rejection.","Los cambios se aplican al siguiente grabador local. Los servicios Android gestionan su audio; disponibilidad no demuestra reducción activa."))
-    Row{Switch(p.playbackInterruption,{p.playbackInterruption=it;revision++},enabled=!test.active);Text(words("Spoken stop controls · enabled wake service only","Parada por voz · activación ya habilitada"))}
+        Text("Microphone interruption during replies is disabled. Use Stop Speaking.")
     Text(words("Echo-checked stop/wait phrases use the existing opt-in wake service. General acoustic interruption needs a supported simultaneous capture path.","Las frases de parada/espera usan la activación voluntaria y comprueban eco. La interrupción acústica general requiere captura simultánea compatible."))
     Row{Switch(p.transcriptionPreview,{p.transcriptionPreview=it;if(!it)diagnostic.clearPreview();revision++},enabled=!test.active);Text(words("Optional user transcript preview · main app only","Vista opcional de transcripción · solo aplicación"))}
     Text(words("Assistant caption delay after playback","Permanencia de subtítulos tras reproducir")+": ${p.captionLingerMs} ms")

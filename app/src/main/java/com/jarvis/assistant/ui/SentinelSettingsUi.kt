@@ -48,6 +48,7 @@ import kotlin.math.roundToInt
             Text("Performance profile")
             FlowRow(horizontalArrangement=Arrangement.spacedBy(8.dp)){listOf("cinematic","balanced","saver").forEach{profile->FilterChip(s.animationProfile==profile,{actions.onSaveHud(s.copy(animationProfile=profile))},label={Text(if(profile=="saver")"Eco" else profile)})}}
             Toggle("Reduced motion",s.reducedMotion){actions.onSaveHud(s.copy(reducedMotion=it))}
+            Text(com.jarvis.assistant.hud.MotionSettingsPolicy.description(s.reducedMotion,state.hud.telemetry.systemMotion,state.hud.telemetry.powerSaver,state.performanceRestricted))
             Text("Dormant rendering is capped at 3–6 FPS, active at 20–30 FPS. Eco, low battery, Android power saver and reduced motion lower or suspend animation. Hidden/off-screen surfaces stop drawing. These are caps, not device benchmarks.",fontSize=12.sp)
         }
         HudPanel("Original sound design",Modifier.fillMaxWidth()){

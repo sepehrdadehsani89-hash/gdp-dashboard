@@ -42,7 +42,7 @@ class DeviceTools(private val context: Context, private val store: JarvisStore) 
     fun fastRoute(canonical:String,language:AppLanguage):AssistantReply?=when(canonical){
         "battery"->{
             val level=context.getSystemService(BatteryManager::class.java).getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
-            AssistantReply(if(level in 0..100)language.choose("Battery level is $level percent.","La batería está al $level por ciento.","Battery $level%") else "Android did not report a battery level.")
+            AssistantReply(if(level in 0..100)language.choose("Battery level is $level percent.","La batería está al $level por ciento.","Battery $level%") else "Android did not report a battery level.", allowCloudSpeech=true)
         }
         "what time is it"->{val time=LocalDateTime.now().format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT).withLocale(Locale.forLanguageTag(language.tag)));AssistantReply(language.choose("It's $time.","Son las $time.",time))}
         else->null
@@ -52,9 +52,9 @@ class DeviceTools(private val context: Context, private val store: JarvisStore) 
         com.jarvis.assistant.contacts.ContactShortcutPolicy.target(text)?.let{target->
             if(locked())return AssistantReply(unlockMessage(language))
             val contacts=(context.applicationContext as com.jarvis.assistant.JarvisApplication).runtime.contacts
-            val c=withContext(Dispatchers.IO){contacts.resolve(target)} ?: return AssistantReply(language.choose("Choose and approve this nickname in Contact shortcuts first.","Elige y aprueba este alias en Atajos de contactos primero.","ابتدا این نام مستعار را در میانبر مخاطبین انتخاب و تأیید کنید."))
+            val c=withContext(Dispatchers.IO){contacts.resolve(target)} ?: return AssistantReply(language.choose("Choose and approve this nickname in Contact shortcuts first.","Elige y aprueba este alias en Atajos de contactos primero.","ابتدا این نام مستعار را در میانبر مخاطبین انتخاب و تأیید کنید."),allowCloudSpeech=true)
             val payload=org.json.JSONObject().put("id",c.id).put("number",c.number).toString()
-            return proposal(language.choose("Open Android dialer for ${c.nickname}: ${c.number}? Review and press Call there. No call is placed automatically.","¿Abrir marcador Android para ${c.nickname}: ${c.number}? Revisa y pulsa Llamar allí. No se llama automáticamente.","شماره‌گیر اندروید برای ${c.nickname}: ${c.number} باز شود؟ شماره را بررسی و تماس را آنجا تأیید کنید. تماس خودکار برقرار نمی‌شود."),"dial_contact",payload,confirmedEntity=target)
+            return proposal(language.choose("Open Android dialer for ${c.nickname}: ${c.number}? Review and press Call there. No call is placed automatically.","¿Abrir marcador Android para ${c.nickname}: ${c.number}? Revisa y pulsa Llamar allí. No se llama automáticamente.","شماره‌گیر اندروید برای ${c.nickname}: ${c.number} باز شود؟ شماره را بررسی و تماس را آنجا تأیید کنید. تماس خودکار برقرار نمی‌شود."),"dial_contact",payload,confirmedEntity=target).copy(publicSpeechSummary=language.choose("I found your requested contact. Confirm opening Android’s dialer, or cancel. You still press Call there.","Encontré el contacto solicitado. Confirma abrir el marcador Android o cancela. Debes pulsar Llamar allí.","مخاطب پیدا شد. باز کردن شماره‌گیر اندروید را تأیید یا لغو کنید."))
         }
         if(!locked())infinity.route(text,language,::proposal)?.let{return it}
         WhatsAppDraft.parse(text)?.let { draft ->
@@ -87,7 +87,7 @@ class DeviceTools(private val context: Context, private val store: JarvisStore) 
         if (remembered != null) {
             if (locked()) return AssistantReply(unlockMessage(language))
             store.remember(remembered.take(2_000))
-            return AssistantReply(language.choose("I'll remember that. You can view or delete it in Memory.", "Lo recordaré. Puedes verlo o eliminarlo en Memoria.", "این را به خاطر می‌سپارم. در بخش حافظه می‌توانید آن را حذف کنید."))
+            return AssistantReply(language.choose("I'll remember that. You can view or delete it in Memory.", "Lo recordaré. Puedes verlo o eliminarlo en Memoria.", "این را به خاطر می‌سپارم. در بخش حافظه می‌توانید آن را حذف کنید."),allowCloudSpeech=true)
         }
         if (isMemoryRequest(normalized)) {
             if (locked()) return AssistantReply(unlockMessage(language))
@@ -127,7 +127,7 @@ class DeviceTools(private val context: Context, private val store: JarvisStore) 
         }
         if (Regex("\\bbattery\\b|\\bbatería\\b|\\bbateria\\b|باتری").containsMatchIn(normalized)) {
             val level = context.getSystemService(BatteryManager::class.java).getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
-            return AssistantReply(if (level in 0..100) language.choose("Battery level is $level percent.", "La batería está al $level por ciento.", "شارژ باتری $level درصد است.") else language.choose("Android did not report a battery level.", "Android no indicó el nivel de batería.", "اندروید میزان باتری را گزارش نکرد."))
+            return AssistantReply(if (level in 0..100) language.choose("Battery level is $level percent.", "La batería está al $level por ciento.", "شارژ باتری $level درصد است.") else language.choose("Android did not report a battery level.", "Android no indicó el nivel de batería.", "اندروید میزان باتری را گزارش نکرد."), allowCloudSpeech=true)
         }
         if (listOf("what time", "time is it", "qué hora", "que hora", "ساعت چنده", "ساعت چند", "hora actual").any(normalized::contains)) {
             val time = LocalDateTime.now().format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT).withLocale(Locale.forLanguageTag(language.tag)))
@@ -259,7 +259,7 @@ class DeviceTools(private val context: Context, private val store: JarvisStore) 
         pending.entries.removeAll { !ToolPolicy.confirmationCurrent(it.value.createdAt, System.currentTimeMillis()) }
         val action = PendingAction(description = description, kind = kind, payload = payload)
         pending[action.id] = action
-        return AssistantReply(description, action = action,confirmedEntity=confirmedEntity)
+        return AssistantReply(description, action = action,confirmedEntity=confirmedEntity,publicSpeechSummary=com.jarvis.assistant.voice.NativeSpeechSummary.confirmation(kind,store.settings.value.language))
     }
 
     private fun resolvedMatches(name:String):List<com.jarvis.assistant.neural.AppMatch>{

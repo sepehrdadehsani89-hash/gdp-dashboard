@@ -106,7 +106,7 @@ class DeviceControl(private val context:Context){
     suspend fun route(input:String,lang:AppLanguage):AssistantReply? {
         val n=AppMatching.normalize(input)
         val operation=if(n=="turn it off" && selectedTorch)"torch_off" else ControlRegistry.command(input)
-        if(operation!=null)return AssistantReply(execute(operation).evidence)
+        if(operation!=null)return AssistantReply(execute(operation).evidence,allowCloudSpeech=true)
         if(n in setOf("what devices are connected","what bluetooth devices are connected","which device is connected","show connected bluetooth devices","are my earbuds connected","what s my headset battery","how much longer can my headphones play","find my headphones")){
             if(!connectivity.bluetoothAllowed())return AssistantReply("Nearby devices permission is required. Open Control Center.")
             val devices=accessories();val connected=devices.filter{it.connected}

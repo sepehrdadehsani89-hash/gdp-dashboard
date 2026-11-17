@@ -17,7 +17,10 @@ class VoicePreferences(context:Context){
     var endpointPauseMs:Long get()=p.getLong("endpoint_pause_ms",900L).coerceIn(650L,1800L);set(v){p.edit().putLong("endpoint_pause_ms",v.coerceIn(650L,1800L)).apply()}
     var transcriptionPreview:Boolean get()=p.getBoolean("transcription_preview",false);set(v){p.edit().putBoolean("transcription_preview",v).apply()}
     var captionLingerMs:Long get()=p.getLong("caption_linger_ms",1200L).coerceIn(0L,5000L);set(v){p.edit().putLong("caption_linger_ms",v.coerceIn(0L,5000L)).apply()}
-    var playbackInterruption:Boolean get()=p.getBoolean("playback_interruption",true);set(v){p.edit().putBoolean("playback_interruption",v).apply()}
+    // Legacy barge-in is retired: persisted true values cannot re-enable the unsafe capture path.
+    val playbackInterruption:Boolean get()=false
+    var speechCooldownMs:Long get()=p.getLong("speech_cooldown_ms",500L).coerceIn(250L,2000L);set(v){p.edit().putLong("speech_cooldown_ms",v.coerceIn(250L,2000L)).apply()}
+    var continuousConversation:Boolean get()=p.getBoolean("continuous_conversation_v2",false);set(v){p.edit().putBoolean("continuous_conversation_v2",v).apply()}
     var timeAwareGreeting:Boolean get()=p.getBoolean("time_aware_greeting",false);set(v){p.edit().putBoolean("time_aware_greeting",v).apply()}
     var conversationFocus:Boolean get()=p.getBoolean("conversation_focus",true);set(v){p.edit().putBoolean("conversation_focus",v).apply()}
     var customWakePhrase:String get()=p.getString("custom_wake_phrase","").orEmpty();set(v){require(v.isBlank() || com.jarvis.assistant.voice.WakePhraseMatcher.validCustomPhrase(v));p.edit().putString("custom_wake_phrase",v.trim()).apply()}

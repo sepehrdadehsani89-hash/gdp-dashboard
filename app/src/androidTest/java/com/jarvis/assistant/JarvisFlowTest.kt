@@ -168,7 +168,7 @@ class JarvisFlowTest {
         compose.runOnUiThread {
             runtime.store.updateSettings(AssistantSettings(
                 language = language, provider = "local", speakReplies = false,
-                allowNetworkSpeech = false, useCloudVoice = false, onboardingComplete = true,
+                allowNetworkSpeech = false, useCloudVoice = false, onboardingComplete = true, setupRevision = com.jarvis.assistant.setup.SetupPolicy.REVISION,
             ))
         }
         compose.waitUntil(timeoutMillis = 15_000) {

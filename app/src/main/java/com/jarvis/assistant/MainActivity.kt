@@ -39,6 +39,43 @@ class MainActivity : ComponentActivity() {
     private var touchedAfterWake=false
     private var settingsRequest by androidx.compose.runtime.mutableIntStateOf(0)
     private var micAfterGrant = false
+    private var wakeAfterGrant=false
+    private var startupDisclosure:android.app.AlertDialog?=null
+    private val startupPrefs get()=getSharedPreferences("jarvis_listening_startup_v1",MODE_PRIVATE)
+    private val wakePrefs get()=getSharedPreferences("wake_session",MODE_PRIVATE)
+    private fun requestWakePermission(){
+        wakePrefs.edit().putBoolean("enabled",true).apply()
+        startupPrefs.edit().putBoolean("disclosed",true).apply()
+        if(ContextCompat.checkSelfPermission(this,Manifest.permission.RECORD_AUDIO)==PackageManager.PERMISSION_GRANTED)maybeStartWake()
+        else {wakeAfterGrant=true;micAfterGrant=false;startupPrefs.edit().putBoolean("pending_wake",true).apply();microphone.launch(Manifest.permission.RECORD_AUDIO)}
+    }
+    private fun maybeStartWake(){
+        val action=com.jarvis.assistant.voice.ListeningStartupPolicy.decide(wakePrefs.getBoolean("enabled",false),ContextCompat.checkSelfPermission(this,Manifest.permission.RECORD_AUDIO)==PackageManager.PERMISSION_GRANTED,runtime.installedWakeModelForCalibration()!=null,lifecycle.currentState.isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED),getSystemService(android.app.KeyguardManager::class.java).isDeviceLocked,com.jarvis.assistant.voice.WakeListenerService.state.value.running,runtime.voiceSession.blocksRecognition())
+        when(action){
+            com.jarvis.assistant.voice.ListeningStartupAction.START_WAKE->runtime.startWake()
+            com.jarvis.assistant.voice.ListeningStartupAction.MODEL_REQUIRED->{
+                if(startupPrefs.getBoolean("model_prompted",false))return
+                startupPrefs.edit().putBoolean("model_prompted",true).apply()
+                AlertDialog.Builder(this).setTitle("Enable local wake listening").setMessage("This language's recognition pack is required for background wake listening (usually 40–55 MB). This is separate from the optional Local Brain. No pack is downloaded without this confirmation.").setPositiveButton("Download speech pack"){_,_->runtime.downloadWake()}.setNegativeButton("Later",null).show()
+            }
+            else->Unit
+        }
+    }
+    private fun handleWakePermissionTicket(){
+        val token=intent.getStringExtra("wake_permission_ticket") ?: return
+        intent.removeExtra("wake_permission_ticket")
+        if(runtime.consumeWakePermissionRequest(token)){startupPrefs.edit().putBoolean("model_prompted",false).apply();requestWakePermission()}
+    }
+    override fun onPostResume(){
+        super.onPostResume()
+        if(getSystemService(android.app.KeyguardManager::class.java).isDeviceLocked)return
+        handleWakePermissionTicket()
+        if(com.jarvis.assistant.setup.SetupPolicy.needed(runtime.store.settings.value.onboardingComplete,runtime.store.settings.value.setupRevision)){maybeStartWake();return}
+        if(!startupPrefs.getBoolean("disclosed",false)){
+            if(wakePrefs.getBoolean("enabled",false)){startupPrefs.edit().putBoolean("disclosed",true).apply();maybeStartWake()}
+            else if(startupDisclosure?.isShowing!=true){startupDisclosure=AlertDialog.Builder(this).setTitle("Welcome to Jarvis").setMessage("Enable local wake listening with a visible microphone foreground service. It pauses while Jarvis speaks. Android will ask for microphone permission; you can stop listening at any time. Speech and provider setup remain separate.").setPositiveButton("Enable microphone"){_,_->requestWakePermission()}.setNegativeButton("Not now"){_,_->startupPrefs.edit().putBoolean("disclosed",true).apply()}.setOnCancelListener{startupPrefs.edit().putBoolean("disclosed",true).apply()}.show()}
+        }else maybeStartWake()
+    }
     private var authentication: android.os.CancellationSignal? = null
     private var authenticatedRequest: String? = null
     private var lastInteraction = android.os.SystemClock.elapsedRealtime()
@@ -75,7 +112,11 @@ class MainActivity : ComponentActivity() {
     override fun onDestroy(){authentication?.cancel();super.onDestroy()}
     private val microphone = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         runtime.refreshCapabilities()
-        if (granted && micAfterGrant) runtime.listen()
+        val wakeRequested=wakeAfterGrant || startupPrefs.getBoolean("pending_wake",false)
+        wakeAfterGrant=false;startupPrefs.edit().putBoolean("pending_wake",false).apply()
+        if(granted && wakeRequested)window.decorView.post{maybeStartWake()}
+        else if (granted && micAfterGrant) runtime.listen()
+        else if(!granted && wakeRequested)wakePrefs.edit().putBoolean("enabled",false).apply()
         micAfterGrant = false
     }
     private val optionalPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { runtime.refreshCapabilities() }
@@ -136,6 +177,7 @@ class MainActivity : ComponentActivity() {
         onBackPressedDispatcher.addCallback(this,object:androidx.activity.OnBackPressedCallback(true){override fun handleOnBackPressed(){dismissHud()}})
         setContent {
             val state by runtime.state.collectAsStateWithLifecycle()
+            androidx.compose.runtime.LaunchedEffect(state.modelProgress,state.voiceStage){if(state.modelProgress==null)maybeStartWake()}
             androidx.compose.runtime.LaunchedEffect(state.module){updateImmersive()}
             androidx.compose.runtime.LaunchedEffect(state.authorization) {
                 state.authorization?.let {
@@ -196,24 +238,25 @@ class MainActivity : ComponentActivity() {
                     else { micAfterGrant = true; microphone.launch(Manifest.permission.RECORD_AUDIO) }
                 },
                 onStop = runtime::stopEverything,
+                onStopSpeaking=runtime::stopSpeaking,
+                onRetrySpeech=runtime::retrySpeech,
                 onLanguage = {runtime.effects.userPlay(com.jarvis.assistant.sentinel.SentinelSound.BUTTON);runtime.setLanguage(it)},
                 onSaveSettings = { value, key ->
+                    if(value.setupRevision>=com.jarvis.assistant.setup.SetupPolicy.REVISION)startupPrefs.edit().putBoolean("disclosed",true).apply()
                     runtime.effects.play(com.jarvis.assistant.sentinel.SentinelSound.BUTTON)
                     val old=runtime.state.value.settings
                     if(old.onboardingComplete && (key.isNotBlank() || value.allowLockedChat!=old.allowLockedChat || value.shareSavedMemories!=old.shareSavedMemories || value.useCloudVoice!=old.useCloudVoice))runtime.protect("Change privacy or provider credentials") { runtime.saveSettings(value,key) }
                     else runtime.saveSettings(value,key)
                 },
                 onListGeminiModels = {key->runtime.effects.userPlay(com.jarvis.assistant.sentinel.SentinelSound.PROCESSING);runtime.listGeminiModels(key)},
+                onTestSelectedBrain = runtime::testSelectedBrain,
                 onTestProvider = {settings,key->runtime.effects.userPlay(com.jarvis.assistant.sentinel.SentinelSound.PROCESSING);runtime.testProvider(settings,key)},
                 onPlayConnectionTest = runtime::playConnectionSample,
                 onRememberDelete = { id -> runtime.protect("Delete saved memory") { runtime.deleteMemory(id) } },
                 onClearConversation = { runtime.protect("Delete conversation history") { runtime.clearConversation() } },
                 onClearScreen = runtime::clearScreenContext,
                 onWipe = { runtime.protect("Delete all Jarvis data and models") { runtime.wipe() } },
-                onStartWake = {
-                    if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) microphone.launch(Manifest.permission.RECORD_AUDIO)
-                    else runtime.startWake()
-                },
+                onStartWake = {startupPrefs.edit().putBoolean("model_prompted",false).apply();requestWakePermission()},
                 onStopWake = runtime::stopWake,
                 onDownloadWake = runtime::downloadWake,
                 onDownloadBrain = {startActivity(Intent(this,com.jarvis.assistant.neural.NeuralSettingsActivity::class.java))},
@@ -234,6 +277,7 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onNewIntent(intent:Intent){super.onNewIntent(intent);setIntent(intent)
+        handleWakePermissionTicket()
         if(intent.getBooleanExtra("open_settings",false)){settingsRequest++;wakeOpened=false;touchedAfterWake=true}
         if(intent.getBooleanExtra("sentinel_settings",false))sentinelRequest++
         if(intent.getBooleanExtra("sentinel_wake",false)){wakeOpened=true;touchedAfterWake=false}

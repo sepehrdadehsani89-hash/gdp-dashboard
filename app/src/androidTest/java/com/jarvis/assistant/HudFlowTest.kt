@@ -26,7 +26,7 @@ class HudFlowTest {
             runtime=(it.application as JarvisApplication).runtime
             runtime.stopEverything();oldHud=runtime.hud.state.value.settings
             runtime.hud.save(HudSettings(reducedMotion=true))
-            runtime.store.updateSettings(AssistantSettings(onboardingComplete=true,speakReplies=false,provider="local"))
+            runtime.store.updateSettings(AssistantSettings(onboardingComplete=true,setupRevision=com.jarvis.assistant.setup.SetupPolicy.REVISION,speakReplies=false,provider="local"))
         }
         compose.waitUntil(20_000){runtime.state.value.settings.onboardingComplete}
     }
@@ -98,6 +98,8 @@ class HudFlowTest {
         compose.onNode(hasScrollToIndexAction()).performScrollToNode(hasText(noteText))
         compose.onNodeWithText(noteText).assertIsDisplayed()
         compose.onNodeWithText("Settings",useUnmergedTree=true).performClick()
+        compose.onNodeWithText("Account & Identity").performClick()
+        compose.onNodeWithText("Identity & saved preferences").performClick()
         compose.onNodeWithText("Reduced motion").assertExists()
         compose.onNodeWithText("Assistant",useUnmergedTree=true).performClick()
         compose.onNodeWithText("Ask Jarvis…").assertIsDisplayed()

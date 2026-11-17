@@ -64,7 +64,7 @@ class TitanCenterActivity:PrivateModuleActivity(){
         Toggle("Android noise suppression",voice.noiseReduction){voice.noiseReduction=it;revision++}
         Toggle("Android acoustic echo cancellation",voice.echoCancellation){voice.echoCancellation=it;revision++}
         Toggle("Android automatic gain control · optional",voice.gainControl){voice.gainControl=it;revision++}
-        Toggle("Wait / stop voice controls during replies · already-enabled wake service only",voice.playbackInterruption){voice.playbackInterruption=it;revision++}
+        Text("Microphone interruption during replies is disabled. Use Stop Speaking.")
         Toggle("Optional time-aware greeting · otherwise Hello sir, how can I help you?",voice.timeAwareGreeting){voice.timeAwareGreeting=it;revision++}
         Text(words("Changes apply when the recorder next starts. Echo cancellation does not enable automatic TTS barge-in; supported recording and output paths remain separate.","Los cambios se aplican al reiniciar el grabador. La cancelación de eco no activa interrupción acústica automática del TTS; las rutas siguen separadas.","Restart capture"))
         Button(enabled=!working,onClick={calibrate(false)}){Text(words("Measure 3 seconds of background noise","Medir 3 segundos de ruido ambiente","Noise test"))}

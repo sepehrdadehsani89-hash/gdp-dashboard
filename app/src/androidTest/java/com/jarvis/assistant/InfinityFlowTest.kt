@@ -21,7 +21,7 @@ class InfinityFlowTest {
     private lateinit var runtime:AssistantRuntime
     private lateinit var original:AssistantSettings
     private lateinit var neural:NeuralSettings
-    @Before fun prepare(){compose.activityRule.scenario.onActivity{runtime=(it.application as JarvisApplication).runtime;runtime.stopEverything();original=runtime.store.settings.value;neural=runtime.neuralPreferences.state.value;runtime.store.updateSettings(AssistantSettings(onboardingComplete=true,speakReplies=false));runtime.setLanguage(AppLanguage.EN)};compose.waitUntil(30_000){runtime.state.value.settings.onboardingComplete}}
+    @Before fun prepare(){compose.activityRule.scenario.onActivity{runtime=(it.application as JarvisApplication).runtime;runtime.stopEverything();original=runtime.store.settings.value;neural=runtime.neuralPreferences.state.value;runtime.store.updateSettings(AssistantSettings(onboardingComplete=true,setupRevision=com.jarvis.assistant.setup.SetupPolicy.REVISION,speakReplies=false));runtime.setLanguage(AppLanguage.EN)};compose.waitUntil(30_000){runtime.state.value.settings.onboardingComplete}}
     @After fun restore(){compose.activityRule.scenario.onActivity{runtime.stopEverything();runtime.store.updateSettings(original);runtime.neuralPreferences.save(neural)}}
     private fun launch(cls:Class<*>){compose.runOnUiThread{compose.activity.startActivity(Intent(compose.activity,cls))}}
     private fun modelFiles()=File(context.filesDir,"local-brain").walkTopDown().filter{it.isFile}.associate{it.relativeTo(context.filesDir).path to it.length()}

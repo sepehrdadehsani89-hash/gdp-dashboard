@@ -53,7 +53,7 @@ class PrivateMemoryImportUiTest {
         }
         try{
             runtime.stopEverything()
-            runtime.store.updateSettings(original.copy(language=com.jarvis.assistant.core.AppLanguage.EN,onboardingComplete=true,speakReplies=false))
+            runtime.store.updateSettings(original.copy(language=com.jarvis.assistant.core.AppLanguage.EN,onboardingComplete=true,setupRevision=com.jarvis.assistant.setup.SetupPolicy.REVISION,speakReplies=false))
             compose.activityRule.scenario.onActivity{it.startActivity(Intent(it,NeuralSettingsActivity::class.java))}
             assertTrue(device.wait(Until.hasObject(By.text("JARVIS QUANTUM CORE 10.9 · BETA")),30_000))
             importButton();device.pressBack()

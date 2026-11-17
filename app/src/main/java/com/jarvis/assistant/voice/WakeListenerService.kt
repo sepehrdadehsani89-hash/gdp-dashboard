@@ -58,7 +58,7 @@ class WakeListenerService : Service() {
         EndpointDiagnostics.fail(endpointToken,SystemClock.elapsedRealtime(),"CAPTURE_TIMEOUT")
         (application as com.jarvis.assistant.JarvisApplication).runtime.voiceSession.idle(windowRuntimeGeneration)
         val call=(application as com.jarvis.assistant.JarvisApplication).runtime.aiCall.state.value
-        if(call.connected)main.post{(application as com.jarvis.assistant.JarvisApplication).runtime.endAiCall(call.id,"QUIET_TIMEOUT")}
+        if(call.connected){val expected=windowRuntimeGeneration;main.post{val runtime=(application as com.jarvis.assistant.JarvisApplication).runtime;if(runtime.currentCommandSerial()==expected && !runtime.voiceSession.blocksRecognition())runtime.endAiCall(call.id,"QUIET_TIMEOUT")}}
         publish(listeningText(),true);return true
     }
     private val audioManager by lazy { getSystemService(android.media.AudioManager::class.java) }
@@ -107,6 +107,7 @@ class WakeListenerService : Service() {
             }
             ACTION_RESUME -> {
                 clearPlaybackControls()
+                if ((application as com.jarvis.assistant.JarvisApplication).runtime.voiceSession.blocksRecognition() || speechActive) { pauseImmediately(); return if(running)START_STICKY else START_NOT_STICKY }
                 if (running) {
                     window.callMode((application as com.jarvis.assistant.JarvisApplication).runtime.aiCall.state.value.connected)
                     window.resume(intent.getBooleanExtra("follow_up", false))
@@ -118,14 +119,10 @@ class WakeListenerService : Service() {
                 return if (running) START_STICKY else START_NOT_STICKY
             }
             ACTION_PLAYBACK_CONTROLS -> {
+                // Old queued intents cannot reopen a microphone during a reply.
+                pauseImmediately()
                 if(!running){stopSelf();return START_NOT_STICKY}
-                val runtime=(application as com.jarvis.assistant.JarvisApplication).runtime
-                val expected=intent.getLongExtra("runtime_generation",-1)
-                if(!PlaybackInterruptPolicy.current(expected,runtime.currentCommandSerial(),runtime.state.value.phase==com.jarvis.assistant.core.AssistantPhase.SPEAKING) ||
-                    !com.jarvis.assistant.titan.VoicePreferences(this).playbackInterruption || com.jarvis.assistant.security.SystemCredentialPrivacy.pending(this))return START_STICKY
-                playbackEcho=intent.getStringExtra("spoken_segment").orEmpty().take(8000);playbackGeneration=expected;playbackControlPending=null
-                window.pause();main.removeCallbacks(windowTimeout);paused=false
-                publish("Reply playing · listening only for wait / stop speech controls",true)
+                publish("Microphone paused during speech · use Stop Speaking",false)
                 return START_STICKY
             }
         }
@@ -147,7 +144,7 @@ class WakeListenerService : Service() {
             publish(language.choose("Microphone permission and an offline model are required.", "Se necesitan permiso del micrófono y un modelo local.", "اجازهٔ میکروفن و مدل آفلاین لازم است."), false)
             stopSelf(); return START_NOT_STICKY
         }
-        running = true; paused = intent?.getBooleanExtra("start_paused",false)==true; window.enable();if(paused)window.pause()
+        running = true; paused = intent?.getBooleanExtra("start_paused",false)==true || speechActive || (application as com.jarvis.assistant.JarvisApplication).runtime.voiceSession.blocksRecognition(); window.enable();if(paused)window.pause()
         pickupMonitor?.close();pickupMonitor=com.jarvis.assistant.pickup.PickupMonitor(this).also{it.start()}
         publish(text,false)
         recovery.edit().putBoolean("enabled", true).putString("language", language.code).apply()
@@ -212,33 +209,7 @@ class WakeListenerService : Service() {
                                     recovery.healthy()
                                     if(audioManager.mode in listOf(android.media.AudioManager.MODE_IN_CALL,android.media.AudioManager.MODE_IN_COMMUNICATION)){window.resume(false);main.removeCallbacks(windowTimeout);publish("Microphone paused during a call",false,interrupted=true);break}
                                     com.jarvis.assistant.hud.AudioSignals.level(audio,com.jarvis.assistant.hud.PcmLevel.pcm16(bytes,count))
-                                    val playbackExpected=playbackGeneration
-                                    if(playbackExpected!=null){
-                                        speakerBuffer.clear()
-                                        if(!managed.processing.echoCancellationActive){
-                                            clearPlaybackControls()
-                                            synchronized(audioLock){paused=true;window.pause();runCatching{audio.stop()}}
-                                            publish("Playback controls paused: Android echo cancellation is unavailable; use Stop",false)
-                                            break
-                                        }
-                                        if(!speechActive){recognizer.reset();continue}
-                                        if(recognizer.acceptWaveForm(bytes,count)){
-                                            val result=com.jarvis.assistant.rebirth.RecognitionPayload.vosk(JSONObject(recognizer.result)).primary
-                                            val control=if(RecognitionConfidence.acceptsFinal(result,.65))PlaybackInterruptPolicy.command(result.optString("text"),playbackEcho)else null
-                                            if(control!=null && playbackControlPending!=playbackExpected){
-                                                playbackControlPending=playbackExpected
-                                                main.post{
-                                                    val runtime=(application as com.jarvis.assistant.JarvisApplication).runtime
-                                                    if(running && playbackGeneration==playbackExpected && PlaybackInterruptPolicy.current(playbackExpected,runtime.currentCommandSerial(),runtime.state.value.phase==com.jarvis.assistant.core.AssistantPhase.SPEAKING)){
-                                                        clearPlaybackControls();synchronized(audioLock){paused=true;window.pause();runCatching{recorder?.stop()}}
-                                                        runtime.interruptSpokenReply(playbackExpected)
-                                                    }else if(playbackControlPending==playbackExpected)playbackControlPending=null
-                                                }
-                                            }
-                                        }
-                                        continue
-                                    }
-                                    if (speechActive || SystemClock.elapsedRealtime() < suppressionUntil) {
+                                    if (speechActive || (application as com.jarvis.assistant.JarvisApplication).runtime.voiceSession.blocksRecognition() || SystemClock.elapsedRealtime() < suppressionUntil) {
                                         speakerBuffer.clear()
                                         if (!suppressed) { recognizer.reset(); suppressed = true }
                                         continue
@@ -562,7 +533,7 @@ class WakeListenerService : Service() {
             service.speakerBuffer.clear()
         }}
         @Volatile private var speechActive=false
-        fun setSpeechActive(value:Boolean){speechActive=value;if(!value)suppressFor(250)}
+        fun setSpeechActive(value:Boolean){speechActive=value;if(value)pauseImmediately() else suppressFor(250)}
         private val mutableState = MutableStateFlow(WakeState())
         val state: StateFlow<WakeState> = mutableState
         fun suppressFor(milliseconds: Long) { suppressionUntil = SystemClock.elapsedRealtime() + milliseconds.coerceAtLeast(0) }

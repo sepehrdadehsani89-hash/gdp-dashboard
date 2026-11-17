@@ -25,7 +25,7 @@ import kotlinx.coroutines.awaitCancellation
 /** Settings interaction fixtures: no Google account, network calls, or real keys. */
 class GeminiSettingsTest {
     @get:Rule val compose = createComposeRule()
-    private val settings = AssistantSettings(provider = "gemini", model = "gemini-unknown-live", onboardingComplete = true)
+    private val settings = AssistantSettings(provider = "gemini", model = "gemini-unknown-live", onboardingComplete = true, setupRevision = com.jarvis.assistant.setup.SetupPolicy.REVISION)
 
     @Test fun compatibleModelCanBeSelectedTestedAndSaved() {
         var saved: AssistantSettings? = null
@@ -38,6 +38,8 @@ class GeminiSettingsTest {
             ))
         }
         compose.onNodeWithText("Settings").performClick()
+        compose.onNodeWithText("Account & Identity").performClick()
+        compose.onNodeWithText("Identity & saved preferences").performClick()
         compose.onNode(hasScrollToIndexAction()).performScrollToNode(hasText("Find Gemini models"))
         compose.onNodeWithText("Find Gemini models").performClick()
         compose.waitForIdle()
@@ -62,6 +64,8 @@ class GeminiSettingsTest {
             ))
         }
         compose.onNodeWithText("Settings").performClick()
+        compose.onNodeWithText("Account & Identity").performClick()
+        compose.onNodeWithText("Identity & saved preferences").performClick()
         compose.onNode(hasScrollToIndexAction()).performScrollToNode(hasText("Test connection"))
         compose.onNodeWithText("Test connection").performClick()
         compose.waitForIdle()
@@ -79,6 +83,8 @@ class GeminiSettingsTest {
             ))
         }
         compose.onNodeWithText("Settings").performClick()
+        compose.onNodeWithText("Account & Identity").performClick()
+        compose.onNodeWithText("Identity & saved preferences").performClick()
         compose.onNode(hasScrollToIndexAction()).performScrollToNode(hasText("Test connection"))
         compose.onNodeWithText("Test connection").performClick()
         compose.onNodeWithText("Checking provider…").assertIsDisplayed()

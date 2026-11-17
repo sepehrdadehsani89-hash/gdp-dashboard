@@ -31,6 +31,7 @@ data class AssistantSettings(
     val shareSavedMemories: Boolean = false,
     val allowLockedChat: Boolean = false,
     val onboardingComplete: Boolean = false,
+    val setupRevision: Int = 0,
 )
 data class PendingAction(
     val id: String = UUID.randomUUID().toString(),
@@ -47,6 +48,8 @@ data class AssistantReply(
     val allowCloudSpeech: Boolean = false,
     val speechHandled: Boolean = false,
     val confirmedEntity:String?=null,
+    // Authored by the native tool, never extracted from private text or model output.
+    val publicSpeechSummary:String?=null,
 )
 
 data class ConnectionCheck(val model: String, val sample: String, val elapsedMs: Long)

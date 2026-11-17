@@ -24,7 +24,7 @@ class NeuralFlowTest {
     private lateinit var runtime:AssistantRuntime
     private lateinit var settings:NeuralSettings
     private lateinit var original:AssistantSettings
-    @Before fun prepare(){compose.activityRule.scenario.onActivity{runtime=(it.application as JarvisApplication).runtime;runtime.stopEverything();settings=runtime.neuralPreferences.state.value;original=runtime.store.settings.value;runtime.store.updateSettings(AssistantSettings(onboardingComplete=true,speakReplies=false));runtime.neuralPreferences.save(NeuralSettings())};compose.waitUntil(30_000){runtime.state.value.settings.onboardingComplete}}
+    @Before fun prepare(){compose.activityRule.scenario.onActivity{runtime=(it.application as JarvisApplication).runtime;runtime.stopEverything();settings=runtime.neuralPreferences.state.value;original=runtime.store.settings.value;runtime.store.updateSettings(AssistantSettings(onboardingComplete=true,setupRevision=com.jarvis.assistant.setup.SetupPolicy.REVISION,speakReplies=false));runtime.neuralPreferences.save(NeuralSettings())};compose.waitUntil(30_000){runtime.state.value.settings.onboardingComplete}}
     @After fun restore(){compose.activityRule.scenario.onActivity{runtime.stopEverything();runtime.neuralPreferences.save(settings);runtime.store.updateSettings(original);BriefingScheduler.sync(context)}}
     private fun database(block:(KnowledgeIndex)->Unit){val name="neural-test-${UUID.randomUUID()}.db";val index=KnowledgeIndex(context,name);try{block(index)}finally{index.close();context.deleteDatabase(name)}}
     @Test fun actualFtsSearchesApprovedDocumentsAndPersianThenDeletesCopies(){database{index->

@@ -164,7 +164,7 @@ fun JarvisAppUi(state: JarvisUiState, actions: JarvisUiActions, settingsRequest:
             typography = Typography(),
         ) {
             Surface(color = Ink, modifier = Modifier.fillMaxSize()) {
-                if (!state.settings.onboardingComplete) Onboarding(state, actions)
+                if (com.jarvis.assistant.setup.SetupPolicy.needed(state.settings.onboardingComplete,state.settings.setupRevision)) SetupWizardUi(state, actions)
                 else MainShell(state, actions, settingsRequest, sentinelRequest)
                 state.authorization?.takeIf { it.status in listOf(com.jarvis.assistant.hud.AuthorizationStatus.AUTHORIZATION_REQUIRED,com.jarvis.assistant.hud.AuthorizationStatus.AWAITING_CODEX) }?.let { request ->
                     AlertDialog(onDismissRequest=actions.onCancelAuthorization,
@@ -320,6 +320,9 @@ private fun Home(state: JarvisUiState, actions: JarvisUiActions, onOpenSettings:
             item { Spacer(Modifier.height(8.dp)) }
         }
         Column(Modifier.fillMaxWidth().background(Ink).padding(horizontal = 18.dp, vertical = 8.dp)) {
+            val audioBusy=state.phase==AssistantPhase.SPEAKING || state.voiceDelivery.output==com.jarvis.assistant.voice.VoiceOutputOutcome.PREPARING
+            if(audioBusy)OutlinedButton(onClick=actions.onStopSpeaking){Text(l.choose("Stop Speaking","Dejar de hablar","توقف گفتار"))}
+            if(state.canRetrySpeech)OutlinedButton(onClick=actions.onRetrySpeech){Text(l.choose("Retry Voice Playback","Reintentar voz","تلاش دوبارهٔ پخش صدا"))}
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 TextButton(onClick = actions.onFolders) { Text("Folders") }
                 IconButton(onClick = actions.onPickFiles) { Icon(Icons.Rounded.AttachFile, l.choose("Choose a document", "Elegir un archivo", "انتخاب فایل"), tint = Muted) }
@@ -335,10 +338,10 @@ private fun Home(state: JarvisUiState, actions: JarvisUiActions, onOpenSettings:
                     keyboardActions = KeyboardActions(onSend = { sendInput() }),
                     trailingIcon = { if (input.isNotBlank()) IconButton(onClick = sendInput) { Icon(Icons.AutoMirrored.Rounded.Send, l.choose("Send", "Enviar", "ارسال"), tint = Mint) } },
                 )
-                Button(onClick = actions.onMic,
+                Button(onClick = {if(busy)actions.onStopSpeaking()else actions.onMic()}, enabled=!audioBusy,
                     shape = CircleShape, contentPadding = PaddingValues(0.dp), modifier = Modifier.size(60.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = if (busy) Warm else Mint)) {
-                    Icon(if (state.phase==AssistantPhase.LISTENING) Icons.Rounded.Stop else Icons.Rounded.Mic, l.choose(if (state.phase==AssistantPhase.SPEAKING) "Interrupt and speak" else if (busy) "Stop" else "Speak", if (state.phase==AssistantPhase.SPEAKING) "Interrumpir y hablar" else if (busy) "Detener" else "Hablar", if (state.phase==AssistantPhase.SPEAKING) "قطع پاسخ و صحبت" else if (busy) "توقف" else "صحبت کنید"), Modifier.size(25.dp))
+                    Icon(if (state.phase==AssistantPhase.LISTENING) Icons.Rounded.Stop else Icons.Rounded.Mic, l.choose(if(audioBusy)"Microphone paused during speech" else if(busy)"Stop current response" else "Speak",if(audioBusy)"Micrófono pausado durante la voz" else if(busy)"Detener respuesta" else "Hablar","میکروفن"), Modifier.size(25.dp))
                 }
             }
         }
@@ -528,6 +531,9 @@ private fun SettingsScreen(state: JarvisUiState, actions: JarvisUiActions, senti
     LaunchedEffect(sentinelRequest){if(sentinelRequest>0)sentinel=true}
     androidx.activity.compose.BackHandler(enabled=sentinel){sentinel=false}
     if(sentinel){SentinelSettingsUi(state,actions){sentinel=false};return}
+    var detailed by rememberSaveable{mutableStateOf(false)}
+    androidx.activity.compose.BackHandler(enabled=detailed && !sentinel){detailed=false}
+    if(!detailed){SettingsControlCenterUi(state,actions,{detailed=true},{sentinel=true});return}
     val l = state.settings.language
     var draft by remember(state.settings) { mutableStateOf(state.settings) }
     var key by remember { mutableStateOf("") }
