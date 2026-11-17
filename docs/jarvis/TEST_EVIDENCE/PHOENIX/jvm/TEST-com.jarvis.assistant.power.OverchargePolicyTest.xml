@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.power.OverchargePolicyTest" tests="48" skipped="0" failures="0" errors="0" timestamp="2026-11-17T00:24:45" hostname="db840c36714e" time="0.067">
+  <properties/>
+  <testcase name="repeatedHundredPercentBroadcastsDoNotRepeatTheInitialFullSpeech" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.001"/>
+  <testcase name="newDischargeEpisodeCanWarnAgainAfterCharging" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.001"/>
+  <testcase name="staleOrExpiredEstimatesDisappearInsteadOfClaimingCompletion" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.001"/>
+  <testcase name="skippedFourToTwoProducesOnlyTheObservedTwoPercentAlert" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.0"/>
+  <testcase name="firstReliableCriticalReadingCanRecoverWithoutAnEarlierBroadcast" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.0"/>
+  <testcase name="lateCompletionFromAnOldChargingSessionCannotCompleteANewerOne" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.0"/>
+  <testcase name="estimateArrivingAfterTheStartAllowsOneUpdatedAnnouncement" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.0"/>
+  <testcase name="fullSessionAndDueTimeSurviveRestart" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.002"/>
+  <testcase name="onePercentUsesTheRequestedSpecialEnglishPhrase" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.001"/>
+  <testcase name="unknownOrMissingReadingsCannotInventLowBatterySpeech" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.0"/>
+  <testcase name="dismissedFullSessionStaysDismissedUntilUnplugged" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.001"/>
+  <testcase name="estimatedCompletionCrossingMidnightIncludesTheNewDate" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.003"/>
+  <testcase name="audioPolicyHonorsQuietHoursCallsSilentDndAndBusySessions" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.0"/>
+  <testcase name="threePercentIsAcknowledgedOnlyAfterPlaybackAndNotRepeatedAfterRestart" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.0"/>
+  <testcase name="powerStripClockAndCaptionsDoNotOverlapAcrossPhoneAndLandscapeSizes" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.003"/>
+  <testcase name="renderDiagnosticsStayUnavailableUntilRealSamplesAreRecorded" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.005"/>
+  <testcase name="chargingLayerRotatesContinuouslyAndDoesNotDependOnSpeechPhase" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.001"/>
+  <testcase name="chargingAtTwoPercentSuppressesCriticalDischargeSpeech" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.001"/>
+  <testcase name="unpluggedAndNotChargingStatesNeverRetainAUsableEta" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.001"/>
+  <testcase name="disabledRepeatsKeepOnlyTheInitialFullAnnouncement" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.0"/>
+  <testcase name="missingAndroidEtaNeverProducesAnInventedFinishTime" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.003"/>
+  <testcase name="singleLargeEtaSpikeRequiresASecondConsistentMeasurement" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.0"/>
+  <testcase name="onePercentIsAcknowledgedOnlyAfterPlaybackAndNotRepeatedAfterRestart" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.0"/>
+  <testcase name="disablingCriticalOrAllAlertsIsRespected" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.001"/>
+  <testcase name="twoPercentIsAcknowledgedOnlyAfterPlaybackAndNotRepeatedAfterRestart" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.001"/>
+  <testcase name="overdueOvernightWorkCreatesOneReminderWithoutACatchUpBurst" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.0"/>
+  <testcase name="unpluggingCancelsTheOldFullSessionAndItsScheduledCheck" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.0"/>
+  <testcase name="fullReminderIsShortPeriodicAndRescheduledFromActualCompletion" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.0"/>
+  <testcase name="pluggedButNotChargingDoesNotProduceAChargingStart" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.0"/>
+  <testcase name="statusParsingDoesNotConfusePluggedWithCharging" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.0"/>
+  <testcase name="processDeathAfterRequestRespectsTheDurableCooldown" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.0"/>
+  <testcase name="failedSpeechHasAtMostThreeAttemptsForTheSameLevel" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.0"/>
+  <testcase name="everyObservedThresholdFromTenToOneRemainsAvailable" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.001"/>
+  <testcase name="progressReportsAreOptInAndUseTheRealSessionSchedule" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.0"/>
+  <testcase name="snoozeUsesOnePersistentFutureDeadline" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.001"/>
+  <testcase name="aNewMoreCriticalReadingReplacesTheOlderFailedCandidate" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.0"/>
+  <testcase name="actualChargingTransitionProducesOneStartAnnouncement" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.0"/>
+  <testcase name="batteryCommandsUseNativeRoutesWithoutHijackingOtherTimersOrTools" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.0"/>
+  <testcase name="chargingFadeAndReducedMotionLeaveAnAccurateStaticState" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.0"/>
+  <testcase name="failuresAtFullChargeDoNotScheduleAnInfiniteWorkerLoop" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.001"/>
+  <testcase name="failureCanRetryWithoutClaimingThatSpeechWasHeard" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.0"/>
+  <testcase name="chargingStateAndPercentageAreBothRequiredForAFullAnnouncement" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.0"/>
+  <testcase name="chargingColorDoesNotOverwriteThePercentageBand" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.002"/>
+  <testcase name="alertMetadataRoundTripDoesNotContainConversationOrRawAudio" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.0"/>
+  <testcase name="disabledFullAlertsCannotLeakThroughTheChargingStartRoute" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.0"/>
+  <testcase name="temporaryUnknownDataDoesNotInventANewChargingSession" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.0"/>
+  <testcase name="etaCanChangeWithoutAnyPercentageChangeAndUnavailableClearsIt" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.001"/>
+  <testcase name="durationsUseNaturalRoundedEnglishAndSpanish" classname="com.jarvis.assistant.power.OverchargePolicyTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

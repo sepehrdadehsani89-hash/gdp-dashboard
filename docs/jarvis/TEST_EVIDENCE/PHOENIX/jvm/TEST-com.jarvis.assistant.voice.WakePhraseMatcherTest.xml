@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.voice.WakePhraseMatcherTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-11-17T00:24:46" hostname="db840c36714e" time="0.001">
+  <properties/>
+  <testcase name="wakeOnlyWaitsForNextUtteranceAndUnrelatedSpeechDoesNotActivate" classname="com.jarvis.assistant.voice.WakePhraseMatcherTest" time="0.001"/>
+  <testcase name="recognizesLocalizedWakePrefixesAndKeepsCommand" classname="com.jarvis.assistant.voice.WakePhraseMatcherTest" time="0.0"/>
+  <testcase name="stopRequiresWholeCommandAndNormalizesPersianVariants" classname="com.jarvis.assistant.voice.WakePhraseMatcherTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

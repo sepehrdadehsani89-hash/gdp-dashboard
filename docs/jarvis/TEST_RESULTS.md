@@ -28,3 +28,7 @@ Verification commands (source the isolated toolchain env first):
 The up-to-100 meaningful checks per significant feature target is open. Current repair has 20 executed policy cases and 20 blocked device scenarios; no artificial repetitions or production/device certification is claimed. Case evidence includes purpose/expected behavior, observed outcome, environment, repair commit and retest status.
 
 Committed console-log copies strip trailing whitespace only. Raw originals remain under /workspace/work/jarvis-milestone-voice/; XML receipts are unchanged.
+
+## Phoenix follow-up
+
+Full modified-source verification: 676 JVM cases passed, 1 optional private-export fixture skipped, 0 failed. Debug lint: 0 errors/fatals, 48 warnings, 1 information. 16 new Android rendering cases compiled only, all BLOCKED for execution. A new signed DEBUG evaluation APK was actually assembled and checked; it is not compatible with the original release signing identity. See TEST_EVIDENCE/PHOENIX and PHOENIX_PROGRESS.md.

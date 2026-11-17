@@ -1,3 +1,9 @@
+# Phoenix debug artifact available; compatible production update not ready
+
+An actual APK now exists: 2.11.9-phoenix.1-debug, code26, 55,353,197 bytes, signature/checksum/alignment verified. See downloads/phoenix-2.11.9-debug/build-info.json and PHOENIX_PROGRESS.md. It uses a debug certificate and cannot update the retained signed release. Physical tests and major requested features remain incomplete. Publication is pending owner confirmation.
+
+## Previous milestone record
+
 # Release readiness — NOT READY
 
 This is an unreleased source repair, not a new signed APK. The previous 2.11.8 APK remains the existing artifact; it does not contain this change. Build version, package and signing config have not been changed.

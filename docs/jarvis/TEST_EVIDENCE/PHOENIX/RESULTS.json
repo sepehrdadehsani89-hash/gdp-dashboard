@@ -1,0 +1,45 @@
+{
+  "artifact": "Jarvis-2.11.9-phoenix.1-debug-arm64.apk",
+  "source_commit": "51b51539c1abf33477455ccb966117e38e8c1977",
+  "package": "com.jarvis.next",
+  "version_name": "2.11.9-phoenix.1-debug",
+  "version_code": 26,
+  "abi": "arm64-v8a",
+  "min_sdk": 29,
+  "target_sdk": 35,
+  "bytes": 55353197,
+  "sha256": "833a9687cb27378945e6ee612de39bd851a4c5199a140d2f905a29d83ae16305",
+  "build_type": "debug",
+  "debuggable": true,
+  "signature_v2_verified": true,
+  "certificate_sha256": "f9f13af1f84515b787b89c0f3abc8695f1d0d45e8a647d1192966c4c810964c7",
+  "original_release_certificate_sha256": "1094ecc1e01dfb873a8e63689b09dc156fff9d41f77ffdfae27e702991711bda",
+  "compatible_update_to_existing_signed_release": false,
+  "zipalign_verified": true,
+  "dex_compressed": true,
+  "jvm": {
+    "total": 677,
+    "passed": 676,
+    "failed": 0,
+    "skipped": 1
+  },
+  "new_pacer_and_counter_jvm_cases": 24,
+  "new_wallpaper_jvm_cases": 14,
+  "lint": {
+    "Warning": 48,
+    "Information": 1
+  },
+  "new_instrumentation_cases": {
+    "compiled": 16,
+    "executed": 0,
+    "blocked": 16
+  },
+  "physical_device_tests_executed": 0,
+  "apk_assembled": true,
+  "first_full_build": "BUILD SUCCESSFUL in 10m 58s",
+  "compression_repackage_build": "BUILD SUCCESSFUL in 39s",
+  "new_models_installed": false,
+  "android_dependency_versions_changed": false,
+  "public_download_url": null,
+  "publication_status_at_build": "AWAITING_OWNER_CONFIRMATION"
+}

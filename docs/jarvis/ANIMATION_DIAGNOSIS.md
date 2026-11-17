@@ -1,3 +1,9 @@
+# Phoenix update
+
+Source scheduling repairs are now in the new debug evaluation APK: CoreFramePacer corrects cadence quantization, and bounded invalid-surface retry prevents one wallpaper callback-loss path. 24 core/counter and14 wallpaper JVM cases passed; 16 new render fixtures compiled, none executed. Physical freeze reproduction remains BLOCKED. See PHOENIX_PROGRESS.md for exact evidence and limits.
+
+## Previous milestone record (before Phoenix source changes)
+
 # Animation diagnosis
 
 No renderer source change this milestone; reported freeze remains unconfirmed on a render surface. See existing ANIMATION_CORE_DIAGNOSIS.md and original 20-case BLOCKED matrix.

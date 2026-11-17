@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.data.LlmConnectionTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-11-17T00:24:41" hostname="db840c36714e" time="1.502">
+  <properties/>
+  <testcase name="ordinaryReplyCannotWaitForeverForItsFirstText" classname="com.jarvis.assistant.data.LlmConnectionTest" time="0.421"/>
+  <testcase name="stalledProviderHasAFiniteDeadline" classname="com.jarvis.assistant.data.LlmConnectionTest" time="0.017"/>
+  <testcase name="modelLookupReportsKeyRestrictionsAndDoesNotTreatEmptyCatalogAsConnected" classname="com.jarvis.assistant.data.LlmConnectionTest" time="0.017"/>
+  <testcase name="missingModelProducesActionableErrorAndDoesNotReportSuccessfulTest" classname="com.jarvis.assistant.data.LlmConnectionTest" time="0.008"/>
+  <testcase name="firstTextArrivesBeforeStreamEndsAndLockedRequestCanOmitSavedIdentity" classname="com.jarvis.assistant.data.LlmConnectionTest" time="1.011"/>
+  <testcase name="connectionTestUsesShortNonStreamingRequestAndReportsActualSample" classname="com.jarvis.assistant.data.LlmConnectionTest" time="0.012"/>
+  <testcase name="modelLookupUsesHeaderAndKeepsOnlyCompatibleModels" classname="com.jarvis.assistant.data.LlmConnectionTest" time="0.007"/>
+  <testcase name="emptyAnswerCannotVerifyAConnection" classname="com.jarvis.assistant.data.LlmConnectionTest" time="0.006"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[Nov 16, 2026 7:24:41 PM okhttp3.mockwebserver.MockWebServer$SocketHandler handle
+WARNING: MockWebServer[47689] connection from /127.0.0.1 didn't make a request
+Nov 16, 2026 7:24:41 PM okhttp3.mockwebserver.MockWebServer$SocketHandler handle
+WARNING: MockWebServer[40863] connection from /127.0.0.1 didn't make a request
+]]></system-err>
+</testsuite>

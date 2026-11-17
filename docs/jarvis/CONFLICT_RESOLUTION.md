@@ -16,3 +16,7 @@ Exact sources: EXECUTION_DIRECTIVE_2026-11-16.md §19 says "PRIORITY 3: Repair t
 Active §14 targets 100 meaningful checks or repetitions where technically appropriate and also says "Do not use excessive repeated tests when they provide no additional evidence." Original Part 24 §10 requests 20 per shipped feature. Ruling: retain the 20-case source/device evidence and extend towards the active broader target with meaningful additional coverage; do not inflate counts or claim unrun device cases passed.
 
 Active §§8–9 makes secure desktop capabilities a priority over unsupported iPad control. Original Part 24 §§8,15 emphasizes Safari companion work after Android repair. Ruling: preserve desktop pairing and unsupported-iPad classifications; defer new Safari work. Public pushes/deployments still need explicit confirmation under active §21.
+
+## Phoenix active directive
+
+PHOENIX_DIRECTIVE.md (SHA256 8ac196fdd72ed7f011c7c07e1b480a6ae42accec92c2a4865017e231bc640629) §15 again places core/wallpaper recovery before microphone/features. It overrides the prior execution directive's voice-first order. §8 explicitly authorizes Settings organization, while preserving controls and data; this milestone changes truthful text only, not the requested full redesign. §13/§16 still require confirmation before GitHub pushes/publication. Original master files remain unchanged.

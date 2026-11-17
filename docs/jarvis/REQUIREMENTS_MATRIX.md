@@ -17,3 +17,13 @@ Active user directive: EXECUTION_DIRECTIVE_2026-11-16.md (SHA256 4a4400f1840489c
 | RELEASE-UPDATE-IDENTITY | Active §16; original Part 24 §16 | app/build.gradle.kts; downloads/polish-2.11.8/build-info.json | Existing signed APK verified previously; new signed update REQUIRES_USER_AUTHORIZATION and retained signing material |
 
 The original 21,331 passage ledger is provenance, not 21,331 implemented features. The full semantic reconciliation of all archived requirements remains incomplete. Further rows must cite source, implementation, actual tests and platform boundaries.
+
+## Phoenix requirements additions
+
+| Requirement/source | Implementation | Evidence / remaining status |
+|---|---|---|
+| Phoenix§3 / original P24-B00012943 core cadence | ui/CoreFramePacer.kt; ui/JarvisHud.kt | 24 core/counter JVM PASS; 10 Compose render cases BLOCKED; PARTIALLY_IMPLEMENTED |
+| Phoenix§4 wallpaper visibility/surface recovery | sentinel/WallpaperSurfaceRetry.kt; JarvisWallpaperService.kt | 14 JVM PASS; 6 native render cases BLOCKED; PARTIALLY_IMPLEMENTED |
+| Phoenix§3 optional truthful development overlay | debug-only core long-press counters | Counter tests PASS; real render observation BLOCKED |
+| Phoenix§7 truthful microphone/voice setup | ui/JarvisAppUi.kt labels only | Compiled/linted; full wizard MISSING |
+| Phoenix§13 actual artifact | downloads/phoenix-2.11.9-debug | Signed debug APK built/checked; public delivery needs confirmation; original-key compatible update blocked |

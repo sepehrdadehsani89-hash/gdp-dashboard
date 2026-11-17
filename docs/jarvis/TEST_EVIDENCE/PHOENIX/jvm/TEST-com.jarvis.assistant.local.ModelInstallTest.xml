@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.local.ModelInstallTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2026-11-17T00:24:45" hostname="db840c36714e" time="0.192">
+  <properties/>
+  <testcase name="optionalOneGigabyteProfileRequiresRealWeightSizedMetadata" classname="com.jarvis.assistant.local.ModelInstallTest" time="0.02"/>
+  <testcase name="interruptedDownloadResumesAndRehashesTheActualPrefix" classname="com.jarvis.assistant.local.ModelInstallTest" time="0.112"/>
+  <testcase name="truncatedStreamAndOversizedStreamAreRejected" classname="com.jarvis.assistant.local.ModelInstallTest" time="0.016"/>
+  <testcase name="activationChecksInstallationAndCompatibilityWithoutARamThreshold" classname="com.jarvis.assistant.local.ModelInstallTest" time="0.002"/>
+  <testcase name="restartTruncatesAStalePartialInsteadOfAppending" classname="com.jarvis.assistant.local.ModelInstallTest" time="0.008"/>
+  <testcase name="realStreamWritesEveryByteVerifiesHashAndLeavesFinalProgressToInstaller" classname="com.jarvis.assistant.local.ModelInstallTest" time="0.01"/>
+  <testcase name="storageBudgetsUseOnlyBoundPartialBytesAndAlwaysKeepReserve" classname="com.jarvis.assistant.local.ModelInstallTest" time="0.001"/>
+  <testcase name="cancellationRetainsOnlyResumableBytesAndNeverClaimsComplete" classname="com.jarvis.assistant.local.ModelInstallTest" time="0.01"/>
+  <testcase name="corruptedResumePrefixCannotPassFullChecksum" classname="com.jarvis.assistant.local.ModelInstallTest" time="0.013"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

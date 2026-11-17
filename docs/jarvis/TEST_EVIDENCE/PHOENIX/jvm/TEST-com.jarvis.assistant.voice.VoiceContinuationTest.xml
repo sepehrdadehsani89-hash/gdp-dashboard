@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.voice.VoiceContinuationTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-11-17T00:24:46" hostname="db840c36714e" time="0.003">
+  <properties/>
+  <testcase name="lockAndPrivacyNeverAuthorizePrivateRepliesOrAStoppedTurn" classname="com.jarvis.assistant.voice.VoiceContinuationTest" time="0.001"/>
+  <testcase name="stopCannotBeUndoneByLateSpeechCompletion" classname="com.jarvis.assistant.voice.VoiceContinuationTest" time="0.0"/>
+  <testcase name="failedOrMutedGreetingUsesTheSameBoundedFollowUpThenReturnsToWakeOnly" classname="com.jarvis.assistant.voice.VoiceContinuationTest" time="0.001"/>
+  <testcase name="lockedWakeGreetingOpensACommandWindowAfterAudioInsteadOfRequiringAnotherWake" classname="com.jarvis.assistant.voice.VoiceContinuationTest" time="0.0"/>
+  <testcase name="allowedPublicLockedChatCanContinueAfterEachAnswer" classname="com.jarvis.assistant.voice.VoiceContinuationTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
