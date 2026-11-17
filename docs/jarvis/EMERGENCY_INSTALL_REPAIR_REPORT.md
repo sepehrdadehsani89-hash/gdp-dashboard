@@ -52,3 +52,7 @@ The required next evidence is the actual PackageManager rejection from the exist
 No new build, dependency/toolchain installation, emulator, signing-key generation, application-ID change or GitHub publication was performed during this audit. Existing working app/data and published artifacts are retained. The task remains blocked on the device-specific evidence; it is not marked as a successfully repaired installation.
 
 Original tool output, APK comparison, manifest diff and per-DEX results are in `TEST_EVIDENCE/INSTALL_REPAIR/`. The full previous JVM and artifact results remain separate in `TEST_EVIDENCE/PRODUCTION_STABILIZATION/` and are not recast as device update tests.
+
+## Connection constraint reported by the owner
+
+The owner has no USB cable and is unsure of the Android version. The Windows guide now includes supported wireless pairing conditionally for Android 11+ with an available Wireless debugging setting. This is a possible diagnostic connection, not an assertion that this Redmi 9 supports it or that a connection occurred. The immediate owner step is reading the Android version under About phone → All specs. Actual installation error, installed signer/version and data-retention verification remain unavailable.

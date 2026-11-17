@@ -7,5 +7,7 @@
   "application_files_modified": false,
   "signing_key_or_package_changed": false,
   "cloud_adb": "unavailable: Cannot mkdir /home/agent/.android: Read-only file system",
-  "current_blocker": "Actual Redmi 9 PackageManager rejection and installed package version/signing identity are unavailable. Windows collection is required before choosing a correction."
+  "current_blocker": "Actual Redmi 9 PackageManager rejection and installed package version/signing identity are unavailable. Windows collection is required before choosing a correction.",
+  "owner_connection_constraint": "No USB cable; Android version not yet known",
+  "next_step": "Read Android version in MIUI About phone / All specs; use documented wireless pairing only if supported."
 }

@@ -15,6 +15,27 @@ This procedure diagnoses the existing rejected APK. It does not present it as a 
 
 Continue only when the intended Redmi 9 is listed as `device`. For `unauthorized`, approve the phone's trust prompt. If there is no device, check the USB cable/connection and the appropriate manufacturer driver. If more than one device is present, add `-s YOUR_REDMI_SERIAL` immediately after `adb.exe` in subsequent commands; do not select another phone accidentally.
 
+## Without a USB cable: conditional Wi-Fi route
+
+First check **Settings → About phone → All specs → Android version**. This pairing method needs Android 11+ and an available **Wireless debugging** setting on the MIUI build. Keep the phone and Windows PC on the same Wi-Fi network.
+
+Enable Developer options, then open Additional settings → Developer options → Wireless debugging → Pair device with pairing code. In Windows platform-tools:
+
+```powershell
+.\adb.exe pair PHONE_IP:PAIRING_PORT
+```
+
+Enter the displayed pairing code on your PC. Return to the main Wireless debugging screen; its connection port can differ from the pairing port:
+
+```powershell
+.\adb.exe connect PHONE_IP:CONNECTION_PORT
+.\adb.exe devices -l
+```
+
+Continue the metadata and single update attempt below only after the intended device is connected. Android 10 does not support this pairing method; a USB-free setup is not established for it. After diagnosis, turn Wireless debugging off or forget the paired PC.
+
+Reference: [official Android ADB wireless guidance](https://developer.android.com/tools/adb#connect-to-a-device-over-wi-fi). No wireless pairing or device installation has been performed by this cloud task.
+
 ## Check the exact candidate and phone metadata
 
 ```powershell
