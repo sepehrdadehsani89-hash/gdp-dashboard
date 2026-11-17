@@ -7,13 +7,16 @@ import kotlin.math.*
 class VoicePreferences(context:Context){
     private val p=context.getSharedPreferences("jarvis_titan_voice_v1",Context.MODE_PRIVATE)
     var sensitivity:String get()=p.getString("sensitivity","BALANCED").orEmpty().takeIf{it in listOf("LOW","BALANCED","HIGH","CUSTOM")} ?: "BALANCED";set(v){require(v in listOf("LOW","BALANCED","HIGH","CUSTOM"));p.edit().putString("sensitivity",v).apply()}
-    var customEnergy:Float get()=p.getFloat("energy",.015f).coerceIn(.005f,.08f);set(v){p.edit().putFloat("energy",v.coerceIn(.005f,.08f)).apply()}
-    var customConfidence:Float get()=p.getFloat("confidence",.55f).coerceIn(.45f,.9f);set(v){p.edit().putFloat("confidence",v.coerceIn(.45f,.9f)).apply()}
+    var customEnergy:Float get()=p.getFloat("energy",.015f).takeIf{it.isFinite()}?.coerceIn(.005f,.08f) ?: .015f;set(v){require(v.isFinite());p.edit().putFloat("energy",v.coerceIn(.005f,.08f)).apply()}
+    var customConfidence:Float get()=p.getFloat("confidence",.55f).takeIf{it.isFinite()}?.coerceIn(.45f,.9f) ?: .55f;set(v){require(v.isFinite());p.edit().putFloat("confidence",v.coerceIn(.45f,.9f)).apply()}
     val energy get()=when(sensitivity){"LOW"->.03f;"HIGH"->.008f;"CUSTOM"->customEnergy;else->.015f}
     val confidence get()=when(sensitivity){"LOW"->.65f;"HIGH"->.5f;"CUSTOM"->customConfidence;else->.55f}
     var noiseReduction:Boolean get()=p.getBoolean("ns",true);set(v){p.edit().putBoolean("ns",v).apply()}
     var echoCancellation:Boolean get()=p.getBoolean("aec",true);set(v){p.edit().putBoolean("aec",v).apply()}
     var gainControl:Boolean get()=p.getBoolean("agc",false);set(v){p.edit().putBoolean("agc",v).apply()}
+    var endpointPauseMs:Long get()=p.getLong("endpoint_pause_ms",900L).coerceIn(650L,1800L);set(v){p.edit().putLong("endpoint_pause_ms",v.coerceIn(650L,1800L)).apply()}
+    var transcriptionPreview:Boolean get()=p.getBoolean("transcription_preview",false);set(v){p.edit().putBoolean("transcription_preview",v).apply()}
+    var captionLingerMs:Long get()=p.getLong("caption_linger_ms",1200L).coerceIn(0L,5000L);set(v){p.edit().putLong("caption_linger_ms",v.coerceIn(0L,5000L)).apply()}
     var playbackInterruption:Boolean get()=p.getBoolean("playback_interruption",true);set(v){p.edit().putBoolean("playback_interruption",v).apply()}
     var timeAwareGreeting:Boolean get()=p.getBoolean("time_aware_greeting",false);set(v){p.edit().putBoolean("time_aware_greeting",v).apply()}
     var conversationFocus:Boolean get()=p.getBoolean("conversation_focus",true);set(v){p.edit().putBoolean("conversation_focus",v).apply()}

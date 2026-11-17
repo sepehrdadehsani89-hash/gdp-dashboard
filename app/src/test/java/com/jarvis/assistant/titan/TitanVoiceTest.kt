@@ -53,8 +53,8 @@ class TitanVoiceTest {
         a.segment("more simply");now=2701;assertTrue(a.ready());assertEquals("explain artificial intelligence more simply",a.text())
     }
     @Test fun incompleteClauseAllowsLongerPauseAndSpeechResetsEndpoint(){
-        var now=0L;val a=UtteranceAssembler(now={now});a.segment("tell me about")
-        now=1200;assertFalse(a.ready());a.energy(.1f);now=3000;assertFalse(a.ready());now=3701;assertTrue(a.ready())
+        var now=0L;val a=UtteranceAssembler(now={now},pauseMs=900);a.segment("tell me about")
+        now=1200;assertFalse(a.ready());a.energy(.1f);now=2999;assertFalse(a.ready());now=3000;assertTrue(a.ready())
         assertTrue(UtteranceAssembler.fastCommand("open Spotify"));assertFalse(UtteranceAssembler.fastCommand("open Spotify and show weather"))
     }
     @Test fun abandonedOrNoiseOnlySessionsCannotProduceACompletedUtterance(){

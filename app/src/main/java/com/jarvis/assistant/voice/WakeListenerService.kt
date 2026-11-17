@@ -49,11 +49,13 @@ class WakeListenerService : Service() {
     @Volatile private var playbackControlPending:Long?=null
     private fun clearPlaybackControls(){playbackGeneration=null;playbackEcho="";playbackControlPending=null}
     private val window = ConversationWindow { SystemClock.elapsedRealtime() }
+    @Volatile private var endpointToken=0L
     private var greetingTicket=0L
     private val greetingGate=WakeGreetingGate(SystemClock::elapsedRealtime)
     private val windowTimeout = Runnable { expireCommandWindow() }
     private fun expireCommandWindow():Boolean {
         if(!window.expire())return false
+        EndpointDiagnostics.fail(endpointToken,SystemClock.elapsedRealtime(),"CAPTURE_TIMEOUT")
         (application as com.jarvis.assistant.JarvisApplication).runtime.voiceSession.idle(windowRuntimeGeneration)
         val call=(application as com.jarvis.assistant.JarvisApplication).runtime.aiCall.state.value
         if(call.connected)main.post{(application as com.jarvis.assistant.JarvisApplication).runtime.endAiCall(call.id,"QUIET_TIMEOUT")}
@@ -97,6 +99,7 @@ class WakeListenerService : Service() {
                 stopSelf(); return START_NOT_STICKY
             }
             ACTION_PAUSE -> {
+                EndpointDiagnostics.cancel(endpointToken,SystemClock.elapsedRealtime())
                 clearPlaybackControls()
                 synchronized(audioLock) { paused = true; window.pause(); main.removeCallbacks(windowTimeout); runCatching { recorder?.stop() } }
                 publish(language.choose("Wake listening paused", "Activación en pausa", "بیدارباش مکث شده است"), false)
@@ -167,7 +170,8 @@ class WakeListenerService : Service() {
                         capture=managed
                         val audio=managed.audio;recorder=audio
                         val silenced=java.util.concurrent.atomic.AtomicBoolean(false)
-                        utterance=UtteranceAssembler(SystemClock::elapsedRealtime,com.jarvis.assistant.titan.VoicePreferences(this).energy)
+                        val voicePreferences=com.jarvis.assistant.titan.VoicePreferences(this)
+                        utterance=UtteranceAssembler(SystemClock::elapsedRealtime,voicePreferences.energy,voicePreferences.endpointPauseMs)
                         managed.registerCallback(mainExecutor,object:android.media.AudioManager.AudioRecordingCallback(){
                             override fun onRecordingConfigChanged(configs:MutableList<android.media.AudioRecordingConfiguration>){
                                 if(capture!==managed || !running)return
@@ -188,17 +192,23 @@ class WakeListenerService : Service() {
                                     if (running && !paused) { audio.startRecording(); true } else false
                                 }
                                 if (!started) return@use
+                                if(window.snapshot().awaitingCommand){
+                                    endpointToken=EndpointDiagnostics.begin("Vosk recovered command",SystemClock.elapsedRealtime())
+                                    EndpointDiagnostics.captureReady(endpointToken,SystemClock.elapsedRealtime())
+                                }
                                 com.jarvis.assistant.hud.AudioSignals.start(audio,"Wake microphone · PCM RMS")
                                 publish(if(playbackGeneration!=null)"Reply playing · wait / stop speech controls" else listeningText(), true)
                                 val bytes = ByteArray(4096)
+                                val readClock=MicrophoneReadClock(SystemClock::elapsedRealtime)
                                 var suppressed = false
                                 var recognizerSerial = window.snapshot().resetSerial
                                 while (running && !paused && !com.jarvis.assistant.security.SystemCredentialPrivacy.pending(this)) {
-                                    val count = audio.read(bytes, 0, bytes.size)
+                                    val count = audio.read(bytes, 0, bytes.size,AudioRecord.READ_NON_BLOCKING)
                                     if (paused || !running || com.jarvis.assistant.security.SystemCredentialPrivacy.pending(this)) break
                                     check(!silenced.get()){ "Android silenced microphone capture." }
                                     check(count >= 0) { "Microphone capture was interrupted." }
-                                    if (count == 0) continue
+                                    if (count == 0) {check(!readClock.stalled()){ "Microphone input stalled." };Thread.sleep(12);continue}
+                                    readClock.progress()
                                     recovery.healthy()
                                     if(audioManager.mode in listOf(android.media.AudioManager.MODE_IN_CALL,android.media.AudioManager.MODE_IN_COMMUNICATION)){window.resume(false);main.removeCallbacks(windowTimeout);publish("Microphone paused during a call",false,interrupted=true);break}
                                     com.jarvis.assistant.hud.AudioSignals.level(audio,com.jarvis.assistant.hud.PcmLevel.pcm16(bytes,count))
@@ -238,6 +248,8 @@ class WakeListenerService : Service() {
                                     if(greetingGate.due(serial) && window.snapshot().mode==ConversationWindow.Mode.COMMAND)acknowledgeWake(serial)
                                     if(paused || !running)break
                                     if (window.captureReady()) {
+                                        endpointToken=EndpointDiagnostics.begin("Vosk follow-up",SystemClock.elapsedRealtime())
+                                        EndpointDiagnostics.captureReady(endpointToken,SystemClock.elapsedRealtime())
                                         windowRuntimeGeneration=(application as com.jarvis.assistant.JarvisApplication).runtime.currentCommandSerial()
                                         (application as com.jarvis.assistant.JarvisApplication).runtime.voiceSession.captureReady(windowRuntimeGeneration,true)
                                         (application as com.jarvis.assistant.JarvisApplication).runtime.phantom.apply{begin(true);event(com.jarvis.assistant.phantom.TraceEvent.CAPTURE_STARTED)}
@@ -275,13 +287,22 @@ class WakeListenerService : Service() {
                                     if(!final && window.acceptsCommand(serial)){
                                         val partial=WakePhraseMatcher.extractCommand(text,language,com.jarvis.assistant.titan.VoicePreferences(this).customWakePhrase) ?: text
                                         utterance.partial(partial)
+                                        EndpointDiagnostics.activity(endpointToken,SystemClock.elapsedRealtime(),partial.isNotBlank())
                                         sendBroadcast(Intent(ACTION_PARTIAL).setPackage(packageName).putExtra(EXTRA_TEXT,utterance.text()).putExtra("runtime_generation",windowRuntimeGeneration))
                                     }
                                     if(payload!=null)consumeFinal(payload,serial,false) else handleTranscript(text,false,serial)
                                     if(greetingGate.due(serial) && window.snapshot().mode==ConversationWindow.Mode.COMMAND)acknowledgeWake(serial)
                                     if(window.acceptsCommand(serial) && utterance.needsFinalization()){
-                                        consumeFinal(com.jarvis.assistant.rebirth.RecognitionPayload.vosk(JSONObject(recognizer.finalResult)),serial,true)
-                                        recognizer.reset()
+                                        val at=SystemClock.elapsedRealtime()
+                                        EndpointDiagnostics.candidate(endpointToken,at);EndpointDiagnostics.finalizing(endpointToken,at)
+                                        val finalWatchdog=Runnable{if(window.acceptsCommand(serial)){EndpointDiagnostics.fail(endpointToken,SystemClock.elapsedRealtime(),"FINAL_TIMEOUT");rejectHeardCommand(serial)}}
+                                        main.postDelayed(finalWatchdog,2500)
+                                        try{
+                                            val result=com.jarvis.assistant.rebirth.RecognitionPayload.vosk(JSONObject(recognizer.finalResult))
+                                            consumeFinal(result,serial,true);recognizer.reset()
+                                            if(result.primary.optString("text").isBlank() && window.acceptsCommand(serial) && !utterance.ready())EndpointDiagnostics.resumeAfterEmptyBoundary(endpointToken,SystemClock.elapsedRealtime())
+                                        }
+                                        finally{main.removeCallbacks(finalWatchdog)}
                                     }
                                     if(window.acceptsCommand(serial) && !speakerFocus.hasPending(serial) && (utterance.ready() || !utterance.hasUnfinishedSpeech && UtteranceAssembler.fastCommand(utterance.acceptedText())))deliver(utterance.acceptedText(),serial)
                                     }}finally{focusedPackets.filter{it.owned}.forEach{it.pcm.fill(0)}}
@@ -294,6 +315,7 @@ class WakeListenerService : Service() {
                 break
             } catch (error: Throwable) {
                 if(!running)break
+                EndpointDiagnostics.fail(endpointToken,SystemClock.elapsedRealtime(),"WAKE_CAPTURE_ERROR")
                 capture?.close();capture=null
                 val focusFailure=error.message?.startsWith("SPEAKER_FOCUS_")==true
                 val allowed=running && !paused && !focusFailure && error !is SecurityException && error !is LinkageError && error !is OutOfMemoryError && ContextCompat.checkSelfPermission(this,Manifest.permission.RECORD_AUDIO)==PackageManager.PERMISSION_GRANTED && !com.jarvis.assistant.security.SystemCredentialPrivacy.pending(this)
@@ -326,7 +348,7 @@ class WakeListenerService : Service() {
         RecognitionDiagnostics.record(payload.primary,confidence,"wake/${language.code}")
         val kind=RecognitionConfidence.kind(payload.primary,confidence)
         if(kind==FinalRecognitionKind.EMPTY){
-            utterance.emptyFinal(endpoint)
+            if(!utterance.emptyFinal(endpoint) && window.acceptsCommand(serial))rejectHeardCommand(serial)
             return
         }
         if(kind==FinalRecognitionKind.UNCERTAIN){
@@ -339,6 +361,7 @@ class WakeListenerService : Service() {
     }
     private fun rejectHeardCommand(serial:Long,speakerFailure:Boolean=false){
         if(paused || !window.accept(serial))return
+        EndpointDiagnostics.fail(endpointToken,SystemClock.elapsedRealtime(),if(speakerFailure)"SPEAKER_UNAVAILABLE" else "LOW_CONFIDENCE")
         paused=true;utterance.reset();speakerFocus.reset();greetingGate.cancel();main.removeCallbacks(windowTimeout)
         val expected=windowRuntimeGeneration
         publish(if(speakerFailure)"Speaker matching unavailable or uncertain · no command executed" else "Speech recognition needs a clearer command",false)
@@ -353,6 +376,8 @@ class WakeListenerService : Service() {
         val afterWake = WakePhraseMatcher.extractCommand(text, language,com.jarvis.assistant.titan.VoicePreferences(this).customWakePhrase)
         if (afterWake != null) {
             if (window.wake()) {
+                endpointToken=EndpointDiagnostics.begin("Vosk wake command",SystemClock.elapsedRealtime())
+                EndpointDiagnostics.captureReady(endpointToken,SystemClock.elapsedRealtime())
                 greetingTicket=VoiceSessionStateMachine.nextWakeTicket()
                 if(afterWake.isBlank())greetingGate.arm(serial) else greetingGate.cancel()
                 (application as com.jarvis.assistant.JarvisApplication).runtime.phantomOverlay.reveal()
@@ -410,6 +435,7 @@ class WakeListenerService : Service() {
         val profiles=(application as com.jarvis.assistant.JarvisApplication).runtime.speakers
         if(profiles.ownerOnlyRequested && !speakerBuffer.hasEnoughAudio())return
         if (paused || !window.accept(serial)) return
+        EndpointDiagnostics.complete(endpointToken,SystemClock.elapsedRealtime())
         main.removeCallbacks(windowTimeout)
         paused = true
         val speakerId=runCatching{speakerBuffer.take(if(profiles.ownerOnlyRequested).002f else .008f)?.let(com.jarvis.assistant.omnisystem.SpeakerSamples::deposit)}.getOrNull()
@@ -492,6 +518,7 @@ class WakeListenerService : Service() {
     }
 
     override fun onDestroy() {
+        EndpointDiagnostics.cancel(endpointToken,SystemClock.elapsedRealtime())
         stopCaptureImmediately()
         speakerFocus.close()
         if(current.get()===this)current.clear()
@@ -529,6 +556,7 @@ class WakeListenerService : Service() {
         private const val NOTIFICATION_ID = 3101
         @Volatile private var suppressionUntil = 0L
         fun pauseImmediately(){current.get()?.let{service->
+            EndpointDiagnostics.cancel(service.endpointToken,SystemClock.elapsedRealtime())
             service.clearPlaybackControls()
             synchronized(service.audioLock){service.paused=true;service.window.pause();service.main.removeCallbacks(service.windowTimeout);runCatching{service.recorder?.stop()}}
             service.speakerBuffer.clear()

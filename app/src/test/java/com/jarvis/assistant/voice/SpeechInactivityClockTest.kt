@@ -16,8 +16,8 @@ class SpeechInactivityClockTest {
     }
     @Test fun utterancesRemainBoundedEvenWithContinuousEnergy(){
         var now=0L;val c=SpeechInactivityClock(now={now});c.progress("hello")
-        repeat(119){now+=1000;assertTrue(c.energy(.5f))}
-        assertEquals(120000L,c.deadline());now=120000;assertTrue(c.expired());assertFalse(c.energy(.8f))
+        repeat(59){now+=1000;assertTrue(c.energy(.5f))}
+        assertEquals(60000L,c.deadline());now=60000;assertTrue(c.expired());assertFalse(c.energy(.8f))
     }
     @Test fun wakeGateExtendsOnlyTheCurrentRecognizedCommand(){
         var now=0L;val gate=ConversationWindow{now};gate.enable();assertFalse(gate.speechProgress("hello"));gate.wake()

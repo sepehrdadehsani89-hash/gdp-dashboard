@@ -90,11 +90,11 @@ class VoiceReliabilityRepairTest {
         assertEquals(FinalRecognitionKind.ACCEPTED,RecognitionConfidence.kind(json))
         assertFalse(LocalVoiceQueries.ordinaryQuestion("can you call Alex"));assertFalse(LocalVoiceQueries.ordinaryQuestion("what is my password"))
     }
-    @Test fun emptyVoskFinalsAreSilenceBoundariesAndKeepPreviouslyAcceptedWords(){
+    @Test fun emptyVoskFinalsKeepWordsButCannotDiscardAnUnrecognizedTail(){
         var now=0L;val turn=UtteranceAssembler({now});turn.segment("explain time zones");turn.partial("noise")
         val empty=RecognitionPayload.vosk(JSONObject("""{"alternatives":[{"text":"","confidence":0}]}"""))
         assertEquals(FinalRecognitionKind.EMPTY,RecognitionConfidence.kind(empty.primary))
-        turn.emptyFinal(true);assertEquals("explain time zones",turn.acceptedText());assertTrue(turn.ready())
+        assertFalse(turn.emptyFinal(true));assertEquals("explain time zones",turn.acceptedText());assertFalse(turn.ready());assertTrue(turn.hasUnfinishedSpeech)
     }
     @Test fun noiseOnlyEmptyFinalsCannotBecomeCommandsOrImmediateRetryErrors(){
         val turn=UtteranceAssembler({0});repeat(10){turn.partial("");assertEquals(FinalRecognitionKind.EMPTY,RecognitionConfidence.kind(JSONObject("""{"text":""}""")));turn.emptyFinal(true)}

@@ -33,7 +33,7 @@ class ConversationTurnTest {
     }
     @Test fun changingSpeechIsNotCutOffAtTheStalePartialDeadline(){
         var now=0L;val turn=UtteranceAssembler({now})
-        repeat(60){i->turn.partial("explain the following part $i");now+=500;turn.energy(.1f);assertFalse(turn.needsFinalization());assertFalse(turn.ready())}
+        repeat(60){i->turn.partial("explain "+(0..i).joinToString(" "){"part$it"});now+=500;turn.energy(.1f);assertFalse(turn.needsFinalization());assertFalse(turn.ready())}
     }
     @Test fun anIncompleteClauseKeepsItsLongerPause(){
         var now=0L;val turn=UtteranceAssembler({now});turn.partial("tell me about")

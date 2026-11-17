@@ -1,6 +1,6 @@
 package com.jarvis.assistant.voice
 
-/** Adaptive speech activity, bounded to two minutes per utterance. Energy extends only after recognized speech. */
+/** Adaptive speech activity with a one-minute absolute turn bound, even when background hypotheses keep changing. */
 class SpeechInactivityClock(private val now:()->Long,private val threshold:Float=.015f){
     private var opened=now()
     private var last=opened
@@ -19,5 +19,5 @@ class SpeechInactivityClock(private val now:()->Long,private val threshold:Float
         if(recognized.isBlank() || expired() || !level.isFinite() || level<threshold)return false
         last=now();return true
     }
-    companion object {const val IDLE_MS=12_000L;const val MAX_MS=120_000L}
+    companion object {const val IDLE_MS=12_000L;const val MAX_MS=60_000L}
 }

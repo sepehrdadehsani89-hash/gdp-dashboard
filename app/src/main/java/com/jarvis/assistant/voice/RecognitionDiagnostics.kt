@@ -8,6 +8,7 @@ import org.json.JSONObject
 object RecognitionDiagnostics {
     private val mutable=MutableStateFlow("No final recognition result yet")
     val state=mutable.asStateFlow()
+    fun recordAndroid(text:String,confidence:Float?,threshold:Float){mutable.value=AndroidFinalRecognition.metadata(text,confidence,threshold)}
     fun record(json:JSONObject,threshold:Double,source:String){
         val words=json.optJSONArray("result")
         val values=(0 until (words?.length() ?: 0)).map{words?.optJSONObject(it)?.optDouble("conf",Double.NaN) ?: Double.NaN}

@@ -30,13 +30,24 @@ internal class OfflineSpeechSession(
     private val closed = AtomicBoolean(false)
     private val audioLock = Any()
     private val main = Handler(Looper.getMainLooper())
-    private val timing=SpeechInactivityClock(android.os.SystemClock::elapsedRealtime,com.jarvis.assistant.titan.VoicePreferences(context).energy)
-    private val utterance=UtteranceAssembler(android.os.SystemClock::elapsedRealtime,com.jarvis.assistant.titan.VoicePreferences(context).energy)
+    private val preferences=com.jarvis.assistant.titan.VoicePreferences(context)
+    private val timing=SpeechInactivityClock(android.os.SystemClock::elapsedRealtime,preferences.energy)
+    private val utterance=UtteranceAssembler(android.os.SystemClock::elapsedRealtime,preferences.energy,preferences.endpointPauseMs)
+    private val diagnosticToken=EndpointDiagnostics.begin("Vosk foreground",android.os.SystemClock.elapsedRealtime())
+    @Volatile private var finalRequestedAt:Long?=null
+    private val watchdog=object:Runnable{override fun run(){
+        if(closed.get())return
+        val at=android.os.SystemClock.elapsedRealtime()
+        if(finalRequestedAt?.let{at-it>=2500}==true){emitError("SPEECH_UNCLEAR: The local decoder did not finish. Please retry.","FINAL_TIMEOUT");return}
+        if(timing.expired()){emitError("Speech inactivity or one-minute utterance limit reached. Please retry.","CAPTURE_TIMEOUT");return}
+        main.postDelayed(this,100)
+    }}
     @Volatile private var capture:ManagedMicrophone?=null
     @Volatile private var recorder: AudioRecord? = null
     private val speakerSample=com.jarvis.assistant.omnisystem.SpeakerSampleBuffer()
 
     fun start() {
+        main.post(watchdog)
         Thread({
             val profiles=(context.applicationContext as com.jarvis.assistant.JarvisApplication).runtime.speakers
             val focusedAudio=SpeakerAudioFocus(profiles.liveFocusReady(),profiles.firstSpeakerFocus,profiles::liveEmbedding)
@@ -71,11 +82,13 @@ internal class OfflineSpeechSession(
                             synchronized(audioLock) {
                                 if (closed.get()) return@Thread
                                 audio.startRecording()
+                                EndpointDiagnostics.captureReady(diagnosticToken,android.os.SystemClock.elapsedRealtime())
                                 onCaptureStarted()
                             }
                             com.jarvis.assistant.hud.AudioSignals.start(this, "Offline microphone · PCM RMS")
                             val bytes = ByteArray(4096)
                             timing.start();utterance.reset()
+                            val readClock=MicrophoneReadClock(android.os.SystemClock::elapsedRealtime)
                             var previousPartial = ""
                             fun acceptFinal(json:JSONObject,endpoint:Boolean):Boolean {
                                 val payload=com.jarvis.assistant.rebirth.RecognitionPayload.vosk(json)
@@ -88,7 +101,7 @@ internal class OfflineSpeechSession(
                                 if(kind==FinalRecognitionKind.EMPTY){
                                     // Vosk emits empty endpoints for silence/noise. They are not a failed
                                     // command and cannot invalidate an earlier accepted final segment.
-                                    utterance.emptyFinal(endpoint)
+                                    if(!utterance.emptyFinal(endpoint)){emitError("SPEECH_UNCLEAR: Part of your request was not recognized. Please repeat the complete request.","UNFINISHED_FINAL");return true}
                                     if(endpoint && utterance.acceptedText().isNotBlank() && (!captureSpeaker || speakerSample.hasEnoughAudio())){emitResult(utterance.acceptedText());return true}
                                     return false
                                 }
@@ -105,9 +118,10 @@ internal class OfflineSpeechSession(
                                 return false
                             }
                             while (!closed.get() && !timing.expired()) {
-                                val count = audio.read(bytes, 0, bytes.size)
+                                val count = audio.read(bytes, 0, bytes.size,AudioRecord.READ_NON_BLOCKING)
                                 check(count >= 0) { "Microphone capture interrupted." }
-                                if (count == 0) continue
+                                if (count == 0) {check(!readClock.stalled()){ "Microphone input stalled." };Thread.sleep(12);continue}
+                                readClock.progress()
                                 com.jarvis.assistant.hud.AudioSignals.level(this,com.jarvis.assistant.hud.PcmLevel.pcm16(bytes,count))
                                 val focusedPackets=focusedAudio.packets(bytes,count)
                                 try{for(packet in focusedPackets){
@@ -120,14 +134,19 @@ internal class OfflineSpeechSession(
                                 } else {
                                     val partial = JSONObject(recognizer.partialResult).optString("partial")
                                     timing.progress(partial);utterance.partial(partial)
+                                    EndpointDiagnostics.activity(diagnosticToken,android.os.SystemClock.elapsedRealtime(),utterance.hasUnfinishedSpeech || utterance.acceptedText().isNotBlank())
                                     if (partial != previousPartial) {
                                         previousPartial = partial
                                         main.post { if (!closed.get()) onPartial(utterance.text()) }
                                     }
                                 }
                                 if(utterance.needsFinalization()){
+                                    val at=android.os.SystemClock.elapsedRealtime()
+                                    EndpointDiagnostics.candidate(diagnosticToken,at);EndpointDiagnostics.finalizing(diagnosticToken,at);finalRequestedAt=at
                                     val final=JSONObject(recognizer.finalResult)
                                     if(acceptFinal(final,true))return@Thread
+                                    finalRequestedAt=null
+                                    if(com.jarvis.assistant.rebirth.RecognitionPayload.vosk(final).primary.optString("text").isBlank() && !utterance.ready())EndpointDiagnostics.resumeAfterEmptyBoundary(diagnosticToken,android.os.SystemClock.elapsedRealtime())
                                     // A blank forced final is a decoder boundary, not an ASR error.
                                     recognizer.reset()
                                 }
@@ -135,7 +154,7 @@ internal class OfflineSpeechSession(
                                 }}finally{focusedPackets.filter{it.owned}.forEach{it.pcm.fill(0)}}
                             }
                             if (!closed.get()) {
-                                emitError("Speech inactivity or two-minute utterance limit reached. Tap the microphone or say your wake phrase again.")
+                                emitError("Speech inactivity or one-minute utterance limit reached. Tap the microphone or say your wake phrase again.","CAPTURE_TIMEOUT")
                             }
                         } finally { com.jarvis.assistant.hud.AudioSignals.stop(this); runCatching { audio.stop() }; capture?.close();capture=null;recorder = null }
                     }
@@ -146,18 +165,19 @@ internal class OfflineSpeechSession(
         }, "JarvisOfflineSpeech").start()
     }
 
-    fun close() { synchronized(audioLock) { closed.set(true);speakerSample.clear();runCatching { recorder?.stop() } } }
+    fun close() { main.removeCallbacks(watchdog);EndpointDiagnostics.cancel(diagnosticToken,android.os.SystemClock.elapsedRealtime());synchronized(audioLock) { closed.set(true);speakerSample.clear();runCatching { recorder?.stop() } } }
     private fun emitResult(text: String) {
         val sample=if(captureSpeaker)speakerSample.take(.002f)else null
         main.post {
-            if (!closed.get()) {
-                closed.set(true)
+            if (closed.compareAndSet(false,true)) {
+                main.removeCallbacks(watchdog)
                 if(!timing.expired()){
+                    EndpointDiagnostics.complete(diagnosticToken,android.os.SystemClock.elapsedRealtime())
                     sample?.let{onSpeakerSample(com.jarvis.assistant.omnisystem.SpeakerSamples.deposit(it))}
                     onResult(text)
-                }else{sample?.pcm?.fill(0);onError("Speech inactivity or two-minute utterance limit reached.")}
+                }else{sample?.pcm?.fill(0);EndpointDiagnostics.fail(diagnosticToken,android.os.SystemClock.elapsedRealtime(),"CAPTURE_TIMEOUT");onError("Speech inactivity or one-minute utterance limit reached.")}
             }else sample?.pcm?.fill(0)
         }
     }
-    private fun emitError(message: String) {speakerSample.clear();main.post { if (!closed.get()) { closed.set(true); onError(message) } } }
+    private fun emitError(message: String,code:String="AUDIO_ERROR") {speakerSample.clear();main.post { if (closed.compareAndSet(false,true)) {main.removeCallbacks(watchdog);EndpointDiagnostics.fail(diagnosticToken,android.os.SystemClock.elapsedRealtime(),code);runCatching{recorder?.stop()}; onError(message) } } }
 }
