@@ -1,0 +1,35 @@
+{
+  "source_commit": "fbf2707b8da467af251dcd09f8b822cf369eeb50",
+  "build": "PASS",
+  "full_verification_run": "full-verification-3.txt",
+  "jvm": {
+    "tests": 1297,
+    "passed": 1296,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 1
+  },
+  "lint": {
+    "Warning": 55,
+    "Information": 1
+  },
+  "apk": {
+    "status": "PASS",
+    "path": "downloads/stabilization-2.11.9-debug/Jarvis-2.11.9-stabilize.1-debug-arm64.apk",
+    "sha256": "ad796f1920f4853ff855acd710d1360bfa32a1e185ca733d4850c071ab7261ed",
+    "bytes": 56199459,
+    "artifact_checks_passed": 20
+  },
+  "android_test_compilation": "PASS",
+  "android_tests_executed": 0,
+  "production_signing_guard": "FAILED: original private signing directory unavailable; no automatic retry",
+  "signed_production_aab": "NOT PRODUCED",
+  "native_16k": {
+    "compatible": 13,
+    "incompatible": [
+      "libvosk.so"
+    ],
+    "runtime_tests": 0
+  },
+  "public_url": "Not claimed before authorized publication/download verification"
+}

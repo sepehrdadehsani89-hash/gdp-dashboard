@@ -1,0 +1,234 @@
+{
+  "captured_utc": "2026-11-17T20:52:10.061489+00:00",
+  "baseline": "8d7ac1ec35c72bb1628f70a9f7d99ccf7aed5f74",
+  "changed_app_files": [
+    {
+      "path": "app/build.gradle.kts",
+      "sha256": "29e227502bf58c4f813508a592765c328539fc7f0c91d7d276b97a0e82733237"
+    },
+    {
+      "path": "app/src/androidTest/java/com/jarvis/assistant/CameraHudFlowTest.kt",
+      "sha256": "c945806b861d9160df734f6cc96631563b4f306ef7e7e08423bb265cfa0a9c55"
+    },
+    {
+      "path": "app/src/androidTest/java/com/jarvis/assistant/GeminiSettingsTest.kt",
+      "sha256": "8f620f36cf87d17499f6a6e9e1f25975e3fef8ee01b452e27561a140377e58bc"
+    },
+    {
+      "path": "app/src/androidTest/java/com/jarvis/assistant/HudFlowTest.kt",
+      "sha256": "8115e77aa61d728b23d6132b289a297922ddab44bcd9389bea426e1c8158ed99"
+    },
+    {
+      "path": "app/src/androidTest/java/com/jarvis/assistant/InfinityFlowTest.kt",
+      "sha256": "b6e3dae081f43183d724649395ce2fc2ee2d08a2c22035efa4c4c4e9f5189a02"
+    },
+    {
+      "path": "app/src/androidTest/java/com/jarvis/assistant/JarvisFlowTest.kt",
+      "sha256": "a4196dcc87789a4ed2c4c0bbf403b4f66f7926112048a78d76ce31e120921aea"
+    },
+    {
+      "path": "app/src/androidTest/java/com/jarvis/assistant/NeuralFlowTest.kt",
+      "sha256": "d06481634ec45106c5df95605d0fdeddfb1167d59d8f010639d6c0025c6fdcc9"
+    },
+    {
+      "path": "app/src/androidTest/java/com/jarvis/assistant/OmnisystemFlowTest.kt",
+      "sha256": "cfbbb0437be288578d320b3a35b8afeeee9f40c6934b2b284a6e0d69ad944be0"
+    },
+    {
+      "path": "app/src/androidTest/java/com/jarvis/assistant/PrivateMemoryImportUiTest.kt",
+      "sha256": "0763ecf1280a4d71e29117641ec03dd53be2e10b3085de04519706f119d0572b"
+    },
+    {
+      "path": "app/src/androidTest/java/com/jarvis/assistant/ScreenCaptureFlowTest.kt",
+      "sha256": "aac3b8924cf95f0393b214a4b4978907639531cbe52b59110d177ea465e7142c"
+    },
+    {
+      "path": "app/src/androidTest/java/com/jarvis/assistant/SentinelFlowTest.kt",
+      "sha256": "54d3eca01754ccbc45ab3b80eb8c7fbb7baa6bab6ca9ad079090f9934c2aa96f"
+    },
+    {
+      "path": "app/src/androidTest/java/com/jarvis/assistant/StabilizationPreferencesTest.kt",
+      "sha256": "ffdf3ccf78b053ad8bacf5d27566377e7a9bfd7a4432074efe93e99f6148a606"
+    },
+    {
+      "path": "app/src/debug/res/values-es/strings.xml",
+      "sha256": "5592da1a6122e01a75aad1286a3d41719bac6c290b8ca0b8460c9e223db2c0d4"
+    },
+    {
+      "path": "app/src/debug/res/values-fa/strings.xml",
+      "sha256": "5592da1a6122e01a75aad1286a3d41719bac6c290b8ca0b8460c9e223db2c0d4"
+    },
+    {
+      "path": "app/src/debug/res/values/strings.xml",
+      "sha256": "5592da1a6122e01a75aad1286a3d41719bac6c290b8ca0b8460c9e223db2c0d4"
+    },
+    {
+      "path": "app/src/main/java/com/jarvis/assistant/AssistantRuntime.kt",
+      "sha256": "06eba3e0a5d33d28da0fe5ce20ebeea6c8aa27ddf197f6edd4e0ee0ce3f10478"
+    },
+    {
+      "path": "app/src/main/java/com/jarvis/assistant/MainActivity.kt",
+      "sha256": "2b4e5bd361fc04b62f000cf2c5d7ecc6947ff1a28f5aa28f4c93169655a673ba"
+    },
+    {
+      "path": "app/src/main/java/com/jarvis/assistant/contacts/ContactShortcuts.kt",
+      "sha256": "2ac24d733146173301165c71155d2e03a4b4495ecf5d38988a8af363b04d365a"
+    },
+    {
+      "path": "app/src/main/java/com/jarvis/assistant/contacts/ContactShortcutsActivity.kt",
+      "sha256": "6e523ba15b2121c78b53cee15cfcbf22c7cbdf96e2e697d8186b348c3499812f"
+    },
+    {
+      "path": "app/src/main/java/com/jarvis/assistant/contacts/SpokenContactPolicy.kt",
+      "sha256": "b1d8ae477c5c5529bd3a70e7035bd6e1842f0a636c4930d06345253c76e6c991"
+    },
+    {
+      "path": "app/src/main/java/com/jarvis/assistant/core/Models.kt",
+      "sha256": "2f304004607df88758a80bc1328d4fb877e825c6057a4095a257e8f712a05f40"
+    },
+    {
+      "path": "app/src/main/java/com/jarvis/assistant/data/JarvisStore.kt",
+      "sha256": "0f9d51ac1b7305acae5cafb76db0b35001cf871def827b510f87591c2cb08d0e"
+    },
+    {
+      "path": "app/src/main/java/com/jarvis/assistant/hud/MotionSettingsPolicy.kt",
+      "sha256": "f701484e76361e4183ac6d14fb5983d967f2a3fc8b9bb508a50bbded127935dc"
+    },
+    {
+      "path": "app/src/main/java/com/jarvis/assistant/quantum/DeviceControl.kt",
+      "sha256": "effadab68c4966a0231a5b93fc5843925d3bc19a7a0317fbb1668ccfa3237d93"
+    },
+    {
+      "path": "app/src/main/java/com/jarvis/assistant/settings/SettingsDirectory.kt",
+      "sha256": "60f2c5e86b760a7502af6f71c1cedd8c53e67cbcd59766b9cb1f1ce0f050bf81"
+    },
+    {
+      "path": "app/src/main/java/com/jarvis/assistant/settings/SpokenSettings.kt",
+      "sha256": "a09703abcdfb788bb0160698fd9fc8a7e61d2208480726e79812a5b2a6d8f8b8"
+    },
+    {
+      "path": "app/src/main/java/com/jarvis/assistant/settings/SpokenSettingsController.kt",
+      "sha256": "10c9019ff10fffe5f068d4c5f1dc640e20101d231b33b9669baa0a19871e911b"
+    },
+    {
+      "path": "app/src/main/java/com/jarvis/assistant/setup/SetupPolicy.kt",
+      "sha256": "f21a5dab4144c1e7599e908ad06d7919d5688a133b22ad2a615b961dc854c8ac"
+    },
+    {
+      "path": "app/src/main/java/com/jarvis/assistant/titan/TitanCenterActivity.kt",
+      "sha256": "56d9ae47d99dd8aada8639bc1714d674060134148312a61f371af192f73ea7eb"
+    },
+    {
+      "path": "app/src/main/java/com/jarvis/assistant/titan/VoiceIntelligence.kt",
+      "sha256": "71db07985257b3490041abdd37a48e6d054a3fc036d46cd96d913ce42c12be7a"
+    },
+    {
+      "path": "app/src/main/java/com/jarvis/assistant/tools/DeviceTools.kt",
+      "sha256": "d517442f6f39cbd5088d9556603f53767c12fc5649059ace55ac53c09b5d19fb"
+    },
+    {
+      "path": "app/src/main/java/com/jarvis/assistant/ui/JarvisAppUi.kt",
+      "sha256": "e5692415520046c8fc8bf652d209bcee0324581f4b178b33209aef0bcef87da1"
+    },
+    {
+      "path": "app/src/main/java/com/jarvis/assistant/ui/JarvisHud.kt",
+      "sha256": "4a8428b5ac555606e5afa131fabe6e5a2694cc5cfa2c94b4fbcaeb3bcd30f7b2"
+    },
+    {
+      "path": "app/src/main/java/com/jarvis/assistant/ui/JarvisUiState.kt",
+      "sha256": "1b2c8c2cd010cdf5e74b6d98c4ddc15423d656cbd2f493fcb91c38d5b499810d"
+    },
+    {
+      "path": "app/src/main/java/com/jarvis/assistant/ui/SentinelSettingsUi.kt",
+      "sha256": "a6dbc785f8c0de1712729146244662861e836bc8dfd23fb0c45a6bebb177e973"
+    },
+    {
+      "path": "app/src/main/java/com/jarvis/assistant/ui/SettingsControlCenterUi.kt",
+      "sha256": "467db046993a4c014521e6b6716f83e8769b1a1d8ec0d22374237bcac2e1d944"
+    },
+    {
+      "path": "app/src/main/java/com/jarvis/assistant/ui/SetupWizardUi.kt",
+      "sha256": "55719c53ec3b84535d9b634963a7f7c20afd102ad3cb2f2fdb8262d66ff4d5f3"
+    },
+    {
+      "path": "app/src/main/java/com/jarvis/assistant/voice/ListeningStartupPolicy.kt",
+      "sha256": "08f4ffbf6486e29bb38284b5fc3dfd8a2d078977a53d3ceddf645392e739df7d"
+    },
+    {
+      "path": "app/src/main/java/com/jarvis/assistant/voice/NativeSpeechSummary.kt",
+      "sha256": "c25177ecdeff612d2241dd80f04e7c64638e6d1a415562ff490d522c96d3ec84"
+    },
+    {
+      "path": "app/src/main/java/com/jarvis/assistant/voice/SpeechController.kt",
+      "sha256": "4cc7a8beba33c03a7c517882f7f8a723e9188910a970831014c30f31cbc8cada"
+    },
+    {
+      "path": "app/src/main/java/com/jarvis/assistant/voice/VoiceContinuationPolicy.kt",
+      "sha256": "263ea11985791934bc8a05c64296b140cce7a68414df3386a3416b4589989eea"
+    },
+    {
+      "path": "app/src/main/java/com/jarvis/assistant/voice/VoiceDeliveryTracker.kt",
+      "sha256": "6975c5fe66e1c9af5c109b6c7fc75837aa387f40ead25c364a8a7546314cf9ac"
+    },
+    {
+      "path": "app/src/main/java/com/jarvis/assistant/voice/VoiceHealthActivity.kt",
+      "sha256": "530f05c027a844e2e4dbed17412c4af6e4d906f96117a8def91a19e7a0b769e4"
+    },
+    {
+      "path": "app/src/main/java/com/jarvis/assistant/voice/VoiceIntelligencePanel.kt",
+      "sha256": "afd24ff63a1a3ffa6a9346165e6ff4537f18ed9ebc3263d923fdad629b7a87d0"
+    },
+    {
+      "path": "app/src/main/java/com/jarvis/assistant/voice/VoiceSessionStateMachine.kt",
+      "sha256": "b97ed464daf0aac30182bb8e991e8b77188b0223d1a1cc87a48b385551b8c27d"
+    },
+    {
+      "path": "app/src/main/java/com/jarvis/assistant/voice/WakeListenerService.kt",
+      "sha256": "49497723cdb6510cc4c2804881d4136c2d43efc4927eb2f71d901d99ef31c4af"
+    },
+    {
+      "path": "app/src/test/java/com/jarvis/assistant/call/AiCallPolicyTest.kt",
+      "sha256": "5a70a312b9079acd6d2c4d1791fa29d11d237fa5af8d7c13a0a85796d3810e8a"
+    },
+    {
+      "path": "app/src/test/java/com/jarvis/assistant/contacts/SpokenContactPolicyTest.kt",
+      "sha256": "38361ed6f03df0b72c486ad324261e5493943e40c27f85578434767c71aabea7"
+    },
+    {
+      "path": "app/src/test/java/com/jarvis/assistant/hud/MotionSettingsPolicyTest.kt",
+      "sha256": "b33527396189ffbae2a359933fb845c54e41e1b48b7441ef2250755f7085d784"
+    },
+    {
+      "path": "app/src/test/java/com/jarvis/assistant/settings/SettingsDirectoryTest.kt",
+      "sha256": "005772b468c9ab7f0bd6ca4e37db974f21ba532eaca986ffb003fdea1b2fe213"
+    },
+    {
+      "path": "app/src/test/java/com/jarvis/assistant/settings/SpokenSettingsTest.kt",
+      "sha256": "103733c44ae24ee52fb0f1860026ee85880c06806d7a82cd093f39d309109b53"
+    },
+    {
+      "path": "app/src/test/java/com/jarvis/assistant/setup/SetupPolicyTest.kt",
+      "sha256": "8d85293e745823c23dbada760b7bc4b2092e5ffdf217d9e70288f0e3aabb65b0"
+    },
+    {
+      "path": "app/src/test/java/com/jarvis/assistant/voice/HalfDuplexVoiceTest.kt",
+      "sha256": "03eb618fdea0a16642ee5f53761b2cf73e526164a26978bdd234818018e10f07"
+    },
+    {
+      "path": "app/src/test/java/com/jarvis/assistant/voice/ListeningStartupPolicyTest.kt",
+      "sha256": "f4e2abe72b012608895a63abfa5ad3b546c32a83437ea8e4b5d0d81c32f3f847"
+    },
+    {
+      "path": "app/src/test/java/com/jarvis/assistant/voice/NativeSpeechSummaryTest.kt",
+      "sha256": "473dd88ac8948ebec7186b393e069319529ac3f7ec716b4119798dc7d442f371"
+    },
+    {
+      "path": "app/src/test/java/com/jarvis/assistant/voice/VoiceDeliveryTrackerTest.kt",
+      "sha256": "54d925f19f766da48dc3ab2790b0bcfe59aac7481d59e2e5ec75e777789c7870"
+    },
+    {
+      "path": "app/src/test/java/com/jarvis/assistant/voice/VoiceReliabilityRepairTest.kt",
+      "sha256": "3c15c3f6dce3650aabff37285716ec364bf70ecef7471e5ce08a811e20592dea"
+    }
+  ]
+}

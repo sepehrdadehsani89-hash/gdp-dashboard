@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.phantom.PhantomSessionTest" tests="13" skipped="0" failures="0" errors="0" timestamp="2026-11-17T20:56:50" hostname="472108d07068" time="0.019">
+  <properties/>
+  <testcase name="presentationIsHiddenForEveryLockCredentialAndStopCombination" classname="com.jarvis.assistant.phantom.PhantomSessionTest" time="0.001"/>
+  <testcase name="persistedPositionsClampAfterRotationOrSmallerDisplay" classname="com.jarvis.assistant.phantom.PhantomSessionTest" time="0.0"/>
+  <testcase name="tracesStayBoundedAndOnlyFirstMilestonesAreStored" classname="com.jarvis.assistant.phantom.PhantomSessionTest" time="0.006"/>
+  <testcase name="realProgressExtendsInferenceButHasABoundedTotal" classname="com.jarvis.assistant.phantom.PhantomSessionTest" time="0.0"/>
+  <testcase name="staleAudioCannotOverwriteTheNewRequest" classname="com.jarvis.assistant.phantom.PhantomSessionTest" time="0.0"/>
+  <testcase name="fastNativePathsDoNotHijackCompoundOrContextualRequests" classname="com.jarvis.assistant.phantom.PhantomSessionTest" time="0.001"/>
+  <testcase name="spokenRepairRequiresAnExplicitNewAppCommand" classname="com.jarvis.assistant.phantom.PhantomSessionTest" time="0.001"/>
+  <testcase name="recognitionNeverBecomesASpokenCaptionAndTraceHasNoTranscript" classname="com.jarvis.assistant.phantom.PhantomSessionTest" time="0.008"/>
+  <testcase name="terminalStagesCannotLeaveProcessingForever" classname="com.jarvis.assistant.phantom.PhantomSessionTest" time="0.0"/>
+  <testcase name="activeCaptureDoesNotInheritInferenceTimeLimit" classname="com.jarvis.assistant.phantom.PhantomSessionTest" time="0.001"/>
+  <testcase name="speakerAffinityRejectsCompetingSegmentsAndExpiresWithoutGuessingIdentity" classname="com.jarvis.assistant.phantom.PhantomSessionTest" time="0.0"/>
+  <testcase name="completedCaptionsExpireAndCancellationClearsPrivateText" classname="com.jarvis.assistant.phantom.PhantomSessionTest" time="0.001"/>
+  <testcase name="completionWithoutAnAudioEndCannotLeaveAnInfiniteCaption" classname="com.jarvis.assistant.phantom.PhantomSessionTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,19 @@
+Picked up JAVA_TOOL_OPTIONS: -Djava.util.prefs.userRoot=/workspace/.jarvis-toolchain/java-prefs -Duser.home=/workspace/.jarvis-toolchain/java-home -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080 -Dhttps.proxyHost=proxy -Dhttps.proxyPort=8080
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.9/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :app:checkNextSigning FAILED
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:checkNextSigning'.
+> Set JARVIS_NEXT_SIGNING_DIR to the private signing directory. Never generate a replacement key for an existing Jarvis Next installation.
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 22s
+1 actionable task: 1 executed

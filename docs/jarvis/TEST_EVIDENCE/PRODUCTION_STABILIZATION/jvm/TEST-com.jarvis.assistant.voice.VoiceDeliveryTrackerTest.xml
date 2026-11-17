@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.voice.VoiceDeliveryTrackerTest" tests="32" skipped="0" failures="0" errors="0" timestamp="2026-11-17T20:56:54" hostname="472108d07068" time="0.006">
+  <properties/>
+  <testcase name="voiceFailurePreservesTheReceivedAiAnswer" classname="com.jarvis.assistant.voice.VoiceDeliveryTrackerTest" time="0.001"/>
+  <testcase name="normalizationRemovesControlCharacters" classname="com.jarvis.assistant.voice.VoiceDeliveryTrackerTest" time="0.001"/>
+  <testcase name="actualPrepareIsSeparateFromAudioStart" classname="com.jarvis.assistant.voice.VoiceDeliveryTrackerTest" time="0.0"/>
+  <testcase name="blankResponseCannotBecomeSuccess" classname="com.jarvis.assistant.voice.VoiceDeliveryTrackerTest" time="0.0"/>
+  <testcase name="stalePrepareCannotMarkNewUtteranceReady" classname="com.jarvis.assistant.voice.VoiceDeliveryTrackerTest" time="0.0"/>
+  <testcase name="manualStopDoesNotReportCompletedPlayback" classname="com.jarvis.assistant.voice.VoiceDeliveryTrackerTest" time="0.0"/>
+  <testcase name="inferenceDoesNotMeanEngineReady" classname="com.jarvis.assistant.voice.VoiceDeliveryTrackerTest" time="0.0"/>
+  <testcase name="responseDoesNotProveSpeech" classname="com.jarvis.assistant.voice.VoiceDeliveryTrackerTest" time="0.0"/>
+  <testcase name="synthesisIsNotPlayback" classname="com.jarvis.assistant.voice.VoiceDeliveryTrackerTest" time="0.0"/>
+  <testcase name="staleAudioStartCannotAffectNewerTurn" classname="com.jarvis.assistant.voice.VoiceDeliveryTrackerTest" time="0.0"/>
+  <testcase name="receivedCountsAreBounded" classname="com.jarvis.assistant.voice.VoiceDeliveryTrackerTest" time="0.0"/>
+  <testcase name="retryCanPrepareASecondActualPlayback" classname="com.jarvis.assistant.voice.VoiceDeliveryTrackerTest" time="0.0"/>
+  <testcase name="normalizationPreservesPersianAndSpanish" classname="com.jarvis.assistant.voice.VoiceDeliveryTrackerTest" time="0.0"/>
+  <testcase name="completedWithoutAudioStartCannotReportSuccess" classname="com.jarvis.assistant.voice.VoiceDeliveryTrackerTest" time="0.0"/>
+  <testcase name="retryMustPrepareNewPlayer" classname="com.jarvis.assistant.voice.VoiceDeliveryTrackerTest" time="0.0"/>
+  <testcase name="diagnosticsNeverRetainUnknownProviderText" classname="com.jarvis.assistant.voice.VoiceDeliveryTrackerTest" time="0.003"/>
+  <testcase name="negativeResponseLengthCannotSucceed" classname="com.jarvis.assistant.voice.VoiceDeliveryTrackerTest" time="0.0"/>
+  <testcase name="completionCallbackRecordsPlaybackCompletion" classname="com.jarvis.assistant.voice.VoiceDeliveryTrackerTest" time="0.0"/>
+  <testcase name="requestIsNotAResponse" classname="com.jarvis.assistant.voice.VoiceDeliveryTrackerTest" time="0.0"/>
+  <testcase name="audioStartedDoesNotClaimCompletion" classname="com.jarvis.assistant.voice.VoiceDeliveryTrackerTest" time="0.0"/>
+  <testcase name="normalizationDoesNotFabricateTextForUrlOnlyAnswer" classname="com.jarvis.assistant.voice.VoiceDeliveryTrackerTest" time="0.001"/>
+  <testcase name="synthesisDoesNotMeanEngineReady" classname="com.jarvis.assistant.voice.VoiceDeliveryTrackerTest" time="0.0"/>
+  <testcase name="startedNeedsAnActualPreparedUtterance" classname="com.jarvis.assistant.voice.VoiceDeliveryTrackerTest" time="0.0"/>
+  <testcase name="linkedLabelsRemainSpeakableWithoutRawUrls" classname="com.jarvis.assistant.voice.VoiceDeliveryTrackerTest" time="0.0"/>
+  <testcase name="normalizationPreservesMeaningfulBatteryAnswer" classname="com.jarvis.assistant.voice.VoiceDeliveryTrackerTest" time="0.0"/>
+  <testcase name="providerFailureDoesNotClaimVoiceFailure" classname="com.jarvis.assistant.voice.VoiceDeliveryTrackerTest" time="0.0"/>
+  <testcase name="stoppedPrepareIsIgnored" classname="com.jarvis.assistant.voice.VoiceDeliveryTrackerTest" time="0.0"/>
+  <testcase name="staleProviderResponseCannotReappearAfterStop" classname="com.jarvis.assistant.voice.VoiceDeliveryTrackerTest" time="0.0"/>
+  <testcase name="staleCompletionCannotFinishNewUtterance" classname="com.jarvis.assistant.voice.VoiceDeliveryTrackerTest" time="0.0"/>
+  <testcase name="identityDoesNotProveInferenceOrPlayback" classname="com.jarvis.assistant.voice.VoiceDeliveryTrackerTest" time="0.0"/>
+  <testcase name="staleFailureCannotReplaceNewSuccess" classname="com.jarvis.assistant.voice.VoiceDeliveryTrackerTest" time="0.0"/>
+  <testcase name="newProviderRequestResetsOldSpeechEvidence" classname="com.jarvis.assistant.voice.VoiceDeliveryTrackerTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.omnisystem.ModuleRouteTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-11-17T20:56:49" hostname="472108d07068" time="0.011">
+  <properties/>
+  <testcase name="preservesDirectAppLaunchesAndNegativeRequests" classname="com.jarvis.assistant.omnisystem.ModuleRouteTest" time="0.007"/>
+  <testcase name="accessoryFollowUpRetainsTheSelectedModule" classname="com.jarvis.assistant.omnisystem.ModuleRouteTest" time="0.001"/>
+  <testcase name="supportsSpanishAndPersianQueries" classname="com.jarvis.assistant.omnisystem.ModuleRouteTest" time="0.0"/>
+  <testcase name="routesActualQueriesWithoutLaunchingTools" classname="com.jarvis.assistant.omnisystem.ModuleRouteTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

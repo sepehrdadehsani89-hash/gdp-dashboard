@@ -1,0 +1,47 @@
+Picked up JAVA_TOOL_OPTIONS: -Djava.util.prefs.userRoot=/workspace/.jarvis-toolchain/java-prefs -Duser.home=/workspace/.jarvis-toolchain/java-home -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080 -Dhttps.proxyHost=proxy -Dhttps.proxyPort=8080
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.9/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+Warning: SDK processing. This version only understands SDK XML versions up to 3 but an SDK XML file of version 4 was encountered. This can happen if you use versions of Android Studio and the command-line tools that were released at different times.
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:generateDebugBuildConfig
+> Task :app:checkDebugAarMetadata UP-TO-DATE
+> Task :app:generateDebugResValues UP-TO-DATE
+> Task :app:mapDebugSourceSetPaths
+> Task :app:generateDebugResources
+> Task :app:mergeDebugResources
+> Task :app:packageDebugResources
+> Task :app:parseDebugLocalResources
+> Task :app:createDebugCompatibleScreenManifests
+> Task :app:extractDeepLinksDebug UP-TO-DATE
+> Task :app:processDebugMainManifest
+> Task :app:processDebugManifest
+> Task :app:processDebugManifestForPackage
+> Task :app:processDebugResources
+> Task :app:kspDebugKotlin
+> Task :app:compileDebugKotlin
+e: file:///workspace/gdp-dashboard/app/src/main/java/com/jarvis/assistant/contacts/ContactShortcuts.kt:22:22 Unresolved reference 'size'.
+e: file:///workspace/gdp-dashboard/app/src/main/java/com/jarvis/assistant/contacts/SpokenContactPolicy.kt:24:55 Unsupported escape sequence.
+e: file:///workspace/gdp-dashboard/app/src/main/java/com/jarvis/assistant/contacts/SpokenContactPolicy.kt:24:64 Unsupported escape sequence.
+e: file:///workspace/gdp-dashboard/app/src/main/java/com/jarvis/assistant/contacts/SpokenContactPolicy.kt:25:37 Unsupported escape sequence.
+e: file:///workspace/gdp-dashboard/app/src/main/java/com/jarvis/assistant/contacts/SpokenContactPolicy.kt:25:46 Unsupported escape sequence.
+e: file:///workspace/gdp-dashboard/app/src/main/java/com/jarvis/assistant/settings/SpokenSettingsController.kt:68:168 Unresolved reference 'copy'.
+
+> Task :app:compileDebugKotlin FAILED
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:compileDebugKotlin'.
+> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction
+   > Compilation error. See log for more details
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 2m 12s
+16 actionable tasks: 13 executed, 3 up-to-date

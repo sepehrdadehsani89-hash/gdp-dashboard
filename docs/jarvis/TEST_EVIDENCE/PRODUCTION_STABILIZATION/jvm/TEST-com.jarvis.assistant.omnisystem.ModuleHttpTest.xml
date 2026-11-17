@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.omnisystem.ModuleHttpTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-11-17T20:56:49" hostname="472108d07068" time="0.176">
+  <properties/>
+  <testcase name="cancellationDisposesCallWithoutDeliveringPrivateResponse" classname="com.jarvis.assistant.omnisystem.ModuleHttpTest" time="0.024"/>
+  <testcase name="redirectsNeverForwardAuthorizationToAnotherHost" classname="com.jarvis.assistant.omnisystem.ModuleHttpTest" time="0.005"/>
+  <testcase name="boundedResponsesRejectDeclaredAndChunkedOversizeWithoutEchoingErrors" classname="com.jarvis.assistant.omnisystem.ModuleHttpTest" time="0.147"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[Nov 17, 2026 3:56:49 PM okhttp3.mockwebserver.MockWebServer$SocketHandler handle
+WARNING: MockWebServer[36563] connection from /127.0.0.1 didn't make a request
+]]></system-err>
+</testsuite>

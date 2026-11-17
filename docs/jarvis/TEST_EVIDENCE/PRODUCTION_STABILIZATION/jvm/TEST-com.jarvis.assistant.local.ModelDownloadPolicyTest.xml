@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.local.ModelDownloadPolicyTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-11-17T20:56:49" hostname="472108d07068" time="0.005">
+  <properties/>
+  <testcase name="different model repository cannot authorize download" classname="com.jarvis.assistant.local.ModelDownloadPolicyTest" time="0.002"/>
+  <testcase name="an unverified license blocks the download" classname="com.jarvis.assistant.local.ModelDownloadPolicyTest" time="0.0"/>
+  <testcase name="official metadata pins an immutable revision and expected bytes" classname="com.jarvis.assistant.local.ModelDownloadPolicyTest" time="0.001"/>
+  <testcase name="truncated download cannot be installed even with a matching claimed hash" classname="com.jarvis.assistant.local.ModelDownloadPolicyTest" time="0.0"/>
+  <testcase name="missing checksum blocks installation instead of disabling verification" classname="com.jarvis.assistant.local.ModelDownloadPolicyTest" time="0.001"/>
+  <testcase name="modified weights cannot be installed despite correct file length" classname="com.jarvis.assistant.local.ModelDownloadPolicyTest" time="0.0"/>
+  <testcase name="mutable branch name cannot authorize a weight URL" classname="com.jarvis.assistant.local.ModelDownloadPolicyTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

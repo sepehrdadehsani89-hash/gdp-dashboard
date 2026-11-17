@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.local.ModelOperationGateTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2026-11-17T20:56:49" hostname="472108d07068" time="0.034">
+  <properties/>
+  <testcase name="failedOperationsAreRetiredBeforeManagement" classname="com.jarvis.assistant.local.ModelOperationGateTest" time="0.003"/>
+  <testcase name="repeatedManagementWindowsDoNotRetainCompletedOperations" classname="com.jarvis.assistant.local.ModelOperationGateTest" time="0.001"/>
+  <testcase name="retiredCancellationCannotCancelAReinstalledBrainsNewOperation" classname="com.jarvis.assistant.local.ModelOperationGateTest" time="0.004"/>
+  <testcase name="cancellationDuringHashPreparationCannotReachGeneration" classname="com.jarvis.assistant.local.ModelOperationGateTest" time="0.004"/>
+  <testcase name="allActiveJobsAreIncludedInTheManagementSnapshot" classname="com.jarvis.assistant.local.ModelOperationGateTest" time="0.006"/>
+  <testcase name="managementRejectsNewWorkUntilReopened" classname="com.jarvis.assistant.local.ModelOperationGateTest" time="0.002"/>
+  <testcase name="queuedWorkIsRegisteredEvenBeforeItsModelLockIsAvailable" classname="com.jarvis.assistant.local.ModelOperationGateTest" time="0.008"/>
+  <testcase name="duplicateManagementCloseIsRejected" classname="com.jarvis.assistant.local.ModelOperationGateTest" time="0.0"/>
+  <testcase name="joiningCancelledWorkWaitsForItsResourceFinalizer" classname="com.jarvis.assistant.local.ModelOperationGateTest" time="0.004"/>
+  <testcase name="completedOperationsDoNotLeaveStaleJobs" classname="com.jarvis.assistant.local.ModelOperationGateTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

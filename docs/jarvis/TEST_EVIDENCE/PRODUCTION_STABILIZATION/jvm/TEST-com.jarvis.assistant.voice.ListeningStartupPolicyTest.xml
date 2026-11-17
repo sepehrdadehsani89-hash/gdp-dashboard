@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.voice.ListeningStartupPolicyTest" tests="20" skipped="0" failures="0" errors="0" timestamp="2026-11-17T20:56:54" hostname="472108d07068" time="0.001">
+  <properties/>
+  <testcase name="leavingForegroundCancelsEligibility" classname="com.jarvis.assistant.voice.ListeningStartupPolicyTest" time="0.0"/>
+  <testcase name="everyUnsafeCombinationFailsClosed" classname="com.jarvis.assistant.voice.ListeningStartupPolicyTest" time="0.001"/>
+  <testcase name="runningServiceNotDuplicated" classname="com.jarvis.assistant.voice.ListeningStartupPolicyTest" time="0.0"/>
+  <testcase name="revokedPermissionNoRestart" classname="com.jarvis.assistant.voice.ListeningStartupPolicyTest" time="0.0"/>
+  <testcase name="missingModelNoBackgroundDialog" classname="com.jarvis.assistant.voice.ListeningStartupPolicyTest" time="0.0"/>
+  <testcase name="lockedCannotStartMic" classname="com.jarvis.assistant.voice.ListeningStartupPolicyTest" time="0.0"/>
+  <testcase name="completionCanReleaseStartup" classname="com.jarvis.assistant.voice.ListeningStartupPolicyTest" time="0.0"/>
+  <testcase name="backgroundCannotStartMic" classname="com.jarvis.assistant.voice.ListeningStartupPolicyTest" time="0.0"/>
+  <testcase name="approvedVisibleStartup" classname="com.jarvis.assistant.voice.ListeningStartupPolicyTest" time="0.0"/>
+  <testcase name="missingModelNeedsExplicitDownload" classname="com.jarvis.assistant.voice.ListeningStartupPolicyTest" time="0.0"/>
+  <testcase name="noPromptOverRunningService" classname="com.jarvis.assistant.voice.ListeningStartupPolicyTest" time="0.0"/>
+  <testcase name="stopChoicePreserved" classname="com.jarvis.assistant.voice.ListeningStartupPolicyTest" time="0.0"/>
+  <testcase name="permissionGrantAloneInsufficient" classname="com.jarvis.assistant.voice.ListeningStartupPolicyTest" time="0.0"/>
+  <testcase name="missingModelNoPromptBeforePermission" classname="com.jarvis.assistant.voice.ListeningStartupPolicyTest" time="0.0"/>
+  <testcase name="installedBrainDoesNotReplaceSpeechModel" classname="com.jarvis.assistant.voice.ListeningStartupPolicyTest" time="0.0"/>
+  <testcase name="deniedPermissionNoCapture" classname="com.jarvis.assistant.voice.ListeningStartupPolicyTest" time="0.0"/>
+  <testcase name="missingModelNoPromptBeforeOptIn" classname="com.jarvis.assistant.voice.ListeningStartupPolicyTest" time="0.0"/>
+  <testcase name="speechOwnershipPreventsStartup" classname="com.jarvis.assistant.voice.ListeningStartupPolicyTest" time="0.0"/>
+  <testcase name="missingModelNoSpeechOverlap" classname="com.jarvis.assistant.voice.ListeningStartupPolicyTest" time="0.0"/>
+  <testcase name="missingModelNoLockedDialog" classname="com.jarvis.assistant.voice.ListeningStartupPolicyTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

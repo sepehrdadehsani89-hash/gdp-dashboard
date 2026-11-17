@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.local.LocalPromptBuilderTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-11-17T20:56:49" hostname="472108d07068" time="0.011">
+  <properties/>
+  <testcase name="Persian prompt preserves Persian and names while selecting Persian output" classname="com.jarvis.assistant.local.LocalPromptBuilderTest" time="0.002"/>
+  <testcase name="history stays within device context budget" classname="com.jarvis.assistant.local.LocalPromptBuilderTest" time="0.0"/>
+  <testcase name="reject rather than silently truncate a long question" classname="com.jarvis.assistant.local.LocalPromptBuilderTest" time="0.0"/>
+  <testcase name="status messages and duplicate current user are not included in history" classname="com.jarvis.assistant.local.LocalPromptBuilderTest" time="0.001"/>
+  <testcase name="user cannot insert ChatML system role control tokens" classname="com.jarvis.assistant.local.LocalPromptBuilderTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

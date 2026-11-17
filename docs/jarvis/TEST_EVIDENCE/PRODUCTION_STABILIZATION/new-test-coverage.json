@@ -1,0 +1,62 @@
+[
+  {
+    "suite": "HalfDuplexVoiceTest",
+    "source": "app/src/test/java/com/jarvis/assistant/voice/HalfDuplexVoiceTest.kt",
+    "declared_tests": 30,
+    "type": "new JVM regression tests; actual execution totals taken from XML"
+  },
+  {
+    "suite": "VoiceDeliveryTrackerTest",
+    "source": "app/src/test/java/com/jarvis/assistant/voice/VoiceDeliveryTrackerTest.kt",
+    "declared_tests": 32,
+    "type": "new JVM regression tests; actual execution totals taken from XML"
+  },
+  {
+    "suite": "ListeningStartupPolicyTest",
+    "source": "app/src/test/java/com/jarvis/assistant/voice/ListeningStartupPolicyTest.kt",
+    "declared_tests": 20,
+    "type": "new JVM regression tests; actual execution totals taken from XML"
+  },
+  {
+    "suite": "NativeSpeechSummaryTest",
+    "source": "app/src/test/java/com/jarvis/assistant/voice/NativeSpeechSummaryTest.kt",
+    "declared_tests": 20,
+    "type": "new JVM regression tests; actual execution totals taken from XML"
+  },
+  {
+    "suite": "SpokenSettingsTest",
+    "source": "app/src/test/java/com/jarvis/assistant/settings/SpokenSettingsTest.kt",
+    "declared_tests": 41,
+    "type": "new JVM regression tests; actual execution totals taken from XML"
+  },
+  {
+    "suite": "SettingsDirectoryTest",
+    "source": "app/src/test/java/com/jarvis/assistant/settings/SettingsDirectoryTest.kt",
+    "declared_tests": 20,
+    "type": "new JVM regression tests; actual execution totals taken from XML"
+  },
+  {
+    "suite": "SpokenContactPolicyTest",
+    "source": "app/src/test/java/com/jarvis/assistant/contacts/SpokenContactPolicyTest.kt",
+    "declared_tests": 36,
+    "type": "new JVM regression tests; actual execution totals taken from XML"
+  },
+  {
+    "suite": "SetupPolicyTest",
+    "source": "app/src/test/java/com/jarvis/assistant/setup/SetupPolicyTest.kt",
+    "declared_tests": 20,
+    "type": "new JVM regression tests; actual execution totals taken from XML"
+  },
+  {
+    "suite": "MotionSettingsPolicyTest",
+    "source": "app/src/test/java/com/jarvis/assistant/hud/MotionSettingsPolicyTest.kt",
+    "declared_tests": 20,
+    "type": "new JVM regression tests; actual execution totals taken from XML"
+  },
+  {
+    "suite": "StabilizationPreferencesTest",
+    "source": "app/src/androidTest/java/com/jarvis/assistant/StabilizationPreferencesTest.kt",
+    "declared_tests": 20,
+    "type": "new Android preference adapter tests; NOT EXECUTED in cloud"
+  }
+]

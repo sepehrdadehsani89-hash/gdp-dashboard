@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.omnisystem.MusicSecurityPolicyTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2026-11-17T20:56:50" hostname="472108d07068" time="0.049">
+  <properties/>
+  <testcase name="rejectsUnsafeImageOriginsAndInvalidTrackIds" classname="com.jarvis.assistant.omnisystem.MusicSecurityPolicyTest" time="0.001"/>
+  <testcase name="genuineFieldsAreBoundedAndArtworkIsRestricted" classname="com.jarvis.assistant.omnisystem.MusicSecurityPolicyTest" time="0.001"/>
+  <testcase name="callbackStateExpiresAndRejectsClockRollbackOrWrongNonce" classname="com.jarvis.assistant.omnisystem.MusicSecurityPolicyTest" time="0.005"/>
+  <testcase name="invalidProviderStatusDoesNotBecomeASong" classname="com.jarvis.assistant.omnisystem.MusicSecurityPolicyTest" time="0.001"/>
+  <testcase name="pkceAuthorizationUsesExactRedirectAndFreshIndependentSecrets" classname="com.jarvis.assistant.omnisystem.MusicSecurityPolicyTest" time="0.016"/>
+  <testcase name="callbackOriginCannotBeConfusedWithAnotherAppOrEndpoint" classname="com.jarvis.assistant.omnisystem.MusicSecurityPolicyTest" time="0.001"/>
+  <testcase name="spectrumUsesActualAudioRatherThanDecorativeValues" classname="com.jarvis.assistant.omnisystem.MusicSecurityPolicyTest" time="0.01"/>
+  <testcase name="callbackUsesOnlyTheCurrentApplicationIdentity" classname="com.jarvis.assistant.omnisystem.MusicSecurityPolicyTest" time="0.0"/>
+  <testcase name="noMatchIsNotFabricated" classname="com.jarvis.assistant.omnisystem.MusicSecurityPolicyTest" time="0.0"/>
+  <testcase name="wavHasActualPcmDurationFormatAndPayload" classname="com.jarvis.assistant.omnisystem.MusicSecurityPolicyTest" time="0.014"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

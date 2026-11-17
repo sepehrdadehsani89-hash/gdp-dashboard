@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.rebirth.RemovedMailIntegrationTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-11-17T20:56:51" hostname="472108d07068" time="0.002">
+  <properties/>
+  <testcase name="openingAnInstalledMailAppAndDraftingTextRemainOrdinaryRequests" classname="com.jarvis.assistant.rebirth.RemovedMailIntegrationTest" time="0.002"/>
+  <testcase name="removedMailboxRequestsCannotBePassedToAiAsIfItHadAccess" classname="com.jarvis.assistant.rebirth.RemovedMailIntegrationTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

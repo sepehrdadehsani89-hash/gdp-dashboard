@@ -1,0 +1,326 @@
+{
+  "artifact": "downloads/brain-manager-2.11.9-debug/Jarvis-2.11.9-brain.1-debug-arm64.apk",
+  "scope": "Existing native libraries; ELF program headers only. No 16 KB device executed. Recheck final APK.",
+  "libraries": [
+    {
+      "library": "lib/arm64-v8a/libandroidx.graphics.path.so",
+      "load_segments": [
+        {
+          "offset": 0,
+          "vaddr": 0,
+          "alignment": 16384,
+          "compatible_16k": true
+        },
+        {
+          "offset": 7232,
+          "vaddr": 23616,
+          "alignment": 16384,
+          "compatible_16k": true
+        },
+        {
+          "offset": 8144,
+          "vaddr": 40912,
+          "alignment": 16384,
+          "compatible_16k": true
+        }
+      ],
+      "compatible_16k": true
+    },
+    {
+      "library": "lib/arm64-v8a/libimage_processing_util_jni.so",
+      "load_segments": [
+        {
+          "offset": 0,
+          "vaddr": 0,
+          "alignment": 16384,
+          "compatible_16k": true
+        },
+        {
+          "offset": 26048,
+          "vaddr": 42432,
+          "alignment": 16384,
+          "compatible_16k": true
+        },
+        {
+          "offset": 26984,
+          "vaddr": 59752,
+          "alignment": 16384,
+          "compatible_16k": true
+        }
+      ],
+      "compatible_16k": true
+    },
+    {
+      "library": "lib/arm64-v8a/libjarvis-local.so",
+      "load_segments": [
+        {
+          "offset": 0,
+          "vaddr": 0,
+          "alignment": 16384,
+          "compatible_16k": true
+        },
+        {
+          "offset": 6588896,
+          "vaddr": 6605280,
+          "alignment": 16384,
+          "compatible_16k": true
+        },
+        {
+          "offset": 6698216,
+          "vaddr": 6730984,
+          "alignment": 16384,
+          "compatible_16k": true
+        }
+      ],
+      "compatible_16k": true
+    },
+    {
+      "library": "lib/arm64-v8a/libjnidispatch.so",
+      "load_segments": [
+        {
+          "offset": 0,
+          "vaddr": 0,
+          "alignment": 65536,
+          "compatible_16k": true
+        },
+        {
+          "offset": 154528,
+          "vaddr": 220064,
+          "alignment": 65536,
+          "compatible_16k": true
+        }
+      ],
+      "compatible_16k": true
+    },
+    {
+      "library": "lib/arm64-v8a/libjpeg.so",
+      "load_segments": [
+        {
+          "offset": 0,
+          "vaddr": 0,
+          "alignment": 16384,
+          "compatible_16k": true
+        },
+        {
+          "offset": 247552,
+          "vaddr": 263936,
+          "alignment": 16384,
+          "compatible_16k": true
+        }
+      ],
+      "compatible_16k": true
+    },
+    {
+      "library": "lib/arm64-v8a/libleptonica.so",
+      "load_segments": [
+        {
+          "offset": 0,
+          "vaddr": 0,
+          "alignment": 16384,
+          "compatible_16k": true
+        },
+        {
+          "offset": 2852784,
+          "vaddr": 2869168,
+          "alignment": 16384,
+          "compatible_16k": true
+        },
+        {
+          "offset": 2868600,
+          "vaddr": 2901368,
+          "alignment": 16384,
+          "compatible_16k": true
+        }
+      ],
+      "compatible_16k": true
+    },
+    {
+      "library": "lib/arm64-v8a/libonnxruntime.so",
+      "load_segments": [
+        {
+          "offset": 0,
+          "vaddr": 0,
+          "alignment": 16384,
+          "compatible_16k": true
+        },
+        {
+          "offset": 15638320,
+          "vaddr": 15654704,
+          "alignment": 16384,
+          "compatible_16k": true
+        },
+        {
+          "offset": 15983328,
+          "vaddr": 16016096,
+          "alignment": 16384,
+          "compatible_16k": true
+        }
+      ],
+      "compatible_16k": true
+    },
+    {
+      "library": "lib/arm64-v8a/libpngx.so",
+      "load_segments": [
+        {
+          "offset": 0,
+          "vaddr": 0,
+          "alignment": 16384,
+          "compatible_16k": true
+        },
+        {
+          "offset": 227408,
+          "vaddr": 243792,
+          "alignment": 16384,
+          "compatible_16k": true
+        }
+      ],
+      "compatible_16k": true
+    },
+    {
+      "library": "lib/arm64-v8a/libsherpa-onnx-c-api.so",
+      "load_segments": [
+        {
+          "offset": 0,
+          "vaddr": 0,
+          "alignment": 16384,
+          "compatible_16k": true
+        },
+        {
+          "offset": 4528848,
+          "vaddr": 4545232,
+          "alignment": 16384,
+          "compatible_16k": true
+        },
+        {
+          "offset": 4640008,
+          "vaddr": 4672776,
+          "alignment": 16384,
+          "compatible_16k": true
+        }
+      ],
+      "compatible_16k": true
+    },
+    {
+      "library": "lib/arm64-v8a/libsherpa-onnx-cxx-api.so",
+      "load_segments": [
+        {
+          "offset": 0,
+          "vaddr": 0,
+          "alignment": 16384,
+          "compatible_16k": true
+        },
+        {
+          "offset": 70912,
+          "vaddr": 87296,
+          "alignment": 16384,
+          "compatible_16k": true
+        },
+        {
+          "offset": 73008,
+          "vaddr": 105776,
+          "alignment": 16384,
+          "compatible_16k": true
+        }
+      ],
+      "compatible_16k": true
+    },
+    {
+      "library": "lib/arm64-v8a/libsherpa-onnx-jni.so",
+      "load_segments": [
+        {
+          "offset": 0,
+          "vaddr": 0,
+          "alignment": 16384,
+          "compatible_16k": true
+        },
+        {
+          "offset": 4774672,
+          "vaddr": 4791056,
+          "alignment": 16384,
+          "compatible_16k": true
+        },
+        {
+          "offset": 4886440,
+          "vaddr": 4919208,
+          "alignment": 16384,
+          "compatible_16k": true
+        }
+      ],
+      "compatible_16k": true
+    },
+    {
+      "library": "lib/arm64-v8a/libsurface_util_jni.so",
+      "load_segments": [
+        {
+          "offset": 0,
+          "vaddr": 0,
+          "alignment": 16384,
+          "compatible_16k": true
+        },
+        {
+          "offset": 2448,
+          "vaddr": 18832,
+          "alignment": 16384,
+          "compatible_16k": true
+        }
+      ],
+      "compatible_16k": true
+    },
+    {
+      "library": "lib/arm64-v8a/libtesseract.so",
+      "load_segments": [
+        {
+          "offset": 0,
+          "vaddr": 0,
+          "alignment": 16384,
+          "compatible_16k": true
+        },
+        {
+          "offset": 4160944,
+          "vaddr": 4177328,
+          "alignment": 16384,
+          "compatible_16k": true
+        },
+        {
+          "offset": 4235680,
+          "vaddr": 4268448,
+          "alignment": 16384,
+          "compatible_16k": true
+        }
+      ],
+      "compatible_16k": true
+    },
+    {
+      "library": "lib/arm64-v8a/libvosk.so",
+      "load_segments": [
+        {
+          "offset": 0,
+          "vaddr": 0,
+          "alignment": 4096,
+          "compatible_16k": false
+        },
+        {
+          "offset": 3541056,
+          "vaddr": 3545152,
+          "alignment": 4096,
+          "compatible_16k": false
+        },
+        {
+          "offset": 8723216,
+          "vaddr": 8731408,
+          "alignment": 4096,
+          "compatible_16k": false
+        },
+        {
+          "offset": 8857832,
+          "vaddr": 8870120,
+          "alignment": 4096,
+          "compatible_16k": false
+        }
+      ],
+      "compatible_16k": false
+    }
+  ],
+  "compatible": 13,
+  "incompatible": 1
+}

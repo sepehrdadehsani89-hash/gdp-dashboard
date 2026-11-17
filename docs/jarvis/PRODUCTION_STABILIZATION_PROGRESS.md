@@ -10,7 +10,7 @@ Rollback: `checkpoint/production-stabilization-start-8d7ac1e`. The previous publ
 3. The HUD state collector copied `reducedMotion=true` and particle density zero whenever memory performance restrictions were active. A settings save could then persist this derived restriction. The collector now preserves the saved preference; renderer frame budgets enforce memory, Battery Saver and system animation restrictions separately.
 4. Prior checkpoint already contains frame scheduling, surface retry and charging particle fixes. Their software policy regressions are rerun. Real 60-second rendering, lock/unlock and charger tests are pending; changing a preference is not physical rendering evidence.
 
-## Implemented behavior pending final build verification
+## Implemented behavior with software verification; device acceptance pending
 
 - One authoritative voice session reserves the microphone during synthesis, playback and cooldown. Stale callbacks cannot interrupt a new response. Default continuous follow-up is off. The existing foreground wake listener resumes after actual completion and cooldown, without opening a command window by default.
 - Stop Speaking retires the generation, stops playback, clears captions and resumes safe wake mode after cooldown. Speech retry retains the exact failed response transiently and preserves inference evidence. Logs contain metadata, not response text or credentials.
@@ -39,7 +39,7 @@ Rollback: `checkpoint/production-stabilization-start-8d7ac1e`. The previous publ
 
 ## Verification
 
-Actual logs, XML, per-case results and artifact checks are in `TEST_EVIDENCE/PRODUCTION_STABILIZATION`. The initial focused policy runs passed 110 and 174 tests respectively, with zero failures or skips. The settings/contact/setup focused run then passed 207 tests with zero failures/skips after a recorded compile-error correction. The final JVM task completed 1,297 cases: 1,296 passed, zero failures/errors and one optional user-export fixture skipped (`PrivateMemoryBackupTest.validatesUserExportPrivatelyWhenProvided`). Lint, packaging and Android test compilation are recorded separately once complete. No Android device or emulator is connected. No live provider account was used in this cloud environment. An installed Local Brain on the user's phone does not establish local inference in this workspace.
+Actual logs, XML, per-case results and artifact checks are in `TEST_EVIDENCE/PRODUCTION_STABILIZATION`. The initial focused policy runs passed 110 and 174 tests respectively, with zero failures or skips. The settings/contact/setup focused run then passed 207 tests with zero failures/skips after a recorded compile-error correction. The final JVM task completed 1,297 cases: 1,296 passed, zero failures/errors and one optional user-export fixture skipped (`PrivateMemoryBackupTest.validatesUserExportPrivatelyWhenProvided`). Final full verification run 3 passed compilation, lint (zero errors, 55 warnings, one informational item), APK assembly and Android-test compilation. Twenty artifact checks passed. The released candidate is 56,199,459 bytes with SHA-256 `ad796f1920f4853ff855acd710d1360bfa32a1e185ca733d4850c071ab7261ed`. Physical/instrumented tests executed: zero. No Android device or emulator is connected. No live provider account was used in this cloud environment. An installed Local Brain on the user's phone does not establish local inference in this workspace.
 
 ## Release boundary
 

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.voice.ConversationTurnTest" tests="17" skipped="0" failures="0" errors="0" timestamp="2026-11-17T20:56:53" hostname="472108d07068" time="0.173">
+  <properties/>
+  <testcase name="ordinaryAnswersUseConfiguredFishVoiceAndPrivateContentKeepsItsConsent" classname="com.jarvis.assistant.voice.ConversationTurnTest" time="0.001"/>
+  <testcase name="shortPauseAndCompoundRequestsRemainOneTurn" classname="com.jarvis.assistant.voice.ConversationTurnTest" time="0.001"/>
+  <testcase name="changingSpeechIsNotCutOffAtTheStalePartialDeadline" classname="com.jarvis.assistant.voice.ConversationTurnTest" time="0.144"/>
+  <testcase name="stopOrNewSessionCannotConsumeThePreviousSessionsFinal" classname="com.jarvis.assistant.voice.ConversationTurnTest" time="0.0"/>
+  <testcase name="stalledDecoderIsFlushedAfterNaturalSilence" classname="com.jarvis.assistant.voice.ConversationTurnTest" time="0.006"/>
+  <testcase name="screenOffPhrasesReachTheSameLockActionWithoutCompoundGuessing" classname="com.jarvis.assistant.voice.ConversationTurnTest" time="0.0"/>
+  <testcase name="stablePartialInNoisyRoomRequestsFinalBeforeTheTwelveSecondTimeout" classname="com.jarvis.assistant.voice.ConversationTurnTest" time="0.012"/>
+  <testcase name="activeAnimationIsVisibleAndStillHonorsZeroIntensity" classname="com.jarvis.assistant.voice.ConversationTurnTest" time="0.001"/>
+  <testcase name="reactorMovesContinuouslyAcrossPhaseChangesAndDoesNotReset" classname="com.jarvis.assistant.voice.ConversationTurnTest" time="0.0"/>
+  <testcase name="constantRmsCannotHoldAnAcceptedQuestionOpenForever" classname="com.jarvis.assistant.voice.ConversationTurnTest" time="0.001"/>
+  <testcase name="rejectedFinalCannotBeReplacedWithItsMoreConvenientPartial" classname="com.jarvis.assistant.voice.ConversationTurnTest" time="0.001"/>
+  <testcase name="pendingActionAcknowledgementDoesNotClaimTheActionWasDone" classname="com.jarvis.assistant.voice.ConversationTurnTest" time="0.0"/>
+  <testcase name="disabledVoiceDoesNotClaimAnAudibleAcknowledgement" classname="com.jarvis.assistant.voice.ConversationTurnTest" time="0.0"/>
+  <testcase name="reactorResumeDoesNotCountTimeSpentHidden" classname="com.jarvis.assistant.voice.ConversationTurnTest" time="0.0"/>
+  <testcase name="noiseAndEmptyPartialsCannotInventAnyRequest" classname="com.jarvis.assistant.voice.ConversationTurnTest" time="0.002"/>
+  <testcase name="engineFinalMayCorrectTheDisplayedPartial" classname="com.jarvis.assistant.voice.ConversationTurnTest" time="0.0"/>
+  <testcase name="anIncompleteClauseKeepsItsLongerPause" classname="com.jarvis.assistant.voice.ConversationTurnTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

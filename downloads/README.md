@@ -1,4 +1,12 @@
-# Current development milestone: Jarvis2.11.8
+# Current stabilization preview: Jarvis 2.11.9-stabilize.1-debug
+
+[**Download ARM64 test APK**](stabilization-2.11.9-debug/Jarvis-2.11.9-stabilize.1-debug-arm64.apk) · [Verification and checksum](stabilization-2.11.9-debug/README.md) · [Phone guide](../docs/jarvis/STABILIZATION_USER_GUIDE.md) · [Engineering report](../docs/jarvis/STABILIZATION_ENGINEERING_REPORT.md)
+
+Package `com.jarvis.next.phoenix`, code 30, retained Phoenix preview signer. This updates the Phoenix preview and preserves its data; it cannot update the differently signed original production package. Do not uninstall the original app to bypass a conflict. 1,296 JVM passed, zero failed, one optional fixture skipped; zero lint errors and 20 artifact checks passed. Actual phone audio/GPU/installation tests remain pending. Production AAB/Play readiness is blocked; this is a test preview.
+
+Previous published Phoenix preview: [Brain Manager](brain-manager-2.11.9-debug/README.md). Older release artifacts below remain intact.
+
+# Previous signed development milestone: Jarvis 2.11.8
 
 [**Download signed ARM64 APK**](polish-2.11.8/Jarvis-2.11.8-arm64-update.apk) · [Phone guide](../docs/finish-polish/Phone_Guide.md) · [Combined report and limits](../docs/finish-polish/REPORT.md) · [Verification](polish-2.11.8/VERIFICATION.md).
 

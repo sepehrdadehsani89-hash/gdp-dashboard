@@ -40,7 +40,7 @@ The existing supported APIs are preserved. Battery replies contain actual readin
 
 ## Verification and release boundary
 
-Final JVM result: **1,297 cases; 1,296 passed; zero failures/errors; one optional private-export fixture skipped because no export was supplied**. Earlier focused passes and failed/cancelled attempts remain recorded; they are not substituted for this run. Lint, APK artifact/signature inspection and Android-test compilation results are in the final build evidence and release notes.
+Final JVM result: **1,297 cases; 1,296 passed; zero failures/errors; one optional private-export fixture skipped because no export was supplied**. Earlier focused passes and failed/cancelled attempts remain recorded; they are not substituted for this run. Final full run 3 passed lint (zero errors, 55 warnings, one informational item), APK assembly and Android-test compilation. Twenty artifact/signature/package/asset checks passed. APK SHA-256: `ad796f1920f4853ff855acd710d1360bfa32a1e185ca733d4850c071ab7261ed`; 56,199,459 bytes. All 14 native libraries remain ARM64 and all 134 compared asset/native entries are unchanged. Exact files and per-case results are in the final build evidence and release notes.
 
 Candidate version: **2.11.9-stabilize.1-debug**, version code **30**, display name **Jarvis**, package **com.jarvis.next.phoenix**. It preserves the retained Phoenix signer for updates of that preview. It cannot update the original differently signed `com.jarvis.next` package. No dependency, model, emulator or key was installed during this milestone. No application data was deleted and the Room schema is unchanged.
 

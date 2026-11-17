@@ -1,0 +1,44 @@
+{
+  "version_name": "2.11.9-stabilize.1-debug",
+  "version_code": 30,
+  "display_name": "Jarvis",
+  "package": "com.jarvis.next.phoenix",
+  "architecture": "arm64-v8a",
+  "min_sdk": 29,
+  "target_sdk": 35,
+  "source_commit": "fbf2707b8da467af251dcd09f8b822cf369eeb50",
+  "artifact": "downloads/stabilization-2.11.9-debug/Jarvis-2.11.9-stabilize.1-debug-arm64.apk",
+  "bytes": 56199459,
+  "sha256": "ad796f1920f4853ff855acd710d1360bfa32a1e185ca733d4850c071ab7261ed",
+  "certificate_sha256": "f9f13af1f84515b787b89c0f3abc8695f1d0d45e8a647d1192966c4c810964c7",
+  "jvm": {
+    "tests": 1297,
+    "passed": 1296,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 1
+  },
+  "lint": {
+    "Warning": 55,
+    "Information": 1
+  },
+  "artifact_checks": {
+    "passed": 20,
+    "failed": 0
+  },
+  "android_test_compilation": "PASS",
+  "instrumented_tests_executed": 0,
+  "physical_device_tests_executed": 0,
+  "production_aab": {
+    "produced": false,
+    "guard": "checkNextSigning FAILED",
+    "exact_error": "Set JARVIS_NEXT_SIGNING_DIR to the private signing directory. Never generate a replacement key for an existing Jarvis Next installation.",
+    "other_readiness_work": [
+      "API 36 migration",
+      "16 KB Vosk alignment",
+      "publisher policy/reporting/declarations",
+      "physical acceptance"
+    ]
+  },
+  "publication": "Prepared locally. GitHub publishing requires owner confirmation and a separate remote-download verification."
+}

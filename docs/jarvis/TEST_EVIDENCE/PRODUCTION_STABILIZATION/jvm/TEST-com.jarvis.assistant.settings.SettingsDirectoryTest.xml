@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.settings.SettingsDirectoryTest" tests="20" skipped="0" failures="0" errors="0" timestamp="2026-11-17T20:56:52" hostname="472108d07068" time="0.006">
+  <properties/>
+  <testcase name="lockIsDiscoverable" classname="com.jarvis.assistant.settings.SettingsDirectoryTest" time="0.001"/>
+  <testcase name="punctuationDoesNotBreakSearch" classname="com.jarvis.assistant.settings.SettingsDirectoryTest" time="0.001"/>
+  <testcase name="whitespaceSearchShowsSections" classname="com.jarvis.assistant.settings.SettingsDirectoryTest" time="0.0"/>
+  <testcase name="chatgptIsDiscoverable" classname="com.jarvis.assistant.settings.SettingsDirectoryTest" time="0.001"/>
+  <testcase name="setupIsDiscoverable" classname="com.jarvis.assistant.settings.SettingsDirectoryTest" time="0.0"/>
+  <testcase name="diagnosticSearchDoesNotInferSuccess" classname="com.jarvis.assistant.settings.SettingsDirectoryTest" time="0.0"/>
+  <testcase name="microphoneIsDiscoverable" classname="com.jarvis.assistant.settings.SettingsDirectoryTest" time="0.0"/>
+  <testcase name="permissionIsDiscoverable" classname="com.jarvis.assistant.settings.SettingsDirectoryTest" time="0.0"/>
+  <testcase name="enormousSearchIsBounded" classname="com.jarvis.assistant.settings.SettingsDirectoryTest" time="0.001"/>
+  <testcase name="wifiIsDiscoverable" classname="com.jarvis.assistant.settings.SettingsDirectoryTest" time="0.0"/>
+  <testcase name="unmatchedSearchIsHonest" classname="com.jarvis.assistant.settings.SettingsDirectoryTest" time="0.0"/>
+  <testcase name="maAliasIsDiscoverable" classname="com.jarvis.assistant.settings.SettingsDirectoryTest" time="0.0"/>
+  <testcase name="captionsIsDiscoverable" classname="com.jarvis.assistant.settings.SettingsDirectoryTest" time="0.0"/>
+  <testcase name="claudeIsDiscoverable" classname="com.jarvis.assistant.settings.SettingsDirectoryTest" time="0.001"/>
+  <testcase name="spanishIsDiscoverable" classname="com.jarvis.assistant.settings.SettingsDirectoryTest" time="0.0"/>
+  <testcase name="motionIsDiscoverable" classname="com.jarvis.assistant.settings.SettingsDirectoryTest" time="0.001"/>
+  <testcase name="emptySearchShowsTenSections" classname="com.jarvis.assistant.settings.SettingsDirectoryTest" time="0.0"/>
+  <testcase name="contactsIsDiscoverable" classname="com.jarvis.assistant.settings.SettingsDirectoryTest" time="0.0"/>
+  <testcase name="localIsDiscoverable" classname="com.jarvis.assistant.settings.SettingsDirectoryTest" time="0.0"/>
+  <testcase name="multiwordSearchRequiresEveryTerm" classname="com.jarvis.assistant.settings.SettingsDirectoryTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

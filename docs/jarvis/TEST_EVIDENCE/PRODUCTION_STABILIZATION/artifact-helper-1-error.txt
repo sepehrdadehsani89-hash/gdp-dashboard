@@ -1,0 +1,9 @@
+Picked up JAVA_TOOL_OPTIONS: -Djava.util.prefs.userRoot=/workspace/.jarvis-toolchain/java-prefs -Duser.home=/workspace/.jarvis-toolchain/java-home -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080 -Dhttps.proxyHost=proxy -Dhttps.proxyPort=8080
+Exception in thread "main" java.io.FileNotFoundException: /workspace/gdp-dashboard/downloads/brain-manager-2.11.9-debug/Jarvis-2.11.9-stabilize.1-debug-arm64.apk (No such file or directory)
+	at java.base/java.io.RandomAccessFile.open0(Native Method)
+	at java.base/java.io.RandomAccessFile.open(RandomAccessFile.java:356)
+	at java.base/java.io.RandomAccessFile.<init>(RandomAccessFile.java:273)
+	at java.base/java.io.RandomAccessFile.<init>(RandomAccessFile.java:223)
+	at com.android.apksig.ApkVerifier.verify(ApkVerifier.java:158)
+	at com.android.apksigner.ApkSignerTool.verify(ApkSignerTool.java:602)
+	at com.android.apksigner.ApkSignerTool.main(ApkSignerTool.java:97)
