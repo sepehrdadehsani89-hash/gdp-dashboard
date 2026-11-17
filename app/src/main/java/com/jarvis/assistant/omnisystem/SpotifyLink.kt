@@ -13,7 +13,7 @@ import java.util.Base64
 
 data class SpotifyAuthorization(val url:String,val state:String,val verifier:String,val createdAt:Long)
 object SpotifyPkce {
-    const val REDIRECT="com.jarvis.next://spotify-callback"
+    val REDIRECT="${com.jarvis.assistant.BuildConfig.APPLICATION_ID}://spotify-callback"
     private fun nonce()=Base64.getUrlEncoder().withoutPadding().encodeToString(ByteArray(48).also{SecureRandom().nextBytes(it)})
     fun clientId(value:String)=value.matches(Regex("[a-fA-F0-9]{32}"))
     fun create(id:String,now:Long=System.currentTimeMillis()):SpotifyAuthorization {
@@ -23,7 +23,7 @@ object SpotifyPkce {
         val query=params.entries.joinToString("&"){java.net.URLEncoder.encode(it.key,"UTF-8")+"="+java.net.URLEncoder.encode(it.value,"UTF-8")}
         return SpotifyAuthorization("https://accounts.spotify.com/authorize?$query",state,verifier,now)
     }
-    fun validRedirect(uri:URI)=uri.scheme=="com.jarvis.next" && uri.host=="spotify-callback" && uri.userInfo==null && uri.port==-1 && uri.path.orEmpty().isEmpty() && uri.fragment==null
+    fun validRedirect(uri:URI)=uri.scheme==com.jarvis.assistant.BuildConfig.APPLICATION_ID && uri.host=="spotify-callback" && uri.userInfo==null && uri.port==-1 && uri.path.orEmpty().isEmpty() && uri.fragment==null
     fun validState(expected:String,actual:String?,createdAt:Long,now:Long)=actual!=null && expected.length>=32 && now-createdAt in 0..300_000 && MessageDigest.isEqual(expected.toByteArray(),actual.toByteArray())
 }
 /** Native public-client OAuth: PKCE only, no embedded client secret, exact callback and replay guard. */

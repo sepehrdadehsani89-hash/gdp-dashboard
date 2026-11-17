@@ -15,16 +15,20 @@ class ConnectedFolderFlowTest {
     @Test fun persistedReadGrantBrowseReadReconnectAndRevoke() {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val target = instrumentation.targetContext
-        assertEquals("com.jarvis.next", target.packageName)
-        val uri = DocumentsContract.buildTreeDocumentUri("com.jarvis.next.test.folders", "root")
+        assertEquals(BuildConfig.APPLICATION_ID, target.packageName)
+        val testPackage=instrumentation.context.packageName
+        val authority=instrumentation.context.packageManager.getPackageInfo(testPackage,android.content.pm.PackageManager.GET_PROVIDERS)
+            .providers.orEmpty().single{it.name==FolderFixtureProvider::class.java.name}.authority
+        val uri = DocumentsContract.buildTreeDocumentUri(authority, "root")
         fun grantFromOwner() {
             val ready = java.util.concurrent.CountDownLatch(1)
             val receiver = object : android.content.BroadcastReceiver() {
                 override fun onReceive(context: android.content.Context?, intent: Intent?) { ready.countDown() }
             }
-            androidx.core.content.ContextCompat.registerReceiver(target, receiver, android.content.IntentFilter("com.jarvis.next.test.FOLDER_GRANTED"), androidx.core.content.ContextCompat.RECEIVER_EXPORTED)
+            androidx.core.content.ContextCompat.registerReceiver(target, receiver, android.content.IntentFilter("$testPackage.FOLDER_GRANTED"), androidx.core.content.ContextCompat.RECEIVER_EXPORTED)
             try {
-                instrumentation.context.startActivity(Intent().setClassName(instrumentation.context.packageName, FolderGrantActivity::class.java.name).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                instrumentation.context.startActivity(Intent().setClassName(testPackage, FolderGrantActivity::class.java.name)
+                    .putExtra("jarvis_test_target",target.packageName).putExtra("jarvis_test_authority",authority).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
                 assertTrue("Provider owner must issue a fresh grant", ready.await(30, java.util.concurrent.TimeUnit.SECONDS))
             } finally { target.unregisterReceiver(receiver) }
         }

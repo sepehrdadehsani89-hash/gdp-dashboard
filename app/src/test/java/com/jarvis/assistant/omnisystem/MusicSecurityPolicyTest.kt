@@ -39,7 +39,14 @@ class MusicSecurityPolicyTest {
     }
     @Test fun callbackOriginCannotBeConfusedWithAnotherAppOrEndpoint(){
         assertTrue(SpotifyPkce.validRedirect(URI(SpotifyPkce.REDIRECT+"?code=fixture")))
-        listOf("https://spotify-callback","com.jarvis.next://spotify-callback.attacker.example","com.jarvis.next://spotify-callback/path","com.jarvis.next://spotify-callback#fragment","com.jarvis.next://user@spotify-callback").forEach{assertFalse(SpotifyPkce.validRedirect(URI(it)))}
+        val scheme=com.jarvis.assistant.BuildConfig.APPLICATION_ID
+        listOf("https://spotify-callback","$scheme://spotify-callback.attacker.example","$scheme://spotify-callback/path","$scheme://spotify-callback#fragment","$scheme://user@spotify-callback").forEach{assertFalse(SpotifyPkce.validRedirect(URI(it)))}
+    }
+    @Test fun callbackUsesOnlyTheCurrentApplicationIdentity(){
+        val current=com.jarvis.assistant.BuildConfig.APPLICATION_ID
+        assertEquals("$current://spotify-callback",SpotifyPkce.REDIRECT)
+        val other=if(current=="com.jarvis.next")"com.jarvis.next.phoenix" else "com.jarvis.next"
+        assertFalse(SpotifyPkce.validRedirect(URI("$other://spotify-callback?code=fixture")))
     }
     @Test fun wavHasActualPcmDurationFormatAndPayload(){
         val pcm=ByteArray(16000*2*10){(it%91).toByte()};val wav=WavePcm.encode(pcm)

@@ -109,7 +109,7 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="com.jarvis.next" android:host="spotify-callback" />
+                <data android:scheme="${applicationId}" android:host="spotify-callback" />
             </intent-filter>
         </activity>
         <activity android:name=".infinity.InfinityControlsActivity" android:exported="false" android:theme="@style/Theme.Jarvis" />

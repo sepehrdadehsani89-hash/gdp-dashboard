@@ -29,7 +29,7 @@ class ScreenCaptureFlowTest {
         automation.adoptShellPermissionIdentity(Manifest.permission.WRITE_SECURE_SETTINGS)
         try {
             Settings.Secure.putString(instrumentation.targetContext.contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES,
-                "com.jarvis.next/com.jarvis.assistant.tools.JarvisAccessibilityService")
+                android.content.ComponentName(instrumentation.targetContext,com.jarvis.assistant.tools.JarvisAccessibilityService::class.java).flattenToString())
             Settings.Secure.putInt(instrumentation.targetContext.contentResolver, Settings.Secure.ACCESSIBILITY_ENABLED, 1)
         } finally { automation.dropShellPermissionIdentity() }
         compose.activityRule.scenario.onActivity {

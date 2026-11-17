@@ -17,8 +17,8 @@ android {
         applicationId = "com.jarvis.next"
         minSdk = 29
         targetSdk = 35
-        versionCode = 26
-        versionName = "2.11.9-phoenix.1"
+        versionCode = 27
+        versionName = "2.11.9-phoenix.2"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
         ndk { abiFilters += providers.gradleProperty("jarvisAbis").getOrElse("arm64-v8a").split(",") }
@@ -59,6 +59,7 @@ android {
     }
     buildTypes {
         debug {
+            applicationIdSuffix = ".phoenix"
             versionNameSuffix = "-debug"
         }
         create("reinstall") {

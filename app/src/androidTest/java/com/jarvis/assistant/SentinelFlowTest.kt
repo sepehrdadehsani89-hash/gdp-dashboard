@@ -122,7 +122,7 @@ class SentinelFlowTest {
         Thread.sleep(800)
         assertTrue("Display-off surface must not keep drawing",JarvisWallpaperService.renderedFrames-asleep<=1)
         shell("input keyevent KEYCODE_WAKEUP");shell("wm dismiss-keyguard")
-        shell("am start -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -n com.jarvis.next/com.jarvis.assistant.MainActivity")
+        shell("am start -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -n ${androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().targetContext.packageName}/com.jarvis.assistant.MainActivity")
         compose.waitUntil(30_000){JarvisWallpaperService.visibleEngineCount==0}
         val hidden=JarvisWallpaperService.renderedFrames
         Thread.sleep(800)

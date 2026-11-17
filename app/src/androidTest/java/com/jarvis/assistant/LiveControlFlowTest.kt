@@ -28,7 +28,7 @@ class LiveControlFlowTest {
         try {
             android.provider.Settings.Secure.putString(i.targetContext.contentResolver, android.provider.Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES, "")
             Thread.sleep(500)
-            android.provider.Settings.Secure.putString(i.targetContext.contentResolver, android.provider.Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES, "com.jarvis.next/com.jarvis.assistant.tools.JarvisAccessibilityService")
+            android.provider.Settings.Secure.putString(i.targetContext.contentResolver, android.provider.Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES, android.content.ComponentName(i.targetContext,JarvisAccessibilityService::class.java).flattenToString())
             android.provider.Settings.Secure.putInt(i.targetContext.contentResolver, android.provider.Settings.Secure.ACCESSIBILITY_ENABLED, 1)
         } finally { automation.dropShellPermissionIdentity() }
         val connectionDeadline = System.currentTimeMillis() + 30_000
