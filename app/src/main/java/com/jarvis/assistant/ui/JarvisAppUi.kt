@@ -589,6 +589,7 @@ private fun SettingsScreen(state: JarvisUiState, actions: JarvisUiActions, senti
     LazyColumn(contentPadding = PaddingValues(24.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
         item { Button(onClick=actions.onOpenNeural,modifier=Modifier.fillMaxWidth()){Text(l.choose("Neural Core · brain, knowledge & briefings","Neural Core · cerebro y resúmenes","هستهٔ عصبی · دانش و گزارش روزانه"))} }
         item { Button(onClick={actions.onInteraction(com.jarvis.assistant.sentinel.SentinelSound.PANEL_OPEN);sentinel=true},modifier=Modifier.fillMaxWidth()){Text(l.choose("Sentinel · wallpaper & sound","Sentinel · fondo y sonido","سنتینل · پس‌زمینه و صدا"))} }
+        item { Button(onClick=actions.onOpenVoiceIntelligence,modifier=Modifier.fillMaxWidth()){Text(l.choose("Voice Intelligence · microphone & diagnostics","Inteligencia de voz · micrófono y diagnóstico","هوش صوتی · میکروفن و عیب‌یابی"))} }
         item { HudSettingsCard(state, actions) }
         item { if(state.authorization!=null) AuthorizationPanel(state,actions) }
         item { PageTitle(l.choose("Made to feel like yours.", "Hecho a tu manera.", "همان‌طور که شما می‌خواهید."), l.choose("SETTINGS", "AJUSTES", "تنظیمات")) }

@@ -10,7 +10,9 @@ import com.jarvis.assistant.omnisystem.PrivateModuleActivity
 
 class VoiceHealthActivity:PrivateModuleActivity(){
     override fun onCreate(savedInstanceState:Bundle?){super.onCreate(savedInstanceState);if(isFinishing)return
-        screen("VOICE HEALTH · LANGUAGE & PICKUP"){
+        screen(words("VOICE INTELLIGENCE","INTELIGENCIA DE VOZ","هوش صوتی")){
+            VoiceIntelligencePanel(runtime)
+            HorizontalDivider()
             val shared by runtime.state.collectAsStateWithLifecycle()
             val wake by WakeListenerService.state.collectAsStateWithLifecycle()
             val diagnostic by RecognitionDiagnostics.state.collectAsStateWithLifecycle()

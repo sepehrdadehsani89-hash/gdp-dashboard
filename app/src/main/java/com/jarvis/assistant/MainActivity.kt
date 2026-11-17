@@ -175,6 +175,7 @@ class MainActivity : ComponentActivity() {
                 onDismissContactFollowUp=runtime::dismissContactFollowUp,
                 onOpenContacts={startActivity(Intent(this,com.jarvis.assistant.contacts.ContactShortcutsActivity::class.java))},
                 onOpenOutputVoice={startActivity(Intent(this,com.jarvis.assistant.voice.VoiceSettingsActivity::class.java))},
+                onOpenVoiceIntelligence={startActivity(Intent(this,com.jarvis.assistant.voice.VoiceHealthActivity::class.java))},
                 onOpenScreenSecurity={startActivity(Intent(this,com.jarvis.assistant.security.SecuritySettingsActivity::class.java))},
                 onOpenNeural={startActivity(Intent(this,com.jarvis.assistant.neural.NeuralSettingsActivity::class.java))},
                 onInteraction = runtime.effects::userPlay,
