@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.tools.ToolPolicyTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-11-17T12:15:05" hostname="472108d07068" time="0.01">
+  <properties/>
+  <testcase name="onlyPublicHttpsNavigationIsAccepted" classname="com.jarvis.assistant.tools.ToolPolicyTest" time="0.0"/>
+  <testcase name="yesterdayUsesCalendarBoundsAcrossDaylightSavings" classname="com.jarvis.assistant.tools.ToolPolicyTest" time="0.001"/>
+  <testcase name="headlineCommandsDoNotTurnPossessivesOrParticlesIntoSearchTopics" classname="com.jarvis.assistant.tools.ToolPolicyTest" time="0.001"/>
+  <testcase name="englishSpanishAndPersianCommandsRouteLocally" classname="com.jarvis.assistant.tools.ToolPolicyTest" time="0.006"/>
+  <testcase name="privateCodesAndCardDigitsAreRedactedInBothScripts" classname="com.jarvis.assistant.tools.ToolPolicyTest" time="0.001"/>
+  <testcase name="confirmationsExpireAndCannotBeFutureDated" classname="com.jarvis.assistant.tools.ToolPolicyTest" time="0.0"/>
+  <testcase name="memoryPrefixPreservesOriginalContentWithExtraSpacesAndPersianUiPhrase" classname="com.jarvis.assistant.tools.ToolPolicyTest" time="0.0"/>
+  <testcase name="protectedBaselineCoversPaymentsPasswordsAndSystemSettings" classname="com.jarvis.assistant.tools.ToolPolicyTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,11 @@
+{
+  "tests": 789,
+  "passed": 787,
+  "failed": 1,
+  "errors": 0,
+  "skipped": 1,
+  "failed_case": "TitanVoiceTest.incompleteClauseAllowsLongerPauseAndSpeechResetsEndpoint",
+  "cause": "Legacy test expected the old 2500ms clause pause; the configured900ms endpoint uses1800ms for an incomplete clause.",
+  "repair": "Test now explicitly selects900ms and checks1799ms vs1800ms after the last speech energy; production source unchanged by this test correction.",
+  "build_result": "BUILD FAILED in 6m 34s"
+}

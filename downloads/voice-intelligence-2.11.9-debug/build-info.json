@@ -1,0 +1,70 @@
+{
+  "artifact": "Jarvis-2.11.9-voice.1-debug-arm64.apk",
+  "source_commit": "1b1a344b5fc7cab6077ac5df3dc9857f29e0c66b",
+  "package": "com.jarvis.next.phoenix",
+  "app_label": "Jarvis Phoenix Test",
+  "version_name": "2.11.9-voice.1-debug",
+  "version_code": 28,
+  "abi": "arm64-v8a",
+  "min_sdk": 29,
+  "target_sdk": 35,
+  "bytes": 55399061,
+  "sha256": "24b08f9519231127108e10f133326eb2646ce3f6fa5757c45294441338df459c",
+  "build_type": "debug",
+  "debuggable": true,
+  "signature_v2_verified": true,
+  "zipalign_verified": true,
+  "certificate_sha256": "f9f13af1f84515b787b89c0f3abc8695f1d0d45e8a647d1192966c4c810964c7",
+  "release_application_id_unchanged": "com.jarvis.next",
+  "original_release_update_compatible": false,
+  "preview_identity_isolated": true,
+  "previous_app_data_modified": false,
+  "device_install_executed": false,
+  "jvm": {
+    "total": 789,
+    "passed": 788,
+    "failed": 0,
+    "skipped": 1
+  },
+  "skipped_cases": [
+    "com.jarvis.assistant.neural.PrivateMemoryBackupTest.validatesUserExportPrivatelyWhenProvided"
+  ],
+  "focused_suite_cases": {
+    "EndpointReliabilityTest": 44,
+    "AndroidFinalRecognitionTest": 20,
+    "SpokenCaptionTest": 20,
+    "ChargingParticleFieldTest": 20,
+    "WallpaperSurfaceRetryTest": 20,
+    "CoreFramePacerTest": 24
+  },
+  "lint": {
+    "Warning": 48,
+    "Information": 1
+  },
+  "artifact_checks": {
+    "passed": 20,
+    "failed": 0
+  },
+  "android_render_cases": {
+    "compiled": 20,
+    "new_charging_cases": 4,
+    "executed": 0
+  },
+  "device_acceptance_cases": {
+    "blocked": 20,
+    "executed": 0
+  },
+  "physical_device_tests_executed": 0,
+  "build_result": "BUILD SUCCESSFUL in 10m 48s",
+  "tasks": {
+    "executed": 20,
+    "up_to_date": 48
+  },
+  "original_release_signing_available": false,
+  "neural_vad_model_installed": false,
+  "new_android_dependencies": false,
+  "previous_apks_preserved": true,
+  "native_library_and_asset_files_preserved_byte_for_byte": 134,
+  "public_download_url": null,
+  "publication_status_at_build": "AWAITING_OWNER_CONFIRMATION"
+}

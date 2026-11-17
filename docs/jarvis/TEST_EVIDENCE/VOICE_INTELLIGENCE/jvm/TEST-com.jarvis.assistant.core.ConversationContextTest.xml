@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.core.ConversationContextTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-11-17T12:14:59" hostname="472108d07068" time="0.044">
+  <properties/>
+  <testcase name="speechCanStartBeforeTheFullAnswerArrivesAndFlushesRemainderExactly" classname="com.jarvis.assistant.core.ConversationContextTest" time="0.002"/>
+  <testcase name="publicLockedChatNeverAuthorizesPrivateDataOrPhoneActions" classname="com.jarvis.assistant.core.ConversationContextTest" time="0.001"/>
+  <testcase name="oversizedTurnsRespectBudgetWithoutLeavingOrphanModelMessage" classname="com.jarvis.assistant.core.ConversationContextTest" time="0.034"/>
+  <testcase name="screenshotExpiresAndItsBytesAreZeroedOnClearOrReplacement" classname="com.jarvis.assistant.core.ConversationContextTest" time="0.003"/>
+  <testcase name="captureAndFollowUpPhrasesWorkInThreeLanguagesWithoutTreatingHelpAsCapture" classname="com.jarvis.assistant.core.ConversationContextTest" time="0.002"/>
+  <testcase name="conversationRetainsOnlyBoundedCompleteTurnsAndCanBeCleared" classname="com.jarvis.assistant.core.ConversationContextTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

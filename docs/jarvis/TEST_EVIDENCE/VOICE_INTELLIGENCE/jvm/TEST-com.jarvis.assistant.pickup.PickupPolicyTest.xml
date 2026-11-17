@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.pickup.PickupPolicyTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-11-17T12:15:05" hostname="472108d07068" time="0.008">
+  <properties/>
+  <testcase name="continuousShakingDoesNotPretendThePhoneWasResting" classname="com.jarvis.assistant.pickup.PickupPolicyTest" time="0.002"/>
+  <testcase name="aCoveredPocketCannotArmOrTriggerTheGesture" classname="com.jarvis.assistant.pickup.PickupPolicyTest" time="0.001"/>
+  <testcase name="staleMovementDoesNotBecomeANewPickup" classname="com.jarvis.assistant.pickup.PickupPolicyTest" time="0.0"/>
+  <testcase name="anUncoveredSettledPhoneThenLiftAndTiltOffersExactlyOneGreeting" classname="com.jarvis.assistant.pickup.PickupPolicyTest" time="0.0"/>
+  <testcase name="greetingRotationHasSixDistinctPublicPhrasesForEachSupportedLanguage" classname="com.jarvis.assistant.pickup.PickupPolicyTest" time="0.0"/>
+  <testcase name="aScreenOffOrBusyIntervalDisarmsAnEarlierCandidate" classname="com.jarvis.assistant.pickup.PickupPolicyTest" time="0.001"/>
+  <testcase name="proximityCoverDuringTheLiftCancelsIt" classname="com.jarvis.assistant.pickup.PickupPolicyTest" time="0.001"/>
+  <testcase name="invalidSensorsCannotTriggerAndAStationaryPhoneNeverGreets" classname="com.jarvis.assistant.pickup.PickupPolicyTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.voice.FirstSpeakerFocusTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2026-11-17T12:15:05" hostname="472108d07068" time="0.13">
+  <properties/>
+  <testcase name="anotherVoiceIsIgnoredWhileTheFirstContinues" classname="com.jarvis.assistant.voice.FirstSpeakerFocusTest" time="0.001"/>
+  <testcase name="silenceDoesNotLockOntoBackgroundOrInventRecognizedSpeech" classname="com.jarvis.assistant.voice.FirstSpeakerFocusTest" time="0.014"/>
+  <testcase name="filteredBackgroundDoesNotKeepAcceptedUtteranceListeningForever" classname="com.jarvis.assistant.voice.FirstSpeakerFocusTest" time="0.001"/>
+  <testcase name="disabledOrWakeOnlyCaptureKeepsOriginalAsrAudioAndDoesNotClassify" classname="com.jarvis.assistant.voice.FirstSpeakerFocusTest" time="0.003"/>
+  <testcase name="obsoleteCaptureCannotLockTheNextConversation" classname="com.jarvis.assistant.voice.FirstSpeakerFocusTest" time="0.083"/>
+  <testcase name="newWakeOrStopRevokesOldReferenceAndStaleInference" classname="com.jarvis.assistant.voice.FirstSpeakerFocusTest" time="0.001"/>
+  <testcase name="invalidEmbeddingsNeverBecomeSpeakerEvidence" classname="com.jarvis.assistant.voice.FirstSpeakerFocusTest" time="0.001"/>
+  <testcase name="referenceExpiresAndIsNotAPermanentOwnerRestriction" classname="com.jarvis.assistant.voice.FirstSpeakerFocusTest" time="0.0"/>
+  <testcase name="pcmIsQuarantinedAndOtherSpeakerBecomesSilenceBeforeAsr" classname="com.jarvis.assistant.voice.FirstSpeakerFocusTest" time="0.026"/>
+  <testcase name="anyFirstSpeakerCanStartWithoutAnEnrolledIdentity" classname="com.jarvis.assistant.voice.FirstSpeakerFocusTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

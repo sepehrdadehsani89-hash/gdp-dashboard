@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.sentinel.SentinelPolicyTest" tests="15" skipped="0" failures="0" errors="0" timestamp="2026-11-17T12:15:05" hostname="472108d07068" time="0.045">
+  <properties/>
+  <testcase name="newSettingsHaveSafeAdditiveDefaultsAndRejectInvalidValues" classname="com.jarvis.assistant.sentinel.SentinelPolicyTest" time="0.0"/>
+  <testcase name="sharedRingsCounterRotateAndGeometryDoesNotDependOnFakeMetrics" classname="com.jarvis.assistant.sentinel.SentinelPolicyTest" time="0.001"/>
+  <testcase name="mediaCommandsAreExplicitAndNeverParsedFromAnExplanation" classname="com.jarvis.assistant.sentinel.SentinelPolicyTest" time="0.001"/>
+  <testcase name="invisibleSurfacesAndScreenOffNeverRequestAnAnimationLoop" classname="com.jarvis.assistant.sentinel.SentinelPolicyTest" time="0.0"/>
+  <testcase name="wordConfidenceRejectsNoiseWithoutPretendingUnavailableScoresExist" classname="com.jarvis.assistant.sentinel.SentinelPolicyTest" time="0.001"/>
+  <testcase name="replyStyleChangesTrustedInstructionsAndKeepsToolBoundaries" classname="com.jarvis.assistant.sentinel.SentinelPolicyTest" time="0.002"/>
+  <testcase name="followUpArmingKeepsTheSceneAwakeAndExpiryReturnsItToDormant" classname="com.jarvis.assistant.sentinel.SentinelPolicyTest" time="0.002"/>
+  <testcase name="wallpaperHonorsReducedMotionPowerAndLowBattery" classname="com.jarvis.assistant.sentinel.SentinelPolicyTest" time="0.0"/>
+  <testcase name="weatherQueriesUseConfiguredRealDataWithoutHijackingExplanations" classname="com.jarvis.assistant.sentinel.SentinelPolicyTest" time="0.006"/>
+  <testcase name="backgroundActivationNeverMovesAKnownForeignAppTarget" classname="com.jarvis.assistant.sentinel.SentinelPolicyTest" time="0.0"/>
+  <testcase name="activationDeduplicatesAndBusyOperationsDoNotWaitForTheVisualSequence" classname="com.jarvis.assistant.sentinel.SentinelPolicyTest" time="0.001"/>
+  <testcase name="dormantAndErrorScenesStayCheap" classname="com.jarvis.assistant.sentinel.SentinelPolicyTest" time="0.0"/>
+  <testcase name="authorizationAndErrorStatesUseActualRuntimeState" classname="com.jarvis.assistant.sentinel.SentinelPolicyTest" time="0.001"/>
+  <testcase name="awakeningHasOrderedStagesWithoutHoldingTheCommandWindow" classname="com.jarvis.assistant.sentinel.SentinelPolicyTest" time="0.001"/>
+  <testcase name="soundNeverOverridesMuteDndCallsOrCommandSpeech" classname="com.jarvis.assistant.sentinel.SentinelPolicyTest" time="0.029"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

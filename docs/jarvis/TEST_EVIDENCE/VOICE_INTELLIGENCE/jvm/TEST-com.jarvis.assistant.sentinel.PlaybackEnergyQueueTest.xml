@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.sentinel.PlaybackEnergyQueueTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-11-17T12:15:05" hostname="472108d07068" time="0.001">
+  <properties/>
+  <testcase name="buffersStayBoundedAndDoNotReturnStaleRms" classname="com.jarvis.assistant.sentinel.PlaybackEnergyQueueTest" time="0.001"/>
+  <testcase name="measuredSilenceIsDistinctFromUnavailablePlayback" classname="com.jarvis.assistant.sentinel.PlaybackEnergyQueueTest" time="0.0"/>
+  <testcase name="playbackCursorChoosesTheCorrectSubmittedBin" classname="com.jarvis.assistant.sentinel.PlaybackEnergyQueueTest" time="0.0"/>
+  <testcase name="queuedFutureSamplesNeverPretendToBeCurrentPlayback" classname="com.jarvis.assistant.sentinel.PlaybackEnergyQueueTest" time="0.0"/>
+  <testcase name="overlappingFrameRangesAreRejected" classname="com.jarvis.assistant.sentinel.PlaybackEnergyQueueTest" time="0.0"/>
+  <testcase name="pausedAndStoppedTracksHaveNoOutputEnergy" classname="com.jarvis.assistant.sentinel.PlaybackEnergyQueueTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,5 @@
+test,expected_result,actual_result,status,environment,evidence
+actualChargingStateDrawsGreenTransportBelowTheCore,Real charging fixture draws transport pixels below core,Compiled only; not executed,BLOCKED,Android runtime unavailable,PhoenixChargingParticleRenderTest.class compiled; no runtime/pixel evidence
+unpluggedStateHasNoIncomingEnergyParticles,No incoming transport pixels when unplugged,Compiled only; not executed,BLOCKED,Android runtime unavailable,PhoenixChargingParticleRenderTest.class compiled; no runtime/pixel evidence
+verifiedFullStateHasNoIncomingEnergyParticles,Full battery has no incoming transport pixels,Compiled only; not executed,BLOCKED,Android runtime unavailable,PhoenixChargingParticleRenderTest.class compiled; no runtime/pixel evidence
+reducedMotionKeepsOnlyTheExistingStaticChargingIndicator,Reduced motion has no incoming transport pixels,Compiled only; not executed,BLOCKED,Android runtime unavailable,PhoenixChargingParticleRenderTest.class compiled; no runtime/pixel evidence
