@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.brain.BrainProviderManagerTest" tests="58" skipped="0" failures="0" errors="0" timestamp="2026-11-17T15:42:27" hostname="472108d07068" time="0.676">
+  <properties/>
+  <testcase name="canceledProbeRemovesOldProofAndReportsCanceled" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.099"/>
+  <testcase name="failedRemotePlanDisconnectNeverRestoresVerifiedProof" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.062"/>
+  <testcase name="changedApiKeyInvalidatesMatchingProof" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.016"/>
+  <testcase name="verifiedPlanUsesPlanBearerForOrdinaryAnswer" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.029"/>
+  <testcase name="planProofCannotSelectApiAccess" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.009"/>
+  <testcase name="localModelNeverUsesCloudConnectionProbe" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.008"/>
+  <testcase name="apiDisconnectPreservesOtherProviderKeyAndPlanSession" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.004"/>
+  <testcase name="changedPlanAccountDuringAnswerRejectsCompletedResponse" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.022"/>
+  <testcase name="legacyGeminiModelsPrefixRemainsValid" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.001"/>
+  <testcase name="proofForOneModelCannotSelectAnother" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.008"/>
+  <testcase name="persistedProofCannotContainCredentialMaterial" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.009"/>
+  <testcase name="identityWithoutInferenceScopeCannotReachAdapter" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.009"/>
+  <testcase name="changedGrantRevisionRequiresFreshProbe" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.01"/>
+  <testcase name="unverifiedSelectedPlanCannotRunOrdinaryAnswerOrFallback" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.002"/>
+  <testcase name="accountSwitchDuringProbeCannotCreateProofForPreviousAccount" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.009"/>
+  <testcase name="emptyBearerDoesNotAuthorizePlanInference" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.006"/>
+  <testcase name="blankProbeAnswerCannotCreateProof" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.008"/>
+  <testcase name="emptyAccountDoesNotAuthorizePlanInference" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.008"/>
+  <testcase name="invalidModelCannotInjectUrlPathOrQuery" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.012"/>
+  <testcase name="localProbeCannotRecordMismatchedModelRevision" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.01"/>
+  <testcase name="primarySelectionUpdatesProviderModelAndModeTogetherAfterProof" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.008"/>
+  <testcase name="emptyOrdinaryAnswerCannotCreateProof" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.009"/>
+  <testcase name="failedCredentialRemovalCannotReportSuccessfulDisconnect" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.012"/>
+  <testcase name="healthyTokenRotationWithStableGrantRetainsProof" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.006"/>
+  <testcase name="usageLimitDoesNotTryApiFallbackOrPreserveGreenConnection" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.01"/>
+  <testcase name="unsupportedProviderOrCredentialPairCannotReachAdapter" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.012"/>
+  <testcase name="sameApiKeyAfterRemovalAndReadditionRequiresFreshProbe" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.005"/>
+  <testcase name="removedLocalModelCannotBeSelected" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.009"/>
+  <testcase name="successfulPlanProbePassesOAuthBearerAndPlanFlag" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.007"/>
+  <testcase name="changedApiKeyDuringAnswerRejectsCompletedResponse" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.005"/>
+  <testcase name="probeResultForDifferentModelCannotAuthorizeSelectedModel" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.005"/>
+  <testcase name="shortenedNonceCannotForgeUsableProof" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.009"/>
+  <testcase name="localModelReplacementInvalidatesPriorNativeInferenceProof" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.019"/>
+  <testcase name="proofExpiresAtFiniteBoundary" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.002"/>
+  <testcase name="switchedChatGptAccountCannotReuseOtherAccountProof" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.011"/>
+  <testcase name="configuredCredentialIsNotInferenceProof" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.005"/>
+  <testcase name="voiceRequestRetainsLanguageContextHistoryImageAndPrivacyFlags" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.013"/>
+  <testcase name="existingApiProviderStillAnswersAndRealAnswerCreatesProof" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.009"/>
+  <testcase name="disconnectDuringProbeCannotRestoreProof" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.018"/>
+  <testcase name="localSelectionRequiresActualInferenceProofNotInstalledRevisionAlone" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.011"/>
+  <testcase name="successfulApiProbePassesOnlyMatchingKeyAndRecordsProof" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.004"/>
+  <testcase name="configurationChangeDuringProbeCannotRestoreOldProof" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.016"/>
+  <testcase name="inferenceScopeWithoutResourceInvokeCannotReachAdapter" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.006"/>
+  <testcase name="modelFailureCannotSelectOrReplaceWorkingPrimary" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.002"/>
+  <testcase name="missingApiKeyCannotReachAdapter" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.011"/>
+  <testcase name="planDisconnectPreservesExplicitApiCredential" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.003"/>
+  <testcase name="clockRollbackCannotMakeFutureProofValid" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.003"/>
+  <testcase name="changedGrantedScopeSetInvalidatesProof" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.01"/>
+  <testcase name="legacyPrefixCannotBeUsedToInjectExtraGeminiPath" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.001"/>
+  <testcase name="modelPreferencesRemainSeparateForPlanAndApiModes" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.004"/>
+  <testcase name="configurationChangeDuringAnswerDropsLateChunksAndCompletion" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.011"/>
+  <testcase name="disconnectDuringAnswerDropsLateChunksAndCompletion" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.016"/>
+  <testcase name="wipeDuringAnswerDropsLateChunksWithoutRestoringConnectionState" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.012"/>
+  <testcase name="wipeDuringProbeCannotRepopulateVerificationState" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.01"/>
+  <testcase name="planAccessDebugStringIsRedacted" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.0"/>
+  <testcase name="signedOutPlanNeverFallsBackToSavedApiKey" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.004"/>
+  <testcase name="refreshDoesNotMakeNetworkProbe" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.007"/>
+  <testcase name="apiProofCannotSelectPlanAccess" classname="com.jarvis.assistant.brain.BrainProviderManagerTest" time="0.008"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

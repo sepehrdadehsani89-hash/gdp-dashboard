@@ -1,0 +1,14 @@
+[
+  {
+    "file": "app/src/main/java/com/jarvis/assistant/brain/auth/OpenAiIdTokenValidator.kt",
+    "before_sha256": "32d13a6f0e9b265196e596f3b45fd573c125398d848618ba4fe63b9270577d33",
+    "after_sha256": "2680380e775066bc7356d84be6f5f895a83861c31d49af718f0ab85fafb0fb9e",
+    "change": "Removed only empty terminal lines after all code; no code or line containing code changed."
+  },
+  {
+    "file": "app/src/test/java/com/jarvis/assistant/brain/auth/OpenAiIdTokenValidatorTest.kt",
+    "before_sha256": "b937662d9cb0de13bb36340ad0ae8ace5863a721183e728147a1c33e85db9b8d",
+    "after_sha256": "f7225872e852915ebc73e587d011b546c96e758a9aea8c6d0126b36f92a5c56e",
+    "change": "Removed only empty terminal lines after all code; no code or line containing code changed."
+  }
+]

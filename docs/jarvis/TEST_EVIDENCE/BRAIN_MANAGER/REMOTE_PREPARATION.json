@@ -1,0 +1,10 @@
+{
+  "expected_remote_head": "7ac5e33efab40bb8dbfd27bacce1cc7ed65c2954",
+  "fetched_HEAD": "7ac5e33efab40bb8dbfd27bacce1cc7ed65c2954",
+  "live_ls_remote_jarvis_next": "7ac5e33efab40bb8dbfd27bacce1cc7ed65c2954",
+  "fetched_remote_is_ancestor_of_local": true,
+  "rollback_branch": "checkpoint/brain-manager-start-7ac5e33",
+  "rollback_head": "7ac5e33efab40bb8dbfd27bacce1cc7ed65c2954",
+  "tracking_note": "origin/jarvis-next is an old local tracking ref at 0d57181; origin fetch refspec tracks only main. Actual fetched HEAD and live ls-remote match the expected remote. No application files were changed by fetch.",
+  "github_mutations_performed": false
+}

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.voice.OwnerVoiceAndMotionTest" tests="17" skipped="0" failures="0" errors="0" timestamp="2026-11-17T15:42:45" hostname="472108d07068" time="0.025">
+  <properties/>
+  <testcase name="calibrationUsesARealSimilarityValueAndRejectsAnUnrelatedSample" classname="com.jarvis.assistant.voice.OwnerVoiceAndMotionTest" time="0.007"/>
+  <testcase name="trainingCommandsOpenTheRealVoiceProfilesScreen" classname="com.jarvis.assistant.voice.OwnerVoiceAndMotionTest" time="0.001"/>
+  <testcase name="microphoneAndPlaybackVisualizationHasNoInventedEnergyWhenSilent" classname="com.jarvis.assistant.voice.OwnerVoiceAndMotionTest" time="0.0"/>
+  <testcase name="deviceAuthenticatedContinuationCannotResurrectAnExpiredOrRevokedVoicePermit" classname="com.jarvis.assistant.voice.OwnerVoiceAndMotionTest" time="0.0"/>
+  <testcase name="aMatchPermitCannotBeReplayedInANewSessionOrAfterTemplateChanges" classname="com.jarvis.assistant.voice.OwnerVoiceAndMotionTest" time="0.004"/>
+  <testcase name="closeButBelowStrictDefaultVoiceIsRejected" classname="com.jarvis.assistant.voice.OwnerVoiceAndMotionTest" time="0.004"/>
+  <testcase name="malformedOrUnavailableVoiceVectorsNeverMatch" classname="com.jarvis.assistant.voice.OwnerVoiceAndMotionTest" time="0.007"/>
+  <testcase name="pausedMotionHasAnActualReasonInsteadOfASeeminglyBrokenStaticCore" classname="com.jarvis.assistant.voice.OwnerVoiceAndMotionTest" time="0.0"/>
+  <testcase name="differentVoiceCannotPassTheOwnerFilter" classname="com.jarvis.assistant.voice.OwnerVoiceAndMotionTest" time="0.0"/>
+  <testcase name="activeCoreTargetsSixtyOnlyWhenTheDisplayAndDeviceBudgetAllowIt" classname="com.jarvis.assistant.voice.OwnerVoiceAndMotionTest" time="0.0"/>
+  <testcase name="breathingIsDecorativeIdleMotionAndNotAFakeListeningWaveform" classname="com.jarvis.assistant.voice.OwnerVoiceAndMotionTest" time="0.0"/>
+  <testcase name="theExistingRecorderTapWaitsForEnoughAudioAndDoesNotOpenAnotherRecorder" classname="com.jarvis.assistant.voice.OwnerVoiceAndMotionTest" time="0.001"/>
+  <testcase name="idleMotionIsVisibleButStillSlowerThanExecutingATool" classname="com.jarvis.assistant.voice.OwnerVoiceAndMotionTest" time="0.0"/>
+  <testcase name="errorFeedbackIsBoundedAndDoesNotTrapTheCoreInAnErrorLoop" classname="com.jarvis.assistant.voice.OwnerVoiceAndMotionTest" time="0.0"/>
+  <testcase name="enrolledOwnerMatchesAcrossSmallEmbeddingVariation" classname="com.jarvis.assistant.voice.OwnerVoiceAndMotionTest" time="0.0"/>
+  <testcase name="heatPowerAndLowBatteryAutomaticallyLowerTheCoreBudget" classname="com.jarvis.assistant.voice.OwnerVoiceAndMotionTest" time="0.0"/>
+  <testcase name="aGuestTooCloseToTheOwnerProducesAmbiguityInsteadOfOwnerPrivileges" classname="com.jarvis.assistant.voice.OwnerVoiceAndMotionTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

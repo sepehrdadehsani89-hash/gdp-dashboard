@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.checkin.CallMeAndBatteryTest" tests="13" skipped="0" failures="0" errors="0" timestamp="2026-11-17T15:42:29" hostname="472108d07068" time="0.043">
+  <properties/>
+  <testcase name="chargingOrDisabledSettingsDoNotCallAtTwenty" classname="com.jarvis.assistant.checkin.CallMeAndBatteryTest" time="0.009"/>
+  <testcase name="daylightSavingGapsAndAmbiguousTimesAreNotSilentlyChanged" classname="com.jarvis.assistant.checkin.CallMeAndBatteryTest" time="0.006"/>
+  <testcase name="legacyAlertStateLoadsWithNoFabricatedTwentyAcknowledgement" classname="com.jarvis.assistant.checkin.CallMeAndBatteryTest" time="0.0"/>
+  <testcase name="onlyCompletedPlaybackAcknowledgesTheTwentyPercentAlert" classname="com.jarvis.assistant.checkin.CallMeAndBatteryTest" time="0.006"/>
+  <testcase name="relativeAndDatedSuggestionsUseTheActualProvidedClockAndZone" classname="com.jarvis.assistant.checkin.CallMeAndBatteryTest" time="0.011"/>
+  <testcase name="twentyPercentCreatesOneConversationAlertFromRealObservedLevel" classname="com.jarvis.assistant.checkin.CallMeAndBatteryTest" time="0.0"/>
+  <testcase name="twentyAlertHandlesSkippedReadingsWithoutInventingTwentyPercent" classname="com.jarvis.assistant.checkin.CallMeAndBatteryTest" time="0.001"/>
+  <testcase name="ambiguousOrPastRequestsNeedReviewInsteadOfASilentGuess" classname="com.jarvis.assistant.checkin.CallMeAndBatteryTest" time="0.001"/>
+  <testcase name="friendlyInvitationsContainNoPrivateReminderLabel" classname="com.jarvis.assistant.checkin.CallMeAndBatteryTest" time="0.001"/>
+  <testcase name="twentyAlertRearmsAfterChargeButDoesNotSpamOnSmallOscillations" classname="com.jarvis.assistant.checkin.CallMeAndBatteryTest" time="0.0"/>
+  <testcase name="staleEditedCancelledOrEarlyAlarmCannotClaimDue" classname="com.jarvis.assistant.checkin.CallMeAndBatteryTest" time="0.001"/>
+  <testcase name="criticalThreeTwoOneAlertsStillTakePriority" classname="com.jarvis.assistant.checkin.CallMeAndBatteryTest" time="0.003"/>
+  <testcase name="callMeMeansAJarvisCheckInNotAnOutgoingTelephoneCall" classname="com.jarvis.assistant.checkin.CallMeAndBatteryTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

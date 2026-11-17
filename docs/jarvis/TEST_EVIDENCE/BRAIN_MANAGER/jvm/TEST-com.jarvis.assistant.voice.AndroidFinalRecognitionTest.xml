@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.voice.AndroidFinalRecognitionTest" tests="20" skipped="0" failures="0" errors="0" timestamp="2026-11-17T15:42:44" hostname="472108d07068" time="0.035">
+  <properties/>
+  <testcase name="whitespaceFinalCannotCreateACommand" classname="com.jarvis.assistant.voice.AndroidFinalRecognitionTest" time="0.0"/>
+  <testcase name="suppliedOneIsAValidScore" classname="com.jarvis.assistant.voice.AndroidFinalRecognitionTest" time="0.008"/>
+  <testcase name="metadataDoesNotExposeRecognizedPrivateContent" classname="com.jarvis.assistant.voice.AndroidFinalRecognitionTest" time="0.022"/>
+  <testcase name="excessiveScoreFailsClosed" classname="com.jarvis.assistant.voice.AndroidFinalRecognitionTest" time="0.0"/>
+  <testcase name="emptyFinalCannotCreateACommand" classname="com.jarvis.assistant.voice.AndroidFinalRecognitionTest" time="0.0"/>
+  <testcase name="suppliedZeroIsLowConfidenceNotMissing" classname="com.jarvis.assistant.voice.AndroidFinalRecognitionTest" time="0.0"/>
+  <testcase name="nanScoreCannotBypassConfidenceGate" classname="com.jarvis.assistant.voice.AndroidFinalRecognitionTest" time="0.0"/>
+  <testcase name="nonSentinelNegativeScoreFailsClosed" classname="com.jarvis.assistant.voice.AndroidFinalRecognitionTest" time="0.0"/>
+  <testcase name="exactThresholdIsAccepted" classname="com.jarvis.assistant.voice.AndroidFinalRecognitionTest" time="0.0"/>
+  <testcase name="malformedThresholdDoesNotDisableTheGate" classname="com.jarvis.assistant.voice.AndroidFinalRecognitionTest" time="0.0"/>
+  <testcase name="spanishCommandsUseTheSameConfidenceBoundary" classname="com.jarvis.assistant.voice.AndroidFinalRecognitionTest" time="0.0"/>
+  <testcase name="infiniteScoreCannotBypassConfidenceGate" classname="com.jarvis.assistant.voice.AndroidFinalRecognitionTest" time="0.002"/>
+  <testcase name="stricterSavedThresholdHasARealEffect" classname="com.jarvis.assistant.voice.AndroidFinalRecognitionTest" time="0.0"/>
+  <testcase name="belowThresholdRequiresRetry" classname="com.jarvis.assistant.voice.AndroidFinalRecognitionTest" time="0.0"/>
+  <testcase name="lowerSavedThresholdHasARealEffect" classname="com.jarvis.assistant.voice.AndroidFinalRecognitionTest" time="0.0"/>
+  <testcase name="metadataLabelsUnavailableConfidenceHonestly" classname="com.jarvis.assistant.voice.AndroidFinalRecognitionTest" time="0.0"/>
+  <testcase name="suppliedHighConfidenceFinalIsAccepted" classname="com.jarvis.assistant.voice.AndroidFinalRecognitionTest" time="0.0"/>
+  <testcase name="androidUnavailableSentinelIsPreserved" classname="com.jarvis.assistant.voice.AndroidFinalRecognitionTest" time="0.0"/>
+  <testcase name="missingConfidenceDoesNotInventAMeasurement" classname="com.jarvis.assistant.voice.AndroidFinalRecognitionTest" time="0.0"/>
+  <testcase name="missingScoreWithInvalidThresholdStillFailsClosed" classname="com.jarvis.assistant.voice.AndroidFinalRecognitionTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

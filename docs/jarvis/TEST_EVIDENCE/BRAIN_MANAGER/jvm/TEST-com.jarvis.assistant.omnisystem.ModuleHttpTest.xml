@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.omnisystem.ModuleHttpTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-11-17T15:42:42" hostname="472108d07068" time="0.205">
+  <properties/>
+  <testcase name="cancellationDisposesCallWithoutDeliveringPrivateResponse" classname="com.jarvis.assistant.omnisystem.ModuleHttpTest" time="0.049"/>
+  <testcase name="redirectsNeverForwardAuthorizationToAnotherHost" classname="com.jarvis.assistant.omnisystem.ModuleHttpTest" time="0.011"/>
+  <testcase name="boundedResponsesRejectDeclaredAndChunkedOversizeWithoutEchoingErrors" classname="com.jarvis.assistant.omnisystem.ModuleHttpTest" time="0.144"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

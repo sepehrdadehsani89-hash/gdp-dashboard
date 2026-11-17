@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.hud.WeatherClientTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-11-17T15:42:39" hostname="472108d07068" time="0.262">
+  <properties/>
+  <testcase name="approximateChoiceSkipsGeocoding" classname="com.jarvis.assistant.hud.WeatherClientTest" time="0.053"/>
+  <testcase name="cancelledRequestsFinishWithoutPublishingWeather" classname="com.jarvis.assistant.hud.WeatherClientTest" time="0.032"/>
+  <testcase name="httpErrorsUnknownCitiesAndOversizedResponsesAreExplicit" classname="com.jarvis.assistant.hud.WeatherClientTest" time="0.115"/>
+  <testcase name="cityAndForecastRequestsCarryOnlyNeededFields" classname="com.jarvis.assistant.hud.WeatherClientTest" time="0.062"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[Nov 17, 2026 10:42:39 AM okhttp3.mockwebserver.MockWebServer$SocketHandler handle
+WARNING: MockWebServer[52135] connection from /127.0.0.1 didn't make a request
+]]></system-err>
+</testsuite>

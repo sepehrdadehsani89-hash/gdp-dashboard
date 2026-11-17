@@ -1,0 +1,38 @@
+{
+  "version": "2.11.9-brain.1-debug",
+  "version_code": 29,
+  "application_id": "com.jarvis.next.phoenix",
+  "label": "Jarvis Phoenix Test",
+  "abi": "arm64-v8a",
+  "min_sdk": 29,
+  "target_sdk": 35,
+  "artifact": "downloads/brain-manager-2.11.9-debug/Jarvis-2.11.9-brain.1-debug-arm64.apk",
+  "bytes": 55580535,
+  "sha256": "ecd1fd92c6360d427a4ddbf7368066a14475ab9b4c7dab4fc846a2bf36f32698",
+  "signing": "debug preview; existing Phoenix preview certificate retained; production key unavailable",
+  "certificate_sha256": "f9f13af1f84515b787b89c0f3abc8695f1d0d45e8a647d1192966c4c810964c7",
+  "source_commit": "2b73bbaf576166f84049969f03bdc9f732c55ba5",
+  "baseline_commit": "7ac5e33efab40bb8dbfd27bacce1cc7ed65c2954",
+  "build_result": "BUILD SUCCESSFUL in 14m 45s; 68 tasks:20 executed,48 up-to-date",
+  "jvm": {
+    "total": 1058,
+    "passed": 1057,
+    "failed": 0,
+    "skipped": 1,
+    "additional_cases_vs_baseline": 269
+  },
+  "lint": {
+    "errors": 0,
+    "warnings": 55,
+    "information": 1,
+    "new_warnings": "7 private composable-function naming conventions; 48 previous warnings retained"
+  },
+  "artifact_checks": {
+    "passed": 20,
+    "failed": 0
+  },
+  "device_tests_executed": 0,
+  "live_authenticated_inference_tests_executed": 0,
+  "native_real_model_tests_executed": 0,
+  "publication_at_preparation": "Local artifact verified; GitHub publication awaits owner confirmation. No new public URL is claimed."
+}

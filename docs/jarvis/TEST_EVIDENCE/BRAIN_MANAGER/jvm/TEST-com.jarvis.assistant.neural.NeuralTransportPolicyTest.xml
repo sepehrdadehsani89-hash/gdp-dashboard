@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.neural.NeuralTransportPolicyTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2026-11-17T15:42:41" hostname="472108d07068" time="0.046">
+  <properties/>
+  <testcase name="sourceTextDoesNotRenderScriptsOrInventAPublicationDate" classname="com.jarvis.assistant.neural.NeuralTransportPolicyTest" time="0.006"/>
+  <testcase name="resumedDownloadMustBindBothRangeAndVerifiedTotal" classname="com.jarvis.assistant.neural.NeuralTransportPolicyTest" time="0.002"/>
+  <testcase name="legacyActionDefinitionsCannotBecomeModelAuthority" classname="com.jarvis.assistant.neural.NeuralTransportPolicyTest" time="0.0"/>
+  <testcase name="proposedNewsTopicMustComeFromTheCurrentUserRequest" classname="com.jarvis.assistant.neural.NeuralTransportPolicyTest" time="0.0"/>
+  <testcase name="serverMayRestartButCannotAppendAnUnboundResponse" classname="com.jarvis.assistant.neural.NeuralTransportPolicyTest" time="0.001"/>
+  <testcase name="selectedCandidateHasIndependentRepositoryAndSizeBounds" classname="com.jarvis.assistant.neural.NeuralTransportPolicyTest" time="0.005"/>
+  <testcase name="publicResearchRejectsPrivateAndCarrierInternalAddresses" classname="com.jarvis.assistant.neural.NeuralTransportPolicyTest" time="0.001"/>
+  <testcase name="localOnlyRequestsOverrideCloudAndIncludeThreeLanguages" classname="com.jarvis.assistant.neural.NeuralTransportPolicyTest" time="0.0"/>
+  <testcase name="proposedWeatherCannotInventCityOrDay" classname="com.jarvis.assistant.neural.NeuralTransportPolicyTest" time="0.004"/>
+  <testcase name="malformedSourceMarkupIsBoundedAndDoesNotExposeScript" classname="com.jarvis.assistant.neural.NeuralTransportPolicyTest" time="0.026"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

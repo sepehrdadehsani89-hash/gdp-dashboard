@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.data.ChatGptPlanProtocolTest" tests="37" skipped="0" failures="0" errors="0" timestamp="2026-11-17T15:42:32" hostname="472108d07068" time="0.192">
+  <properties/>
+  <testcase name="doneSentinelDoesNotReplaceRequiredResponsesCompletion" classname="com.jarvis.assistant.data.ChatGptPlanProtocolTest" time="0.004"/>
+  <testcase name="planRequestDoesNotSmuggleApiKeyOnlyOrPrivateBackendParameters" classname="com.jarvis.assistant.data.ChatGptPlanProtocolTest" time="0.001"/>
+  <testcase name="incompleteResponseWithoutStructuredErrorStillFails" classname="com.jarvis.assistant.data.ChatGptPlanProtocolTest" time="0.007"/>
+  <testcase name="catalogUsesPlanModelsFieldInsteadOfApiKeyData" classname="com.jarvis.assistant.data.ChatGptPlanProtocolTest" time="0.0"/>
+  <testcase name="completionOutputFallbackEmitsOnlyOutputText" classname="com.jarvis.assistant.data.ChatGptPlanProtocolTest" time="0.0"/>
+  <testcase name="completedDeltaSequenceProducesOneExactAnswer" classname="com.jarvis.assistant.data.ChatGptPlanProtocolTest" time="0.001"/>
+  <testcase name="standaloneProviderErrorIsTypedWithoutReflectingBody" classname="com.jarvis.assistant.data.ChatGptPlanProtocolTest" time="0.009"/>
+  <testcase name="textAfterCompletionIsRejected" classname="com.jarvis.assistant.data.ChatGptPlanProtocolTest" time="0.001"/>
+  <testcase name="alreadyPersistedCurrentUtteranceIsNotSentTwice" classname="com.jarvis.assistant.data.ChatGptPlanProtocolTest" time="0.002"/>
+  <testcase name="officialTopLevelErrorEventMapsUsageLimitWithoutReflectingMessage" classname="com.jarvis.assistant.data.ChatGptPlanProtocolTest" time="0.001"/>
+  <testcase name="duplicateCompletionIsRejected" classname="com.jarvis.assistant.data.ChatGptPlanProtocolTest" time="0.001"/>
+  <testcase name="completedSnapshotDoesNotDuplicateAlreadyEmittedDeltas" classname="com.jarvis.assistant.data.ChatGptPlanProtocolTest" time="0.001"/>
+  <testcase name="malformedCatalogFailsInsteadOfInventingAccess" classname="com.jarvis.assistant.data.ChatGptPlanProtocolTest" time="0.0"/>
+  <testcase name="completionFallbackHasSameOutputLimitAsDeltas" classname="com.jarvis.assistant.data.ChatGptPlanProtocolTest" time="0.064"/>
+  <testcase name="historicalMessageCannotExceedItsBound" classname="com.jarvis.assistant.data.ChatGptPlanProtocolTest" time="0.003"/>
+  <testcase name="internalStatusNeverBecomesModelConversation" classname="com.jarvis.assistant.data.ChatGptPlanProtocolTest" time="0.002"/>
+  <testcase name="catalogSkipsMalformedEntriesAndUnsafeModelSlugs" classname="com.jarvis.assistant.data.ChatGptPlanProtocolTest" time="0.002"/>
+  <testcase name="completionRequiresCompletedStatus" classname="com.jarvis.assistant.data.ChatGptPlanProtocolTest" time="0.006"/>
+  <testcase name="historyPreservesUserAndAssistantRolesWithoutSystemRole" classname="com.jarvis.assistant.data.ChatGptPlanProtocolTest" time="0.003"/>
+  <testcase name="missingCatalogIsNotFabricatedAsDefaultModel" classname="com.jarvis.assistant.data.ChatGptPlanProtocolTest" time="0.001"/>
+  <testcase name="malformedCompletionDoesNotVerifyConnection" classname="com.jarvis.assistant.data.ChatGptPlanProtocolTest" time="0.003"/>
+  <testcase name="officialTopLevelServerErrorCannotAcceptProvisionalAnswer" classname="com.jarvis.assistant.data.ChatGptPlanProtocolTest" time="0.003"/>
+  <testcase name="whitespaceOnlyAnswerCannotVerifyConnection" classname="com.jarvis.assistant.data.ChatGptPlanProtocolTest" time="0.004"/>
+  <testcase name="nonStringDeltaCannotFabricateResponseText" classname="com.jarvis.assistant.data.ChatGptPlanProtocolTest" time="0.002"/>
+  <testcase name="failedResponseAfterDeltasCannotBeReportedAsSuccessful" classname="com.jarvis.assistant.data.ChatGptPlanProtocolTest" time="0.001"/>
+  <testcase name="provisionalTextDoesNotVerifyUntilCompletedEvent" classname="com.jarvis.assistant.data.ChatGptPlanProtocolTest" time="0.001"/>
+  <testcase name="catalogOnlyIncludesExplicitListVisibility" classname="com.jarvis.assistant.data.ChatGptPlanProtocolTest" time="0.005"/>
+  <testcase name="historyWindowRetainsRecentConversationAndCurrentUtterance" classname="com.jarvis.assistant.data.ChatGptPlanProtocolTest" time="0.0"/>
+  <testcase name="catalogPreservesProviderOrderAndDeduplicatesBySlug" classname="com.jarvis.assistant.data.ChatGptPlanProtocolTest" time="0.001"/>
+  <testcase name="unsafeModelCannotInjectPathOrControlCharacters" classname="com.jarvis.assistant.data.ChatGptPlanProtocolTest" time="0.0"/>
+  <testcase name="outputDeltaLimitStopsUnboundedResponse" classname="com.jarvis.assistant.data.ChatGptPlanProtocolTest" time="0.028"/>
+  <testcase name="completionWithoutTextCannotVerifyConnection" classname="com.jarvis.assistant.data.ChatGptPlanProtocolTest" time="0.007"/>
+  <testcase name="referenceAndUtteranceLimitsBoundProviderPayload" classname="com.jarvis.assistant.data.ChatGptPlanProtocolTest" time="0.016"/>
+  <testcase name="planRequestUsesResponsesArrayInputAndDisablesStorage" classname="com.jarvis.assistant.data.ChatGptPlanProtocolTest" time="0.0"/>
+  <testcase name="privateReferenceIsDelimitedAsUntrustedUserContent" classname="com.jarvis.assistant.data.ChatGptPlanProtocolTest" time="0.0"/>
+  <testcase name="unrelatedLifecycleEventsNeverBecomeSpokenText" classname="com.jarvis.assistant.data.ChatGptPlanProtocolTest" time="0.006"/>
+  <testcase name="malformedJsonCannotVerifyAConnection" classname="com.jarvis.assistant.data.ChatGptPlanProtocolTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

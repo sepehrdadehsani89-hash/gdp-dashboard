@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.data.BrainProtocolTest" tests="20" skipped="0" failures="0" errors="0" timestamp="2026-11-17T15:42:31" hostname="472108d07068" time="0.608">
+  <properties/>
+  <testcase name="oversizedEventIsRejected" classname="com.jarvis.assistant.data.BrainProtocolTest" time="0.113"/>
+  <testcase name="screenshotIsAnExplicitBoundedGeminiImagePartAndFlashDisablesThinkingOnlyWhereSupported" classname="com.jarvis.assistant.data.BrainProtocolTest" time="0.031"/>
+  <testcase name="oversizedProviderLineIsRejectedDuringRead" classname="com.jarvis.assistant.data.BrainProtocolTest" time="0.375"/>
+  <testcase name="modelCatalogExcludesLiveOnlyEmbeddingAndMalformedNames" classname="com.jarvis.assistant.data.BrainProtocolTest" time="0.008"/>
+  <testcase name="fetchedContextIsExplicitlyDelimitedAndCannotReplaceSystemMessage" classname="com.jarvis.assistant.data.BrainProtocolTest" time="0.003"/>
+  <testcase name="streamingDeltasParseAllThreeProviderProtocols" classname="com.jarvis.assistant.data.BrainProtocolTest" time="0.003"/>
+  <testcase name="geminiErrorsDistinguishMissingModelsBadKeysAndAccountRequirementsWithoutEchoingSecrets" classname="com.jarvis.assistant.data.BrainProtocolTest" time="0.022"/>
+  <testcase name="boundedSseReaderSupportsCrLfAndStopsWithoutFlushingOnCancellation" classname="com.jarvis.assistant.data.BrainProtocolTest" time="0.009"/>
+  <testcase name="malformedDeltaCannotCoerceNullObjectsOrNumbersIntoSpeech" classname="com.jarvis.assistant.data.BrainProtocolTest" time="0.0"/>
+  <testcase name="safeHttpErrorsDoNotContainRemoteResponseBodiesOrCredentials" classname="com.jarvis.assistant.data.BrainProtocolTest" time="0.001"/>
+  <testcase name="providerSwitchDoesNotReuseAnotherProvidersModel" classname="com.jarvis.assistant.data.BrainProtocolTest" time="0.003"/>
+  <testcase name="englishAndSpanishPromptsRouteToTheirLanguage" classname="com.jarvis.assistant.data.BrainProtocolTest" time="0.004"/>
+  <testcase name="sseIgnoresCommentsAndEventNamesAndFlushesFinalEvent" classname="com.jarvis.assistant.data.BrainProtocolTest" time="0.001"/>
+  <testcase name="promptUsesRequestedLanguageAndTreatsSourcesAsUntrusted" classname="com.jarvis.assistant.data.BrainProtocolTest" time="0.025"/>
+  <testcase name="geminiUsesProviderSpecificRolesAndSystemInstruction" classname="com.jarvis.assistant.data.BrainProtocolTest" time="0.0"/>
+  <testcase name="byteStreamPreservesPersianAndCrLfWithoutWaitingForFinalEvent" classname="com.jarvis.assistant.data.BrainProtocolTest" time="0.004"/>
+  <testcase name="requestDoesNotDuplicateAlreadyPersistedCurrentUtterance" classname="com.jarvis.assistant.data.BrainProtocolTest" time="0.001"/>
+  <testcase name="geminiAcceptsCopiedModelResourceNamesButRejectsPathsAndOverlongNames" classname="com.jarvis.assistant.data.BrainProtocolTest" time="0.0"/>
+  <testcase name="apiModelCannotInjectUrlPathOrQuery" classname="com.jarvis.assistant.data.BrainProtocolTest" time="0.002"/>
+  <testcase name="apiKeysRejectHeaderControlCharactersWhitespaceAndUnicode" classname="com.jarvis.assistant.data.BrainProtocolTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

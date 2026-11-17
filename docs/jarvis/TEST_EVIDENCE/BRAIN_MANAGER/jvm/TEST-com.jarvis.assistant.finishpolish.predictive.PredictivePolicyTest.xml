@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.finishpolish.predictive.PredictivePolicyTest" tests="14" skipped="0" failures="0" errors="0" timestamp="2026-11-17T15:42:39" hostname="472108d07068" time="0.187">
+  <properties/>
+  <testcase name="dailyCapAndClockRollbackPreventNotificationLoops" classname="com.jarvis.assistant.finishpolish.predictive.PredictivePolicyTest" time="0.062"/>
+  <testcase name="quietHoursUseTheDeviceTimeZoneAndOvernightBoundaries" classname="com.jarvis.assistant.finishpolish.predictive.PredictivePolicyTest" time="0.001"/>
+  <testcase name="optOutDoesNotOfferAnythingEvenWithRealInputs" classname="com.jarvis.assistant.finishpolish.predictive.PredictivePolicyTest" time="0.002"/>
+  <testcase name="deniedCalendarConsentCannotBeInventedByCandidateData" classname="com.jarvis.assistant.finishpolish.predictive.PredictivePolicyTest" time="0.016"/>
+  <testcase name="oneSuggestionIsOfferedAndRepeatedOccurrenceIsDeduplicated" classname="com.jarvis.assistant.finishpolish.predictive.PredictivePolicyTest" time="0.002"/>
+  <testcase name="datedClockChangeGapAndOverlapRequireUserChoiceRatherThanGuessing" classname="com.jarvis.assistant.finishpolish.predictive.PredictivePolicyTest" time="0.023"/>
+  <testcase name="twentyDistinctApprovedRoutinesKeepIndependentOccurrenceIds" classname="com.jarvis.assistant.finishpolish.predictive.PredictivePolicyTest" time="0.007"/>
+  <testcase name="repeatingRoutinesSkipDstAnomaliesAndHonorWeekdaySelection" classname="com.jarvis.assistant.finishpolish.predictive.PredictivePolicyTest" time="0.006"/>
+  <testcase name="lockedBusyDndSilentMusicAndBatterySaverAllSuppressSuggestions" classname="com.jarvis.assistant.finishpolish.predictive.PredictivePolicyTest" time="0.0"/>
+  <testcase name="reminderOnlyRoutineNeverPretendsAnActionWasPrepared" classname="com.jarvis.assistant.finishpolish.predictive.PredictivePolicyTest" time="0.002"/>
+  <testcase name="snoozedNeverAndExpiredSuggestionsNeverRun" classname="com.jarvis.assistant.finishpolish.predictive.PredictivePolicyTest" time="0.002"/>
+  <testcase name="actualBatteryReadingsNeedExplicitConsentFreshnessAndDischarge" classname="com.jarvis.assistant.finishpolish.predictive.PredictivePolicyTest" time="0.0"/>
+  <testcase name="encryptedDocumentCodecRoundTripKeepsConsentAndSuppressionSeparate" classname="com.jarvis.assistant.finishpolish.predictive.PredictivePolicyTest" time="0.052"/>
+  <testcase name="routineUsesAnActualApprovedDatedOccurrenceAndPinsRecipeIdentity" classname="com.jarvis.assistant.finishpolish.predictive.PredictivePolicyTest" time="0.004"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.neural.CompoundDevicePlanTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-11-17T15:42:41" hostname="472108d07068" time="0.038">
+  <properties/>
+  <testcase name="noScanConnectionOrNegativeClauseCanBecomeAutomaticBluetoothQuery" classname="com.jarvis.assistant.neural.CompoundDevicePlanTest" time="0.017"/>
+  <testcase name="explicitWeatherBluetoothAndTimerPlanUsesBoundedReviewedTools" classname="com.jarvis.assistant.neural.CompoundDevicePlanTest" time="0.021"/>
+  <testcase name="modelPlansCannotProposeTheseDeviceActions" classname="com.jarvis.assistant.neural.CompoundDevicePlanTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

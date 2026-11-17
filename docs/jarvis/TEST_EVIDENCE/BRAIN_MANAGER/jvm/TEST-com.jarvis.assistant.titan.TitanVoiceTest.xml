@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.titan.TitanVoiceTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2026-11-17T15:42:44" hostname="472108d07068" time="0.035">
+  <properties/>
+  <testcase name="unknownAndGuestGreetingsDoNotClaimOwnerIdentity" classname="com.jarvis.assistant.titan.TitanVoiceTest" time="0.001"/>
+  <testcase name="speechSegmentsRemainOneTurnAcrossShortPauses" classname="com.jarvis.assistant.titan.TitanVoiceTest" time="0.007"/>
+  <testcase name="onlyEnglishAndSpanishCanBeActivatedWithoutDeletingLegacyEnumData" classname="com.jarvis.assistant.titan.TitanVoiceTest" time="0.0"/>
+  <testcase name="spanishNeverFallsBackToSystemOpenAiOrAnUnapprovedId" classname="com.jarvis.assistant.titan.TitanVoiceTest" time="0.0"/>
+  <testcase name="rmsAndClippingComeFromActualPcmSamples" classname="com.jarvis.assistant.titan.TitanVoiceTest" time="0.017"/>
+  <testcase name="incompleteClauseAllowsLongerPauseAndSpeechResetsEndpoint" classname="com.jarvis.assistant.titan.TitanVoiceTest" time="0.005"/>
+  <testcase name="ownerGreetingsUseActualBoundaryHourAndSirNotFirstName" classname="com.jarvis.assistant.titan.TitanVoiceTest" time="0.001"/>
+  <testcase name="abandonedOrNoiseOnlySessionsCannotProduceACompletedUtterance" classname="com.jarvis.assistant.titan.TitanVoiceTest" time="0.0"/>
+  <testcase name="customGreetingBoundariesAreOrderedAndApplied" classname="com.jarvis.assistant.titan.TitanVoiceTest" time="0.002"/>
+  <testcase name="privateSpeechRequiresSeparateExplicitConsentAndCannotUseLegacyCloud" classname="com.jarvis.assistant.titan.TitanVoiceTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

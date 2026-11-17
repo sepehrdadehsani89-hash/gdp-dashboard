@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.local.LocalContextBudgetTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-11-17T15:42:40" hostname="472108d07068" time="0.181">
+  <properties/>
+  <testcase name="keeps the complete current question and labels clipped context" classname="com.jarvis.assistant.local.LocalContextBudgetTest" time="0.068"/>
+  <testcase name="retrieves Persian despite Arabic character and digit variants" classname="com.jarvis.assistant.local.LocalContextBudgetTest" time="0.04"/>
+  <testcase name="Spanish accent folding improves matching without altering displayed excerpt" classname="com.jarvis.assistant.local.LocalContextBudgetTest" time="0.021"/>
+  <testcase name="selects the requested memory instead of flooding model with all memories" classname="com.jarvis.assistant.local.LocalContextBudgetTest" time="0.023"/>
+  <testcase name="context truncation does not leave a broken surrogate pair" classname="com.jarvis.assistant.local.LocalContextBudgetTest" time="0.029"/>
+  <testcase name="long questions are rejected rather than silently truncated" classname="com.jarvis.assistant.local.LocalContextBudgetTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

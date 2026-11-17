@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.call.AiCallPolicyTest" tests="15" skipped="0" failures="0" errors="0" timestamp="2026-11-17T15:42:29" hostname="472108d07068" time="0.038">
+  <properties/>
+  <testcase name="aCallHasAHardMaximumEvenIfSpeechKeepsComing" classname="com.jarvis.assistant.call.AiCallPolicyTest" time="0.004"/>
+  <testcase name="silentAudioConnectionCannotWaitForeverBehindAThinkingSpinner" classname="com.jarvis.assistant.call.AiCallPolicyTest" time="0.001"/>
+  <testcase name="ringingDoesNotBecomeAConnectedMicrophoneBeforePickup" classname="com.jarvis.assistant.call.AiCallPolicyTest" time="0.0"/>
+  <testcase name="fastCachedCallGreetingNeverCachesAnOrdinaryPrivateAnswer" classname="com.jarvis.assistant.call.AiCallPolicyTest" time="0.002"/>
+  <testcase name="endingRetainsThePriorListeningChoiceWithoutRestartingItself" classname="com.jarvis.assistant.call.AiCallPolicyTest" time="0.0"/>
+  <testcase name="endingCallModeRestoresTheNormalBoundedFollowUp" classname="com.jarvis.assistant.call.AiCallPolicyTest" time="0.003"/>
+  <testcase name="anOldPlaybackCompletionCannotReopenTheMicAfterHangup" classname="com.jarvis.assistant.call.AiCallPolicyTest" time="0.008"/>
+  <testcase name="repeatCallAnswerQuestionResponseAndEndUsesOnePickupPerCall" classname="com.jarvis.assistant.call.AiCallPolicyTest" time="0.005"/>
+  <testcase name="immediateCallPhrasesAreSeparateFromDatedRemindersAndTelephoneContacts" classname="com.jarvis.assistant.call.AiCallPolicyTest" time="0.001"/>
+  <testcase name="quietCallIsBoundedButRealUserActivityKeepsItReady" classname="com.jarvis.assistant.call.AiCallPolicyTest" time="0.004"/>
+  <testcase name="repeatedRequestsAndDoublePickupCannotCreateOverlappingCalls" classname="com.jarvis.assistant.call.AiCallPolicyTest" time="0.001"/>
+  <testcase name="oldAnswerOrEndNotificationsCannotAffectTheNextCall" classname="com.jarvis.assistant.call.AiCallPolicyTest" time="0.0"/>
+  <testcase name="scheduledAndBatterySourcesRemainDistinguishableUntilAnswer" classname="com.jarvis.assistant.call.AiCallPolicyTest" time="0.0"/>
+  <testcase name="callFollowUpGetsFortyFiveSecondsWithoutRequiringAnotherWake" classname="com.jarvis.assistant.call.AiCallPolicyTest" time="0.001"/>
+  <testcase name="unansweredCallTimesOutWithoutAutoAnswering" classname="com.jarvis.assistant.call.AiCallPolicyTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
