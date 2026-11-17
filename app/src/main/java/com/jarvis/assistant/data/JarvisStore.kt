@@ -176,7 +176,7 @@ class JarvisStore(context: Context) {
     fun setApiKey(provider: String, key: String) {
         val name = requireNotNull(credentialName(provider)) { "Unsupported provider" }
         if (key.isBlank()) {
-            credentials.edit().remove(name).commit()
+            check(credentials.edit().remove(name).putLong("revision_$provider", getApiKeyRevision(provider)+1).commit()) { "Could not remove credential securely" }
             return
         }
         val safeKey = BrainProtocol.validateApiKey(key)
@@ -184,8 +184,13 @@ class JarvisStore(context: Context) {
         cipher.init(Cipher.ENCRYPT_MODE, encryptionKey())
         val iv = Base64.encodeToString(cipher.iv, Base64.NO_WRAP)
         val encrypted = Base64.encodeToString(cipher.doFinal(safeKey.toByteArray(Charsets.UTF_8)), Base64.NO_WRAP)
-        check(credentials.edit().putString(name, "$iv:$encrypted").commit()) { "Could not save credential securely" }
+        check(credentials.edit().putString(name, "$iv:$encrypted").putLong("revision_$provider", getApiKeyRevision(provider)+1).commit()) { "Could not save credential securely" }
     }
+
+    @Synchronized fun getApiKeyRevision(provider:String):Long=credentials.getLong("revision_$provider",0L)
+    /** Nonsecret manager metadata only; keys and tokens remain in the credential vault. */
+    @Synchronized fun readProviderMetadata():String=preferences.getString("brain_manager_v1","{}").orEmpty()
+    @Synchronized fun writeProviderMetadata(value:String){check(preferences.edit().putString("brain_manager_v1",value).commit()){ "Could not save provider state" }}
 
     suspend fun clearAll() {
         ephemeral.value=emptyList()

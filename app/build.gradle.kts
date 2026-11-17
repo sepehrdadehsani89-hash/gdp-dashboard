@@ -17,8 +17,8 @@ android {
         applicationId = "com.jarvis.next"
         minSdk = 29
         targetSdk = 35
-        versionCode = 28
-        versionName = "2.11.9-voice.1"
+        versionCode = 29
+        versionName = "2.11.9-brain.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
         ndk { abiFilters += providers.gradleProperty("jarvisAbis").getOrElse("arm64-v8a").split(",") }

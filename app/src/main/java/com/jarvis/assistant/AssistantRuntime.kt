@@ -101,6 +101,7 @@ class AssistantRuntime(private val context: Context) {
     val hud = com.jarvis.assistant.hud.HudRepository(context)
     private val authorization = com.jarvis.assistant.hud.AuthorizationCoordinator(now = { SystemClock.elapsedRealtime() })
     @Volatile private var cameraOwner:Any? = null
+    private var brainManagementOwner:Any?=null
     private var speakerJob:Job?=null
     private var speakerExpiry:Job?=null
     private val moduleOperations=java.util.concurrent.ConcurrentHashMap<Any,Job>()
@@ -133,6 +134,17 @@ class AssistantRuntime(private val context: Context) {
     private val tools = DeviceTools(context, store)
     private val phone = PhoneContext(context,locations::current)
     private val llm = LlmClient(store)
+    val openAiAuth by lazy{com.jarvis.assistant.brain.auth.OpenAiAuthManager(features)}
+    val brainManager by lazy{com.jarvis.assistant.brain.BrainProviderManager(store,llm,
+        planAccess={
+            try{
+                val before=openAiAuth.credentialDescriptor()
+                val bearer=openAiAuth.bearerToken()
+                val after=openAiAuth.credentialDescriptor() ?: throw ProviderException("The ChatGPT connection changed. Sign in again.",com.jarvis.assistant.brain.ProviderFailureKind.AUTHENTICATION)
+                if(before!=after)throw ProviderException("The ChatGPT account or authorization changed. Test the selected account again.",com.jarvis.assistant.brain.ProviderFailureKind.NOT_VERIFIED)
+                com.jarvis.assistant.brain.ChatGptPlanAccess(bearer,after.accountId,after.scopes,after.revision)
+            }catch(e:com.jarvis.assistant.brain.auth.OpenAiAuthException){throw ProviderException(e.message ?: "ChatGPT authorization is unavailable.",com.jarvis.assistant.brain.ProviderFailureKind.AUTHORIZATION)}
+        },disconnectPlan={openAiAuth.disconnect();Unit},localRevision=::localBrainRevision,beforeChange=::prepareBrainChange)}
     val brain by lazy { LocalBrain(context,neuralPreferences) }
     val neuralPreferences=com.jarvis.assistant.neural.NeuralPreferences(context)
     val knowledge=com.jarvis.assistant.neural.KnowledgeIndex(context)
@@ -306,6 +318,20 @@ class AssistantRuntime(private val context: Context) {
             mutableState.update { it.copy(settings = settings, hasApiKey = store.getApiKey(settings.provider).isNotBlank()) }
             refreshCapabilities()
         } }
+        scope.launch{
+            var previous=openAiAuth.credentialDescriptor()
+            openAiAuth.state.collect{
+                val next=openAiAuth.credentialDescriptor()
+                if(next!=previous){
+                    val model=brainManager.configuredModel("openai",com.jarvis.assistant.brain.ProviderCredentialMode.CHATGPT_PLAN)
+                    if(model!=null)brainManager.configurationChanged(com.jarvis.assistant.brain.ProviderConfig("openai",model,com.jarvis.assistant.brain.ProviderCredentialMode.CHATGPT_PLAN))
+                    if(store.settings.value.provider=="openai" && brainManager.selectedMode("openai")==com.jarvis.assistant.brain.ProviderCredentialMode.CHATGPT_PLAN){
+                        cancelSession();pauseWake();conversation.clear();neural.conversation.clear();clearScreenContext();clearAttachmentSelection(false)
+                    }
+                }
+                previous=next
+            }
+        }
         scope.launch { store.messages.collectLatest { messages -> mutableState.update { it.copy(messages = messages) } } }
         scope.launch { store.memories.collectLatest { memories -> mutableState.update { it.copy(memories = memories, memoryCategories=memories.associate { m -> m.id to categories.getString(m.id.toString(), "Notes").orEmpty() }) } } }
         scope.launch{WakeListenerService.state.collectLatest{wake->val c=aiCall.state.value;if(!wake.running && c.connected && c.audioConnected && languageHandoffSerial==null)endAiCall(c.id,"MICROPHONE_STOPPED",true)}}
@@ -552,7 +578,14 @@ class AssistantRuntime(private val context: Context) {
     fun saveSettings(value: AssistantSettings, key: String) {
         if(value.provider!=store.settings.value.provider || value.model!=store.settings.value.model || value.shareSavedMemories!=store.settings.value.shareSavedMemories || key.isNotBlank())cancelSession()
         scope.launch {
-            if (key.isNotBlank() && value.provider != "local") withContext(Dispatchers.IO) { store.setApiKey(value.provider, key) }
+            val previous=store.settings.value
+            if(value.provider!=previous.provider || value.model!=previous.model || key.isNotBlank()){
+                val config=com.jarvis.assistant.brain.ProviderConfig(value.provider,value.model,if(value.provider=="local")com.jarvis.assistant.brain.ProviderCredentialMode.LOCAL else com.jarvis.assistant.brain.ProviderCredentialMode.API_KEY)
+                if(key.isNotBlank() && withContext(Dispatchers.IO){store.getApiKey(value.provider)}!=key.trim()){
+                    fail("Test and save this API connection before selecting it, or open AI Brain Manager. No provider was changed.");return@launch
+                }
+                try{selectBrain(config)}catch(e:CancellationException){throw e}catch(e:Exception){fail(e.message ?: "Verify this provider in AI Brain Manager before selecting it.");return@launch}
+            }
             if (value.language != language()) stopWake()
             store.updateSettings(value)
             mutableState.update { it.copy(error = null, hasApiKey = store.getApiKey(value.provider).isNotBlank()) }
@@ -638,7 +671,11 @@ class AssistantRuntime(private val context: Context) {
         cancelSession(); pauseWake()
         val job = currentCoroutineContext()[Job]
         providerCheck = job
-        return try { llm.testConnection(settings, key) }
+        return try {
+            val config=com.jarvis.assistant.brain.ProviderConfig(settings.provider,settings.model,com.jarvis.assistant.brain.ProviderCredentialMode.API_KEY)
+            configureBrainApi(config,key)
+            brainManager.verify(config)
+        }
         finally { if (providerCheck === job) providerCheck = null; resumeWake() }
     }
 
@@ -705,6 +742,77 @@ class AssistantRuntime(private val context: Context) {
     /** Visible capture modules share the existing single microphone ownership gate. */
     fun beginExclusiveCapture(owner:Any):Boolean=beginCamera(owner)
     fun endExclusiveCapture(owner:Any)=endCamera(owner)
+    fun beginBrainManagement(owner:Any):Boolean=beginExclusiveCapture(owner).also{if(it)brainManagementOwner=owner}
+    fun endBrainManagement(owner:Any){if(brainManagementOwner===owner)brainManagementOwner=null;endExclusiveCapture(owner)}
+    private fun prepareBrainChange(){
+        val owner=brainManagementOwner
+        if(owner!=null && !captureIsCurrent(owner))throw CancellationException("AI configuration operation is no longer current")
+        cancelSession();pauseWake();conversation.clear();neural.conversation.clear();clearScreenContext();clearAttachmentSelection(false)
+        if(owner!=null && cameraOwner===owner)captureVoiceGeneration=sessionGeneration
+    }
+    suspend fun configureBrainApi(config:com.jarvis.assistant.brain.ProviderConfig,key:String){
+        if(locked())throw ProviderException(unlockMessage())
+        require(config.mode==com.jarvis.assistant.brain.ProviderCredentialMode.API_KEY);config.validated()
+        if(key.isNotBlank()){
+            brainManager.configurationChanged(config)
+            withContext(Dispatchers.IO){store.setApiKey(config.provider,key.trim())}
+        }
+        brainManager.saveConfiguredModel(config)
+    }
+    suspend fun brainApiModels(provider:String,key:String)=llm.availableApiModels(provider,key,language())
+    suspend fun chatGptModels():List<com.jarvis.assistant.data.ChatGptPlanModel>{
+        val identity=openAiAuth.credentialDescriptor() ?: throw ProviderException("Continue with ChatGPT first.")
+        val bearer=openAiAuth.bearerToken()
+        if(identity!=openAiAuth.credentialDescriptor())throw ProviderException("The ChatGPT account or authorization changed. Load its models again.")
+        val models=llm.availableChatGptModels(bearer,language())
+        if(identity!=openAiAuth.credentialDescriptor())throw ProviderException("The ChatGPT account changed. Load its models again.")
+        return models
+    }
+    suspend fun selectBrain(config:com.jarvis.assistant.brain.ProviderConfig){
+        if(locked())throw ProviderException(unlockMessage())
+        brainManager.ensureSelectable(config)
+        val local=if(config.mode==com.jarvis.assistant.brain.ProviderCredentialMode.LOCAL)com.jarvis.assistant.neural.BrainProfiles.all.single{it.available && it.id==config.model} else null
+        local?.let{brain.hardwareError(it)?.let{message->error(message)}}
+        brainManager.select(config)
+        local?.let{brain.preferences.save(brain.preferences.state.value.copy(profile=it.id))}
+        refreshCapabilities()
+    }
+    suspend fun disconnectBrain(config:com.jarvis.assistant.brain.ProviderConfig):String{
+        if(locked())throw ProviderException(unlockMessage())
+        brainManager.disconnect(config);refreshCapabilities()
+        return if(config.mode==com.jarvis.assistant.brain.ProviderCredentialMode.CHATGPT_PLAN)openAiAuth.state.value.message ?: "Disconnected on this device. Review ChatGPT settings to confirm remote revocation."
+        else "API credential removed from this device. Revoke it in the provider console if you also want to disable that key elsewhere."
+    }
+    private fun localBrainRevision(model:String):String?=runCatching{
+        val profile=com.jarvis.assistant.neural.BrainProfiles.all.singleOrNull{it.available && it.id==model} ?: return null
+        if(!brain.installed(profile))return null
+        val files=com.jarvis.assistant.local.ModelRemovalPolicy.files(File(context.filesDir,"local-brain"),profile)
+        val metadata=org.json.JSONObject(files[3].readText())
+        "$model:${metadata.getString("sha256")}:${metadata.getString("revision")}:${files[0].length()}:${files[0].lastModified()}:${files[3].lastModified()}"
+    }.getOrNull()
+    suspend fun testLocalBrain(profileId:String):ConnectionCheck{
+        if(locked())throw ProviderException(unlockMessage())
+        val profile=com.jarvis.assistant.neural.BrainProfiles.all.singleOrNull{it.available && it.id==profileId} ?: error("Unknown Local Brain")
+        val integrity=brain.verifyIntegrity(profile);check(integrity.verified){integrity.message}
+        val revision=localBrainRevision(profile.id) ?: error("The model installation changed. Check integrity again.")
+        val started=SystemClock.elapsedRealtime()
+        val text=kotlinx.coroutines.withTimeout(60_000){brain.answer("Respond with the word READY.",language(),emptyList(),{},concise=true,profileOverride=profile)}
+        currentCoroutineContext().ensureActive()
+        check(text.isNotBlank()){"The Local Brain returned no answer."}
+        brainManager.recordLocalInferenceSuccess(com.jarvis.assistant.brain.ProviderConfig("local",profile.id,com.jarvis.assistant.brain.ProviderCredentialMode.LOCAL),revision)
+        return ConnectionCheck(profile.id,text.take(240),SystemClock.elapsedRealtime()-started)
+    }
+    suspend fun removeLocalBrains(profileId:String?=null):Long{
+        if(locked())throw ProviderException(unlockMessage())
+        val current=currentCoroutineContext()[Job]
+        val old=listOfNotNull(session,brainDownload,neuralOperation,providerCheck).filter{it!==current}
+        prepareBrainChange();old.forEach{it.cancel()};old.forEach{it.join()}
+        val profiles=com.jarvis.assistant.neural.BrainProfiles.all.filter{it.available && (profileId==null || it.id==profileId)}
+        require(profiles.isNotEmpty())
+        profiles.forEach{brainManager.configurationChanged(com.jarvis.assistant.brain.ProviderConfig("local",it.id,com.jarvis.assistant.brain.ProviderCredentialMode.LOCAL))}
+        val removed=if(profileId==null)brain.removeAllInstalled() else brain.removeInstalled(profiles.single())
+        refreshCapabilities();return removed
+    }
     fun pauseForAndroidUi():Long{cancelSession();pauseWake();mutableState.update{it.copy(phase=AssistantPhase.PAUSED)};return sessionGeneration}
     fun finishAndroidUi(token:Long){if(token==sessionGeneration){mutableState.update{it.copy(phase=AssistantPhase.READY)};resumeWake()}}
     fun currentCommandSerial()=sessionGeneration
@@ -1251,7 +1359,7 @@ class AssistantRuntime(private val context: Context) {
                 brain.answer(localPrompt, lang, if(generalHistoryAllowed)neural.conversation.history() else emptyList(), onChunk, concise=hud.state.value.settings.sentinel.conciseReplies)
             } else {
                 if (screen != null && (!screen.cloudConsent || screen.provider != settings.provider)) throw ProviderException("Capture the screen again and approve sharing with the selected provider.")
-                try{llm.answer(text, lang, contextText.take(24_000), if (generalHistoryAllowed) conversation.snapshot() else emptyList(), onChunk,
+                try{brainManager.answer(text, lang, contextText.take(24_000), if (generalHistoryAllowed) conversation.snapshot() else emptyList(), onChunk,
                     screenshot = screen?.jpeg?.takeIf { settings.provider == "gemini" }, includeIdentity = !publicLocked, concise=hud.state.value.settings.sentinel.conciseReplies)}catch(e:CancellationException){throw e}catch(e:Exception){
                     if(!neuralPreferences.state.value.cloudFallbackLocal || !brain.modelReady() || streamed.isNotBlank())throw e
                     mutableState.update{it.copy(neuralStage="Cloud unavailable · using approved local fallback")}
@@ -1567,12 +1675,13 @@ class AssistantRuntime(private val context: Context) {
 
     fun useLocal() {
         if (locked()) { fail(unlockMessage()); return }
-        cancelSession()
-        conversation.clear(); neural.conversation.clear()
-        clearScreenContext()
-        store.updateSettings(store.settings.value.copy(provider = "local", model = if(brain.profile.id=="balanced")"qwen2.5-1.5b" else "qwen2.5-0.5b", useCloudVoice = false))
-        refreshCapabilities()
-        mutableState.update { it.copy(error = if (brain.modelReady()) "On-device AI selected. Send your question again." else "On-device AI selected. Open Settings → Neural Core to install Lite or the optional near-1 GB brain; exact size is shown before download. No API key required.") }
+        scope.launch {
+            try {
+                selectBrain(com.jarvis.assistant.brain.ProviderConfig("local",brain.profile.id,com.jarvis.assistant.brain.ProviderCredentialMode.LOCAL))
+                mutableState.update{it.copy(error="Verified on-device AI selected. Send your question again.")}
+            } catch(e:CancellationException){throw e}
+            catch(_:Exception){fail("Open Settings → Artificial Intelligence → AI Brain Manager and test Local Inference before selecting it.")}
+        }
     }
 
     fun sharePhotos() {
@@ -1644,6 +1753,7 @@ class AssistantRuntime(private val context: Context) {
     fun clearConversation() { sessionNoteDraft.clear(); selectModule(com.jarvis.assistant.omnisystem.HudModule.ASSISTANT); cancelSession(); tools.infinity.clearContext();conversation.clear(); neural.conversation.clear(); clearScreenContext(); scope.launch { store.clearConversation() } }
 
     fun wipe() {
+        openAiAuth.cancelSignIn();brainManager.resetAfterWipe()
         sessionNoteDraft.clear();sessionNotePreferences.setEnabled(false);sessionNoteWrites.forEach{it.cancel()}
         clearSpeakerSuggestion()
         conversation.clear(); neural.conversation.clear()
@@ -1660,7 +1770,7 @@ class AssistantRuntime(private val context: Context) {
             com.jarvis.assistant.widgets.WidgetRepository(context).clear()
             knowledge.clear();appRegistry.clear();neuralPreferences.clear();brain.preferences.clear();briefing.clear();com.jarvis.assistant.neural.BriefingScheduler.sync(context)
             store.clearAll()
-            predictive.hide();features.clear();learning.reload();predictive.forgetAfterUserErase();mission.refresh()
+            predictive.hide();features.clear();openAiAuth.cancelSignIn();brainManager.resetAfterWipe();learning.reload();predictive.forgetAfterUserErase();mission.refresh()
             customVoice.clearGreetingCache()
             com.jarvis.assistant.security.SystemCredentialPrivacy.end(context)
             com.jarvis.assistant.security.ScreenSecurityPreferences(context).clear();com.jarvis.assistant.security.ScreenUnlockRequests.clear()

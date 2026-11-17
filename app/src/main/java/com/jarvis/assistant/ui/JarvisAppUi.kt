@@ -590,6 +590,7 @@ private fun SettingsScreen(state: JarvisUiState, actions: JarvisUiActions, senti
         item { Button(onClick=actions.onOpenNeural,modifier=Modifier.fillMaxWidth()){Text(l.choose("Neural Core · brain, knowledge & briefings","Neural Core · cerebro y resúmenes","هستهٔ عصبی · دانش و گزارش روزانه"))} }
         item { Button(onClick={actions.onInteraction(com.jarvis.assistant.sentinel.SentinelSound.PANEL_OPEN);sentinel=true},modifier=Modifier.fillMaxWidth()){Text(l.choose("Sentinel · wallpaper & sound","Sentinel · fondo y sonido","سنتینل · پس‌زمینه و صدا"))} }
         item { Button(onClick=actions.onOpenVoiceIntelligence,modifier=Modifier.fillMaxWidth()){Text(l.choose("Voice Intelligence · microphone & diagnostics","Inteligencia de voz · micrófono y diagnóstico","هوش صوتی · میکروفن و عیب‌یابی"))} }
+        item { SectionCard{Text(l.choose("Artificial Intelligence","Inteligencia artificial","هوش مصنوعی"),style=MaterialTheme.typography.titleMedium);Button(onClick=actions.onOpenBrainManager,modifier=Modifier.fillMaxWidth()){Text(l.choose("AI Brain Manager · ChatGPT, Claude & Local","Gestor de IA · ChatGPT, Claude y Local","مدیریت مغز هوش مصنوعی"))}} }
         item { HudSettingsCard(state, actions) }
         item { if(state.authorization!=null) AuthorizationPanel(state,actions) }
         item { PageTitle(l.choose("Made to feel like yours.", "Hecho a tu manera.", "همان‌طور که شما می‌خواهید."), l.choose("SETTINGS", "AJUSTES", "تنظیمات")) }
@@ -629,7 +630,8 @@ private fun SettingsScreen(state: JarvisUiState, actions: JarvisUiActions, senti
                     availableModels.forEach { model -> FilterChip(selected = draft.model == model, onClick = { clearConnectionCheck(false); draft = draft.copy(model = model); saved = false }, label = { Text(model) }) }
                 }
             }
-            OutlinedButton(onClick = { checkConnection(false) }, enabled = !checking, modifier = Modifier.fillMaxWidth()) { Text(l.choose("Test connection", "Probar conexión", "آزمایش اتصال")) }
+            OutlinedButton(onClick = { checkConnection(false) }, enabled = !checking, modifier = Modifier.fillMaxWidth()) { Text(l.choose("Test & save API access","Probar y guardar acceso API","آزمایش و ذخیرهٔ دسترسی API")) }
+            Text(l.choose("This test saves the entered key securely and makes one provider request using your API quota. Selecting a brain still requires a successful test. ChatGPT account sign-in and local model management are in AI Brain Manager.","Esta prueba guarda la clave de forma segura y realiza una petición con tu cuota API. Elegir un cerebro requiere una prueba correcta. El inicio de ChatGPT y los modelos locales están en el Gestor de IA.","این آزمایش کلید را امن ذخیره و یک درخواست API اجرا می‌کند."),style=MaterialTheme.typography.bodySmall)
             Text(l.choose("The test sends only a short sample prompt, without your conversations or phone data. Provider quota or charges may apply. Save settings after a successful test.", "La prueba envía solo un mensaje breve, sin conversaciones ni datos del teléfono. Puede consumir cuota o tener coste. Guarda los ajustes después.", "آزمایش فقط یک پیام نمونهٔ کوتاه می‌فرستد، بدون گفت‌وگوها یا داده‌های گوشی. ممکن است سهمیه یا هزینهٔ سرویس مصرف شود. پس از موفقیت، تنظیمات را ذخیره کنید."), color = Muted, style = MaterialTheme.typography.bodySmall)
             if (checking) LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
             if (connectionStatus.isNotBlank()) Text(connectionStatus, color = Warm)
@@ -691,7 +693,7 @@ private fun SettingsScreen(state: JarvisUiState, actions: JarvisUiActions, senti
             }
         } }
         item {
-            Button(onClick = { actions.onSaveSettings(draft.copy(name = draft.name.trim(), model = draft.model.trim()), key.trim()); key = ""; saved = true }, enabled = !checking, modifier = Modifier.fillMaxWidth().height(54.dp), shape = RoundedCornerShape(17.dp)) {
+            Button(onClick = { actions.onSaveSettings(draft.copy(name = draft.name.trim(), model = draft.model.trim()), key.trim()); key = ""; saved = true }, enabled = !checking && ((draft.provider==state.settings.provider && draft.model==state.settings.model && key.isBlank()) || verifiedConnection?.model==draft.model.trim()), modifier = Modifier.fillMaxWidth().height(54.dp), shape = RoundedCornerShape(17.dp)) {
                 Icon(if (saved) Icons.Rounded.Check else Icons.Rounded.Check, null, Modifier.size(18.dp)); Spacer(Modifier.width(8.dp)); Text(if (saved) l.choose("Saved", "Guardado", "ذخیره شد") else l.choose("Save settings", "Guardar ajustes", "ذخیرهٔ تنظیمات"))
             }
         }

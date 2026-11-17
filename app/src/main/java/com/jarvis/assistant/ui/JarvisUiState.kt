@@ -76,6 +76,7 @@ data class JarvisUiActions(
     val onOpenNeural:()->Unit={},
     val onOpenOutputVoice:()->Unit={},
     val onOpenVoiceIntelligence:()->Unit={},
+    val onOpenBrainManager:()->Unit={},
     val onOpenScreenSecurity:()->Unit={},
     val onOpenContacts:()->Unit={},
     val onOpenMemo:()->Unit={},

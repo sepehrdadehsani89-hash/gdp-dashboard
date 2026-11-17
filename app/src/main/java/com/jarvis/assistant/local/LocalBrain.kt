@@ -9,12 +9,15 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -38,21 +41,25 @@ class LocalBrain(private val context: Context,val preferences: com.jarvis.assist
     @Volatile private var loadedProfile=""
     @Volatile private var stopReason:String?=null
     @Volatile var lastMetrics:com.jarvis.assistant.neural.InferenceMetrics?=null;private set
-    suspend fun inspectDownload(p:com.jarvis.assistant.neural.BrainProfile):ModelDownloadPolicy.Descriptor=withContext(Dispatchers.IO){
-        require(p.available)
-        ModelDownloadPolicy.parseOfficialMetadata(fetchMetadata("https://huggingface.co/api/models/${p.repository}/revision/main?blobs=true"),p)
-    }
+    private val operationGate=ModelOperationGate()
+    private val managementMutex=Mutex()
+    suspend fun inspectDownload(p:com.jarvis.assistant.neural.BrainProfile):ModelDownloadPolicy.Descriptor=withContext(Dispatchers.IO){operationGate.operation{downloadMutex.withLock{
+        ModelRemovalPolicy.files(root,p)
+        val watcher=CoroutineScope(currentCoroutineContext()).launch(Dispatchers.Default,start=CoroutineStart.UNDISPATCHED){
+            try{awaitCancellation()}finally{activeDownload?.cancel()}
+        }
+        try{ModelDownloadPolicy.parseOfficialMetadata(fetchMetadata("https://huggingface.co/api/models/${p.repository}/revision/main?blobs=true"),p)}
+        finally{activeDownload=null;withContext(NonCancellable){watcher.cancelAndJoin()}}
+    }}}
     suspend fun select(id:String)=withContext(Dispatchers.IO){
         val next=com.jarvis.assistant.neural.BrainProfiles.get(id)
-        require(next.available)
-        cancel()
-        downloadMutex.withLock { inferenceMutex.withLock {
+        ModelRemovalPolicy.files(root,next)
+        manage {
             val error=ModelInstallPolicy.activationError(ready(next),hardwareError(next))
             check(error == null){error.orEmpty()}
-            val previous=handle;handle=0L
-            if(previous!=0L && nativeAvailable)nativeDestroy(previous)
+            destroyLoadedModel()
             preferences.save(preferences.state.value.copy(profile=next.id))
-        }}
+        }
     }
     fun hardwareError(p:com.jarvis.assistant.neural.BrainProfile=profile):String? {
         return com.jarvis.assistant.neural.BrainProfiles.compatibilityError(p,context.getSystemService(android.os.PowerManager::class.java).currentThermalStatus,android.os.Build.SUPPORTED_ABIS.contains("arm64-v8a"))
@@ -79,17 +86,51 @@ class LocalBrain(private val context: Context,val preferences: com.jarvis.assist
     fun modelReady():Boolean=ready(profile)
     fun installed(p:com.jarvis.assistant.neural.BrainProfile):Boolean=ready(p)
     fun installedBytes(p:com.jarvis.assistant.neural.BrainProfile):Long=if(ready(p))File(directoryFor(p),p.file).length() else 0
+    /** Includes interrupted/corrupt managed bytes, rather than silently reporting them as zero. */
+    fun ownedStorageBytes(p:com.jarvis.assistant.neural.BrainProfile=profile):Long=ModelRemovalPolicy.ownedStorageBytes(root,p)
+    suspend fun verifyIntegrity(p:com.jarvis.assistant.neural.BrainProfile=profile):ModelRemovalPolicy.IntegrityResult=withContext(Dispatchers.IO){operationGate.operation{
+        downloadMutex.withLock{inferenceMutex.withLock{
+            val operation=currentCoroutineContext()
+            ModelRemovalPolicy.verify(root,p){!operation.isActive}
+        }}
+    }}
     fun resumableBytes(p:com.jarvis.assistant.neural.BrainProfile,descriptor:ModelDownloadPolicy.Descriptor):Long {
+        ModelRemovalPolicy.files(root,p)
         val dir=directoryFor(p);val part=File(dir,"${p.file}.part");val record=File(dir,"${p.file}.resume")
         return if(record.isFile && record.readText()=="${descriptor.revision}:${descriptor.sha256}:${descriptor.size}")part.length().coerceIn(0,descriptor.size) else 0
     }
-    suspend fun removeInstalled(p:com.jarvis.assistant.neural.BrainProfile)=withContext(Dispatchers.IO){downloadMutex.withLock {inferenceMutex.withLock {
-            check(p.id!=profile.id){"Switch to another installed brain before removing the selected model."}
-            listOf(p.file,"${p.file}.part","${p.file}.resume","verified-model.json","verified-model.json.part").forEach{name->val f=File(directoryFor(p),name);check(!f.exists() || f.delete()){"Cannot remove model file."}}
-    }}}
+    /** Callers cancel their current assistant turn before invoking this; queued local work is also joined here. */
+    suspend fun removeInstalled(p:com.jarvis.assistant.neural.BrainProfile=profile):Long=withContext(Dispatchers.IO){
+        ModelRemovalPolicy.files(root,p)
+        manage{destroyLoadedModel();ModelRemovalPolicy.remove(root,p)}
+    }
+    suspend fun removeAllInstalled():Long=withContext(Dispatchers.IO){
+        val profiles=com.jarvis.assistant.neural.BrainProfiles.all.filter{it.available}
+        profiles.forEach{ModelRemovalPolicy.files(root,it)}
+        manage{destroyLoadedModel();profiles.sumOf{ModelRemovalPolicy.remove(root,it)}}
+    }
+
+    private suspend fun <T> manage(block:suspend ()->T):T=managementMutex.withLock{
+        val jobs=operationGate.closeAdmission()
+        try{
+            jobs.forEach{it.cancel()}
+            cancel()
+            // Native cancellation alone misses hashing/loading. Await the entire operation before deleting anything.
+            jobs.joinAll()
+            currentCoroutineContext().ensureActive()
+            downloadMutex.withLock{inferenceMutex.withLock{block()}}
+        }finally{operationGate.reopen()}
+    }
+
+    private fun destroyLoadedModel(){
+        val previous=handle;handle=0L;loadedProfile=""
+        if(previous!=0L && nativeAvailable)nativeDestroy(previous)
+    }
     private fun ready(selected:com.jarvis.assistant.neural.BrainProfile): Boolean = runCatching {
+        ModelRemovalPolicy.files(root,selected)
         val modelFile=File(directoryFor(selected),selected.file);val manifestFile=File(directoryFor(selected),"verified-model.json")
         if (!modelFile.isFile || !manifestFile.isFile) return@runCatching false
+        if(manifestFile.length()>16*1024)return@runCatching false
         val metadata = JSONObject(manifestFile.readText())
         metadata.getString("repository") == selected.repository && metadata.optString("file",selected.file)==selected.file &&
             metadata.getString("sha256").matches(Regex("[a-f0-9]{64}")) &&
@@ -103,13 +144,15 @@ class LocalBrain(private val context: Context,val preferences: com.jarvis.assist
         "${profile.title} weights are not installed. Inspect exact size and license in Neural Core. No API key required."
     }
 
-    suspend fun download(approved:ModelDownloadPolicy.Descriptor,target:com.jarvis.assistant.neural.BrainProfile=profile,onProgress: (Float) -> Unit) = withContext(Dispatchers.IO) {
+    suspend fun download(approved:ModelDownloadPolicy.Descriptor,target:com.jarvis.assistant.neural.BrainProfile=profile,onProgress: (Float) -> Unit) = withContext(Dispatchers.IO) {operationGate.operation{
         downloadMutex.withLock {
             val selected=target
+            ModelRemovalPolicy.files(root,selected)
             val directory=directoryFor(selected);val modelFile=File(directory,selected.file);val manifestFile=File(directory,"verified-model.json")
-            require(selected.available)
-            if (ready(selected)) { onProgress(1f); return@withLock }
             downloadCancelled = false
+            val operation=currentCoroutineContext()
+            // A same-size corrupt model must not make the explicit repair action a no-op.
+            if (ModelRemovalPolicy.verify(root,selected){downloadCancelled || !operation.isActive}.verified) { onProgress(1f); return@withLock }
             val temporary = File(directory, "${selected.file}.part")
             val temporaryManifest = File(directory, "verified-model.json.part")
             val cancellationWatcher = CoroutineScope(currentCoroutineContext()).launch(
@@ -157,18 +200,25 @@ class LocalBrain(private val context: Context,val preferences: com.jarvis.assist
                         put("size", total)
                         put("license", "Apache-2.0 (official ${selected.repository})")
                     }.toString())
-                    check(temporary.renameTo(modelFile)) { "Could not install verified model." }
-                    check(temporaryManifest.renameTo(manifestFile)) { "Could not save model integrity record." }
+                    inferenceMutex.withLock{
+                        currentCoroutineContext().ensureActive()
+                        if(downloadCancelled)throw CancellationException("Model download cancelled")
+                        // An old mmap may remain in a loaded engine even when this is an explicit repair.
+                        if(loadedProfile==selected.id)destroyLoadedModel()
+                        ModelRemovalPolicy.files(root,selected)
+                        check(temporary.renameTo(modelFile)) { "Could not install verified model." }
+                        check(temporaryManifest.renameTo(manifestFile)) { "Could not save model integrity record." }
+                    }
                     resumeRecord.delete()
                     onProgress(1f)
                 }
             } finally {
                 activeDownload = null
                 temporaryManifest.delete()
-                cancellationWatcher.cancelAndJoin()
+                withContext(NonCancellable){cancellationWatcher.cancelAndJoin()}
             }
         }
-    }
+    }}
 
     private fun fetchMetadata(url: String): String {
         val call = http.newBuilder().callTimeout(30,TimeUnit.SECONDS).readTimeout(25,TimeUnit.SECONDS).build().newCall(Request.Builder().url(url).build())
@@ -192,12 +242,17 @@ class LocalBrain(private val context: Context,val preferences: com.jarvis.assist
         concise:Boolean=true,
         benchmark:Boolean=false,
         baselinePrompt:Boolean=false,
-    ): String = withContext(Dispatchers.IO) {
+        profileOverride:com.jarvis.assistant.neural.BrainProfile?=null,
+    ): String = withContext(Dispatchers.IO) {operationGate.operation{
         inferenceMutex.withLock {
-            if(!modelReady())throw LocalModelUnavailable(profile.title)
+            val selected=profileOverride ?: profile
+            ModelRemovalPolicy.files(root,selected)
+            if(!ready(selected))throw LocalModelUnavailable(selected.title)
             check(nativeAvailable) { "The local AI runtime is unavailable on this phone architecture." }
-            hardwareError()?.let{error(it)}
-            val selected=profile
+            hardwareError(selected)?.let{error(it)}
+            val selectedDirectory=directoryFor(selected)
+            val modelFile=File(selectedDirectory,selected.file)
+            val manifestFile=File(selectedDirectory,"verified-model.json")
             val started=android.os.SystemClock.elapsedRealtime()
             var firstToken:Long?=null
             var peakPss=android.os.Debug.getPss()
@@ -205,6 +260,7 @@ class LocalBrain(private val context: Context,val preferences: com.jarvis.assist
             progressState.value="Loading ${selected.title}"
             try {
             val prompt = (if(baselinePrompt)com.jarvis.assistant.neural.BaselinePromptBuilder.build(text,language,emptyList(),concise) else LocalPromptBuilder.build(text, language, history, concise)).toByteArray(Charsets.UTF_8)
+            if(handle!=0L && loadedProfile!=selected.id)destroyLoadedModel()
             if(handle==0L){
                 val expected=JSONObject(manifestFile.readText()).getString("sha256")
                 val digest=MessageDigest.getInstance("SHA-256")
@@ -215,7 +271,6 @@ class LocalBrain(private val context: Context,val preferences: com.jarvis.assist
                     error("Model integrity check failed. Redownload this profile in Settings; other brains are retained.")
                 }
             }
-            if(handle!=0L && loadedProfile!=selected.id){nativeDestroy(handle);handle=0L}
             if (handle == 0L){ handle = nativeCreate(modelFile.absolutePath,selected.context,if(preferences.state.value.eco)1 else 2);loadedProfile=selected.id}
             check(handle != 0L) { "Could not initialize the local AI runtime." }
             currentCoroutineContext().ensureActive()
@@ -255,7 +310,7 @@ class LocalBrain(private val context: Context,val preferences: com.jarvis.assist
             }
             } finally {progressState.value="Idle"}
         }
-    }
+    }}
 
     fun cancel() {
         downloadCancelled = true
@@ -265,19 +320,13 @@ class LocalBrain(private val context: Context,val preferences: com.jarvis.assist
     }
 
     suspend fun release() = withContext(Dispatchers.IO) {
-        cancel()
-        inferenceMutex.withLock {
-            val current = handle
-            handle = 0L
-            if (current != 0L && nativeAvailable) nativeDestroy(current)
-        }
+        manage{destroyLoadedModel()}
     }
 
     /** Cache cleanup never cancels a download or an active/queued inference. */
     suspend fun releaseIdle()=withContext(Dispatchers.IO){
         if(inferenceMutex.tryLock())try{
-            val current=handle;handle=0L
-            if(current!=0L && nativeAvailable)nativeDestroy(current)
+            destroyLoadedModel()
         }finally{inferenceMutex.unlock()}
     }
 

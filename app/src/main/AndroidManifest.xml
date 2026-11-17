@@ -87,6 +87,7 @@
         <activity android:name=".finishpolish.mission.MissionControlActivity" android:exported="false" />
         <activity android:name=".voice.VoiceHealthActivity" android:exported="false" />
         <activity android:name=".voice.VoiceSettingsActivity" android:exported="false" />
+        <activity android:name=".brain.BrainManagerActivity" android:exported="false" />
         <activity android:name=".neural.SafeActivationActivity" android:exported="false" android:theme="@style/Theme.Jarvis" />
         <activity android:name=".neural.NeuralSettingsActivity" android:exported="false" android:theme="@style/Theme.Jarvis" />
         <activity android:name=".omnisystem.CameraHudActivity" android:exported="false" android:theme="@style/Theme.Jarvis" />

@@ -57,7 +57,7 @@ class LlmConnectionTest {
             val contents = JSONObject(body).getJSONArray("contents")
             assertEquals(128, JSONObject(body).getJSONObject("generationConfig").getInt("maxOutputTokens"))
             assertEquals(1, contents.length())
-            assertEquals("Say hello.", contents.getJSONObject(0).getJSONArray("parts").getJSONObject(0).getString("text"))
+            assertEquals("Respond with the word READY.", contents.getJSONObject(0).getJSONArray("parts").getJSONObject(0).getString("text"))
         }
     }
 
