@@ -17,8 +17,8 @@ android {
         applicationId = "com.jarvis.next"
         minSdk = 29
         targetSdk = 35
-        versionCode = 25
-        versionName = "2.11.8"
+        versionCode = 26
+        versionName = "2.11.9-phoenix.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
         ndk { abiFilters += providers.gradleProperty("jarvisAbis").getOrElse("arm64-v8a").split(",") }
@@ -58,6 +58,9 @@ android {
         }
     }
     buildTypes {
+        debug {
+            versionNameSuffix = "-debug"
+        }
         create("reinstall") {
             initWith(getByName("release"))
             signingConfig = signingConfigs.getByName("reinstall")
@@ -77,6 +80,9 @@ android {
         resources.excludes += "/META-INF/{AL2.0,LGPL2.1}"
         // Smaller sideload download; Android extracts native code during installation.
         jniLibs.useLegacyPackaging = true
+        // Compress DEX for the downloadable evaluation APK as well as release APKs.
+        // Bytecode is unchanged; this avoids an oversized uncompressed debug download.
+        dex.useLegacyPackaging = true
     }
     testOptions { unitTests.isReturnDefaultValues = true }
     lint { abortOnError = true }
