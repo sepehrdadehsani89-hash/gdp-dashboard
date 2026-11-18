@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.google.GoogleNativeReadBoundaryTest" tests="22" skipped="0" failures="0" errors="0" timestamp="2026-11-18T14:32:03" hostname="885caff30ac4" time="0.003">
+  <properties/>
+  <testcase name="privateMailReadsDoNotFallThroughToGeneralAI[Read my latest email]" classname="com.jarvis.assistant.google.GoogleNativeReadBoundaryTest" time="0.001"/>
+  <testcase name="privateMailReadsDoNotFallThroughToGeneralAI[Show me the emails from Mom]" classname="com.jarvis.assistant.google.GoogleNativeReadBoundaryTest" time="0.001"/>
+  <testcase name="privateMailReadsDoNotFallThroughToGeneralAI[Read emails from my teacher]" classname="com.jarvis.assistant.google.GoogleNativeReadBoundaryTest" time="0.0"/>
+  <testcase name="privateMailReadsDoNotFallThroughToGeneralAI[Show email from Alice]" classname="com.jarvis.assistant.google.GoogleNativeReadBoundaryTest" time="0.0"/>
+  <testcase name="privateMailReadsDoNotFallThroughToGeneralAI[Summarize my Gmail]" classname="com.jarvis.assistant.google.GoogleNativeReadBoundaryTest" time="0.0"/>
+  <testcase name="privateMailReadsDoNotFallThroughToGeneralAI[Show my email]" classname="com.jarvis.assistant.google.GoogleNativeReadBoundaryTest" time="0.0"/>
+  <testcase name="privateMailReadsDoNotFallThroughToGeneralAI[Who emailed me?]" classname="com.jarvis.assistant.google.GoogleNativeReadBoundaryTest" time="0.0"/>
+  <testcase name="privateMailReadsDoNotFallThroughToGeneralAI[Read my last email]" classname="com.jarvis.assistant.google.GoogleNativeReadBoundaryTest" time="0.0"/>
+  <testcase name="privateMailReadsDoNotFallThroughToGeneralAI[How many unread emails do I have?]" classname="com.jarvis.assistant.google.GoogleNativeReadBoundaryTest" time="0.0"/>
+  <testcase name="privateMailReadsDoNotFallThroughToGeneralAI[Catch me up on my emails]" classname="com.jarvis.assistant.google.GoogleNativeReadBoundaryTest" time="0.0"/>
+  <testcase name="privateMailReadsDoNotFallThroughToGeneralAI[Did my teacher email me?]" classname="com.jarvis.assistant.google.GoogleNativeReadBoundaryTest" time="0.001"/>
+  <testcase name="privateMailReadsDoNotFallThroughToGeneralAI[Summarize today's messages]" classname="com.jarvis.assistant.google.GoogleNativeReadBoundaryTest" time="0.0"/>
+  <testcase name="privateMailReadsDoNotFallThroughToGeneralAI[Open Gmail]" classname="com.jarvis.assistant.google.GoogleNativeReadBoundaryTest" time="0.0"/>
+  <testcase name="privateMailReadsDoNotFallThroughToGeneralAI[Open Chrome]" classname="com.jarvis.assistant.google.GoogleNativeReadBoundaryTest" time="0.0"/>
+  <testcase name="privateMailReadsDoNotFallThroughToGeneralAI[Read my WhatsApp notifications]" classname="com.jarvis.assistant.google.GoogleNativeReadBoundaryTest" time="0.0"/>
+  <testcase name="privateMailReadsDoNotFallThroughToGeneralAI[Catch me up on my messages]" classname="com.jarvis.assistant.google.GoogleNativeReadBoundaryTest" time="0.0"/>
+  <testcase name="privateMailReadsDoNotFallThroughToGeneralAI[How do email servers work?]" classname="com.jarvis.assistant.google.GoogleNativeReadBoundaryTest" time="0.0"/>
+  <testcase name="privateMailReadsDoNotFallThroughToGeneralAI[What is Gmail?]" classname="com.jarvis.assistant.google.GoogleNativeReadBoundaryTest" time="0.0"/>
+  <testcase name="privateMailReadsDoNotFallThroughToGeneralAI[Do not check my email]" classname="com.jarvis.assistant.google.GoogleNativeReadBoundaryTest" time="0.0"/>
+  <testcase name="privateMailReadsDoNotFallThroughToGeneralAI[What does unread mean?]" classname="com.jarvis.assistant.google.GoogleNativeReadBoundaryTest" time="0.0"/>
+  <testcase name="privateMailReadsDoNotFallThroughToGeneralAI[Translate the word email]" classname="com.jarvis.assistant.google.GoogleNativeReadBoundaryTest" time="0.0"/>
+  <testcase name="privateMailReadsDoNotFallThroughToGeneralAI[Read a book about email protocols]" classname="com.jarvis.assistant.google.GoogleNativeReadBoundaryTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

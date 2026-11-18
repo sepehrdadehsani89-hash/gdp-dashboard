@@ -10,8 +10,8 @@ import java.util.Base64
 
 /** API-key Responses contract. OAuth plan catalog/credentials remain a separate integration. */
 internal object OpenAiResponsesProtocol {
-    fun request(model:String,instructions:String,user:String,context:String,history:List<ChatMessage>,stream:Boolean=true,maxOutput:Int=2048,pictures:List<ByteArray> = emptyList()):String {
-        OpenAiModelCatalog.validateId(model)
+    fun request(model:String,instructions:String,user:String,context:String,history:List<ChatMessage>,stream:Boolean=true,maxOutput:Int=2048,pictures:List<ByteArray> = emptyList(),modelValidator:(String)->Unit={OpenAiModelCatalog.validateId(it)}):String {
+        modelValidator(model)
         require(maxOutput in 64..4096 && pictures.size<=2 && pictures.all{it.isNotEmpty() && it.size<=1_500_000})
         val recent=history.filter{it.role!=MessageRole.STATUS}.takeLast(12).toMutableList()
         if(recent.lastOrNull()?.let{it.role==MessageRole.USER && it.text==user}==true)recent.removeAt(recent.lastIndex)

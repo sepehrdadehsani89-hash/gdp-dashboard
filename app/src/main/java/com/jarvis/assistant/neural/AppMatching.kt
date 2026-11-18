@@ -28,7 +28,7 @@ object AppMatching {
     }
     fun correctionTarget(input:String):String? = Regex("^(?:no i meant|no i said|no me referia a|no me refiero a|no quise decir|نه منظورم) (.+)$").matchEntire(normalize(input))?.groupValues?.get(1)?.takeIf{it.length in 2..100}
     fun commandTarget(input:String):String? {
-        val text=normalize(input).removePrefix("jarvis ").removePrefix("جارویس ")
+        val text=normalize(input).removePrefix("hey jarvis ").removePrefix("oye jarvis ").removePrefix("jarvis ").removePrefix("جارویس ")
         val en=Regex("^(?:(?:can|could|would) you |please )?(?:please )?(?:open|launch|start) (.+?)(?: for me| please)?$").matchEntire(text)?.groupValues?.get(1)
         val es=Regex("^(?:puedes |por favor )?(?:abrir|abre|inicia|abrirme) (.+?)(?: por favor)?$").matchEntire(text)?.groupValues?.get(1)
         val fa=Regex("^(?:لطفا )?(.+?)(?: را)? باز کن$").matchEntire(text)?.groupValues?.get(1)

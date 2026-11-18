@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.neural.PrivateMemoryBackupTest" tests="11" skipped="1" failures="0" errors="0" timestamp="2026-11-18T14:32:07" hostname="885caff30ac4" time="0.124">
+  <properties/>
+  <testcase name="rejectsUnsupportedAndMistypedFormats" classname="com.jarvis.assistant.neural.PrivateMemoryBackupTest" time="0.003"/>
+  <testcase name="validatesUserExportPrivatelyWhenProvided" classname="com.jarvis.assistant.neural.PrivateMemoryBackupTest" time="0.006">
+    <skipped/>
+  </testcase>
+  <testcase name="readsAllExportedCollectionsWithoutRestoringCredentials" classname="com.jarvis.assistant.neural.PrivateMemoryBackupTest" time="0.001"/>
+  <testcase name="rejectsInvalidPackageAndNormalizedAliasCollision" classname="com.jarvis.assistant.neural.PrivateMemoryBackupTest" time="0.001"/>
+  <testcase name="rejectsDuplicateDocumentIdsBeforeAnyStorage" classname="com.jarvis.assistant.neural.PrivateMemoryBackupTest" time="0.0"/>
+  <testcase name="rejectsInvalidKindsAndTimestampTypes" classname="com.jarvis.assistant.neural.PrivateMemoryBackupTest" time="0.0"/>
+  <testcase name="rejectsOversizedOrEmptyDocumentText" classname="com.jarvis.assistant.neural.PrivateMemoryBackupTest" time="0.01"/>
+  <testcase name="rejectsStreamOverLimit" classname="com.jarvis.assistant.neural.PrivateMemoryBackupTest" time="0.084"/>
+  <testcase name="sameExportHasStableIdsButChangedBodyCannotReplacePreviousImport" classname="com.jarvis.assistant.neural.PrivateMemoryBackupTest" time="0.002"/>
+  <testcase name="deduplicatesTasksAndMemories" classname="com.jarvis.assistant.neural.PrivateMemoryBackupTest" time="0.0"/>
+  <testcase name="readsLegacyExportWithPassageNewlinesWithoutTruncation" classname="com.jarvis.assistant.neural.PrivateMemoryBackupTest" time="0.017"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

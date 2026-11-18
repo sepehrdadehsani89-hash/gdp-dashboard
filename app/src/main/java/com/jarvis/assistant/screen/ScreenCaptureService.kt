@@ -26,6 +26,7 @@ import java.io.ByteArrayOutputStream
 
 /** One frame under Android's screen-capture grant. Stops immediately after capture or failure. */
 class ScreenCaptureService : Service() {
+    private val projectionOwner="capture-${java.util.UUID.randomUUID()}"
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private var projection: MediaProjection? = null
     private var display: VirtualDisplay? = null
@@ -33,6 +34,7 @@ class ScreenCaptureService : Service() {
     private val runtime get() = (application as JarvisApplication).runtime
     override fun onBind(intent: Intent?): IBinder? = null
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if(!ProjectionLease.claim(projectionOwner)){runtime.screenCaptureFailed("Another owned capture or recording is active. Stop it before requesting a screenshot.");stopSelf();return START_NOT_STICKY}
         val manager = getSystemService(NotificationManager::class.java)
         manager.createNotificationChannel(NotificationChannel("jarvis_screen", "One-shot screen capture", NotificationManager.IMPORTANCE_LOW))
         val notification = NotificationCompat.Builder(this, "jarvis_screen").setSmallIcon(android.R.drawable.ic_menu_camera)
@@ -102,6 +104,7 @@ class ScreenCaptureService : Service() {
         images?.close(); images = null
         projection?.stop(); projection = null
         stopForeground(STOP_FOREGROUND_REMOVE)
+        ProjectionLease.release(projectionOwner)
         super.onDestroy()
     }
 }

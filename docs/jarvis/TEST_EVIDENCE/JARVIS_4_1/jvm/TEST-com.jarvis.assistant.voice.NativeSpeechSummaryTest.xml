@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.voice.NativeSpeechSummaryTest" tests="20" skipped="0" failures="0" errors="0" timestamp="2026-11-18T14:32:08" hostname="885caff30ac4" time="0.001">
+  <properties/>
+  <testcase name="transcriptIsNotAcceptedAsKind" classname="com.jarvis.assistant.voice.NativeSpeechSummaryTest" time="0.0"/>
+  <testcase name="contactRequiresFinalCall" classname="com.jarvis.assistant.voice.NativeSpeechSummaryTest" time="0.001"/>
+  <testcase name="homeNavigationCanBeCancelled" classname="com.jarvis.assistant.voice.NativeSpeechSummaryTest" time="0.0"/>
+  <testcase name="fileContentNeverAutomaticallyPublic" classname="com.jarvis.assistant.voice.NativeSpeechSummaryTest" time="0.0"/>
+  <testcase name="alarmRequiresReview" classname="com.jarvis.assistant.voice.NativeSpeechSummaryTest" time="0.0"/>
+  <testcase name="unknownToolDefaultsPrivate" classname="com.jarvis.assistant.voice.NativeSpeechSummaryTest" time="0.0"/>
+  <testcase name="backNavigationCanBeCancelled" classname="com.jarvis.assistant.voice.NativeSpeechSummaryTest" time="0.0"/>
+  <testcase name="diagnosticTestsDoNotAutoRun" classname="com.jarvis.assistant.voice.NativeSpeechSummaryTest" time="0.0"/>
+  <testcase name="calendarContentNeverAutomaticallyPublic" classname="com.jarvis.assistant.voice.NativeSpeechSummaryTest" time="0.0"/>
+  <testcase name="screenTapNotReportedDone" classname="com.jarvis.assistant.voice.NativeSpeechSummaryTest" time="0.0"/>
+  <testcase name="openingAppNeedsApproval" classname="com.jarvis.assistant.voice.NativeSpeechSummaryTest" time="0.0"/>
+  <testcase name="aliasIsLocalAndPending" classname="com.jarvis.assistant.voice.NativeSpeechSummaryTest" time="0.0"/>
+  <testcase name="appLabelsNeverAutomaticallyPublic" classname="com.jarvis.assistant.voice.NativeSpeechSummaryTest" time="0.0"/>
+  <testcase name="mediaIsRequestNotPlaybackClaim" classname="com.jarvis.assistant.voice.NativeSpeechSummaryTest" time="0.0"/>
+  <testcase name="SpanishContactKeepsManualCall" classname="com.jarvis.assistant.voice.NativeSpeechSummaryTest" time="0.0"/>
+  <testcase name="authoredResultStatusesCanSpeak" classname="com.jarvis.assistant.voice.NativeSpeechSummaryTest" time="0.0"/>
+  <testcase name="panelDoesNotClaimToggle" classname="com.jarvis.assistant.voice.NativeSpeechSummaryTest" time="0.0"/>
+  <testcase name="timerRequiresSave" classname="com.jarvis.assistant.voice.NativeSpeechSummaryTest" time="0.0"/>
+  <testcase name="linkDoesNotClaimMessageSent" classname="com.jarvis.assistant.voice.NativeSpeechSummaryTest" time="0.0"/>
+  <testcase name="reminderNotReportedSaved" classname="com.jarvis.assistant.voice.NativeSpeechSummaryTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

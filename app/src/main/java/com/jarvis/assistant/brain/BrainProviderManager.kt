@@ -24,13 +24,14 @@ class BrainProviderManager internal constructor(
     private val localRevision:(String)->String?,
     private val beforeChange:()->Unit,
     private val now:()->Long=System::currentTimeMillis,
+    private val planMetadata:(()->PlanConnectionIdentity?)?=null,
 ) {
-    constructor(store:JarvisStore,client:LlmClient,planAccess:suspend()->ChatGptPlanAccess?={null},disconnectPlan:suspend()->Unit={},localRevision:(String)->String?={null},beforeChange:()->Unit={}) : this(
+    constructor(store:JarvisStore,client:LlmClient,planAccess:suspend()->ChatGptPlanAccess?={null},disconnectPlan:suspend()->Unit={},localRevision:(String)->String?={null},beforeChange:()->Unit={},planMetadata:(()->PlanConnectionIdentity?)?=null) : this(
         ProviderConnectionStore(store),{store.settings.value},store::getApiKey,store::getApiKeyRevision,planAccess,
         {config,credential,plan->client.testConnection(store.settings.value.copy(provider=config.provider,model=config.model),if(plan)"" else credential,if(plan)credential else null,explicitApi=!plan)},
         {config,credential,plan,text,language,context,history,onChunk,screenshot,identity,concise->client.answer(text,language,context,history,onChunk,screenshot,identity,concise,
             store.settings.value.copy(provider=config.provider,model=config.model),if(plan)credential else null,if(plan)null else credential)},
-        {config->store.updateSettings(store.settings.value.copy(provider=config.provider,model=config.model))},{provider->store.setApiKey(provider,"")},disconnectPlan,localRevision,beforeChange)
+        {config->store.updateSettings(store.settings.value.copy(provider=config.provider,model=config.model))},{provider->store.setApiKey(provider,"")},disconnectPlan,localRevision,beforeChange,planMetadata=planMetadata)
 
     private val mutable=MutableStateFlow<Map<String,ProviderConnection>>(emptyMap())
     val connections=mutable.asStateFlow()
@@ -60,6 +61,12 @@ class BrainProviderManager internal constructor(
         }
     }
     private fun matches(proof:ProviderVerificationProof?,config:ProviderConfig,binding:String)=proof!=null && proof.config==config && proof.credentialBinding==binding && proof.nonce.length>=24 && now()-proof.verifiedAt in 0..PROOF_MAX_AGE_MS
+    private suspend fun metadataBinding(config:ProviderConfig):String {
+        if(config.mode!=ProviderCredentialMode.CHATGPT_PLAN || planMetadata==null)return credential(config).binding
+        val identity=planMetadata.invoke() ?: throw ProviderException("Saved ChatGPT authorization is unavailable. Reconnect in AI Brain Manager.",ProviderFailureKind.AUTHENTICATION)
+        if(identity.accountId.isBlank() || !identity.scopes.containsAll(setOf(ChatGptPlanAccess.INFERENCE_SCOPE,"resource.invoke")))throw ProviderException("This ChatGPT connection has not authorized model inference.",ProviderFailureKind.AUTHORIZATION)
+        return hash("${config.id}:${identity.accountId}:${identity.revision}:${identity.scopes.sorted().joinToString(" ")}")
+    }
     @Synchronized private fun record(config:ProviderConfig,binding:String,expectedEpoch:Long=epoch(config.id),check:ConnectionCheck?=null):ProviderVerificationProof {
         if(epoch(config.id)!=expectedEpoch)throw ProviderException("Connection changed during this request. Test again.",ProviderFailureKind.NOT_VERIFIED)
         val proof=ProviderVerificationProof(config,binding,now(),UUID.randomUUID().toString());repository.save(proof);sessionProofs[config.id]=proof.nonce;failedBindings.remove(config.id)
@@ -67,23 +74,38 @@ class BrainProviderManager internal constructor(
     }
     suspend fun refresh(config:ProviderConfig):ProviderConnection {
         try{
-            val c=credential(config);val proof=repository.proof(config.id)
             val previous=connections.value[config.id]?.takeIf{it.config==config}
-            if(previous?.status==ProviderConnectionStatus.VERIFYING)return previous
-            if(matches(proof,config,c.binding)){
+            if(previous?.status in setOf(ProviderConnectionStatus.VERIFYING,ProviderConnectionStatus.RECONNECTING))return previous!!
+            val binding=metadataBinding(config);val proof=repository.proof(config.id)
+            if(previous?.status==ProviderConnectionStatus.FAILED && failedBindings[config.id]==binding)return previous
+            if(matches(proof,config,binding)){
                 if(proof!!.nonce==sessionProofs[config.id]){
                     if(previous?.status!=ProviderConnectionStatus.VERIFIED)publish(config,ProviderConnectionStatus.VERIFIED,"Actual response verified in this app session.",at=proof.verifiedAt)
                 }else publish(config,ProviderConnectionStatus.PREVIOUSLY_VERIFIED,"Previously verified. Run Test Connection or a real question to check current access.",at=proof.verifiedAt)
-            }else if(previous?.status==ProviderConnectionStatus.FAILED && failedBindings[config.id]==c.binding){
-                return previous // A UI refresh must not erase the actual provider failure.
             }else if(proof!=null && proof.config!=config){
                 publish(config,ProviderConnectionStatus.CONFIGURED,"This draft model is not verified. The saved active-model proof was preserved.")
             }else{
                 if(proof!=null)repository.remove(config.id)
-                publish(config,if(proof!=null)ProviderConnectionStatus.EXPIRED else ProviderConnectionStatus.CONFIGURED,if(proof!=null)"The previous verification expired. Test again." else "Test this connection before selecting it.",at=proof?.verifiedAt)
+                val expired=proof!=null || previous?.status==ProviderConnectionStatus.EXPIRED
+                publish(config,if(expired)ProviderConnectionStatus.EXPIRED else ProviderConnectionStatus.CONFIGURED,if(expired)"Previous verification expired. Ask a real question or test current access." else "Saved configuration restored. Ask a real question or test before selecting this connection.",at=proof?.verifiedAt ?: previous?.verifiedAt)
             }
-        }catch(e:CancellationException){throw e}catch(e:Exception){repository.remove(config.id);publish(config,ProviderConnectionStatus.NOT_CONFIGURED,safeMessage(e),kind(e))}
+        }catch(e:CancellationException){throw e}catch(e:Exception){sessionProofs.remove(config.id);val missing=kind(e) in setOf(ProviderFailureKind.AUTHENTICATION,ProviderFailureKind.AUTHORIZATION);if(missing)repository.remove(config.id);publish(config,if(missing)ProviderConnectionStatus.NOT_CONFIGURED else ProviderConnectionStatus.FAILED,safeMessage(e),kind(e))}
         return connections.value.getValue(config.id)
+    }
+    /** Restores/renews an already configured grant, never runs an inference probe or selects a brain. */
+    suspend fun reconnect(config:ProviderConfig):ProviderConnection {
+        config.validated()
+        val previous=connections.value[config.id]
+        if(previous?.status in setOf(ProviderConnectionStatus.VERIFYING,ProviderConnectionStatus.RECONNECTING))return previous!!
+        val requestEpoch=epoch(config.id)
+        publish(config,ProviderConnectionStatus.RECONNECTING,"Restoring the saved connection; no model request is being sent.")
+        try{
+            credential(config) // Renewable OAuth access is refreshed by the existing single-flight manager.
+            if(epoch(config.id)!=requestEpoch)return connections.value[config.id] ?: ProviderConnection(config,ProviderConnectionStatus.CONFIGURED,message="Configuration changed during restoration.")
+            publish(config,ProviderConnectionStatus.CONFIGURED,"Saved access restored. Inference is a separate check.",at=previous?.verifiedAt)
+            return refresh(config)
+        }catch(e:CancellationException){if(epoch(config.id)==requestEpoch)publish(config,ProviderConnectionStatus.CONFIGURED,"Reconnection canceled; saved access was retained.",at=previous?.verifiedAt);throw e}
+        catch(e:Exception){if(epoch(config.id)!=requestEpoch)return connections.value[config.id] ?: ProviderConnection(config,ProviderConnectionStatus.CONFIGURED,message="Configuration changed during restoration.");sessionProofs.remove(config.id);runCatching{metadataBinding(config)}.getOrNull()?.let{failedBindings[config.id]=it};val provider=e as? ProviderException;publish(config,ProviderConnectionStatus.FAILED,safeMessage(e),kind(e),at=previous?.verifiedAt,httpStatus=provider?.httpStatus);return connections.value.getValue(config.id)}
     }
     /** Pure metadata maintenance, including while settings are closed. Never touches the network. */
     @Synchronized fun expireStaleVerifications(){
@@ -139,7 +161,8 @@ class BrainProviderManager internal constructor(
     suspend fun answer(userText:String,language:AppLanguage,context:String,history:List<ChatMessage>,onChunk:(String)->Unit,screenshot:ByteArray?=null,includeIdentity:Boolean=true,concise:Boolean=true):String {
         val config=currentConfig().validated();require(config.mode!=ProviderCredentialMode.LOCAL){"Local inference uses the existing LocalBrain."}
         val requestEpoch=epoch(config.id);val c=credential(config)
-        if(config.mode==ProviderCredentialMode.CHATGPT_PLAN && !matches(repository.proof(config.id),config,c.binding))throw ProviderException("Test this ChatGPT account and model before using it as the AI Brain.",ProviderFailureKind.NOT_VERIFIED)
+        // A saved user's selected grant may serve a new explicit question after proof expiry/restart.
+        // Credential/scopes are checked above; only completed inference below creates a green proof.
         try{val result=answerRequest(config,c.secret,config.mode==ProviderCredentialMode.CHATGPT_PLAN,userText,language,context,history,{chunk->if(requestEpoch==epoch(config.id))onChunk(chunk)},screenshot,includeIdentity,concise)
             if(result.isBlank())throw ProviderException("The provider returned no answer.",ProviderFailureKind.INCOMPLETE)
             if(requestEpoch!=epoch(config.id) || c.binding!=credential(config).binding)throw ProviderException("The connection changed before this answer completed. No completed response was accepted.",ProviderFailureKind.NOT_VERIFIED)

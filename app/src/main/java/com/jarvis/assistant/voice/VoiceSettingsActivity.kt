@@ -38,6 +38,15 @@ class VoiceSettingsActivity:PrivateModuleActivity(){
         super.onCreate(savedInstanceState);if(isFinishing)return
         load(if(runtime.store.settings.value.language==AppLanguage.ES)AppLanguage.ES else AppLanguage.EN)
         screen(words("JARVIS · OUTPUT VOICE","JARVIS · VOZ DE SALIDA","جارویس · صدای خروجی")){
+            val preferences=remember{com.jarvis.assistant.titan.VoicePreferences(this@VoiceSettingsActivity)}
+            var courtesy by remember{mutableStateOf(preferences.courtesy)}
+            var contextual by remember{mutableStateOf(preferences.farewellContext)}
+            var style by remember{mutableStateOf(preferences.farewellStyle)}
+            Text("Farewell style: $style")
+            listOf("AUTO","GENERAL","FORMAL","SHORT","FRIENDLY","RELAXED","FOCUS").forEach{value->FilterChip(style==value,{style=value;preferences.farewellStyle=value},label={Text(value)})}
+            OutlinedButton(onClick={courtesy=!courtesy;preferences.courtesy=courtesy}){Text("Farewell courtesy / sir: $courtesy")}
+            OutlinedButton(onClick={authorize{contextual=!contextual;preferences.farewellContext=contextual}}){Text("Farewell reminders / calendar / check-ins · optional private data: $contextual")}
+            Text("A farewell stops all conversation listening. Enable wake listening separately when you want it again. Reminder facts require the existing private-speech consent; playback failure still leaves the microphone stopped.")
             androidx.compose.foundation.layout.Row{
                 AppLanguage.supported.forEach{language->FilterChip(selectedLanguage==language,{if(!working)load(language)},label={Text(language.label)})}
             }

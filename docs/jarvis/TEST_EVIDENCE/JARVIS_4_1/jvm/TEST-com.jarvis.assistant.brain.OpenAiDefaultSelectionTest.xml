@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.brain.OpenAiDefaultSelectionTest" tests="20" skipped="0" failures="0" errors="0" timestamp="2026-11-18T14:31:46" hostname="885caff30ac4" time="0.144">
+  <properties/>
+  <testcase name="listedPreferredModelIsUsed" classname="com.jarvis.assistant.brain.OpenAiDefaultSelectionTest" time="0.006"/>
+  <testcase name="keyStorageFailureStopsBeforeInference" classname="com.jarvis.assistant.brain.OpenAiDefaultSelectionTest" time="0.001"/>
+  <testcase name="audioOnlyCatalogCannotSelectChatDefault" classname="com.jarvis.assistant.brain.OpenAiDefaultSelectionTest" time="0.001"/>
+  <testcase name="returnedConnectionEvidenceIsPreserved" classname="com.jarvis.assistant.brain.OpenAiDefaultSelectionTest" time="0.001"/>
+  <testcase name="defaultRetainsExactApiCredentialMode" classname="com.jarvis.assistant.brain.OpenAiDefaultSelectionTest" time="0.0"/>
+  <testcase name="emptyCatalogStopsBeforeKeyConfiguration" classname="com.jarvis.assistant.brain.OpenAiDefaultSelectionTest" time="0.001"/>
+  <testcase name="authenticationFailurePreservesActiveBrain" classname="com.jarvis.assistant.brain.OpenAiDefaultSelectionTest" time="0.001"/>
+  <testcase name="imageOnlyCatalogCannotSelectChatDefault" classname="com.jarvis.assistant.brain.OpenAiDefaultSelectionTest" time="0.009"/>
+  <testcase name="wrongModelEvidenceCannotSelectDefault" classname="com.jarvis.assistant.brain.OpenAiDefaultSelectionTest" time="0.001"/>
+  <testcase name="defaultNeverUsesPlanCredentialMode" classname="com.jarvis.assistant.brain.OpenAiDefaultSelectionTest" time="0.001"/>
+  <testcase name="defaultIsSelectedOnlyAfterCatalogConfigureAndInference" classname="com.jarvis.assistant.brain.OpenAiDefaultSelectionTest" time="0.001"/>
+  <testcase name="selectionRefusalIsSurfacedWithoutRetry" classname="com.jarvis.assistant.brain.OpenAiDefaultSelectionTest" time="0.001"/>
+  <testcase name="modelUnavailableNeverTryAnotherModel" classname="com.jarvis.assistant.brain.OpenAiDefaultSelectionTest" time="0.001"/>
+  <testcase name="timeoutDoesNotChangePrimary" classname="com.jarvis.assistant.brain.OpenAiDefaultSelectionTest" time="0.002"/>
+  <testcase name="emptyInferenceCannotSelectDefault" classname="com.jarvis.assistant.brain.OpenAiDefaultSelectionTest" time="0.001"/>
+  <testcase name="insufficientCreditsNeverTryAnotherModel" classname="com.jarvis.assistant.brain.OpenAiDefaultSelectionTest" time="0.068"/>
+  <testcase name="catalogFailurePreservesActiveBrain" classname="com.jarvis.assistant.brain.OpenAiDefaultSelectionTest" time="0.005"/>
+  <testcase name="absentPreferredModelIsNeverInvented" classname="com.jarvis.assistant.brain.OpenAiDefaultSelectionTest" time="0.02"/>
+  <testcase name="cancellationCannotProceedToSelection" classname="com.jarvis.assistant.brain.OpenAiDefaultSelectionTest" time="0.006"/>
+  <testcase name="malformedModelCannotBecomeDefault" classname="com.jarvis.assistant.brain.OpenAiDefaultSelectionTest" time="0.004"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

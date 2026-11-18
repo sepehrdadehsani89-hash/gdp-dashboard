@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.farewell.FarewellCatalogTest" tests="28" skipped="0" failures="0" errors="0" timestamp="2026-11-18T14:32:01" hostname="885caff30ac4" time="0.411">
+  <properties/>
+  <testcase name="explicitStartCanBeginANewListeningSession" classname="com.jarvis.assistant.farewell.FarewellCatalogTest" time="0.001"/>
+  <testcase name="courtesyIsOptional" classname="com.jarvis.assistant.farewell.FarewellCatalogTest" time="0.091"/>
+  <testcase name="duplicateCatalogEntryIsRejected" classname="com.jarvis.assistant.farewell.FarewellCatalogTest" time="0.085"/>
+  <testcase name="englishCourtesyIsAPreference" classname="com.jarvis.assistant.farewell.FarewellCatalogTest" time="0.036"/>
+  <testcase name="studyIntentSelectsStudyCategory" classname="com.jarvis.assistant.farewell.FarewellCatalogTest" time="0.0"/>
+  <testcase name="spanishChoiceKeepsSpanishText" classname="com.jarvis.assistant.farewell.FarewellCatalogTest" time="0.013"/>
+  <testcase name="farewellBlocksDelayedMicrophoneResume" classname="com.jarvis.assistant.farewell.FarewellCatalogTest" time="0.0"/>
+  <testcase name="genuineThanksSelectsThanksCategory" classname="com.jarvis.assistant.farewell.FarewellCatalogTest" time="0.0"/>
+  <testcase name="englishChoiceDoesNotFallBackToSpanish" classname="com.jarvis.assistant.farewell.FarewellCatalogTest" time="0.013"/>
+  <testcase name="repeatedFarewellCannotReopenListening" classname="com.jarvis.assistant.farewell.FarewellCatalogTest" time="0.0"/>
+  <testcase name="malformedLanguageIsRejected" classname="com.jarvis.assistant.farewell.FarewellCatalogTest" time="0.007"/>
+  <testcase name="eveningContextUsesActualHour" classname="com.jarvis.assistant.farewell.FarewellCatalogTest" time="0.0"/>
+  <testcase name="bedtimeIntentOverridesTheClock" classname="com.jarvis.assistant.farewell.FarewellCatalogTest" time="0.0"/>
+  <testcase name="reminderCategoryRequiresVerifiedContextFlag" classname="com.jarvis.assistant.farewell.FarewellCatalogTest" time="0.0"/>
+  <testcase name="incompleteCatalogIsRejectedRatherThanClaimingFiveHundred" classname="com.jarvis.assistant.farewell.FarewellCatalogTest" time="0.001"/>
+  <testcase name="spanishCourtesyIsLocalized" classname="com.jarvis.assistant.farewell.FarewellCatalogTest" time="0.008"/>
+  <testcase name="atLeastFiveHundredAuthoredEntriesExist" classname="com.jarvis.assistant.farewell.FarewellCatalogTest" time="0.011"/>
+  <testcase name="malformedCategoryIsRejected" classname="com.jarvis.assistant.farewell.FarewellCatalogTest" time="0.004"/>
+  <testcase name="persianCourtesyIsLocalized" classname="com.jarvis.assistant.farewell.FarewellCatalogTest" time="0.009"/>
+  <testcase name="punctuationOrAccentChangesDoNotCountAsNewEntries" classname="com.jarvis.assistant.farewell.FarewellCatalogTest" time="0.013"/>
+  <testcase name="recentChoicesAreNotRepeated" classname="com.jarvis.assistant.farewell.FarewellCatalogTest" time="0.035"/>
+  <testcase name="catalogDoesNotContainGeneratedPersonalFactPlaceholders" classname="com.jarvis.assistant.farewell.FarewellCatalogTest" time="0.012"/>
+  <testcase name="persianChoiceKeepsPersianText" classname="com.jarvis.assistant.farewell.FarewellCatalogTest" time="0.013"/>
+  <testcase name="eachLanguageHasOneHundredSeventyEntries" classname="com.jarvis.assistant.farewell.FarewellCatalogTest" time="0.015"/>
+  <testcase name="eachContextHasTenChoicesPerLanguage" classname="com.jarvis.assistant.farewell.FarewellCatalogTest" time="0.011"/>
+  <testcase name="computerCategoryRequiresAnActualSessionFlag" classname="com.jarvis.assistant.farewell.FarewellCatalogTest" time="0.0"/>
+  <testcase name="workIntentSelectsWorkCategory" classname="com.jarvis.assistant.farewell.FarewellCatalogTest" time="0.0"/>
+  <testcase name="catalogCyclesWithoutExhaustion" classname="com.jarvis.assistant.farewell.FarewellCatalogTest" time="0.031"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

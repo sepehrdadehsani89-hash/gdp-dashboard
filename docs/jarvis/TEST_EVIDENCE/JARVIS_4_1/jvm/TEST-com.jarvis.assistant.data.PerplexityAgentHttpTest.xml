@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.data.PerplexityAgentHttpTest" tests="28" skipped="0" failures="0" errors="0" timestamp="2026-11-18T14:31:58" hostname="885caff30ac4" time="2.295">
+  <properties/>
+  <testcase name="blankCompletedAnswerCannotVerifyConnection" classname="com.jarvis.assistant.data.PerplexityAgentHttpTest" time="0.026"/>
+  <testcase name="unavailableModelIsTyped" classname="com.jarvis.assistant.data.PerplexityAgentHttpTest" time="0.007"/>
+  <testcase name="deniedCredentialIsTyped" classname="com.jarvis.assistant.data.PerplexityAgentHttpTest" time="0.013"/>
+  <testcase name="badParametersAreNotCalledBadPasswords" classname="com.jarvis.assistant.data.PerplexityAgentHttpTest" time="0.012"/>
+  <testcase name="tlsFailureDoesNotExposeCertificateDetails" classname="com.jarvis.assistant.data.PerplexityAgentHttpTest" time="0.02"/>
+  <testcase name="incompleteEventIsNotSuccess" classname="com.jarvis.assistant.data.PerplexityAgentHttpTest" time="0.011"/>
+  <testcase name="requestedModelIsNotReplaced" classname="com.jarvis.assistant.data.PerplexityAgentHttpTest" time="0.007"/>
+  <testcase name="cancelledInferenceDoesNotRetry" classname="com.jarvis.assistant.data.PerplexityAgentHttpTest" time="2.016"/>
+  <testcase name="explicitTextUsesCanonicalAgentEndpoint" classname="com.jarvis.assistant.data.PerplexityAgentHttpTest" time="0.033"/>
+  <testcase name="inferenceTestUsesNonstreamAndNoPrivateIdentity" classname="com.jarvis.assistant.data.PerplexityAgentHttpTest" time="0.015"/>
+  <testcase name="deniedPermissionIsTyped" classname="com.jarvis.assistant.data.PerplexityAgentHttpTest" time="0.018"/>
+  <testcase name="publicCatalogDoesNotSendAnAccountKey" classname="com.jarvis.assistant.data.PerplexityAgentHttpTest" time="0.009"/>
+  <testcase name="dnsFailureDoesNotExposeNetworkDetails" classname="com.jarvis.assistant.data.PerplexityAgentHttpTest" time="0.004"/>
+  <testcase name="wrongModelCannotVerifyConnection" classname="com.jarvis.assistant.data.PerplexityAgentHttpTest" time="0.008"/>
+  <testcase name="missingInferenceCredentialSendsNothing" classname="com.jarvis.assistant.data.PerplexityAgentHttpTest" time="0.002"/>
+  <testcase name="exhaustedCreditsAreTyped" classname="com.jarvis.assistant.data.PerplexityAgentHttpTest" time="0.008"/>
+  <testcase name="rateLimitDoesNotAutomaticallyRetry" classname="com.jarvis.assistant.data.PerplexityAgentHttpTest" time="0.005"/>
+  <testcase name="refusedImageDoesNotSendAPaidAlternateRequest" classname="com.jarvis.assistant.data.PerplexityAgentHttpTest" time="0.002"/>
+  <testcase name="serverFailureDoesNotAutomaticallyRetry" classname="com.jarvis.assistant.data.PerplexityAgentHttpTest" time="0.005"/>
+  <testcase name="cloudDeviceToolsAreNotProvided" classname="com.jarvis.assistant.data.PerplexityAgentHttpTest" time="0.006"/>
+  <testcase name="deltaAloneCannotVerifyAnAnswer" classname="com.jarvis.assistant.data.PerplexityAgentHttpTest" time="0.006"/>
+  <testcase name="deltasAreProvisionalAndFinalIsAuthoritative" classname="com.jarvis.assistant.data.PerplexityAgentHttpTest" time="0.005"/>
+  <testcase name="publicCatalogCanBeRetrievedWithoutASavedKey" classname="com.jarvis.assistant.data.PerplexityAgentHttpTest" time="0.008"/>
+  <testcase name="failedEventNeverReturnsThePartialAnswer" classname="com.jarvis.assistant.data.PerplexityAgentHttpTest" time="0.006"/>
+  <testcase name="malformedStreamIsNotReportedAsOpenAI" classname="com.jarvis.assistant.data.PerplexityAgentHttpTest" time="0.011"/>
+  <testcase name="keyStaysInAuthorizationHeader" classname="com.jarvis.assistant.data.PerplexityAgentHttpTest" time="0.009"/>
+  <testcase name="jsonCannotMasqueradeAsStream" classname="com.jarvis.assistant.data.PerplexityAgentHttpTest" time="0.013"/>
+  <testcase name="badModelDoesNotFallBackToAnotherProvider" classname="com.jarvis.assistant.data.PerplexityAgentHttpTest" time="0.005"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

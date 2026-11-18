@@ -62,6 +62,11 @@ class LlmClient internal constructor(
         val key = apiKeyOverride ?: savedKey(provider)
         if (key.isBlank()) throw MissingApiKeyException(language)
         val model = checkedApiModel(provider, settings.model)
+        if(provider=="perplexity"){
+            if(screenshot!=null)throw ProviderException("This Perplexity integration supports explicit text requests. No image or alternate provider request was sent.",ProviderFailureKind.AUTHORIZATION)
+            val body=PerplexityAgentProtocol.request(model,BrainProtocol.systemPrompt(language,if(includeIdentity)settings.name else "",concise=concise),userText,context,history)
+            return perplexityResponseStream(apiResponseRequest(key,body,true,"perplexity"),model,language,onChunk).text
+        }
         if(provider=="openai" && !OpenAiModelCatalog.legacyChat(model)){
             val body=OpenAiResponsesProtocol.request(model,BrainProtocol.systemPrompt(language,if(includeIdentity)settings.name else "",concise=concise),userText,context,history)
             return apiResponseStream(apiResponseRequest(key,body),model,language,onChunk).text
@@ -100,7 +105,7 @@ class LlmClient internal constructor(
     }
 
     /** Explicit Settings test: a canned prompt, with no history, files, memories or phone data. */
-    suspend fun testConnection(settings: AssistantSettings, enteredKey: String,planBearer:String?=null,explicitApi:Boolean=false): ConnectionCheck = try { withTimeout(if(settings.provider=="openai" && planBearer==null && !OpenAiModelCatalog.legacyChat(settings.model))45_000L else 15_000L) {
+    suspend fun testConnection(settings: AssistantSettings, enteredKey: String,planBearer:String?=null,explicitApi:Boolean=false): ConnectionCheck = try { withTimeout(if(settings.provider=="perplexity" || settings.provider=="openai" && planBearer==null && !OpenAiModelCatalog.legacyChat(settings.model))45_000L else 15_000L) {
         val started = System.nanoTime()
         if(planBearer!=null){
             require(settings.provider=="openai")
@@ -112,6 +117,11 @@ class LlmClient internal constructor(
         if(!explicitApi && selectedMode(settings.provider)==ProviderCredentialMode.CHATGPT_PLAN)throw planOnlyError()
         val key = connectionKey(settings.provider, enteredKey, settings.language)
         val model = checkedApiModel(settings.provider, settings.model)
+        if(settings.provider=="perplexity"){
+            val body=PerplexityAgentProtocol.request(model,"Reply with the word READY.","Reply with the word READY.","",emptyList(),stream=false,maxOutput=128)
+            val response=PerplexityAgentProtocol.completed(json(apiResponseRequest(key,body,false,"perplexity"),settings.language,"perplexity",true),model)
+            return@withTimeout ConnectionCheck(model,response.text.take(240),(System.nanoTime()-started)/1_000_000,response.model)
+        }
         if(settings.provider=="openai" && !OpenAiModelCatalog.legacyChat(model)){
             val body=OpenAiResponsesProtocol.request(model,"Reply with the word READY.","Reply with the word READY.","",emptyList(),stream=false,maxOutput=1024)
             val response=OpenAiResponsesProtocol.completed(json(apiResponseRequest(key,body,false),settings.language,"openai",true),model)
@@ -129,6 +139,7 @@ class LlmClient internal constructor(
         if (sample.isBlank()) throw ProviderException(settings.language.choose("Google or the selected provider returned no answer. The connection is not verified; try another text model.", "El proveedor no devolvió una respuesta. La conexión no está verificada; prueba otro modelo de texto.", "سرویس پاسخی نداد. اتصال تأیید نشده است؛ مدل متنی دیگری را امتحان کنید."))
         ConnectionCheck(model, sample, (System.nanoTime() - started) / 1_000_000,legacy?.model)
     } } catch (_: TimeoutCancellationException) {
+        if(settings.provider=="perplexity")throw ProviderException("Perplexity connection test timed out after45 seconds. No connection was verified.",ProviderFailureKind.TIMEOUT)
         if(settings.provider=="openai" && planBearer==null && !OpenAiModelCatalog.legacyChat(settings.model))throw ProviderException("OpenAI connection test timed out after 45 seconds. No connection was verified. Check internet, account access and the selected model.",ProviderFailureKind.TIMEOUT)
         throw ProviderException(settings.language.choose("Connection test timed out after 15 seconds. No connection was verified. Check your internet, API quota and model.", "La prueba agotó 15 segundos. No se verificó la conexión. Revisa internet, cuota y modelo.", "آزمایش پس از ۱۵ ثانیه پایان یافت و اتصال تأیید نشد. اینترنت، سهمیه و مدل را بررسی کنید."),ProviderFailureKind.TIMEOUT)
     }
@@ -179,6 +190,7 @@ class LlmClient internal constructor(
     /** Explicit API catalog request. Listing does not establish inference permission. */
     suspend fun availableApiModels(provider:String,enteredKey:String,language:AppLanguage):List<String>{
         if(provider=="gemini")return availableGeminiModels(enteredKey,language)
+        if(provider=="perplexity")return PerplexityAgentProtocol.models(json(http.newCall(Request.Builder().url("https://api.perplexity.ai/v1/models").get().build()),language,"perplexity",true))
         require(provider in setOf("openai","anthropic"))
         val key=connectionKey(provider,enteredKey,language)
         val builder=Request.Builder().url(if(provider=="openai")"https://api.openai.com/v1/models" else "https://api.anthropic.com/v1/models?limit=1000")
@@ -199,6 +211,7 @@ class LlmClient internal constructor(
     }
     private fun checkedApiModel(provider:String,selected:String):String {
         val normalized=selected.trim().removePrefix(if(provider=="gemini")"models/" else "")
+        if(provider=="perplexity")return PerplexityAgentProtocol.validateModel(normalized)
         if(provider=="openai"){
             OpenAiModelCatalog.validateId(normalized)
             if(!OpenAiModelCatalog.chatCandidate(normalized))throw ProviderException("Choose an OpenAI text model. No substitute model was requested.",ProviderFailureKind.MODEL_UNAVAILABLE)
@@ -232,7 +245,7 @@ class LlmClient internal constructor(
         })
     }
 
-    private fun apiResponseRequest(key:String,body:String,stream:Boolean=true)=http.newCall(Request.Builder().url("https://api.openai.com/v1/responses")
+    private fun apiResponseRequest(key:String,body:String,stream:Boolean=true,provider:String="openai")=http.newCall(Request.Builder().url(if(provider=="perplexity")"https://api.perplexity.ai/v1/agent" else "https://api.openai.com/v1/responses")
         .header("Authorization","Bearer $key").header("Accept",if(stream)"text/event-stream" else "application/json").post(body.toRequestBody(JSON)).build())
 
     private fun responseFailure(response:Response,provider:String,language:AppLanguage):ProviderException {
@@ -272,6 +285,25 @@ class LlmClient internal constructor(
                     SseDecoder(accumulator::event).consumeUtf8(body.source()){continuation.isActive && !accumulator.terminal}
                     val answer=accumulator.finish();if(continuation.isActive)continuation.resume(answer)
                 }}catch(error:Exception){if(continuation.isActive)continuation.resumeWithException(if(expired.get())ProviderException("OpenAI response timed out before completion.",ProviderFailureKind.TIMEOUT) else if(error is ProviderException)error else if(error is IOException)networkFailure(error,language)else OpenAiResponsesProtocol.incomplete())}}
+            })
+        }}finally{deadline.cancel()}
+    }
+
+    private suspend fun perplexityResponseStream(call:Call,model:String,language:AppLanguage,onChunk:(String)->Unit):OpenAiCompletedResponse=coroutineScope {
+        val received=AtomicBoolean(false);val expired=AtomicBoolean(false)
+        val deadline=launch{delay(30_000);if(!received.get()){expired.set(true);call.cancel()}}
+        try{suspendCancellableCoroutine{continuation->
+            continuation.invokeOnCancellation{call.cancel()}
+            call.enqueue(object:Callback {
+                override fun onFailure(call:Call,error:IOException){if(continuation.isActive)continuation.resumeWithException(if(expired.get())ProviderException("Perplexity did not start a text response within30 seconds.",ProviderFailureKind.TIMEOUT)else networkFailure(error,language))}
+                override fun onResponse(call:Call,response:Response){try{response.use{
+                    if(!it.isSuccessful)throw responseFailure(it,"perplexity",language)
+                    val body=it.body ?: throw PerplexityAgentProtocol.relabel(OpenAiResponsesProtocol.incomplete())
+                    if(body.contentType()?.type!="text" || body.contentType()?.subtype!="event-stream")throw ProviderException("Perplexity returned an unexpected response type instead of an event stream.",ProviderFailureKind.INCOMPLETE)
+                    val accumulator=PerplexityAgentStream(model){delta->received.set(true);if(continuation.isActive)onChunk(delta)}
+                    SseDecoder(accumulator::event).consumeUtf8(body.source()){continuation.isActive && !accumulator.terminal}
+                    val answer=accumulator.finish();if(continuation.isActive)continuation.resume(answer)
+                }}catch(error:Exception){if(continuation.isActive)continuation.resumeWithException(if(expired.get())ProviderException("Perplexity response timed out before completion.",ProviderFailureKind.TIMEOUT)else if(error is ProviderException)error else if(error is IOException)networkFailure(error,language)else PerplexityAgentProtocol.relabel(OpenAiResponsesProtocol.incomplete()))}}
             })
         }}finally{deadline.cancel()}
     }

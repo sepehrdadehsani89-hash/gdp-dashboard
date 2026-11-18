@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.finishpolish.PolishRegistryTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-11-18T14:32:01" hostname="885caff30ac4" time="0.024">
+  <properties/>
+  <testcase name="staleOrFuturePlansCannotExecute" classname="com.jarvis.assistant.finishpolish.PolishRegistryTest" time="0.01"/>
+  <testcase name="engineStorageKeysSatisfyTheActualVaultContract" classname="com.jarvis.assistant.finishpolish.PolishRegistryTest" time="0.008"/>
+  <testcase name="approvedTypedPlanRoundTripsAndBindsDevice" classname="com.jarvis.assistant.finishpolish.PolishRegistryTest" time="0.001"/>
+  <testcase name="arbitraryShellAndSettingRepairsCannotBeSavedAsRecipes" classname="com.jarvis.assistant.finishpolish.PolishRegistryTest" time="0.0"/>
+  <testcase name="invalidPackagesAndPrivateArgumentsNeverBecomeJournalContent" classname="com.jarvis.assistant.finishpolish.PolishRegistryTest" time="0.005"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

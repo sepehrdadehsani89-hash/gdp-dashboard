@@ -5,44 +5,41 @@ import android.app.Notification
 import android.content.Context
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
+import com.jarvis.assistant.notifications.*
 
-/** Read only on explicit request. Sensitive packages, codes and lockscreen content excluded. */
-class JarvisNotificationService : NotificationListenerService() {
-    override fun onListenerConnected() { connected = true }
-    override fun onListenerDisconnected() { connected = false }
-    override fun onDestroy() { connected = false; if (instance === this) instance = null; super.onDestroy() }
-
-    override fun onNotificationPosted(sbn: StatusBarNotification?) = Unit
-    override fun onNotificationRemoved(sbn: StatusBarNotification?) = Unit
-
+/** Explicit local previews from per-source consent; no history collection or cloud upload. */
+class JarvisNotificationService:NotificationListenerService(){
+    override fun onCreate(){super.onCreate();instance=this}
+    override fun onListenerConnected(){instance=this;connected=true}
+    override fun onListenerDisconnected(){connected=false}
+    override fun onDestroy(){if(instance===this){connected=false;instance=null};super.onDestroy()}
+    override fun onNotificationPosted(sbn:StatusBarNotification?)=Unit
+    override fun onNotificationRemoved(sbn:StatusBarNotification?)=Unit
     companion object {
-        @Volatile var connected: Boolean = false
-            private set
-
-        fun snapshot(context: Context): List<String>? {
-            if (context.getSystemService(KeyguardManager::class.java).isDeviceLocked) return null
-            val component = android.content.ComponentName(context, JarvisNotificationService::class.java)
-            val manager = context.getSystemService(android.app.NotificationManager::class.java)
-            if (!manager.isNotificationListenerAccessGranted(component)) return null
-            val notifications = runCatching { instance?.activeNotifications }.getOrNull() ?: return emptyList()
-            return notifications.asSequence()
-                .filter { !ToolPolicy.protectedPackage(it.packageName) && it.packageName != context.packageName }
-                .filter { it.notification.visibility != Notification.VISIBILITY_SECRET }
-                .sortedByDescending { it.postTime }
-                .take(8)
-                .mapNotNull { sbn ->
-                    val extras = sbn.notification.extras
-                    val title = extras.getCharSequence(Notification.EXTRA_TITLE)?.toString().orEmpty()
-                    val text = extras.getCharSequence(Notification.EXTRA_TEXT)?.toString().orEmpty()
-                    if (title.isBlank() && text.isBlank()) null else {
-                        val label = runCatching { context.packageManager.getApplicationLabel(context.packageManager.getApplicationInfo(sbn.packageName, 0)).toString() }.getOrDefault(sbn.packageName)
-                        ToolPolicy.sensitiveText("$label: $title. $text").take(300)
-                    }
-                }.toList()
+        @Volatile var connected=false;private set
+        @Volatile private var instance:JarvisNotificationService?=null
+        fun read(context:Context,source:String?=null):NotificationSnapshot {
+            fun state(status:NotificationReadStatus)=NotificationAwarenessPolicy.result(status)
+            fun unlocked()=context.getSystemService(KeyguardManager::class.java)?.isDeviceLocked==false
+            if(!unlocked())return state(NotificationReadStatus.LOCKED)
+            val manager=context.getSystemService(android.app.NotificationManager::class.java)
+            if(!manager.isNotificationListenerAccessGranted(android.content.ComponentName(context,JarvisNotificationService::class.java)))return state(NotificationReadStatus.PERMISSION_REQUIRED)
+            val allowed=NotificationSourcePreferences(context).allowed()
+            val targets=source?.let{NotificationAwarenessPolicy.sources[it] ?: emptySet()}
+            if(allowed.isEmpty() || targets!=null && targets.none{it in allowed})return state(NotificationReadStatus.SOURCE_CONSENT_REQUIRED)
+            val service=instance
+            if(!connected || service==null)return state(NotificationReadStatus.DISCONNECTED)
+            val rows=try{service.activeNotifications?.toList() ?: return state(NotificationReadStatus.READ_FAILED)}catch(_:Exception){return state(NotificationReadStatus.READ_FAILED)}
+            val chosen=NotificationAwarenessPolicy.previews(rows.map{sbn->val n=sbn.notification;NotificationPreview(sbn.packageName,n.extras.getCharSequence(Notification.EXTRA_TITLE)?.toString().orEmpty(),n.extras.getCharSequence(Notification.EXTRA_BIG_TEXT)?.toString() ?: n.extras.getCharSequence(Notification.EXTRA_TEXT)?.toString().orEmpty(),sbn.postTime,n.visibility==Notification.VISIBILITY_SECRET,n.flags and Notification.FLAG_GROUP_SUMMARY!=0)},context.packageName,allowed,targets)
+            // Recheck consent and Android access after the query; never publish after lock/revocation.
+            if(!unlocked())return state(NotificationReadStatus.LOCKED)
+            if(!manager.isNotificationListenerAccessGranted(android.content.ComponentName(context,JarvisNotificationService::class.java)))return state(NotificationReadStatus.PERMISSION_REQUIRED)
+            val current=NotificationSourcePreferences(context).allowed()
+            if(current.isEmpty() || targets!=null && targets.none{it in current})return state(NotificationReadStatus.SOURCE_CONSENT_REQUIRED)
+            val previews=chosen.filter{it.packageId in current}.map{row->val label=runCatching{context.packageManager.getApplicationLabel(context.packageManager.getApplicationInfo(row.packageId,0)).toString()}.getOrDefault(row.packageId);"${ToolPolicy.sensitiveText(label).take(80)}: ${row.title}. ${row.text}"}
+            return NotificationAwarenessPolicy.result(NotificationReadStatus.AVAILABLE,previews)
         }
-
-        @Volatile private var instance: JarvisNotificationService? = null
+        /** Compatibility for existing callers. Null means unavailable, never an invented empty inbox. */
+        fun snapshot(context:Context):List<String>?=read(context).let{if(it.status==NotificationReadStatus.AVAILABLE)it.previews else null}
     }
-
-    override fun onCreate() { super.onCreate(); instance = this }
 }

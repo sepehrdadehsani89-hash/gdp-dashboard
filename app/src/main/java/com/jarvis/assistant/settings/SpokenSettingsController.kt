@@ -19,6 +19,7 @@ class SpokenSettingsController(private val context:Context,private val runtime:A
             "wallpaper_clock"->w.wallpaperClock;"wallpaper_battery"->w.wallpaperBattery;"wallpaper_weather"->w.wallpaperWeather;"battery_adaptation"->h.autoBatterySaver
             "captions"->runtime.phantomPreferences.state.value.captions;"continuous"->v.continuousConversation;"noise_reduction"->v.noiseReduction;"echo_cancellation"->v.echoCancellation;"automatic_gain"->v.gainControl
             "spoken_replies"->s.speakReplies;"locked_chat"->s.allowLockedChat;"private_voice"->output.config(s.language).privateAllowed
+            "farewell_courtesy"->v.courtesy;"farewell_context"->v.farewellContext;"farewell_style"->v.farewellStyle.lowercase(java.util.Locale.ROOT)
             "wake_listening"->com.jarvis.assistant.voice.WakeListenerService.state.value.running
             "intensity"->h.animationIntensity;"particles"->w.particleDensity;"glow"->w.ambientGlow;"core_brightness"->w.brightness;"core_speed"->w.animationSpeed
             "voice_volume"->h.voiceVolume;"voice_rate"->h.voiceRate;"voice_pitch"->h.voicePitch
@@ -39,6 +40,7 @@ class SpokenSettingsController(private val context:Context,private val runtime:A
                 if(request.setting.confirmation){
                     val explanation=when(request.setting.id){"private_voice"->if(request.value=="false")"Disable private replies through Fish Audio? Public replies may still use the configured voice. Say confirm or cancel." else "Allow the configured Fish Audio provider to receive private spoken replies? This can include contact names, memories and selected private content. Say confirm or cancel."
                         "locked_chat"->"Change general conversation while Android is locked? Private actions still require Android authentication. Say confirm or cancel."
+                        "farewell_context"->"Change private farewell context? When enabled, Jarvis may read saved reminders, scheduled Jarvis check-ins and permitted local calendar events before ending a conversation. Cloud speech of private facts still requires separate permission. Say confirm or cancel."
                         "wake_listening"->"Change wake listening? Enabling it uses a visible microphone foreground notification and requires Android microphone permission. It will pause during replies. Say confirm or cancel."
                         else->"Change the primary AI brain? Its exact model and account must already have a verified inference test. Say confirm or cancel."}
                     val payload=JSONObject().put("setting",request.setting.id).put("value",request.value).put("before",read(request.setting.id)).toString()
@@ -47,7 +49,7 @@ class SpokenSettingsController(private val context:Context,private val runtime:A
             }
         }
     }
-    fun requiresIdentity(action:PendingAction)=JSONObject(action.payload).getString("setting") in setOf("private_voice","locked_chat","brain")
+    fun requiresIdentity(action:PendingAction)=JSONObject(action.payload).getString("setting") in setOf("private_voice","locked_chat","brain","farewell_context")
     fun applyProposal(action:PendingAction):AssistantReply {
         unlocked();require(action.kind=="spoken_setting" && System.currentTimeMillis()-action.createdAt in 0..120000){"The confirmation expired. Ask again."}
         val data=JSONObject(action.payload);val spec=SpokenSettings.all.single{it.id==data.getString("setting")}
@@ -65,6 +67,7 @@ class SpokenSettingsController(private val context:Context,private val runtime:A
             "battery_adaptation"->runtime.saveHud(h.copy(autoBatterySaver=on));"captions"->runtime.phantomPreferences.save(runtime.phantomPreferences.state.value.copy(captions=on))
             "continuous"->v.continuousConversation=on;"noise_reduction"->v.noiseReduction=on;"echo_cancellation"->v.echoCancellation=on;"automatic_gain"->v.gainControl=on
             "spoken_replies"->runtime.store.updateSettings(s.copy(speakReplies=on));"locked_chat"->runtime.store.updateSettings(s.copy(allowLockedChat=on))
+            "farewell_courtesy"->v.courtesy=on;"farewell_context"->v.farewellContext=on;"farewell_style"->v.farewellStyle=value.uppercase(java.util.Locale.ROOT)
             "private_voice"->{val c=output.config(s.language);require(c.enabled && c.key.isNotBlank()){"Configure and preview your output voice first."};output.save(com.jarvis.assistant.voice.CustomVoiceConfig(c.id,c.model,c.key,c.enabled,on),s.language)}
             "wake_listening"->{val detail=if(on)runtime.requestWakeFromVoice() else {runtime.stopWake();"Wake listening stop requested."};return AssistantReply(detail,allowCloudSpeech=true)}
             "intensity"->runtime.saveHud(h.copy(animationIntensity=n));"particles"->runtime.saveHud(h.copy(sentinel=w.copy(particleDensity=n)));"glow"->runtime.saveHud(h.copy(sentinel=w.copy(ambientGlow=n)))

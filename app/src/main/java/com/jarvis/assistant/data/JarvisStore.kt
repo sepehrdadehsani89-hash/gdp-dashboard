@@ -241,7 +241,7 @@ class JarvisStore(context: Context) {
     companion object {
         private const val KEY_ALIAS = "jarvis_provider_credentials_v1"
         internal fun credentialName(provider: String): String? = when (provider) {
-            "gemini", "openai", "anthropic" -> "key_$provider"
+            "gemini", "openai", "anthropic", "perplexity" -> "key_$provider"
             else -> null
         }
 

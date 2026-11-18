@@ -1,0 +1,296 @@
+{
+  "artifact": "app/build/outputs/apk/debug/app-debug.apk",
+  "sha256": "361872bb26f569aabb9bb13a686de97c6dbdc97fec839f625f552dd2abc68152",
+  "bytes": 56644226,
+  "signer_sha256": "f9f13af1f84515b787b89c0f3abc8695f1d0d45e8a647d1192966c4c810964c7",
+  "previous_preview_sha256": "42f8a693349770b6362174a81dbd4037ecd046bc499b7d530f3cd90eaa084138",
+  "package": "com.jarvis.next.phoenix",
+  "version_code": 32,
+  "version_name": "4.1.0-preview.1-debug",
+  "minimum_sdk": 29,
+  "target_sdk": 35,
+  "architectures": [
+    "arm64-v8a"
+  ],
+  "native_elf_page_alignment_bytes": {
+    "lib/arm64-v8a/libandroidx.graphics.path.so": 16384,
+    "lib/arm64-v8a/libimage_processing_util_jni.so": 16384,
+    "lib/arm64-v8a/libjarvis-local.so": 16384,
+    "lib/arm64-v8a/libjnidispatch.so": 65536,
+    "lib/arm64-v8a/libjpeg.so": 16384,
+    "lib/arm64-v8a/libleptonica.so": 16384,
+    "lib/arm64-v8a/libonnxruntime.so": 16384,
+    "lib/arm64-v8a/libpngx.so": 16384,
+    "lib/arm64-v8a/libsherpa-onnx-c-api.so": 16384,
+    "lib/arm64-v8a/libsherpa-onnx-cxx-api.so": 16384,
+    "lib/arm64-v8a/libsherpa-onnx-jni.so": 16384,
+    "lib/arm64-v8a/libsurface_util_jni.so": 16384,
+    "lib/arm64-v8a/libtesseract.so": 16384,
+    "lib/arm64-v8a/libvosk.so": 4096
+  },
+  "environment": "Linux cloud SDK/ZIP inspection; no Android device or emulator",
+  "physical_device_tests_executed": 0,
+  "checks": [
+    {
+      "name": "Existing Phoenix package identity retained",
+      "status": "PASS",
+      "evidence": "com.jarvis.next.phoenix"
+    },
+    {
+      "name": "Expected version name",
+      "status": "PASS",
+      "evidence": "4.1.0-preview.1-debug"
+    },
+    {
+      "name": "Version code increments known previous preview",
+      "status": "PASS",
+      "evidence": {
+        "current": 32,
+        "previous": 31
+      }
+    },
+    {
+      "name": "SDK range retained",
+      "status": "PASS",
+      "evidence": {
+        "minimum": 29,
+        "target": 35
+      }
+    },
+    {
+      "name": "Display name retained in packaged locales",
+      "status": "PASS",
+      "evidence": "Jarvis"
+    },
+    {
+      "name": "Existing launcher retained",
+      "status": "PASS",
+      "evidence": "MainActivity"
+    },
+    {
+      "name": "Same signing certificate as known previous APK",
+      "status": "PASS",
+      "evidence": "f9f13af1f84515b787b89c0f3abc8695f1d0d45e8a647d1192966c4c810964c7"
+    },
+    {
+      "name": "Original production signer difference disclosed",
+      "status": "PASS",
+      "evidence": {
+        "preview": "f9f13af1f84515b787b89c0f3abc8695f1d0d45e8a647d1192966c4c810964c7",
+        "retained_original": "1094ecc1e01dfb873a8e63689b09dc156fff9d41f77ffdfae27e702991711bda",
+        "original_update_compatibility_claimed": false
+      }
+    },
+    {
+      "name": "APK signature v2 verification",
+      "status": "PASS",
+      "evidence": "apksigner exit0"
+    },
+    {
+      "name": "APK ZIP alignment",
+      "status": "PASS",
+      "evidence": "zipalign exit0"
+    },
+    {
+      "name": "No shared UID",
+      "status": "PASS",
+      "evidence": "No sharedUserId"
+    },
+    {
+      "name": "Providers remain isolated from original production package",
+      "status": "PASS",
+      "evidence": [
+        "com.jarvis.next.phoenix.androidx-startup",
+        "com.jarvis.next.phoenix.camera-files"
+      ]
+    },
+    {
+      "name": "Screen capture task affinity retained",
+      "status": "PASS",
+      "evidence": [
+        "com.jarvis.next.phoenix.screen"
+      ]
+    },
+    {
+      "name": "Spotify callback identity retained",
+      "status": "PASS",
+      "evidence": [
+        "com.jarvis.next.phoenix",
+        "https"
+      ]
+    },
+    {
+      "name": "Original wallpaper service retained",
+      "status": "PASS",
+      "evidence": "Existing wallpaper service"
+    },
+    {
+      "name": "All new owned entry points are nonexported",
+      "status": "PASS",
+      "evidence": {
+        "controls.AndroidControlsActivity": true,
+        "controls.AndroidControlActionActivity": true,
+        "controls.VoiceCommandLabActivity": true,
+        "google.GoogleAccountsActivity": true,
+        "notifications.NotificationAwarenessActivity": true,
+        "reminders.RemindersActivity": true,
+        "reminders.ReminderTimeReceiver": true,
+        "screen.VideoRecordingActivity": true,
+        "screen.VideoRecordingService": true
+      }
+    },
+    {
+      "name": "Recording service declares mediaProjection foreground type",
+      "status": "PASS",
+      "evidence": "VideoRecordingService mediaProjection only"
+    },
+    {
+      "name": "Google SDK revocation entry requires its protected permission",
+      "status": "PASS",
+      "evidence": "Google SDK permission retained"
+    },
+    {
+      "name": "Manifest permission expansion is reviewed and limited",
+      "status": "PASS",
+      "evidence": [
+        "android.permission.ACCESS_NOTIFICATION_POLICY"
+      ]
+    },
+    {
+      "name": "No new broad-account/app/storage permissions",
+      "status": "PASS",
+      "evidence": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_NETWORK_STATE",
+        "android.permission.ACCESS_NOTIFICATION_POLICY",
+        "android.permission.ACCESS_WIFI_STATE",
+        "android.permission.BLUETOOTH",
+        "android.permission.BLUETOOTH_ADMIN",
+        "android.permission.BLUETOOTH_CONNECT",
+        "android.permission.BLUETOOTH_SCAN",
+        "android.permission.CAMERA",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK",
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION",
+        "android.permission.FOREGROUND_SERVICE_MICROPHONE",
+        "android.permission.INTERNET",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.READ_CALENDAR",
+        "android.permission.READ_CONTACTS",
+        "android.permission.READ_PHONE_STATE",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.SCHEDULE_EXACT_ALARM",
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.USE_BIOMETRIC",
+        "android.permission.VIBRATE",
+        "android.permission.WAKE_LOCK",
+        "com.android.alarm.permission.SET_ALARM",
+        "com.jarvis.next.phoenix.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+      ]
+    },
+    {
+      "name": "ZIP CRC integrity",
+      "status": "PASS",
+      "evidence": "zipfile.testzip"
+    },
+    {
+      "name": "No duplicate or traversing ZIP entries",
+      "status": "PASS",
+      "evidence": "ZIP entry names"
+    },
+    {
+      "name": "All previous native libraries and assets retained byte for byte",
+      "status": "PASS",
+      "evidence": {
+        "files": 134,
+        "native_libraries": 14
+      }
+    },
+    {
+      "name": "Native architecture is complete ARM64-only",
+      "status": "PASS",
+      "evidence": {
+        "lib/arm64-v8a/libandroidx.graphics.path.so": 183,
+        "lib/arm64-v8a/libimage_processing_util_jni.so": 183,
+        "lib/arm64-v8a/libjarvis-local.so": 183,
+        "lib/arm64-v8a/libjnidispatch.so": 183,
+        "lib/arm64-v8a/libjpeg.so": 183,
+        "lib/arm64-v8a/libleptonica.so": 183,
+        "lib/arm64-v8a/libonnxruntime.so": 183,
+        "lib/arm64-v8a/libpngx.so": 183,
+        "lib/arm64-v8a/libsherpa-onnx-c-api.so": 183,
+        "lib/arm64-v8a/libsherpa-onnx-cxx-api.so": 183,
+        "lib/arm64-v8a/libsherpa-onnx-jni.so": 183,
+        "lib/arm64-v8a/libsurface_util_jni.so": 183,
+        "lib/arm64-v8a/libtesseract.so": 183,
+        "lib/arm64-v8a/libvosk.so": 183
+      }
+    },
+    {
+      "name": "All production DEX lengths and checksums valid",
+      "status": "PASS",
+      "evidence": {
+        "classes.dex": true,
+        "classes10.dex": true,
+        "classes11.dex": true,
+        "classes12.dex": true,
+        "classes13.dex": true,
+        "classes14.dex": true,
+        "classes15.dex": true,
+        "classes16.dex": true,
+        "classes17.dex": true,
+        "classes18.dex": true,
+        "classes2.dex": true,
+        "classes3.dex": true,
+        "classes4.dex": true,
+        "classes5.dex": true,
+        "classes6.dex": true,
+        "classes7.dex": true,
+        "classes8.dex": true,
+        "classes9.dex": true
+      }
+    },
+    {
+      "name": "No MockWebServer fixtures packaged",
+      "status": "PASS",
+      "evidence": {
+        "dex_files": 18
+      }
+    },
+    {
+      "name": "No hardcoded OpenAI key pattern in executable/assets",
+      "status": "PASS",
+      "evidence": {
+        "matching_files": [],
+        "limitation": "Pattern scan supplements source review; not a universal secret detector."
+      }
+    },
+    {
+      "name": "Actual multilingual farewell catalogue packaged",
+      "status": "PASS",
+      "evidence": {
+        "entries": 510,
+        "languages": {
+          "en": 170,
+          "es": 170,
+          "fa": 170
+        }
+      }
+    },
+    {
+      "name": "Official native Google authorization classes packaged",
+      "status": "PASS",
+      "evidence": "Google AuthorizationClient"
+    },
+    {
+      "name": "Artifact below GitHub single-file size limit",
+      "status": "PASS",
+      "evidence": 56644226
+    }
+  ],
+  "passed": 30,
+  "failed": 0
+}

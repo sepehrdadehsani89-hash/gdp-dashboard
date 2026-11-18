@@ -16,7 +16,7 @@ class VoiceDeliveryTracker {
         if(token>mutable.value.generation)mutable.value=VoiceDeliveryStatus(generation=token)
         return true
     }
-    @Synchronized fun request(token:Long,provider:String){if(current(token))mutable.value=mutable.value.copy(provider=provider.takeIf{it in setOf("openai","anthropic","gemini","local")} ?: "",inference=InferenceOutcome.REQUESTING,responseCharacters=0,output=VoiceOutputOutcome.NOT_REQUESTED,engineReady=false)}
+    @Synchronized fun request(token:Long,provider:String){if(current(token))mutable.value=mutable.value.copy(provider=provider.takeIf{it in setOf("openai","anthropic","gemini","perplexity","local")} ?: "",inference=InferenceOutcome.REQUESTING,responseCharacters=0,output=VoiceOutputOutcome.NOT_REQUESTED,engineReady=false)}
     @Synchronized fun response(token:Long,characters:Int){if(current(token) && characters>0)mutable.value=mutable.value.copy(inference=InferenceOutcome.RESPONSE_RECEIVED,responseCharacters=characters.coerceAtMost(64000))}
     @Synchronized fun inferenceFailed(token:Long){if(current(token))mutable.value=mutable.value.copy(inference=InferenceOutcome.FAILED)}
     @Synchronized fun prepare(token:Long){if(current(token))mutable.value=mutable.value.copy(output=VoiceOutputOutcome.PREPARING,engineReady=false)}

@@ -4,7 +4,7 @@ import java.util.Locale
 
 sealed class PhoneRequest {
     data class Contacts(val query: String = "") : PhoneRequest()
-    data class Calendar(val days: Int = 7) : PhoneRequest()
+    data class Calendar(val days: Int = 7,val startDay:Int=0) : PhoneRequest()
     data object Location : PhoneRequest()
 }
 
@@ -51,6 +51,7 @@ object PhoneRequestParser {
             return null
         }
 
+        if(lower in setOf("what do i have tomorrow","what's on my calendar tomorrow","what is on my calendar tomorrow","show my calendar tomorrow","my schedule tomorrow","show my events tomorrow","qué tengo mañana","que tengo mañana","mi calendario mañana","muestra mi agenda mañana","فردا چه برنامه ای دارم","برنامه فردا","تقویم فردا"))return PhoneRequest.Calendar(1,1)
         val calendar = listOf(
             "^(?:(?:show|read)(?: me)?(?: my| the)? |what(?:'s| is) (?:on )?my )?(?:calendar|schedule|upcoming events)(?: (?:for |this |next )?(?:today|week|seven days|7 days))?$",
             "^(?:what(?:'s| is) on my calendar|show my events|my calendar)$",

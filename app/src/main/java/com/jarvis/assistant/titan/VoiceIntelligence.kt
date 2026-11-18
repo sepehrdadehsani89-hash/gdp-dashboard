@@ -6,6 +6,9 @@ import kotlin.math.*
 
 class VoicePreferences(context:Context){
     private val p=context.getSharedPreferences("jarvis_titan_voice_v1",Context.MODE_PRIVATE)
+    var farewellStyle:String get()=p.getString("farewell_style","AUTO").orEmpty().takeIf{it in setOf("AUTO","GENERAL","FORMAL","SHORT","FRIENDLY","RELAXED","FOCUS")} ?: "AUTO";set(v){require(v in setOf("AUTO","GENERAL","FORMAL","SHORT","FRIENDLY","RELAXED","FOCUS"));p.edit().putString("farewell_style",v).apply()}
+    var farewellContext:Boolean get()=p.getBoolean("farewell_context",false);set(v){p.edit().putBoolean("farewell_context",v).apply()}
+    var courtesy:Boolean get()=p.getBoolean("courtesy",true);set(v){p.edit().putBoolean("courtesy",v).apply()}
     var sensitivity:String get()=p.getString("sensitivity","BALANCED").orEmpty().takeIf{it in listOf("LOW","BALANCED","HIGH","CUSTOM")} ?: "BALANCED";set(v){require(v in listOf("LOW","BALANCED","HIGH","CUSTOM"));p.edit().putString("sensitivity",v).apply()}
     var customEnergy:Float get()=p.getFloat("energy",.015f).takeIf{it.isFinite()}?.coerceIn(.005f,.08f) ?: .015f;set(v){require(v.isFinite());p.edit().putFloat("energy",v.coerceIn(.005f,.08f)).apply()}
     var customConfidence:Float get()=p.getFloat("confidence",.55f).takeIf{it.isFinite()}?.coerceIn(.45f,.9f) ?: .55f;set(v){require(v.isFinite());p.edit().putFloat("confidence",v.coerceIn(.45f,.9f)).apply()}

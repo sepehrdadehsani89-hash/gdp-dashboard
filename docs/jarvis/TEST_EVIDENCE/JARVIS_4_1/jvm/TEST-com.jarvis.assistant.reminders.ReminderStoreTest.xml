@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.reminders.ReminderStoreTest" tests="28" skipped="0" failures="0" errors="0" timestamp="2026-11-18T14:32:08" hostname="885caff30ac4" time="0.014">
+  <properties/>
+  <testcase name="deletionWaitsForClaimedSideEffectAndThenRemovesRow" classname="com.jarvis.assistant.reminders.ReminderStoreTest" time="0.005"/>
+  <testcase name="workerClaimIsSingleUse" classname="com.jarvis.assistant.reminders.ReminderStoreTest" time="0.001"/>
+  <testcase name="interruptedClaimCanBeMarkedUnconfirmedWithoutSuccess" classname="com.jarvis.assistant.reminders.ReminderStoreTest" time="0.0"/>
+  <testcase name="editsKeepStableIdentityAndRotateRevision" classname="com.jarvis.assistant.reminders.ReminderStoreTest" time="0.0"/>
+  <testcase name="unavailableDecryptionIsNotEmptyStore" classname="com.jarvis.assistant.reminders.ReminderStoreTest" time="0.0"/>
+  <testcase name="blankTitleIsNotSaved" classname="com.jarvis.assistant.reminders.ReminderStoreTest" time="0.0"/>
+  <testcase name="invalidZoneCannotBeSaved" classname="com.jarvis.assistant.reminders.ReminderStoreTest" time="0.0"/>
+  <testcase name="unknownDeleteDoesNotChangeStorage" classname="com.jarvis.assistant.reminders.ReminderStoreTest" time="0.001"/>
+  <testcase name="clockRecoveryCannotOverwriteCompletedDelivery" classname="com.jarvis.assistant.reminders.ReminderStoreTest" time="0.0"/>
+  <testcase name="deliveryMarkRequiresClaimedRevision" classname="com.jarvis.assistant.reminders.ReminderStoreTest" time="0.0"/>
+  <testcase name="corruptStoreIsPreserved" classname="com.jarvis.assistant.reminders.ReminderStoreTest" time="0.001"/>
+  <testcase name="controlsCannotBeSavedAsTitle" classname="com.jarvis.assistant.reminders.ReminderStoreTest" time="0.0"/>
+  <testcase name="staleWorkerCannotClaimEditedReminder" classname="com.jarvis.assistant.reminders.ReminderStoreTest" time="0.0"/>
+  <testcase name="currentClaimAllowsExactlyItsOwnSideEffect" classname="com.jarvis.assistant.reminders.ReminderStoreTest" time="0.001"/>
+  <testcase name="futureTimeIsValidated" classname="com.jarvis.assistant.reminders.ReminderStoreTest" time="0.0"/>
+  <testcase name="upcomingOnlyContainsScheduledFutureEntries" classname="com.jarvis.assistant.reminders.ReminderStoreTest" time="0.001"/>
+  <testcase name="emptyStoreHasNoReminders" classname="com.jarvis.assistant.reminders.ReminderStoreTest" time="0.0"/>
+  <testcase name="createdReminderPersistsAcrossRestart" classname="com.jarvis.assistant.reminders.ReminderStoreTest" time="0.0"/>
+  <testcase name="editUnknownIdentityDoesNotOverwrite" classname="com.jarvis.assistant.reminders.ReminderStoreTest" time="0.001"/>
+  <testcase name="notifiedEntryIsNotDueAgain" classname="com.jarvis.assistant.reminders.ReminderStoreTest" time="0.0"/>
+  <testcase name="failedWriteDoesNotPretendToSave" classname="com.jarvis.assistant.reminders.ReminderStoreTest" time="0.0"/>
+  <testcase name="pastYearLimitIsEnforced" classname="com.jarvis.assistant.reminders.ReminderStoreTest" time="0.0"/>
+  <testcase name="dueRequiresCorrectRevision" classname="com.jarvis.assistant.reminders.ReminderStoreTest" time="0.0"/>
+  <testcase name="diagnosticsDoNotContainPrivateReminderTitle" classname="com.jarvis.assistant.reminders.ReminderStoreTest" time="0.001"/>
+  <testcase name="futureEntryIsNotDue" classname="com.jarvis.assistant.reminders.ReminderStoreTest" time="0.0"/>
+  <testcase name="newReminderIsScheduledNotDelivered" classname="com.jarvis.assistant.reminders.ReminderStoreTest" time="0.0"/>
+  <testcase name="deletingReminderPreventsInflightNotification" classname="com.jarvis.assistant.reminders.ReminderStoreTest" time="0.0"/>
+  <testcase name="upcomingDoesNotIncludeExpiredEvents" classname="com.jarvis.assistant.reminders.ReminderStoreTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

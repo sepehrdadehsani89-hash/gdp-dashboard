@@ -316,8 +316,7 @@ class DeviceTools(private val context: Context, private val store: JarvisStore) 
 
     private fun notifications(language: AppLanguage): AssistantReply {
         if (locked()) return AssistantReply(unlockMessage(language))
-        val items = JarvisNotificationService.snapshot(context)
-        return AssistantReply(if (items == null) language.choose("Enable optional Notification access in Settings to read current notifications. Protected apps and private codes are excluded.", "Activa el acceso opcional a notificaciones en Ajustes para leerlas. Se excluyen aplicaciones protegidas y códigos privados.", "برای خواندن اعلان‌های فعلی، دسترسی اختیاری اعلان را در تنظیمات فعال کنید. برنامه‌های محافظت‌شده و کدهای خصوصی مستثنا هستند.") else if (items.isEmpty()) language.choose("There are no readable notifications right now.", "No hay notificaciones legibles ahora.", "در حال حاضر اعلان قابل‌خواندنی وجود ندارد.") else language.choose("Your recent notifications:\n", "Tus notificaciones recientes:\n", "اعلان‌های اخیر شما:\n") + items.joinToString("\n"))
+        return AssistantReply(JarvisNotificationService.read(context).message)
     }
 
     suspend fun news(text: String, language: AppLanguage): AssistantReply {

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.voice.FinishPolishVoiceTest" tests="15" skipped="0" failures="0" errors="0" timestamp="2026-11-18T14:32:08" hostname="885caff30ac4" time="0.02">
+  <properties/>
+  <testcase name="customWakePhraseIsOptionalValidatedAndKeepsItsSuffix" classname="com.jarvis.assistant.voice.FinishPolishVoiceTest" time="0.001"/>
+  <testcase name="calculatorHasExplicitTokenMagnitudeAndRecursionLimits" classname="com.jarvis.assistant.voice.FinishPolishVoiceTest" time="0.003"/>
+  <testcase name="arithmeticCannotEvaluateCodeCredentialsOrACompoundDeviceAction" classname="com.jarvis.assistant.voice.FinishPolishVoiceTest" time="0.001"/>
+  <testcase name="thirtyLogicalFollowUpsStartOnlyWhenCaptureIsReadyAndDoNotNeedAnotherWake" classname="com.jarvis.assistant.voice.FinishPolishVoiceTest" time="0.0"/>
+  <testcase name="localizedReadinessPhrasePreservesCommands" classname="com.jarvis.assistant.voice.FinishPolishVoiceTest" time="0.0"/>
+  <testcase name="longDivisionIsLabeledApproximateAndIntegerPrecisionIsPreserved" classname="com.jarvis.assistant.voice.FinishPolishVoiceTest" time="0.001"/>
+  <testcase name="timeZoneUsesTheActualInjectedDeviceClockAndDoesNotClaimGpsLocation" classname="com.jarvis.assistant.voice.FinishPolishVoiceTest" time="0.002"/>
+  <testcase name="twentyCombinedUtterancesKeepAllTheCommandAfterWake" classname="com.jarvis.assistant.voice.FinishPolishVoiceTest" time="0.001"/>
+  <testcase name="oneHundredLogicalWakeTrialsPreserveWholePrefixAndRejectEmbeddedMentions" classname="com.jarvis.assistant.voice.FinishPolishVoiceTest" time="0.002"/>
+  <testcase name="publicLocalMathDoesNotAccidentallyRelaxADeviceAction" classname="com.jarvis.assistant.voice.FinishPolishVoiceTest" time="0.001"/>
+  <testcase name="localArithmeticHandlesOrderParenthesesNegativesAndDecimals" classname="com.jarvis.assistant.voice.FinishPolishVoiceTest" time="0.002"/>
+  <testcase name="divisionByZeroAndIncompleteArithmeticAreTypedCalculatorErrors" classname="com.jarvis.assistant.voice.FinishPolishVoiceTest" time="0.001"/>
+  <testcase name="identityIsKnownLocallyWithoutAnInstalledModelOrCloud" classname="com.jarvis.assistant.voice.FinishPolishVoiceTest" time="0.001"/>
+  <testcase name="rendererColorsAndChargingAccentFollowActualDistinctStates" classname="com.jarvis.assistant.voice.FinishPolishVoiceTest" time="0.0"/>
+  <testcase name="englishAndSpanishNumberWordsAndPercentagesUseTheSameDeterministicGrammar" classname="com.jarvis.assistant.voice.FinishPolishVoiceTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

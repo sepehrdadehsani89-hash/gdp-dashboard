@@ -41,7 +41,7 @@ class PhoneContext(context: Context,private val currentLocation:suspend ()->Loca
             try {
                 val reply = when (request) {
                     is PhoneRequest.Contacts -> contacts(request.query, language)
-                    is PhoneRequest.Calendar -> calendar(request.days, language)
+                    is PhoneRequest.Calendar -> calendar(request.days, language,request.startDay)
                     PhoneRequest.Location -> location(language)
                 }
                 // A query may outlive an unlock or permission grant. Do not return stale authorization.
@@ -112,40 +112,34 @@ class PhoneContext(context: Context,private val currentLocation:suspend ()->Loca
         return AssistantReply(heading + "\n" + contacts.joinToString("\n"))
     }
 
-    private fun calendar(days: Int, language: AppLanguage): AssistantReply {
-        val now = ZonedDateTime.now()
-        val end = if (days == 1) LocalDate.now().plusDays(1).atStartOfDay(now.zone) else now.plusDays(7)
-        val builder = CalendarContract.Instances.CONTENT_URI.buildUpon()
-        ContentUris.appendId(builder, now.toInstant().toEpochMilli())
-        ContentUris.appendId(builder, end.toInstant().toEpochMilli())
-        val projection = arrayOf(CalendarContract.Instances.TITLE, CalendarContract.Instances.BEGIN, CalendarContract.Instances.ALL_DAY)
-        val locale = Locale.forLanguageTag(language.tag)
-        val timed = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT).withLocale(locale).withZone(now.zone)
-        val date = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale)
-        val results = mutableListOf<String>()
-        app.contentResolver.query(
-            builder.build(), projection,
-            "${CalendarContract.Instances.VISIBLE} = 1 AND ${CalendarContract.Instances.END} > ?",
-            arrayOf(now.toInstant().toEpochMilli().toString()),
-            "${CalendarContract.Instances.BEGIN} ASC",
-        )?.use { cursor ->
-            while (results.size < 6 && cursor.moveToNext()) {
-                val title = cursor.getString(0).orEmpty().trim().take(240).ifBlank { language.choose("Untitled event", "Evento sin título", "رویداد بدون عنوان") }
-                val start = Instant.ofEpochMilli(cursor.getLong(1))
-                val time = if (cursor.getInt(2) != 0) {
-                    date.format(start.atZone(ZoneOffset.UTC).toLocalDate()) + language.choose(" (all day)", " (todo el día)", " (تمام روز)")
-                } else timed.format(start)
-                results += "$time — $title"
-            }
-        }
-        if (results.isEmpty()) return AssistantReply(if (days == 1) language.choose(
-            "I found no remaining events today in your visible calendars.", "No encontré más eventos hoy en tus calendarios visibles.", "در تقویم‌های فعال تو رویداد دیگری برای امروز پیدا نکردم.",
-        ) else language.choose(
-            "I found no upcoming events in the next seven days in your visible calendars.", "No encontré eventos en los próximos siete días en tus calendarios visibles.", "در تقویم‌های فعال تو رویدادی برای هفت روز آینده پیدا نکردم.",
-        ))
-        val heading = if (days == 1) language.choose("Today's remaining events", "Eventos pendientes de hoy", "رویدادهای باقی‌ماندهٔ امروز")
-        else language.choose("Next seven days (up to 6 events)", "Próximos siete días (hasta 6 eventos)", "هفت روز آینده (حداکثر ۶ رویداد)")
-        return AssistantReply("$heading • ${now.zone.id}\n" + results.joinToString("\n"))
+    private fun calendar(days:Int,language:AppLanguage,startDay:Int=0):AssistantReply {
+        val window=CalendarReadWindow.create(days,startDay)
+        val results=readCalendarEvents(window,language)
+        val heading=when{startDay==1->language.choose("Tomorrow's events","Eventos de mañana","رویدادهای فردا");days==1->language.choose("Today's remaining events","Eventos pendientes de hoy","رویدادهای باقی‌مانده امروز");else->language.choose("Next seven days","Próximos siete días","هفت روز آینده")}
+        return AssistantReply("$heading · ${window.zone.id} · "+if(results.isEmpty())language.choose("No events were returned from your visible calendars for this window.","Tus calendarios visibles no devolvieron eventos en este intervalo.","برای این بازه رویدادی از تقویم‌های قابل مشاهده دریافت نشد.") else language.choose("Up to6 events","Hasta6 eventos","حداکثر۶ رویداد")+"\n"+results.joinToString("\n"))
+    }
+    private fun readCalendarEvents(window:CalendarReadWindow,language:AppLanguage):List<String> {
+        val builder=CalendarContract.Instances.CONTENT_URI.buildUpon()
+        ContentUris.appendId(builder,window.start.toEpochMilli());ContentUris.appendId(builder,window.endExclusive.toEpochMilli())
+        val projection=arrayOf(CalendarContract.Instances.TITLE,CalendarContract.Instances.BEGIN,CalendarContract.Instances.ALL_DAY)
+        val locale=Locale.forLanguageTag(language.tag)
+        val timed=DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM,FormatStyle.SHORT).withLocale(locale).withZone(window.zone)
+        val date=DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale)
+        val results=mutableListOf<String>()
+        val cursor=app.contentResolver.query(builder.build(),projection,"${CalendarContract.Instances.VISIBLE} = 1 AND ${CalendarContract.Instances.END} > ?",arrayOf(window.start.toEpochMilli().toString()),"${CalendarContract.Instances.BEGIN} ASC") ?: throw IllegalStateException("Calendar provider did not return a result. No empty schedule is assumed.")
+        cursor.use{while(results.size<6 && it.moveToNext()){
+            val title=it.getString(0).orEmpty().trim().take(240).ifBlank{language.choose("Untitled event","Evento sin título","رویداد بدون عنوان")}
+            val start=Instant.ofEpochMilli(it.getLong(1))
+            val time=if(it.getInt(2)!=0)date.format(start.atZone(ZoneOffset.UTC).toLocalDate())+language.choose(" (all day)"," (todo el día)"," (تمام روز)")else timed.format(start)
+            results+="$time — $title"
+        }}
+        return results
+    }
+    /** Optional farewell context: one actual visible event tomorrow, no permission prompt or cloud call. */
+    suspend fun farewellCalendarTomorrow(language:AppLanguage):String?=withContext(Dispatchers.IO){
+        if(!isUnlocked() || !hasPermission(Manifest.permission.READ_CALENDAR))return@withContext null
+        val first=try{readCalendarEvents(CalendarReadWindow.create(1,1),language).firstOrNull()}catch(e:kotlinx.coroutines.CancellationException){throw e}catch(_:Exception){null}
+        if(!isUnlocked() || !hasPermission(Manifest.permission.READ_CALENDAR))null else first?.let{language.choose("Tomorrow's visible calendar event: ","Evento visible de mañana: ","رویداد قابل مشاهده فردا: ")+it}
     }
 
     private suspend fun location(language: AppLanguage): AssistantReply {

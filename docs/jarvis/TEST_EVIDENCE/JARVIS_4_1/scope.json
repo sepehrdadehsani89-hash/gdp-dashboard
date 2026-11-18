@@ -1,0 +1,8 @@
+{
+  "directive_sha256": "0a4ae68bd197ff7126fba323587ba7e9cb0812a6cf741e3ac532ce6100a2d089",
+  "baseline_commit": "62d3e8e86146157b6f35d648977acb971d0985d7",
+  "source_revision_record": "The source commit is recorded in the accompanying artifact README after checkpoint creation.",
+  "application_package": "com.jarvis.next.phoenix",
+  "version_code": 32,
+  "artifact_sha256": "361872bb26f569aabb9bb13a686de97c6dbdc97fec839f625f552dd2abc68152"
+}

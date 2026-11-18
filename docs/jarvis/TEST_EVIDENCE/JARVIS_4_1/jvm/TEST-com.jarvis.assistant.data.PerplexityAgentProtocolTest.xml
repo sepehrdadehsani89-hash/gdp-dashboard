@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.data.PerplexityAgentProtocolTest" tests="22" skipped="0" failures="0" errors="0" timestamp="2026-11-18T14:32:01" hostname="885caff30ac4" time="0.021">
+  <properties/>
+  <testcase name="noCloudToolsArePassed" classname="com.jarvis.assistant.data.PerplexityAgentProtocolTest" time="0.0"/>
+  <testcase name="modelCannotIncludeAHost" classname="com.jarvis.assistant.data.PerplexityAgentProtocolTest" time="0.001"/>
+  <testcase name="historyRemainsBounded" classname="com.jarvis.assistant.data.PerplexityAgentProtocolTest" time="0.003"/>
+  <testcase name="emptyCatalogDoesNotInventDefault" classname="com.jarvis.assistant.data.PerplexityAgentProtocolTest" time="0.0"/>
+  <testcase name="responseStorageIsExplicitlyDisabled" classname="com.jarvis.assistant.data.PerplexityAgentProtocolTest" time="0.001"/>
+  <testcase name="privateContextIsDeliberatelyMarkedUntrusted" classname="com.jarvis.assistant.data.PerplexityAgentProtocolTest" time="0.001"/>
+  <testcase name="malformedCatalogIsUnavailable" classname="com.jarvis.assistant.data.PerplexityAgentProtocolTest" time="0.001"/>
+  <testcase name="catalogFiltersUnsafeIds" classname="com.jarvis.assistant.data.PerplexityAgentProtocolTest" time="0.001"/>
+  <testcase name="legacySonarIdIsNotAssumedCurrent" classname="com.jarvis.assistant.data.PerplexityAgentProtocolTest" time="0.0"/>
+  <testcase name="instructionsStaySeparateFromUserInput" classname="com.jarvis.assistant.data.PerplexityAgentProtocolTest" time="0.0"/>
+  <testcase name="defaultOpenAIRequestValidationIsPreserved" classname="com.jarvis.assistant.data.PerplexityAgentProtocolTest" time="0.001"/>
+  <testcase name="noChatGPTGrantCanAuthorizePerplexity" classname="com.jarvis.assistant.data.PerplexityAgentProtocolTest" time="0.0"/>
+  <testcase name="duplicatedCurrentUserTurnIsNotSentTwice" classname="com.jarvis.assistant.data.PerplexityAgentProtocolTest" time="0.0"/>
+  <testcase name="modelCannotInjectPathOrQueries" classname="com.jarvis.assistant.data.PerplexityAgentProtocolTest" time="0.003"/>
+  <testcase name="blankModelCannotBeInvented" classname="com.jarvis.assistant.data.PerplexityAgentProtocolTest" time="0.0"/>
+  <testcase name="controlsCannotEnterModel" classname="com.jarvis.assistant.data.PerplexityAgentProtocolTest" time="0.001"/>
+  <testcase name="catalogDeduplicatesWithoutSynthesizingModels" classname="com.jarvis.assistant.data.PerplexityAgentProtocolTest" time="0.001"/>
+  <testcase name="explicitVendorModelCanBeSaved" classname="com.jarvis.assistant.data.PerplexityAgentProtocolTest" time="0.001"/>
+  <testcase name="nonPerplexityProvidersStillRejectSlashIds" classname="com.jarvis.assistant.data.PerplexityAgentProtocolTest" time="0.0"/>
+  <testcase name="catalogDoesNotAcceptChatMessagesAsModelRows" classname="com.jarvis.assistant.data.PerplexityAgentProtocolTest" time="0.001"/>
+  <testcase name="catalogNeedsActualListShape" classname="com.jarvis.assistant.data.PerplexityAgentProtocolTest" time="0.0"/>
+  <testcase name="perplexityCredentialStorageIsIndependentOfOpenAI" classname="com.jarvis.assistant.data.PerplexityAgentProtocolTest" time="0.003"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

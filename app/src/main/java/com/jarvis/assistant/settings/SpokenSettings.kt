@@ -23,6 +23,9 @@ object SpokenSettings {
         bool("battery_adaptation","battery adaptation","automatic battery saver"),
         bool("captions","speech captions","captions","subtitles","subtitulos"),
         bool("continuous","continuous conversation","follow up listening"),
+        bool("farewell_courtesy","farewell courtesy","sir preference"),
+        bool("farewell_context","farewell private context","farewell reminder context",confirm=true),
+        SpokenSetting("farewell_style","farewell style",SpokenValueType.CHOICE,listOf("farewell style","goodbye style"),choices=listOf("auto","general","formal","short","friendly","relaxed","focus")),
         bool("noise_reduction","noise reduction"),bool("echo_cancellation","echo cancellation"),bool("automatic_gain","automatic gain"),
         bool("spoken_replies","spoken replies","speak replies","voice replies"),
         bool("locked_chat","locked screen chat","chat while locked",confirm=true),
@@ -40,7 +43,7 @@ object SpokenSettings {
         SpokenSetting("profile","animation profile",SpokenValueType.CHOICE,listOf("animation profile"),choices=listOf("balanced","cinematic","saver")),
         SpokenSetting("clock","clock format",SpokenValueType.CHOICE,listOf("clock format"),choices=listOf("12","24","system","12 hour","24 hour")),
         SpokenSetting("sensitivity","microphone sensitivity",SpokenValueType.CHOICE,listOf("microphone sensitivity","voice sensitivity"),choices=listOf("low","balanced","high")),
-        SpokenSetting("brain","ai brain",SpokenValueType.CHOICE,listOf("ai brain","brain","provider"),choices=listOf("chatgpt","openai api","claude","gemini","local"),confirmation=true),
+        SpokenSetting("brain","ai brain",SpokenValueType.CHOICE,listOf("ai brain","brain","provider"),choices=listOf("chatgpt","openai api","claude","gemini","perplexity","local"),confirmation=true),
         SpokenSetting("wake_phrase","wake phrase",SpokenValueType.TEXT,listOf("wake phrase","wake word")),
         SpokenSetting("name","my name",SpokenValueType.TEXT,listOf("my name","user name","name")),
         SpokenSetting("weather_city","weather city",SpokenValueType.TEXT,listOf("weather city"))
@@ -85,7 +88,7 @@ object SpokenSettings {
             ?: Regex("^(?:turn|switch) (on|off) (.+)$").matchEntire(n)?.let{it.groupValues[2] to it.groupValues[1]}
             ?: Regex("^(?:turn|switch) (.+) (on|off)$").matchEntire(n)?.let{it.groupValues[1] to it.groupValues[2]}
             ?: Regex("^(enable|disable) (.+)$").matchEntire(n)?.let{it.groupValues[2] to if(it.groupValues[1]=="enable")"on" else "off"}
-            ?: Regex("^use (chatgpt|claude|gemini|local|openai api)(?: as (?:my )?(?:ai )?brain)?$").matchEntire(n)?.let{"brain" to it.groupValues[1]}
+            ?: Regex("^use (chatgpt|claude|gemini|perplexity|local|openai api)(?: as (?:my )?(?:ai )?brain)?$").matchEntire(n)?.let{"brain" to it.groupValues[1]}
             ?: return null
         val spec=find(pair.first) ?: return null
         return SpokenSettingRequest.Edit(spec,validate(spec,pair.second))

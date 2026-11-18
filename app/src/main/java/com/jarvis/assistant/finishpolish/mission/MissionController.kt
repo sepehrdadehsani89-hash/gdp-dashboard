@@ -16,8 +16,8 @@ class MissionController(private val companion:CompanionClient,private val vault:
     private val execution=Mutex()
     private val sequence=AtomicLong()
     @Volatile private var activeJob:Job?=null
-    private fun name()=runCatching{val saved=JSONObject(vault.read(MissionPolicy.DEVICE_NAME_KEY) ?: return@runCatching null);if(saved.getString("device_id")==companion.paired()?.deviceId)MissionPolicy.friendly(saved.getString("name"))else null}.getOrNull() ?: "My computer"
-    suspend fun setName(value:String){withContext(Dispatchers.IO){val pair=companion.paired() ?: throw CompanionFailure("NO_PAIRED_COMPUTER");vault.write(MissionPolicy.DEVICE_NAME_KEY,JSONObject().put("device_id",pair.deviceId).put("name",MissionPolicy.friendly(value)).toString())};mutable.value=mutable.value.copy(label=value.trim())}
+    private fun name()=companion.registry.active()?.label ?: runCatching{val saved=JSONObject(vault.read(MissionPolicy.DEVICE_NAME_KEY) ?: return@runCatching null);if(saved.getString("device_id")==companion.paired()?.deviceId)MissionPolicy.friendly(saved.getString("name"))else null}.getOrNull() ?: "My computer"
+    suspend fun setName(value:String){withContext(Dispatchers.IO){val pair=companion.paired() ?: throw CompanionFailure("NO_PAIRED_COMPUTER");companion.registry.rename(pair.deviceId,MissionPolicy.friendly(value),companion.registry.active()?.aliases.orEmpty());vault.write(MissionPolicy.DEVICE_NAME_KEY,JSONObject().put("device_id",pair.deviceId).put("name",MissionPolicy.friendly(value)).toString())};mutable.value=mutable.value.copy(label=value.trim())}
     suspend fun refresh():MissionState {
         if(mutable.value.active)return mutable.value
         return probe(false,sequence.incrementAndGet())

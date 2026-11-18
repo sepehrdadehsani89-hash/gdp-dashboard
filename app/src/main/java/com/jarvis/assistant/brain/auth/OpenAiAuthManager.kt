@@ -14,6 +14,7 @@ import java.util.UUID
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -70,7 +71,7 @@ data class OpenAiCredentialDescriptor(
 
 data class OpenAiDisconnectResult(val remoteRevocationConfirmed: Boolean, val message: String)
 
-class OpenAiAuthException(message: String) : IllegalStateException(message)
+class OpenAiAuthException(message: String,val kind:com.jarvis.assistant.brain.ProviderFailureKind=com.jarvis.assistant.brain.ProviderFailureKind.AUTHENTICATION) : IllegalStateException(message)
 
 internal interface OpenAiAuthStorage {
     fun read(name: String): String?
@@ -106,7 +107,7 @@ class OpenAiAuthManager internal constructor(
 ) {
     constructor(vault: FeatureVault) : this(VaultAuthStorage(vault))
 
-    private val http = client.newBuilder().followRedirects(false).followSslRedirects(false).build()
+    private val http = client.newBuilder().followRedirects(false).followSslRedirects(false).retryOnConnectionFailure(false).build()
     private val lock = Any()
     private val refreshLock = Mutex()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -180,7 +181,10 @@ class OpenAiAuthManager internal constructor(
 
     /** Selected-account plan token only. No API-key fallback exists in this component. */
     suspend fun bearerToken(): String = refreshLock.withLock {
-        withContext(Dispatchers.IO) {
+        currentCoroutineContext().ensureActive()
+        // A rotating grant cannot be rolled back remotely when an Activity pauses. Finish and
+        // persist this bounded transaction, while account/generation checks still defeat revoke.
+        withContext(Dispatchers.IO + NonCancellable) {
             val snapshot = synchronized(lock) {
                 val bundle = readBundle()
                 val account = bundle.accounts.firstOrNull { it.id == bundle.selected }
@@ -211,7 +215,7 @@ class OpenAiAuthManager internal constructor(
                     replaceAccountLocked(account.withoutCredentials(nextRevision(readBundle())), "Your ChatGPT session expired. Continue with ChatGPT again.")
                 }
                 throw OpenAiAuthException(if (response.error in TERMINAL_REFRESH_ERRORS)
-                    "Your ChatGPT session expired. Continue with ChatGPT again." else "ChatGPT token renewal failed. Please try again.")
+                    "Your ChatGPT session expired. Continue with ChatGPT again." else "ChatGPT token renewal failed. Saved credentials were retained; retry reconnect.",if(response.error in TERMINAL_REFRESH_ERRORS)com.jarvis.assistant.brain.ProviderFailureKind.AUTHENTICATION else if(response.status==429)com.jarvis.assistant.brain.ProviderFailureKind.RATE_LIMIT else if(response.status>=500)com.jarvis.assistant.brain.ProviderFailureKind.USAGE_UNAVAILABLE else com.jarvis.assistant.brain.ProviderFailureKind.AUTHORIZATION)
             }
             val tokens = parseTokens(response.json, account.idToken, requireIdToken = false,
                 retainedScopes = account.scopes, retainedRefresh = account.refreshToken)
@@ -262,6 +266,21 @@ class OpenAiAuthManager internal constructor(
             if (current != null && current.accessToken.isBlank() && current.refreshToken.isBlank()) publishLocked(message = result.message)
         }
         result
+    }
+
+    /** Removes only this app's saved connection. It never deletes a provider account/workspace. */
+    suspend fun removeSavedConnection(accountId:String):OpenAiDisconnectResult=withContext(Dispatchers.IO){
+        val removed=synchronized(lock){
+            cancelPendingLocked()
+            val bundle=readBundle();val account=bundle.accounts.firstOrNull{it.id==accountId} ?: return@synchronized null
+            val retained=bundle.accounts.filterNot{it.id==accountId}
+            writeBundle(Bundle(if(bundle.selected==accountId)retained.firstOrNull()?.id else bundle.selected,retained))
+            publishLocked(message="Saved ChatGPT connection removed from this device.");account
+        }
+        val revoked=if(removed==null || removed.refreshToken.isBlank())removed==null || removed.accessToken.isBlank() else try{
+            http.newCall(Request.Builder().url(endpoints.revoke).post(FormBody.Builder().add("token",removed.refreshToken).add("token_type_hint","refresh_token").add("client_id",removed.clientId).build()).build()).execute().use{it.code==200}
+        }catch(_:Exception){false}
+        OpenAiDisconnectResult(revoked,if(revoked)"Local connection removed and its refresh authorization revoked. No ChatGPT account or workspace was deleted." else "Local connection removed. Remote revocation was not confirmed; review connected apps in ChatGPT. No provider account or workspace was deleted.")
     }
 
     private suspend fun awaitCallback(attempt: PendingSignIn) {
@@ -355,11 +374,12 @@ class OpenAiAuthManager internal constructor(
                 val json = try { JSONObject(source.readUtf8()) } catch (_: Exception) {
                     throw OpenAiAuthException("ChatGPT returned an invalid authorization response.")
                 }
-                if (!response.isSuccessful) TokenResponse(json, json.optString("error").takeIf { it.isNotBlank() } ?: "request_failed")
+                if (!response.isSuccessful) TokenResponse(json, json.optString("error").takeIf { it.isNotBlank() } ?: "request_failed",response.code)
                 else TokenResponse(json, null)
             }
         } catch (error: OpenAiAuthException) { throw error }
-        catch (_: Exception) { throw OpenAiAuthException("ChatGPT authorization could not reach OpenAI. Please try again.") }
+        catch (error:java.io.IOException) { throw OpenAiAuthException("ChatGPT authorization could not reach OpenAI. Saved access was retained; retry reconnect.",if(error is java.net.SocketTimeoutException)com.jarvis.assistant.brain.ProviderFailureKind.TIMEOUT else com.jarvis.assistant.brain.ProviderFailureKind.NETWORK) }
+        catch (_: Exception) { throw OpenAiAuthException("ChatGPT authorization response could not be validated.",com.jarvis.assistant.brain.ProviderFailureKind.INCOMPLETE) }
     }
 
     private fun parseTokens(json: JSONObject, retainedId: String, requireIdToken: Boolean, retainedScopes: Set<String> = emptySet(), retainedRefresh: String = ""): Tokens {
@@ -485,7 +505,7 @@ class OpenAiAuthManager internal constructor(
         override fun toString() = "SavedChatGptAccount(redacted)"
     }
     private class Bundle(val selected: String?, val accounts: List<SavedAccount>)
-    private class TokenResponse(val json: JSONObject, val error: String?)
+    private class TokenResponse(val json: JSONObject, val error: String?,val status:Int=200)
     private class Tokens(val idToken: String, val accessToken: String, val refreshToken: String, val scopes: Set<String>, val expiresAt: Long)
 
     companion object {

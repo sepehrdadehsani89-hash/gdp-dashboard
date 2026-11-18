@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.finishpolish.learning.LearningPolicyTest" tests="16" skipped="0" failures="0" errors="0" timestamp="2026-11-18T14:32:01" hostname="885caff30ac4" time="1.369">
+  <properties/>
+  <testcase name="desktopRecipesRequireTheReviewedDeviceAndAppTargetsCannotContainShellOrProtectedPackages" classname="com.jarvis.assistant.finishpolish.learning.LearningPolicyTest" time="0.003"/>
+  <testcase name="profileNamespacesPreventApprovedCommandsCrossingLocalAccountScopes" classname="com.jarvis.assistant.finishpolish.learning.LearningPolicyTest" time="0.012"/>
+  <testcase name="aliasCollisionIncludesDisabledRecipesButEditingItsOwnAliasesIsAllowed" classname="com.jarvis.assistant.finishpolish.learning.LearningPolicyTest" time="0.063"/>
+  <testcase name="optInAndExplicitApprovalAreRequiredBeforeSavingOrMatching" classname="com.jarvis.assistant.finishpolish.learning.LearningPolicyTest" time="0.012"/>
+  <testcase name="inaccessibleEncryptedReadFailsClosedWithoutCallingAnyWriter" classname="com.jarvis.assistant.finishpolish.learning.LearningPolicyTest" time="0.005"/>
+  <testcase name="teachingSpeechCreatesOnlyAnEditableDraftAndDoesNotGuessUnsupportedTargets" classname="com.jarvis.assistant.finishpolish.learning.LearningPolicyTest" time="0.003"/>
+  <testcase name="serializedProfileRoundTripsWithoutCredentialOrHistoryFields" classname="com.jarvis.assistant.finishpolish.learning.LearningPolicyTest" time="0.008"/>
+  <testcase name="systemCommandsWakeWordsSensitiveRequestsAndNormalizedDuplicatesCannotBeHijacked" classname="com.jarvis.assistant.finishpolish.learning.LearningPolicyTest" time="0.01"/>
+  <testcase name="clearRemovesRecipesVocabularyConsentAndUndoWithoutTouchingOtherVaultKeys" classname="com.jarvis.assistant.finishpolish.learning.LearningPolicyTest" time="0.033"/>
+  <testcase name="twentyExplicitAliasesBecomeExactBindingsWithoutTrainingOrAmbientWrites" classname="com.jarvis.assistant.finishpolish.learning.LearningPolicyTest" time="1.165"/>
+  <testcase name="importNeedsExplicitApprovalAndRejectsUnsupportedExecutablesAndMalformedSchema" classname="com.jarvis.assistant.finishpolish.learning.LearningPolicyTest" time="0.006"/>
+  <testcase name="failedStorageReadbackCannotClaimARecipeWasSaved" classname="com.jarvis.assistant.finishpolish.learning.LearningPolicyTest" time="0.002"/>
+  <testcase name="approvedEditsAndUndoUseNewRevisionsSoOldExecutionPlansCannotResume" classname="com.jarvis.assistant.finishpolish.learning.LearningPolicyTest" time="0.006"/>
+  <testcase name="historyIsBoundedAndMalformedProfilesCannotCreateDuplicateRecipeOrVocabularyIds" classname="com.jarvis.assistant.finishpolish.learning.LearningPolicyTest" time="0.028"/>
+  <testcase name="exportImportPreservesSupportedContentButImportedCommandsStayDisabledForReview" classname="com.jarvis.assistant.finishpolish.learning.LearningPolicyTest" time="0.006"/>
+  <testcase name="vocabularyNotesRequireApprovalAndNeverRewriteThemselvesIntoExecutableCommands" classname="com.jarvis.assistant.finishpolish.learning.LearningPolicyTest" time="0.004"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

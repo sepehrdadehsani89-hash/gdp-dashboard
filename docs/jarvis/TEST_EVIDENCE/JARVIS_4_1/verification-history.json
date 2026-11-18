@@ -1,0 +1,73 @@
+{
+  "final_android_gate": {
+    "exit": 0,
+    "duration": "13m19s",
+    "tasks": [
+      "testDebugUnitTest",
+      "lintDebug",
+      "assembleDebug",
+      "compileDebugAndroidTestKotlin"
+    ]
+  },
+  "final_jvm": {
+    "tests": 2109,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 1
+  },
+  "final_companion": {
+    "tests": 36,
+    "passed": 36,
+    "failed": 0,
+    "skipped": 0,
+    "duration_seconds": 2.657,
+    "scope": "Actual controlled Linux Chromium + local HTTPS fixture; native Windows/macOS/Android NOT RUN"
+  },
+  "earlier_attempts": [
+    {
+      "log": "priority-1-2-compile.log",
+      "status": "FAILED",
+      "reason": "Three UI wiring compile errors; corrected before focused pass."
+    },
+    {
+      "log": "google-compile-first-error.txt",
+      "status": "FAILED",
+      "reason": "Duplicate document extraction locals; corrected; this file is a recorded error note, not a raw complete log."
+    },
+    {
+      "log": "reminders-farewell-compile.log",
+      "status": "FAILED",
+      "reason": "Duplicate reminder-store helper methods; corrected."
+    },
+    {
+      "log": "reminder-farewell-focused.log",
+      "status": "FAILED",
+      "reason": "One missing Persian completion idiom; corrected and later regression passed."
+    },
+    {
+      "log": "context-companion-focused.log",
+      "status": "FAILED",
+      "reason": "Constructor implicit receiver before initialization; qualified kotlin.runCatching."
+    },
+    {
+      "log": "full-jvm-first.log",
+      "status": "INTERRUPTED",
+      "reason": "Stopped after partial settings-wiring edit failed; completed wiring before next full suite."
+    },
+    {
+      "log": "release-gate-first.log",
+      "status": "INTERRUPTED",
+      "reason": "Stopped to include exact directive command-lab/farewell examples."
+    },
+    {
+      "log": "release-gate-second.log",
+      "status": "FAILED",
+      "reason": "2,089 JVM cases: 2,088 passed and one optional skip; lint found two StateFlow reads in composition. Replaced with collected state."
+    },
+    {
+      "log": "companion-tests.log",
+      "status": "FAILED",
+      "reason": "35 passes and one PAGE_LOAD_TIMEOUT during concurrent Gradle verification. Instrumented idle fixture and later full serial36-case suite passed without production companion changes; timing cause is not proven."
+    }
+  ]
+}

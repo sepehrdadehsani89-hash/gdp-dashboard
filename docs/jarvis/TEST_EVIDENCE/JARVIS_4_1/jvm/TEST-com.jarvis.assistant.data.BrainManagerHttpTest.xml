@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.data.BrainManagerHttpTest" tests="32" skipped="0" failures="0" errors="0" timestamp="2026-11-18T14:31:53" hostname="885caff30ac4" time="1.405">
+  <properties/>
+  <testcase name="cancellationAfterFirstPlanTextDoesNotCompleteOrLaunchFallback" classname="com.jarvis.assistant.data.BrainManagerHttpTest" time="1.079"/>
+  <testcase name="planCredentialCannotBeSentToAnthropicProvider" classname="com.jarvis.assistant.data.BrainManagerHttpTest" time="0.003"/>
+  <testcase name="explicitApiConnectionTestCanBeRequestedWithoutChangingPlanSelection" classname="com.jarvis.assistant.data.BrainManagerHttpTest" time="0.014"/>
+  <testcase name="planCatalogUsesBearerHeaderAndPublicModelsRoute" classname="com.jarvis.assistant.data.BrainManagerHttpTest" time="0.009"/>
+  <testcase name="planErrorAfterVisibleDeltaStillFailsAndDoesNotRetryWithApiKey" classname="com.jarvis.assistant.data.BrainManagerHttpTest" time="0.008"/>
+  <testcase name="blankPlanBearerNeverDispatchesHttpRequest" classname="com.jarvis.assistant.data.BrainManagerHttpTest" time="0.005"/>
+  <testcase name="explicitApiAnswerOverrideUsesRequestedApiCredential" classname="com.jarvis.assistant.data.BrainManagerHttpTest" time="0.009"/>
+  <testcase name="unsupportedApiModelDoesNotQuietlyVerifyDifferentFallbackModel" classname="com.jarvis.assistant.data.BrainManagerHttpTest" time="0.008"/>
+  <testcase name="apiBillingFailureIsReportedAsCreditsInsteadOfSuccessfulConnection" classname="com.jarvis.assistant.data.BrainManagerHttpTest" time="0.011"/>
+  <testcase name="planConnectionTestRequiresCatalogAndActualTerminalInference" classname="com.jarvis.assistant.data.BrainManagerHttpTest" time="0.056"/>
+  <testcase name="anthropicStreamingUsesSupportedBearerVersionAndReturnsActualText" classname="com.jarvis.assistant.data.BrainManagerHttpTest" time="0.013"/>
+  <testcase name="planUsageFailureHasNoApiRetryAndNoSensitiveErrorReflection" classname="com.jarvis.assistant.data.BrainManagerHttpTest" time="0.007"/>
+  <testcase name="completedEventWithoutTextCannotProveConnection" classname="com.jarvis.assistant.data.BrainManagerHttpTest" time="0.007"/>
+  <testcase name="planInferenceUsesResponsesBearerAndNeverSavedApiCredential" classname="com.jarvis.assistant.data.BrainManagerHttpTest" time="0.011"/>
+  <testcase name="selectedPlanRefusesUnsupportedVisionWithoutSendingPaidRequest" classname="com.jarvis.assistant.data.BrainManagerHttpTest" time="0.006"/>
+  <testcase name="completedEventCanSupplyActualTextWhenNoDeltasWereSent" classname="com.jarvis.assistant.data.BrainManagerHttpTest" time="0.009"/>
+  <testcase name="selectedPlanDoesNotSilentlyUseSavedApiKeyForOrdinaryReply" classname="com.jarvis.assistant.data.BrainManagerHttpTest" time="0.007"/>
+  <testcase name="planVoiceRequestRefusesScreenshotInsteadOfDroppingImageSilently" classname="com.jarvis.assistant.data.BrainManagerHttpTest" time="0.008"/>
+  <testcase name="emptyAnthropicMessagesResponseCannotVerifyConnection" classname="com.jarvis.assistant.data.BrainManagerHttpTest" time="0.007"/>
+  <testcase name="lockedPlanRequestCanOmitSavedIdentityAndFilterStatusHistory" classname="com.jarvis.assistant.data.BrainManagerHttpTest" time="0.013"/>
+  <testcase name="emptyPlanCatalogCannotProveAiAuthorization" classname="com.jarvis.assistant.data.BrainManagerHttpTest" time="0.01"/>
+  <testcase name="selectedPlanDoesNotSilentlyUseSavedApiKeyForConnectionTest" classname="com.jarvis.assistant.data.BrainManagerHttpTest" time="0.004"/>
+  <testcase name="explicitApiCatalogRequiresDataIdsAndFiltersUnsafeModelNames" classname="com.jarvis.assistant.data.BrainManagerHttpTest" time="0.008"/>
+  <testcase name="anthropicConnectionTestParsesRealMessagesResponseAndNoUserData" classname="com.jarvis.assistant.data.BrainManagerHttpTest" time="0.012"/>
+  <testcase name="planDeltaWithoutCompletedEventCannotVerifyAnswer" classname="com.jarvis.assistant.data.BrainManagerHttpTest" time="0.009"/>
+  <testcase name="malformedPlanSseIsReportedAsInvalidResponse" classname="com.jarvis.assistant.data.BrainManagerHttpTest" time="0.01"/>
+  <testcase name="planCatalogRetainsVisibleServerOrderAndHidesNonListEntries" classname="com.jarvis.assistant.data.BrainManagerHttpTest" time="0.009"/>
+  <testcase name="catalogAuthenticationFailureIsTypedAndDoesNotLeakProviderBody" classname="com.jarvis.assistant.data.BrainManagerHttpTest" time="0.008"/>
+  <testcase name="anthropicCatalogUsesApiCredentialAndVersionWithoutTreatingListingAsInference" classname="com.jarvis.assistant.data.BrainManagerHttpTest" time="0.004"/>
+  <testcase name="unavailablePlanModelStopsBeforeInferenceWithoutFallback" classname="com.jarvis.assistant.data.BrainManagerHttpTest" time="0.007"/>
+  <testcase name="planRequestUsesNonstoredArrayInputAndOmitsUnsupportedPreviewParameters" classname="com.jarvis.assistant.data.BrainManagerHttpTest" time="0.011"/>
+  <testcase name="apiShapedCatalogIsNotAcceptedAsPlanCatalog" classname="com.jarvis.assistant.data.BrainManagerHttpTest" time="0.005"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

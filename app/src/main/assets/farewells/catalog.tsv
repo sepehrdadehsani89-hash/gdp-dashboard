@@ -1,0 +1,511 @@
+# Curated whole responses. Contextual categories are selected only from explicit intent or verified facts.
+en|GENERAL|Goodbye. We can pick this up when you return.
+en|GENERAL|Take care, and enjoy the rest of your day.
+en|GENERAL|Until next time. I'll leave you to your day.
+en|GENERAL|That concludes our conversation. Be well.
+en|GENERAL|Goodbye for now. Come back whenever it suits you.
+en|GENERAL|A pleasure assisting you. Take care out there.
+en|GENERAL|I'll step aside now. Have a pleasant day.
+en|GENERAL|We'll leave it there. Wishing you a smooth day ahead.
+en|GENERAL|Farewell. You can begin a new conversation whenever you choose.
+en|GENERAL|Our conversation ends here. Enjoy what comes next.
+en|FORMAL|Acknowledged. This conversation is concluded. Goodbye.
+en|FORMAL|Understood. I wish you a productive day.
+en|FORMAL|Very good. Thank you for your time.
+en|FORMAL|With that, I will take my leave. Farewell.
+en|FORMAL|Your request to conclude is understood. Have a pleasant day.
+en|FORMAL|Assistance concluded. My best wishes for the day ahead.
+en|FORMAL|It has been a pleasure to assist. Until our next conversation.
+en|FORMAL|We shall conclude here. I wish you well.
+en|FORMAL|Thank you. I will leave you to your other commitments.
+en|FORMAL|Understood. We can resume at a time of your choosing.
+en|SHORT|Goodbye. Take care.
+en|SHORT|Until next time.
+en|SHORT|See you later. Be well.
+en|SHORT|All right. Bye for now.
+en|SHORT|Catch you another time.
+en|SHORT|Take it easy. Goodbye.
+en|SHORT|Have a good one.
+en|SHORT|We'll talk again. Farewell.
+en|SHORT|Cheers. Enjoy your day.
+en|SHORT|Off you go. Take care.
+en|FRIENDLY|Glad I could help. Enjoy the next part of your day.
+en|FRIENDLY|It's been good talking with you. Take care.
+en|FRIENDLY|I'll let you get going. Hope the day treats you kindly.
+en|FRIENDLY|Thanks for the conversation. See you when you're ready.
+en|FRIENDLY|Go enjoy your time. We can talk again later.
+en|FRIENDLY|All the best with whatever comes next. Goodbye.
+en|FRIENDLY|You've got the rest of the day ahead. Enjoy it.
+en|FRIENDLY|I'll leave you with my best wishes. Bye for now.
+en|FRIENDLY|Nice working through that with you. Until next time.
+en|FRIENDLY|A good place to pause. Take care of yourself.
+en|EVENING|Have a pleasant evening. Goodbye for now.
+en|EVENING|I'll leave you to the evening. Enjoy some quiet time.
+en|EVENING|Wishing you an easy close to the day.
+en|EVENING|Take care tonight, and enjoy your evening.
+en|EVENING|That is a good place to stop for today. Farewell.
+en|EVENING|May the rest of your evening be peaceful.
+en|EVENING|Time to step away from our conversation. Have a lovely evening.
+en|EVENING|Goodbye. I hope tonight gives you room to unwind.
+en|EVENING|Enjoy the evening at your own pace. Until next time.
+en|EVENING|I'll say good evening and leave you to it.
+en|BEDTIME|Good night. I hope you get some restful sleep.
+en|BEDTIME|Sleep well, and take care until we speak again.
+en|BEDTIME|We'll leave the conversation here. Rest easy tonight.
+en|BEDTIME|Wishing you a quiet night and a gentle morning.
+en|BEDTIME|Good night. Give yourself a proper chance to rest.
+en|BEDTIME|Time to put this conversation aside. Sweet dreams.
+en|BEDTIME|May your night be comfortable and undisturbed. Farewell.
+en|BEDTIME|Rest well. Tomorrow can have its own conversation.
+en|BEDTIME|I'll leave you to wind down. Sleep peacefully.
+en|BEDTIME|Goodbye for tonight. Here's to a refreshing night's rest.
+en|STUDY|Good work making time to study. Enjoy your break.
+en|STUDY|We'll close this study conversation here. Rest your attention.
+en|STUDY|Take a proper pause before your next learning session.
+en|STUDY|Step away from the material for a while. Goodbye.
+en|STUDY|I hope the next study session feels a little clearer.
+en|STUDY|That is enough discussion for now. Give your mind some space.
+en|STUDY|You can return to the subject when you're ready. Take care.
+en|STUDY|Enjoy some time away from the books. Until next time.
+en|STUDY|Learning benefits from a pause too. Have a good break.
+en|STUDY|We'll leave the questions here. Wishing you a useful rest.
+en|WORK|I'll leave you to finish your workday in peace.
+en|WORK|Goodbye. Enjoy some space away from work.
+en|WORK|We can stop the work discussion here. Take care.
+en|WORK|Wishing you a smooth transition out of work mode.
+en|WORK|Time to put this conversation down. Enjoy your downtime.
+en|WORK|I hope the rest of your day is less demanding.
+en|WORK|We'll pause here. Come back with a fresh perspective.
+en|WORK|Thank you for working through that with me. Farewell.
+en|WORK|Leave the next work question for another conversation. Rest well.
+en|WORK|All right. Enjoy the time that is yours now.
+en|COMPUTER|We'll pause the computer discussion here. Take care.
+en|COMPUTER|Goodbye. Your computer controls remain yours to manage.
+en|COMPUTER|We can return to the desktop topic another time.
+en|COMPUTER|I'll step back from this computer conversation now.
+en|COMPUTER|Until next time at the keyboard. Have a good day.
+en|COMPUTER|A useful place to pause our desktop discussion. Farewell.
+en|COMPUTER|Take a break from the screen when it suits you.
+en|COMPUTER|Our conversation is ending; no computer shutdown is implied.
+en|COMPUTER|We can review another computer task when you return.
+en|COMPUTER|Goodbye for now. Use the desktop's own controls as needed.
+en|REMINDER|Before we part, here is your verified reminder context.
+en|REMINDER|I'll close with the reminder information available right now.
+en|REMINDER|Goodbye. The following reminder details come from your saved entries.
+en|REMINDER|Take care. Here is the relevant scheduled-reminder information.
+en|REMINDER|One final note from your existing reminder schedule, then farewell.
+en|REMINDER|We'll finish with a check of the reminders you permitted.
+en|REMINDER|Until next time. These are the reminder facts currently available.
+en|REMINDER|A brief reminder check before I leave you to your day.
+en|REMINDER|Farewell. I'll mention only the saved reminder information below.
+en|REMINDER|As we conclude, here is your authorized reminder context.
+en|CALENDAR|Before goodbye, here is the calendar information you permitted.
+en|CALENDAR|I'll end with the relevant verified calendar context.
+en|CALENDAR|Take care. The following schedule details came from your calendar.
+en|CALENDAR|One final calendar note, based on the authorized result.
+en|CALENDAR|We'll close with the events actually returned by your calendar.
+en|CALENDAR|Until next time. Here is the available schedule context.
+en|CALENDAR|A brief look at your verified calendar information before farewell.
+en|CALENDAR|Goodbye. I'll keep this final note to the events retrieved.
+en|CALENDAR|As we finish, here is the authorized calendar result.
+en|CALENDAR|Farewell after this short, verified schedule note.
+en|CALL|Before we part, here is your saved check-in context.
+en|CALL|I'll finish with the check-in information you scheduled.
+en|CALL|Goodbye. The following call reminder comes from a saved entry.
+en|CALL|One final note about your authorized scheduled check-in.
+en|CALL|Take care. Here is the verified check-in information.
+en|CALL|We can conclude after this saved call-schedule note.
+en|CALL|Until next time. Here is the check-in context available now.
+en|CALL|A brief review of the scheduled check-in before farewell.
+en|CALL|I'll leave you with this existing check-in detail.
+en|CALL|Farewell. This final note is from your saved call schedule.
+en|THANKS|You're welcome. Take care until we speak again.
+en|THANKS|Happy to help. Goodbye, and enjoy your day.
+en|THANKS|My pleasure. We'll leave the conversation here.
+en|THANKS|Thank you as well. Wishing you an easy day ahead.
+en|THANKS|Glad the conversation was useful. Until next time.
+en|THANKS|You're very welcome. I'll let you get going.
+en|THANKS|A pleasure to assist. Enjoy the rest of your time.
+en|THANKS|No trouble at all. Goodbye for now.
+en|THANKS|Thanks for letting me help. All the best.
+en|THANKS|Any time you choose to return. Take care.
+en|RELAXED|All right. I'll leave you some breathing room.
+en|RELAXED|We'll let the conversation rest here. Take it easy.
+en|RELAXED|Enjoy a little quiet. Goodbye for now.
+en|RELAXED|No more from me for the moment. Have a restful break.
+en|RELAXED|Time for a pause. Make yourself comfortable.
+en|RELAXED|I'll step aside. Enjoy the slower pace.
+en|RELAXED|Let the next question wait. Take care of yourself.
+en|RELAXED|We can leave things there. Enjoy your space.
+en|RELAXED|Goodbye. I hope you find a comfortable moment to unwind.
+en|RELAXED|Have an unhurried break. Until we talk again.
+en|FOCUS|I'll leave you to concentrate. Goodbye.
+en|FOCUS|May your next stretch of work be clear and focused.
+en|FOCUS|We'll stop talking so you can give that your attention.
+en|FOCUS|Take the time you need for your own thoughts.
+en|FOCUS|A quiet pause from our conversation starts here.
+en|FOCUS|Goodbye. Return to the task at your own pace.
+en|FOCUS|I hope the next step becomes easier with some space.
+en|FOCUS|I'll leave room for your concentration. Take care.
+en|FOCUS|Our discussion can wait until you're ready to return.
+en|FOCUS|Wishing you a useful, uninterrupted stretch of time.
+en|TRAVEL|Safe travels. We can talk when you've settled.
+en|TRAVEL|Take care on your way, and goodbye for now.
+en|TRAVEL|I hope the journey goes smoothly.
+en|TRAVEL|I'll let you get moving. Travel safely.
+en|TRAVEL|Have a comfortable trip. Until our next conversation.
+en|TRAVEL|Wishing you an easy arrival wherever you're heading.
+en|TRAVEL|Goodbye. Give the road your full attention.
+en|TRAVEL|Take your time getting there. Be well.
+en|TRAVEL|We can leave this here while you head out.
+en|TRAVEL|All the best for the journey ahead. Farewell.
+en|RETURN|Until tomorrow, if that suits you. Take care.
+en|RETURN|See you another time. You can start afresh when you return.
+en|RETURN|We'll pause here and leave tomorrow open.
+en|RETURN|Goodbye for now. Return whenever you're ready.
+en|RETURN|We can have a new conversation after your break.
+en|RETURN|Until we speak again. Wishing you well in the meantime.
+en|RETURN|I'll leave the next conversation for your return.
+en|RETURN|Take care until then. Nothing further is needed now.
+en|RETURN|Enjoy the time between now and our next conversation.
+en|RETURN|Farewell. A new discussion can begin when you choose.
+es|GENERAL|Hasta luego. Podemos continuar cuando regreses.
+es|GENERAL|Cuídate y disfruta lo que queda del día.
+es|GENERAL|Nos despedimos por ahora. Que te vaya bien.
+es|GENERAL|Aquí termina nuestra conversación. Mis mejores deseos.
+es|GENERAL|Adiós por el momento. Vuelve cuando te resulte cómodo.
+es|GENERAL|Ha sido un placer ayudarte. Cuídate mucho.
+es|GENERAL|Te dejo seguir con tu día. Hasta la próxima.
+es|GENERAL|Lo dejamos aquí. Que el resto del día sea tranquilo.
+es|GENERAL|Me despido. Puedes iniciar otra conversación cuando quieras.
+es|GENERAL|Terminamos por ahora. Disfruta lo que viene.
+es|FORMAL|Entendido. Damos por concluida esta conversación.
+es|FORMAL|De acuerdo. Le deseo una jornada provechosa.
+es|FORMAL|Muy bien. Gracias por su tiempo y atención.
+es|FORMAL|Con esto me despido. Que tenga un buen día.
+es|FORMAL|Su petición de terminar queda entendida. Hasta la próxima.
+es|FORMAL|La asistencia concluye aquí. Reciba mis mejores deseos.
+es|FORMAL|Ha sido un gusto asistirle. Hasta nuestra próxima conversación.
+es|FORMAL|Concluyamos en este punto. Que todo marche bien.
+es|FORMAL|Gracias. Le dejo atender sus otros compromisos.
+es|FORMAL|Quedo despedido por ahora. Retomaremos cuando usted lo decida.
+es|SHORT|Adiós. Cuídate.
+es|SHORT|Hasta la próxima.
+es|SHORT|Nos vemos luego. Que estés bien.
+es|SHORT|Está bien. Chao por ahora.
+es|SHORT|Hablamos en otra ocasión.
+es|SHORT|Que te vaya bonito.
+es|SHORT|Disfruta tu día.
+es|SHORT|Hasta otro momento. Un saludo.
+es|SHORT|Buen descanso. Nos vemos.
+es|SHORT|Te dejo seguir. Adiós.
+es|FRIENDLY|Me alegra haberte ayudado. Disfruta tu tiempo.
+es|FRIENDLY|Ha sido agradable conversar contigo. Cuídate.
+es|FRIENDLY|Te dejo salir. Ojalá el día te trate bien.
+es|FRIENDLY|Gracias por la charla. Vuelve cuando quieras.
+es|FRIENDLY|Ve a disfrutar de lo tuyo. Hablamos después.
+es|FRIENDLY|Te deseo lo mejor para lo que sigue.
+es|FRIENDLY|Aún tienes mucho día por delante. Que lo disfrutes.
+es|FRIENDLY|Me despido con buenos deseos. Hasta pronto.
+es|FRIENDLY|Fue un gusto pensar esto contigo. Nos vemos.
+es|FRIENDLY|Es un buen punto para hacer una pausa. Cuídate.
+es|EVENING|Que tengas una tarde agradable. Hasta luego.
+es|EVENING|Te dejo disfrutar de la tarde con tranquilidad.
+es|EVENING|Ojalá puedas cerrar el día sin prisas.
+es|EVENING|Cuídate esta noche y disfruta de tu tiempo.
+es|EVENING|Podemos parar aquí por hoy. Que descanses.
+es|EVENING|Que lo que queda de la noche sea sereno.
+es|EVENING|Es hora de despedir nuestra charla. Buena tarde.
+es|EVENING|Adiós. Espero que esta noche te deje desconectar.
+es|EVENING|Disfruta la tarde a tu ritmo. Hasta la próxima.
+es|EVENING|Me despido deseándote un cierre de día apacible.
+es|BEDTIME|Buenas noches. Espero que duermas bien.
+es|BEDTIME|Descansa y cuídate hasta que volvamos a hablar.
+es|BEDTIME|Dejamos la conversación aquí. Que tengas un sueño tranquilo.
+es|BEDTIME|Te deseo una noche serena y un despertar amable.
+es|BEDTIME|Buenas noches. Date una oportunidad de descansar de verdad.
+es|BEDTIME|Es momento de apartar esta charla. Dulces sueños.
+es|BEDTIME|Que tu descanso sea cómodo y reparador.
+es|BEDTIME|Descansa bien. Mañana podrá tener su propia conversación.
+es|BEDTIME|Te dejo relajarte antes de dormir. Hasta luego.
+es|BEDTIME|Adiós por esta noche. Que recuperes energías.
+es|STUDY|Bien por dedicar tiempo al estudio. Disfruta la pausa.
+es|STUDY|Cerramos esta charla de estudio. Dale descanso a tu atención.
+es|STUDY|Tómate un respiro antes de volver a aprender.
+es|STUDY|Aléjate un rato del material. Hasta luego.
+es|STUDY|Ojalá la próxima sesión de estudio resulte más clara.
+es|STUDY|Basta de preguntas por ahora. Dale espacio a tu mente.
+es|STUDY|Puedes volver al tema cuando estés listo. Cuídate.
+es|STUDY|Disfruta un rato lejos de los libros.
+es|STUDY|Aprender también necesita pausas. Que descanses.
+es|STUDY|Dejamos las dudas aquí. Te deseo un descanso útil.
+es|WORK|Te dejo terminar tu jornada con tranquilidad.
+es|WORK|Adiós. Disfruta un poco de tiempo fuera del trabajo.
+es|WORK|Cerramos la conversación laboral en este punto. Cuídate.
+es|WORK|Que el paso del trabajo al descanso sea suave.
+es|WORK|Apartemos esta charla. Disfruta tu tiempo libre.
+es|WORK|Ojalá el resto del día te exija un poco menos.
+es|WORK|Hagamos una pausa. Vuelve con una mirada renovada.
+es|WORK|Gracias por trabajar estas ideas conmigo. Hasta luego.
+es|WORK|La próxima cuestión laboral puede esperar a otra conversación.
+es|WORK|De acuerdo. Disfruta del tiempo que ahora es tuyo.
+es|COMPUTER|Pausamos la charla sobre el ordenador. Cuídate.
+es|COMPUTER|Hasta luego. Los controles del equipo siguen en tus manos.
+es|COMPUTER|Podemos retomar el tema del escritorio en otro momento.
+es|COMPUTER|Me retiro de esta conversación sobre el equipo.
+es|COMPUTER|Hasta la próxima sesión al teclado. Buen día.
+es|COMPUTER|Es un buen punto para detener nuestra charla del escritorio.
+es|COMPUTER|Descansa de la pantalla cuando te resulte conveniente.
+es|COMPUTER|Termina la conversación; esto no significa apagar el equipo.
+es|COMPUTER|Podemos revisar otra tarea del ordenador cuando regreses.
+es|COMPUTER|Adiós por ahora. Usa los controles del equipo si los necesitas.
+es|REMINDER|Antes de despedirnos, este es el contexto verificado de tus recordatorios.
+es|REMINDER|Cierro con la información de recordatorios disponible ahora.
+es|REMINDER|Hasta luego. Los siguientes datos proceden de tus entradas guardadas.
+es|REMINDER|Cuídate. Aquí está la información pertinente de los recordatorios programados.
+es|REMINDER|Una última nota de tu agenda de recordatorios y me despido.
+es|REMINDER|Terminamos revisando los recordatorios que autorizaste consultar.
+es|REMINDER|Hasta la próxima. Estos son los datos de recordatorios disponibles.
+es|REMINDER|Una breve revisión de recordatorios antes de dejarte seguir.
+es|REMINDER|Adiós. Mencionaré solamente la información guardada que sigue.
+es|REMINDER|Al concluir, aquí tienes el contexto autorizado de tus recordatorios.
+es|CALENDAR|Antes de despedirme, esta es la información del calendario que autorizaste.
+es|CALENDAR|Cierro con el contexto pertinente y verificado del calendario.
+es|CALENDAR|Cuídate. Los siguientes datos provienen de tu calendario.
+es|CALENDAR|Una última nota de agenda basada en el resultado autorizado.
+es|CALENDAR|Concluimos con los eventos que el calendario devolvió realmente.
+es|CALENDAR|Hasta la próxima. Aquí está el contexto de agenda disponible.
+es|CALENDAR|Una breve mirada al calendario verificado antes de despedirnos.
+es|CALENDAR|Adiós. Limitaré esta nota final a los eventos consultados.
+es|CALENDAR|Al terminar, aquí tienes el resultado autorizado del calendario.
+es|CALENDAR|Me despido después de esta breve nota verificada de agenda.
+es|CALL|Antes de irme, este es el contexto de tus avisos de llamada.
+es|CALL|Termino con la información del aviso que programaste.
+es|CALL|Adiós. El siguiente aviso procede de una entrada guardada.
+es|CALL|Una última nota sobre tu aviso de llamada autorizado.
+es|CALL|Cuídate. Aquí tienes la información verificada del aviso.
+es|CALL|Podemos concluir después de esta nota del horario guardado.
+es|CALL|Hasta la próxima. Este es el contexto de llamada disponible.
+es|CALL|Una revisión breve del aviso programado antes de despedirnos.
+es|CALL|Te dejo con este detalle de un aviso existente.
+es|CALL|Me despido. Esta nota final proviene de tu programación guardada.
+es|THANKS|De nada. Cuídate hasta que volvamos a hablar.
+es|THANKS|Encantado de ayudar. Adiós y que disfrutes tu día.
+es|THANKS|Un placer. Dejamos aquí la conversación.
+es|THANKS|Gracias a ti también. Que tengas un día llevadero.
+es|THANKS|Me alegra que la charla sirviera. Hasta la próxima.
+es|THANKS|No hay de qué. Te dejo continuar.
+es|THANKS|Ha sido un gusto ayudarte. Disfruta tu tiempo.
+es|THANKS|No fue ninguna molestia. Hasta luego.
+es|THANKS|Gracias por dejarme colaborar. Mis mejores deseos.
+es|THANKS|Vuelve cuando tú quieras. Cuídate mucho.
+es|RELAXED|De acuerdo. Te dejo un poco de espacio.
+es|RELAXED|Demos descanso a la conversación. Tómatelo con calma.
+es|RELAXED|Disfruta un poco de silencio. Hasta luego.
+es|RELAXED|Nada más por mi parte ahora. Que descanses.
+es|RELAXED|Es momento de una pausa. Ponte cómodo.
+es|RELAXED|Me aparto por ahora. Disfruta de un ritmo más tranquilo.
+es|RELAXED|La siguiente pregunta puede esperar. Cuídate.
+es|RELAXED|Lo dejamos así. Disfruta de tu espacio.
+es|RELAXED|Adiós. Ojalá encuentres un momento agradable para desconectar.
+es|RELAXED|Que tengas un descanso sin prisas. Hablamos después.
+es|FOCUS|Te dejo concentrarte. Hasta luego.
+es|FOCUS|Que el próximo rato de trabajo sea claro y enfocado.
+es|FOCUS|Dejamos de conversar para que atiendas lo tuyo.
+es|FOCUS|Tómate el tiempo que necesites para pensar.
+es|FOCUS|Aquí comienza una pausa tranquila en nuestra charla.
+es|FOCUS|Adiós. Retoma tu tarea a tu propio ritmo.
+es|FOCUS|Ojalá el siguiente paso se aclare con algo de espacio.
+es|FOCUS|Dejo sitio para tu concentración. Cuídate.
+es|FOCUS|Nuestra conversación puede esperar a que estés listo.
+es|FOCUS|Te deseo un rato útil y sin interrupciones.
+es|TRAVEL|Buen viaje. Podemos hablar cuando te acomodes.
+es|TRAVEL|Cuídate en el camino. Hasta luego.
+es|TRAVEL|Espero que el trayecto vaya sin contratiempos.
+es|TRAVEL|Te dejo ponerte en marcha. Viaja con cuidado.
+es|TRAVEL|Que tengas un viaje cómodo. Hasta otra conversación.
+es|TRAVEL|Te deseo una llegada tranquila a tu destino.
+es|TRAVEL|Adiós. Dale toda tu atención al camino.
+es|TRAVEL|Llega sin prisas. Que estés bien.
+es|TRAVEL|Dejamos esto aquí mientras sales.
+es|TRAVEL|Mis mejores deseos para el trayecto que tienes por delante.
+es|RETURN|Hasta mañana, si te viene bien. Cuídate.
+es|RETURN|Nos vemos en otra ocasión. Podemos empezar de nuevo al volver.
+es|RETURN|Pausamos aquí y dejamos abierto el día de mañana.
+es|RETURN|Adiós por ahora. Regresa cuando estés listo.
+es|RETURN|Podremos iniciar otra conversación después de tu descanso.
+es|RETURN|Hasta que volvamos a hablar. Que te vaya bien mientras tanto.
+es|RETURN|Dejo la próxima charla para cuando regreses.
+es|RETURN|Cuídate hasta entonces. No hace falta nada más ahora.
+es|RETURN|Disfruta el tiempo hasta nuestra próxima conversación.
+es|RETURN|Me despido. Podremos hablar de nuevo cuando lo decidas.
+fa|GENERAL|خداحافظ. هر زمان برگشتید می‌توانیم گفت‌وگوی تازه‌ای شروع کنیم.
+fa|GENERAL|مراقب خودتان باشید و از ادامهٔ روز لذت ببرید.
+fa|GENERAL|تا دیدار بعد. روزتان به خوشی بگذرد.
+fa|GENERAL|گفت‌وگو را همین‌جا پایان می‌دهیم. تندرست باشید.
+fa|GENERAL|فعلاً خداحافظ. هر وقت مناسب بود برگردید.
+fa|GENERAL|از همراهی شما خوشحال شدم. به سلامت.
+fa|GENERAL|شما را به کارهای روزتان می‌سپارم. بدرود.
+fa|GENERAL|اینجا توقف می‌کنیم. ادامهٔ روز آرامی داشته باشید.
+fa|GENERAL|بدرود. آغاز گفت‌وگوی بعدی با انتخاب شماست.
+fa|GENERAL|گفت‌وگوی امروز تمام شد. برای ادامهٔ راه آرزوی خوبی دارم.
+fa|FORMAL|دریافت شد. این گفت‌وگو پایان یافته است.
+fa|FORMAL|بسیار خوب. روزی پربار برایتان آرزو می‌کنم.
+fa|FORMAL|سپاس از وقتی که به این گفت‌وگو اختصاص دادید.
+fa|FORMAL|با اجازهٔ شما مرخص می‌شوم. روز خوش.
+fa|FORMAL|درخواست پایان گفت‌وگو روشن است. تا فرصتی دیگر.
+fa|FORMAL|همراهی من در این بخش به پایان رسید. موفق باشید.
+fa|FORMAL|باعث خرسندی بود که در خدمتتان باشم. بدرود.
+fa|FORMAL|در همین نقطه خاتمه می‌دهیم. برایتان آرزوی سلامتی دارم.
+fa|FORMAL|سپاسگزارم. شما را به دیگر برنامه‌هایتان می‌سپارم.
+fa|FORMAL|هر زمان صلاح دانستید، گفت‌وگوی تازه‌ای آغاز خواهیم کرد.
+fa|SHORT|خداحافظ. مراقب خودتان باشید.
+fa|SHORT|تا دفعهٔ بعد.
+fa|SHORT|بعداً می‌بینمتان. به سلامت.
+fa|SHORT|بسیار خب. فعلاً بدرود.
+fa|SHORT|در فرصتی دیگر صحبت می‌کنیم.
+fa|SHORT|روزتان خوش و آرام.
+fa|SHORT|اوقات خوبی داشته باشید.
+fa|SHORT|تا زمانی دیگر. شاد باشید.
+fa|SHORT|استراحت خوبی داشته باشید.
+fa|SHORT|شما را تنها می‌گذارم. خداحافظ.
+fa|FRIENDLY|خوشحالم که توانستم همراهتان باشم. از وقتتان لذت ببرید.
+fa|FRIENDLY|صحبت با شما خوشایند بود. مراقب خودتان باشید.
+fa|FRIENDLY|معطلتان نمی‌کنم. امیدوارم روز با شما مهربان باشد.
+fa|FRIENDLY|ممنون از این گفت‌وگو. هر زمان خواستید برگردید.
+fa|FRIENDLY|به کار دلخواهتان برسید. بعداً صحبت می‌کنیم.
+fa|FRIENDLY|برای قدم بعدی‌تان بهترین‌ها را آرزو می‌کنم.
+fa|FRIENDLY|هنوز فرصت‌های روز پیش روی شماست. خوش بگذرد.
+fa|FRIENDLY|با آرزوی اوقاتی خوش از شما خداحافظی می‌کنم.
+fa|FRIENDLY|خوب بود که با هم درباره‌اش فکر کردیم. تا بعد.
+fa|FRIENDLY|جای مناسبی برای مکث است. به خودتان برسید.
+fa|EVENING|عصر دلپذیری داشته باشید. فعلاً خداحافظ.
+fa|EVENING|شما را به آرامش این عصر می‌سپارم.
+fa|EVENING|امیدوارم پایان روزتان بی‌شتاب و آسوده بگذرد.
+fa|EVENING|امشب مراقب خودتان باشید و از وقتتان لذت ببرید.
+fa|EVENING|برای امروز می‌توانیم اینجا تمام کنیم. شبتان خوش.
+fa|EVENING|آرزو می‌کنم باقی این شب آرام باشد.
+fa|EVENING|وقت پایان این گفت‌وگوست. عصر خوبی داشته باشید.
+fa|EVENING|خداحافظ. امیدوارم امشب فرصت آسودن پیدا کنید.
+fa|EVENING|عصر را با آهنگ دلخواه خودتان بگذرانید. تا بعد.
+fa|EVENING|با آرزوی پایانی آرام برای روزتان بدرود می‌گویم.
+fa|BEDTIME|شب بخیر. امیدوارم خواب آسوده‌ای داشته باشید.
+fa|BEDTIME|خوب بخوابید و تا گفت‌وگوی بعد مراقب خودتان باشید.
+fa|BEDTIME|گفت‌وگو را اینجا می‌بندیم. خواب آرامی نصیبتان شود.
+fa|BEDTIME|شبی بی‌دغدغه و صبحی دلپذیر برایتان آرزو می‌کنم.
+fa|BEDTIME|شب خوش. به خودتان فرصت یک استراحت واقعی بدهید.
+fa|BEDTIME|وقت کنار گذاشتن این گفت‌وگوست. خواب‌های خوش ببینید.
+fa|BEDTIME|امیدوارم استراحت امشبتان راحت و نیروبخش باشد.
+fa|BEDTIME|آسوده بخوابید. فردا گفت‌وگوی خودش را خواهد داشت.
+fa|BEDTIME|شما را برای آرام گرفتن پیش از خواب تنها می‌گذارم.
+fa|BEDTIME|برای امشب خداحافظ. با توان تازه بیدار شوید.
+fa|STUDY|خوب است که برای درس وقت گذاشتید. از این وقفه لذت ببرید.
+fa|STUDY|این گفت‌وگوی درسی را می‌بندیم. به تمرکزتان استراحت بدهید.
+fa|STUDY|پیش از نوبت بعدی یادگیری، نفسی تازه کنید.
+fa|STUDY|کمی از مطالب فاصله بگیرید. فعلاً بدرود.
+fa|STUDY|امیدوارم جلسهٔ بعدی مطالعه برایتان روشن‌تر پیش برود.
+fa|STUDY|پرسش‌ها برای حالا کافی است. به ذهنتان فرصت بدهید.
+fa|STUDY|هر وقت آماده شدید به موضوع برگردید. مراقب خودتان باشید.
+fa|STUDY|از زمانی دور از کتاب‌ها لذت ببرید.
+fa|STUDY|یادگیری هم به مکث نیاز دارد. استراحت خوبی داشته باشید.
+fa|STUDY|پرسش‌ها را همین‌جا می‌گذاریم. وقفه‌ای سودمند داشته باشید.
+fa|WORK|شما را به پایان آرام روز کاری می‌سپارم.
+fa|WORK|خداحافظ. از زمانی بیرون از فضای کار لذت ببرید.
+fa|WORK|بحث کاری را در همین نقطه می‌بندیم. به سلامت.
+fa|WORK|امیدوارم گذر از کار به استراحت برایتان آسان باشد.
+fa|WORK|این گفت‌وگو را کنار بگذاریم. وقت آزادتان خوش بگذرد.
+fa|WORK|آرزو می‌کنم ادامهٔ روز فشار کمتری داشته باشد.
+fa|WORK|اینجا مکث می‌کنیم. با نگاهی تازه برگردید.
+fa|WORK|ممنون که این موضوع را با من بررسی کردید. بدرود.
+fa|WORK|پرسش کاری بعدی می‌تواند تا گفت‌وگویی دیگر صبر کند.
+fa|WORK|بسیار خوب. از وقتی که اکنون متعلق به خودتان است لذت ببرید.
+fa|COMPUTER|گفت‌وگوی رایانه را متوقف می‌کنیم. مراقب خودتان باشید.
+fa|COMPUTER|تا بعد. کنترل‌های رایانه همچنان در اختیار شماست.
+fa|COMPUTER|موضوع دسکتاپ را می‌توانیم در فرصتی دیگر دنبال کنیم.
+fa|COMPUTER|از این گفت‌وگو دربارهٔ رایانه کنار می‌روم.
+fa|COMPUTER|تا نوبت بعدی کار با صفحه‌کلید. روز خوش.
+fa|COMPUTER|اینجا جای مناسبی برای مکث در بحث رایانه است.
+fa|COMPUTER|هر زمان مناسب بود از صفحه فاصله بگیرید.
+fa|COMPUTER|پایان گفت‌وگو به معنای خاموش شدن رایانه نیست.
+fa|COMPUTER|وقتی برگشتید می‌توانیم کار دیگری از رایانه را بررسی کنیم.
+fa|COMPUTER|فعلاً بدرود. در صورت نیاز از کنترل‌های خود رایانه استفاده کنید.
+fa|REMINDER|پیش از خداحافظی، این هم اطلاعات تأییدشدهٔ یادآوری‌هایتان.
+fa|REMINDER|گفت‌وگو را با اطلاعات فعلی یادآوری‌ها پایان می‌دهم.
+fa|REMINDER|خداحافظ. جزئیات بعدی از موارد ذخیره‌شدهٔ شماست.
+fa|REMINDER|مراقب خودتان باشید. اطلاعات مرتبط با یادآوری‌های زمان‌بندی‌شده را می‌گویم.
+fa|REMINDER|یک نکتهٔ پایانی از برنامهٔ یادآوری‌ها، سپس بدرود.
+fa|REMINDER|با بررسی یادآوری‌هایی که اجازه داده‌اید تمام می‌کنیم.
+fa|REMINDER|تا بعد. این‌ها اطلاعات در دسترس دربارهٔ یادآوری‌هاست.
+fa|REMINDER|پیش از رفتن، نگاهی کوتاه به یادآوری‌هایتان داریم.
+fa|REMINDER|بدرود. تنها به اطلاعات ذخیره‌شدهٔ زیر اشاره می‌کنم.
+fa|REMINDER|در پایان، این هم زمینهٔ مجاز یادآوری‌هایتان.
+fa|CALENDAR|پیش از بدرود، اطلاعات تقویمی را که اجازه داده‌اید می‌گویم.
+fa|CALENDAR|با نکتهٔ مرتبط و تأییدشدهٔ تقویم تمام می‌کنم.
+fa|CALENDAR|مراقب خودتان باشید. جزئیات بعدی از تقویم شما آمده‌اند.
+fa|CALENDAR|یک نکتهٔ پایانی از برنامه، بر پایهٔ نتیجهٔ مجاز.
+fa|CALENDAR|با رویدادهایی پایان می‌دهیم که واقعاً از تقویم دریافت شدند.
+fa|CALENDAR|تا بعد. این هم اطلاعات برنامه که اکنون در دسترس است.
+fa|CALENDAR|پیش از خداحافظی، نگاهی کوتاه به تقویم تأییدشده داریم.
+fa|CALENDAR|خداحافظ. این نکتهٔ آخر را به رویدادهای خوانده‌شده محدود می‌کنم.
+fa|CALENDAR|هنگام پایان، نتیجهٔ مجاز تقویم را در اختیارتان می‌گذارم.
+fa|CALENDAR|پس از این اشارهٔ کوتاه و تأییدشده به برنامه، بدرود.
+fa|CALL|پیش از رفتن، این هم اطلاعات یادآور تماس ذخیره‌شدهٔ شما.
+fa|CALL|با اطلاعات یادآور تماسی که زمان‌بندی کرده‌اید پایان می‌دهم.
+fa|CALL|خداحافظ. یادآور تماس بعدی از یک مورد ذخیره‌شده است.
+fa|CALL|یک نکتهٔ آخر دربارهٔ یادآور تماس مجازتان دارم.
+fa|CALL|مراقب خودتان باشید. اطلاعات تأییدشدهٔ تماس را می‌گویم.
+fa|CALL|پس از این نکته دربارهٔ زمان تماس، می‌توانیم تمام کنیم.
+fa|CALL|تا بعد. این هم زمینهٔ تماسی که اکنون در دسترس است.
+fa|CALL|پیش از خداحافظی، یادآور تماس برنامه‌ریزی‌شده را مرور می‌کنیم.
+fa|CALL|شما را با این جزئیات یک یادآور تماس موجود ترک می‌کنم.
+fa|CALL|بدرود. این یادداشت آخر از برنامهٔ تماس ذخیره‌شده است.
+fa|THANKS|خواهش می‌کنم. تا گفت‌وگوی بعد مراقب خودتان باشید.
+fa|THANKS|از کمک کردن خوشحال شدم. روزتان خوش.
+fa|THANKS|باعث افتخار بود. گفت‌وگو را همین‌جا می‌گذاریم.
+fa|THANKS|من هم از شما سپاسگزارم. روز آسانی داشته باشید.
+fa|THANKS|خوشحالم که صحبت سودمند بود. تا فرصتی دیگر.
+fa|THANKS|خواهش می‌کنم. بیشتر از این معطلتان نمی‌کنم.
+fa|THANKS|همراهی شما مایهٔ خرسندی بود. اوقات خوشی داشته باشید.
+fa|THANKS|هیچ زحمتی نبود. فعلاً خداحافظ.
+fa|THANKS|ممنون که فرصت همکاری دادید. برایتان بهترین‌ها را می‌خواهم.
+fa|THANKS|هر زمان خودتان خواستید برگردید. به سلامت.
+fa|RELAXED|بسیار خوب. کمی به شما فضای آرام می‌دهم.
+fa|RELAXED|بگذاریم گفت‌وگو استراحت کند. سخت نگیرید.
+fa|RELAXED|از اندکی سکوت لذت ببرید. فعلاً خداحافظ.
+fa|RELAXED|برای حالا حرف دیگری ندارم. استراحت خوبی داشته باشید.
+fa|RELAXED|وقت یک مکث است. آسوده بنشینید.
+fa|RELAXED|فعلاً کنار می‌روم. از آرام‌تر گذشتن وقت لذت ببرید.
+fa|RELAXED|پرسش بعدی می‌تواند صبر کند. به خودتان برسید.
+fa|RELAXED|همین‌جا رها می‌کنیم. از فضای خودتان لذت ببرید.
+fa|RELAXED|خداحافظ. امیدوارم فرصتی دلپذیر برای آسودن پیدا کنید.
+fa|RELAXED|وقفه‌ای بی‌شتاب داشته باشید. بعداً صحبت می‌کنیم.
+fa|FOCUS|شما را برای تمرکز تنها می‌گذارم. بدرود.
+fa|FOCUS|امیدوارم زمان بعدی کارتان روشن و متمرکز بگذرد.
+fa|FOCUS|حرف را قطع می‌کنیم تا به موضوع خودتان توجه کنید.
+fa|FOCUS|هر قدر برای فکر کردن لازم دارید وقت بگذارید.
+fa|FOCUS|از اینجا مکثی آرام در گفت‌وگو آغاز می‌شود.
+fa|FOCUS|خداحافظ. با آهنگ خودتان به کار برگردید.
+fa|FOCUS|امیدوارم با کمی فاصله، گام بعدی روشن‌تر شود.
+fa|FOCUS|برای تمرکز شما جا باز می‌کنم. مراقب خودتان باشید.
+fa|FOCUS|بحث ما تا وقتی آماده باشید می‌تواند منتظر بماند.
+fa|FOCUS|زمانی مفید و دور از مزاحمت برایتان آرزو می‌کنم.
+fa|TRAVEL|سفر به خیر. وقتی مستقر شدید می‌توانیم صحبت کنیم.
+fa|TRAVEL|در راه مراقب خودتان باشید. فعلاً بدرود.
+fa|TRAVEL|امیدوارم مسیر بدون گرفتاری پیش برود.
+fa|TRAVEL|شما را برای حرکت معطل نمی‌کنم. ایمن سفر کنید.
+fa|TRAVEL|سفری راحت داشته باشید. تا گفت‌وگوی بعد.
+fa|TRAVEL|رسیدنی آسوده به هر مقصدی که دارید آرزو می‌کنم.
+fa|TRAVEL|خداحافظ. توجه کاملتان را به راه بدهید.
+fa|TRAVEL|برای رسیدن عجله نکنید. به سلامت.
+fa|TRAVEL|تا وقتی راه می‌افتید، این بحث را همین‌جا می‌گذاریم.
+fa|TRAVEL|بهترین آرزوها برای مسیر پیش رو. بدرود.
+fa|RETURN|اگر مناسب بود تا فردا. مراقب خودتان باشید.
+fa|RETURN|در فرصتی دیگر می‌بینمتان. با برگشتن می‌توانیم تازه شروع کنیم.
+fa|RETURN|اینجا مکث می‌کنیم و فردا را باز می‌گذاریم.
+fa|RETURN|فعلاً خداحافظ. هر زمان آماده بودید برگردید.
+fa|RETURN|پس از استراحتتان می‌توانیم گفت‌وگویی دیگر آغاز کنیم.
+fa|RETURN|تا صحبت بعدی، برای فاصلهٔ پیش رو آرزوی خوبی دارم.
+fa|RETURN|گفت‌وگوی بعد را برای برگشتن شما می‌گذارم.
+fa|RETURN|تا آن وقت به سلامت. اکنون کار دیگری لازم نیست.
+fa|RETURN|از زمان بین امروز و گفت‌وگوی بعد لذت ببرید.
+fa|RETURN|بدرود. هر وقت بخواهید بحث تازه‌ای آغاز می‌شود.

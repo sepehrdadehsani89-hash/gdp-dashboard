@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.ui.CoreFramePacerTest" tests="24" skipped="0" failures="0" errors="0" timestamp="2026-11-18T14:32:08" hostname="885caff30ac4" time="0.009">
+  <properties/>
+  <testcase name="callbackJitterDoesNotAccumulateHalfRateDrops" classname="com.jarvis.assistant.ui.CoreFramePacerTest" time="0.001"/>
+  <testcase name="slightlyFastSixtyHertzCallbacksDoNotHalveSixtyCap" classname="com.jarvis.assistant.ui.CoreFramePacerTest" time="0.0"/>
+  <testcase name="oneTwentyHertzCallbacksMaintainThirtyCap" classname="com.jarvis.assistant.ui.CoreFramePacerTest" time="0.001"/>
+  <testcase name="diagnosticIdleWindowsReportZeroRatherThanAStaleRate" classname="com.jarvis.assistant.ui.CoreFramePacerTest" time="0.001"/>
+  <testcase name="aRegressingClockRestartsInsteadOfWaitingForTheOldDeadline" classname="com.jarvis.assistant.ui.CoreFramePacerTest" time="0.0"/>
+  <testcase name="oneTwentyHertzCallbacksMaintainSixtyCap" classname="com.jarvis.assistant.ui.CoreFramePacerTest" time="0.0"/>
+  <testcase name="anIdenticalCallbackCannotBeCountedTwice" classname="com.jarvis.assistant.ui.CoreFramePacerTest" time="0.0"/>
+  <testcase name="aFreshVisibleSessionDoesNotRetainAHiddenDeadline" classname="com.jarvis.assistant.ui.CoreFramePacerTest" time="0.0"/>
+  <testcase name="slowerDisplayCannotInventAdditionalCallbacks" classname="com.jarvis.assistant.ui.CoreFramePacerTest" time="0.001"/>
+  <testcase name="slightlyFastSixtyHertzCallbacksDoNotReduceThirtyCapToTwenty" classname="com.jarvis.assistant.ui.CoreFramePacerTest" time="0.0"/>
+  <testcase name="callbackAtDeadlineIsAccepted" classname="com.jarvis.assistant.ui.CoreFramePacerTest" time="0.0"/>
+  <testcase name="aLongGapAcceptsOnlyOneUpdateAndNeverReplaysMissedFrames" classname="com.jarvis.assistant.ui.CoreFramePacerTest" time="0.0"/>
+  <testcase name="ninetyHertzCallbacksMaintainSixtyCap" classname="com.jarvis.assistant.ui.CoreFramePacerTest" time="0.001"/>
+  <testcase name="callbackBeforeDeadlineIsSkipped" classname="com.jarvis.assistant.ui.CoreFramePacerTest" time="0.0"/>
+  <testcase name="diagnosticRatesUseActualCounterDeltasAndElapsedTime" classname="com.jarvis.assistant.ui.CoreFramePacerTest" time="0.0"/>
+  <testcase name="diagnosticsDoNotInventRatesBeforeAnObservationWindow" classname="com.jarvis.assistant.ui.CoreFramePacerTest" time="0.0"/>
+  <testcase name="signedNanosecondRolloverDoesNotTrapThePacer" classname="com.jarvis.assistant.ui.CoreFramePacerTest" time="0.0"/>
+  <testcase name="oneFramePerSecondCapIsSupported" classname="com.jarvis.assistant.ui.CoreFramePacerTest" time="0.0"/>
+  <testcase name="saverCapRemainsLowWithoutAccumulatingTruncation" classname="com.jarvis.assistant.ui.CoreFramePacerTest" time="0.0"/>
+  <testcase name="firstCallbackIsAcceptedAtZero" classname="com.jarvis.assistant.ui.CoreFramePacerTest" time="0.0"/>
+  <testcase name="unsupportedRatesAboveTheSharedPolicyMaximumAreRejected" classname="com.jarvis.assistant.ui.CoreFramePacerTest" time="0.001"/>
+  <testcase name="zeroOrNegativeCapsAreRejected" classname="com.jarvis.assistant.ui.CoreFramePacerTest" time="0.001"/>
+  <testcase name="callbacksFasterThanTheBudgetRemainCapped" classname="com.jarvis.assistant.ui.CoreFramePacerTest" time="0.001"/>
+  <testcase name="diagnosticZeroOrBackwardsDurationDoesNotInventFps" classname="com.jarvis.assistant.ui.CoreFramePacerTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

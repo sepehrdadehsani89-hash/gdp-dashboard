@@ -18,12 +18,10 @@ enum class CompanionProgress { SENT, RUNNING }
 data class CompanionExecution(val state:String,val detail:String,val verified:Boolean,val errorCode:String?=null)
 
 class CompanionClient(private val vault:FeatureVault){
-    fun paired():DesktopPair? {
-        val raw=vault.read("desktop_companion")
-        if(raw==null){if(vault.contains("desktop_companion"))throw CompanionFailure("PRIVATE_PAIRING_UNAVAILABLE");return null}
-        return DesktopPair.parse(raw)
-    }
-    fun forget(){vault.remove("desktop_companion")}
+    val registry=DesktopRegistry(vault)
+    fun paired():DesktopPair?=registry.active()?.pair
+    fun forget(){registry.active()?.let{registry.remove(it.pair.deviceId,it.pair.sessionId)}}
+    private fun requireCurrent(pair:DesktopPair){val current=paired();if(current==null || !DesktopRegistry.reviewed(current,pair.deviceId,pair.sessionId))throw CompanionFailure("PAIRED_TARGET_CHANGED_REVIEW_AGAIN")}
     private fun transport(url:String,pin:String,onSent:()->Unit={}):OkHttpClient {
         CompanionPolicy.localUrl(url);require(pin.matches(Regex("[a-f0-9]{64}")))
         val trust=object:X509TrustManager {
@@ -58,6 +56,7 @@ class CompanionClient(private val vault:FeatureVault){
         })
     }
     suspend fun requestPair(i:DesktopInvitation,clientId:String,nonce:String):JSONObject {
+        val saved=registry.snapshot();check(saved.devices.size<20 || saved.devices.any{it.pair.deviceId==i.deviceId}){"TWENTY_COMPUTER_LIMIT"}
         require(System.currentTimeMillis()<i.expires)
         val proof=CompanionPolicy.mac(i.code.toByteArray(),"${i.pairingId}\n$clientId\n$nonce".toByteArray())
         return request(i.url,i.pin,"/v1/pair/request",JSONObject().put("pairing_id",i.pairingId).put("client_id",clientId).put("nonce",nonce).put("proof",proof))
@@ -68,10 +67,10 @@ class CompanionClient(private val vault:FeatureVault){
         val j=request(i.url,i.pin,"/v1/pair/complete",JSONObject().put("ticket",ticket).put("client_id",clientId).put("nonce",nonce).put("proof",proof))
         require(j.getInt("schema_version")==1 && j.getString("device_id")==i.deviceId && j.getString("client_id")==clientId)
         val p=DesktopPair.parse(DesktopPair(i.url,i.pin,i.deviceId,clientId,j.getString("session_id"),j.getString("token")).json())
-        withContext(Dispatchers.IO){vault.write("desktop_companion",p.json())};return p
+        withContext(Dispatchers.IO){registry.add(p)};return p
     }
-    suspend fun health():JSONObject {val p=paired() ?: throw CompanionFailure("NO_PAIRED_COMPUTER");return request(p.url,p.pin,"/v1/health",null).also{require(it.getInt("schema_version")==1 && it.getString("device_id")==p.deviceId && it.getString("service")=="jarvis-companion")}}
-    suspend fun revoke(){val p=paired() ?: return;request(p.url,p.pin,"/v1/revoke",JSONObject(),p.token);withContext(Dispatchers.IO){forget()}}
+    suspend fun health():JSONObject {val p=paired() ?: throw CompanionFailure("NO_PAIRED_COMPUTER");return request(p.url,p.pin,"/v1/health",null).also{requireCurrent(p);require(it.getInt("schema_version")==1 && it.getString("device_id")==p.deviceId && it.getString("service")=="jarvis-companion")}}
+    suspend fun revoke(){val p=paired() ?: return;request(p.url,p.pin,"/v1/revoke",JSONObject(),p.token);withContext(Dispatchers.IO){registry.remove(p.deviceId,p.sessionId)}}
     suspend fun capabilities():com.jarvis.assistant.finishpolish.mission.DesktopReadiness {
         val p=withContext(Dispatchers.IO){paired()} ?: throw CompanionFailure("NO_PAIRED_COMPUTER")
         val nonce=UUID.randomUUID().toString()
@@ -83,6 +82,7 @@ class CompanionClient(private val vault:FeatureVault){
      * receipt endpoint's STILL_PROCESSING response. Neither implies verified completion. */
     suspend fun executeObserved(r:DesktopRequest,expectedDeviceId:String?=null,expectedSessionId:String?=null,onProgress:(CompanionProgress)->Unit={}):CompanionExecution=coroutineScope {
         val p=withContext(Dispatchers.IO){paired()} ?: throw CompanionFailure("NO_PAIRED_COMPUTER")
+        if(expectedDeviceId==null && registry.snapshot().devices.size>1)throw CompanionFailure("REVIEW_TARGET_REQUIRED")
         if(expectedDeviceId!=null && (p.deviceId!=expectedDeviceId || expectedSessionId!=null && p.sessionId!=expectedSessionId))throw CompanionFailure("PAIRED_TARGET_CHANGED_REVIEW_AGAIN")
         val id=UUID.randomUUID().toString();val command=CompanionPolicy.command(p,r,id,System.currentTimeMillis());val hash=CompanionPolicy.sha(command.toString().toByteArray())
         try {

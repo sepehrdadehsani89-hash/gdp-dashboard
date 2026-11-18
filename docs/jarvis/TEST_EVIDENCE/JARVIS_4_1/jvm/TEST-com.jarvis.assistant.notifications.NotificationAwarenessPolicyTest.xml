@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.notifications.NotificationAwarenessPolicyTest" tests="27" skipped="0" failures="0" errors="0" timestamp="2026-11-18T14:32:07" hostname="885caff30ac4" time="0.01">
+  <properties/>
+  <testcase name="mostRecentActivePreviewsAreFirst" classname="com.jarvis.assistant.notifications.NotificationAwarenessPolicyTest" time="0.004"/>
+  <testcase name="paymentCardNumbersAreRedacted" classname="com.jarvis.assistant.notifications.NotificationAwarenessPolicyTest" time="0.0"/>
+  <testcase name="targetedRequestCannotReadAnotherAllowedApp" classname="com.jarvis.assistant.notifications.NotificationAwarenessPolicyTest" time="0.0"/>
+  <testcase name="generalMessageCatchupUsesActiveNotifications" classname="com.jarvis.assistant.notifications.NotificationAwarenessPolicyTest" time="0.0"/>
+  <testcase name="missingTitleDoesNotHideActualBody" classname="com.jarvis.assistant.notifications.NotificationAwarenessPolicyTest" time="0.0"/>
+  <testcase name="privateCodesAreRedacted" classname="com.jarvis.assistant.notifications.NotificationAwarenessPolicyTest" time="0.0"/>
+  <testcase name="readsAreBounded" classname="com.jarvis.assistant.notifications.NotificationAwarenessPolicyTest" time="0.001"/>
+  <testcase name="availableEmptySnapshotDoesNotClaimUnreadZero" classname="com.jarvis.assistant.notifications.NotificationAwarenessPolicyTest" time="0.001"/>
+  <testcase name="consentDoesNotExtendToOtherApps" classname="com.jarvis.assistant.notifications.NotificationAwarenessPolicyTest" time="0.0"/>
+  <testcase name="disconnectedListenerIsNotAnEmptyInbox" classname="com.jarvis.assistant.notifications.NotificationAwarenessPolicyTest" time="0.0"/>
+  <testcase name="spanishMessageCatchupIsAnExplicitRead" classname="com.jarvis.assistant.notifications.NotificationAwarenessPolicyTest" time="0.0"/>
+  <testcase name="negatedGeneralCatchupDoesNotRead" classname="com.jarvis.assistant.notifications.NotificationAwarenessPolicyTest" time="0.001"/>
+  <testcase name="allowedSourceIsRead" classname="com.jarvis.assistant.notifications.NotificationAwarenessPolicyTest" time="0.0"/>
+  <testcase name="ownNotificationsAreNeverSummarized" classname="com.jarvis.assistant.notifications.NotificationAwarenessPolicyTest" time="0.0"/>
+  <testcase name="negativeRequestIsNotMessageRead" classname="com.jarvis.assistant.notifications.NotificationAwarenessPolicyTest" time="0.0"/>
+  <testcase name="noSourceIsReadWithoutExplicitConsent" classname="com.jarvis.assistant.notifications.NotificationAwarenessPolicyTest" time="0.0"/>
+  <testcase name="longBodiesAndTitlesAreBounded" classname="com.jarvis.assistant.notifications.NotificationAwarenessPolicyTest" time="0.001"/>
+  <testcase name="diagnosticDoesNotLeakPreviews" classname="com.jarvis.assistant.notifications.NotificationAwarenessPolicyTest" time="0.0"/>
+  <testcase name="secretVisibilityIsRespected" classname="com.jarvis.assistant.notifications.NotificationAwarenessPolicyTest" time="0.001"/>
+  <testcase name="appLaunchDoesNotBecomeMessageRead" classname="com.jarvis.assistant.notifications.NotificationAwarenessPolicyTest" time="0.0"/>
+  <testcase name="questionAboutAccessDoesNotReadMessages" classname="com.jarvis.assistant.notifications.NotificationAwarenessPolicyTest" time="0.0"/>
+  <testcase name="groupedSummaryDoesNotDuplicateConversationPreviews" classname="com.jarvis.assistant.notifications.NotificationAwarenessPolicyTest" time="0.0"/>
+  <testcase name="availablePreviewCountIsNotTotalUnread" classname="com.jarvis.assistant.notifications.NotificationAwarenessPolicyTest" time="0.0"/>
+  <testcase name="blankEntriesDoNotBecomeMessages" classname="com.jarvis.assistant.notifications.NotificationAwarenessPolicyTest" time="0.0"/>
+  <testcase name="protectedBankAppsStayExcludedEvenIfConfigured" classname="com.jarvis.assistant.notifications.NotificationAwarenessPolicyTest" time="0.0"/>
+  <testcase name="sourceCommandIsDetectedPrecisely" classname="com.jarvis.assistant.notifications.NotificationAwarenessPolicyTest" time="0.0"/>
+  <testcase name="systemUIStaysExcluded" classname="com.jarvis.assistant.notifications.NotificationAwarenessPolicyTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

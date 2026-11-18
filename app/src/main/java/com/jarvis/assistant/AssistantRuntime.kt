@@ -75,6 +75,13 @@ import com.jarvis.assistant.phantom.*
 class AssistantRuntime(private val context: Context) {
     val store = JarvisStore(context)
     val features = com.jarvis.assistant.omnisystem.FeatureVault(context)
+    val googleConnections by lazy{com.jarvis.assistant.google.GoogleConnectionsStore(features)}
+    val googleAuthorization by lazy{com.jarvis.assistant.google.GoogleAuthorization(context,googleConnections)}
+    val googleClient by lazy{com.jarvis.assistant.google.GoogleServicesClient()}
+    val googleProjectIndex by lazy{com.jarvis.assistant.google.GoogleProjectIndex(features)}
+    val googleAssistant by lazy{com.jarvis.assistant.google.GoogleAssistant(context,googleConnections,googleAuthorization,googleClient,googleProjectIndex,tools.launches)}
+    fun googleLaunch(intent:Intent,label:String)=tools.launches.open(intent,label).detail
+    val lastApplicationLaunch get()=tools.launches.last
     val polishActions=com.jarvis.assistant.finishpolish.shared.PolishActionJournal()
     val learning by lazy{com.jarvis.assistant.finishpolish.learning.LearningStore(features)}
     val predictive by lazy{com.jarvis.assistant.finishpolish.predictive.PredictiveEngine(context,features)}
@@ -85,6 +92,7 @@ class AssistantRuntime(private val context: Context) {
     val aiCall=com.jarvis.assistant.call.AiCallController(SystemClock::elapsedRealtime)
     val pickupPreferences by lazy{com.jarvis.assistant.pickup.PickupPreferences(context)}
     private var languageHandoffSerial:Long?=null
+    val reminders by lazy{com.jarvis.assistant.reminders.ReminderManager(context,features,tools.launches)}
     val callMe by lazy{com.jarvis.assistant.checkin.CallMeStore(context,features)}
     private var activeCallMe:Triple<String,String,Long>?=null
     private var callMeFinished:(()->Unit)?=null
@@ -92,6 +100,7 @@ class AssistantRuntime(private val context: Context) {
     val customVoice by lazy{com.jarvis.assistant.voice.CustomVoice(features,greetingCache=com.jarvis.assistant.voice.PublicGreetingCache(File(context.cacheDir,"public-greetings")))}
 
     val deviceControl by lazy{com.jarvis.assistant.quantum.DeviceControl(context)}
+    val androidControls by lazy{com.jarvis.assistant.controls.AndroidControlManager(context,deviceControl,tools.launches)}
     val routines by lazy{com.jarvis.assistant.titan.Routines(features)}
     val contacts by lazy{com.jarvis.assistant.contacts.ContactShortcuts(context,features)}
     val locationAssistant by lazy{com.jarvis.assistant.titan.LocationAssistant(context,locations)}
@@ -192,7 +201,7 @@ class AssistantRuntime(private val context: Context) {
             if(requested!=sessionGeneration)return@launch
             if(!beginBrainManagement(owner))return@launch
             try {
-                val pair=when(choice){"chatgpt"->"openai" to com.jarvis.assistant.brain.ProviderCredentialMode.CHATGPT_PLAN;"openai api"->"openai" to com.jarvis.assistant.brain.ProviderCredentialMode.API_KEY;"claude"->"anthropic" to com.jarvis.assistant.brain.ProviderCredentialMode.API_KEY;"gemini"->"gemini" to com.jarvis.assistant.brain.ProviderCredentialMode.API_KEY;"local"->"local" to com.jarvis.assistant.brain.ProviderCredentialMode.LOCAL;else->error("Unsupported brain")}
+                val pair=when(choice){"chatgpt"->"openai" to com.jarvis.assistant.brain.ProviderCredentialMode.CHATGPT_PLAN;"openai api"->"openai" to com.jarvis.assistant.brain.ProviderCredentialMode.API_KEY;"claude"->"anthropic" to com.jarvis.assistant.brain.ProviderCredentialMode.API_KEY;"gemini"->"gemini" to com.jarvis.assistant.brain.ProviderCredentialMode.API_KEY;"perplexity"->"perplexity" to com.jarvis.assistant.brain.ProviderCredentialMode.API_KEY;"local"->"local" to com.jarvis.assistant.brain.ProviderCredentialMode.LOCAL;else->error("Unsupported brain")}
                 val model=if(pair.first=="local")brain.profile.id else brainManager.configuredModel(pair.first,pair.second) ?: error("Configure and test this provider in AI Brain Manager first.")
                 selectBrain(com.jarvis.assistant.brain.ProviderConfig(pair.first,model,pair.second))
                 deliver(AssistantReply("Your verified primary brain is now $choice.",allowCloudSpeech=true),language(),true,sessionGeneration)
@@ -211,6 +220,7 @@ class AssistantRuntime(private val context: Context) {
         }
     }
     val openAiAuth by lazy{com.jarvis.assistant.brain.auth.OpenAiAuthManager(features)}
+    private val providerReconnectGate=com.jarvis.assistant.brain.ProviderReconnectGate()
     val brainManager by lazy{com.jarvis.assistant.brain.BrainProviderManager(store,llm,
         planAccess={
             try{
@@ -219,8 +229,8 @@ class AssistantRuntime(private val context: Context) {
                 val after=openAiAuth.credentialDescriptor() ?: throw ProviderException("The ChatGPT connection changed. Sign in again.",com.jarvis.assistant.brain.ProviderFailureKind.AUTHENTICATION)
                 if(before!=after)throw ProviderException("The ChatGPT account or authorization changed. Test the selected account again.",com.jarvis.assistant.brain.ProviderFailureKind.NOT_VERIFIED)
                 com.jarvis.assistant.brain.ChatGptPlanAccess(bearer,after.accountId,after.scopes,after.revision)
-            }catch(e:com.jarvis.assistant.brain.auth.OpenAiAuthException){throw ProviderException(e.message ?: "ChatGPT authorization is unavailable.",com.jarvis.assistant.brain.ProviderFailureKind.AUTHORIZATION)}
-        },disconnectPlan={openAiAuth.disconnect();Unit},localRevision=::localBrainRevision,beforeChange=::prepareBrainChange)}
+            }catch(e:com.jarvis.assistant.brain.auth.OpenAiAuthException){throw ProviderException(e.message ?: "ChatGPT authorization is unavailable.",e.kind)}
+        },disconnectPlan={openAiAuth.disconnect();Unit},localRevision=::localBrainRevision,beforeChange=::prepareBrainChange,planMetadata={openAiAuth.credentialDescriptor()?.let{com.jarvis.assistant.brain.PlanConnectionIdentity(it.accountId,it.scopes,it.revision)}})}
     val brain by lazy { LocalBrain(context,neuralPreferences) }
     val neuralPreferences=com.jarvis.assistant.neural.NeuralPreferences(context)
     val knowledge=com.jarvis.assistant.neural.KnowledgeIndex(context)
@@ -409,6 +419,11 @@ class AssistantRuntime(private val context: Context) {
             }
         }
         scope.launch{voiceDelivery.state.collectLatest{delivery->mutableState.update{it.copy(voiceDelivery=delivery)}}}
+        scope.launch{com.jarvis.assistant.screen.VideoRecordingService.state.collectLatest{if(it.stage!=com.jarvis.assistant.screen.RecordingStage.IDLE)androidControls.observeRecording(it)}}
+        scope.launch{com.jarvis.assistant.rebirth.AppVisibility.state.collectLatest{visible->if(visible && !locked())restoreSelectedBrain()}}
+        runCatching{context.getSystemService(android.net.ConnectivityManager::class.java).registerDefaultNetworkCallback(object:android.net.ConnectivityManager.NetworkCallback(){
+            override fun onCapabilitiesChanged(network:android.net.Network,capabilities:android.net.NetworkCapabilities){if(capabilities.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_VALIDATED))scope.launch{if(com.jarvis.assistant.rebirth.AppVisibility.visible && !locked())restoreSelectedBrain()}}
+        })}
         scope.launch{while(isActive){delay(30_000);brainManager.expireStaleVerifications()}}
         scope.launch{kotlinx.coroutines.flow.combine(brainManager.connections,store.settings){connections,_->val config=brainManager.currentConfig();connections[config.id]?.let{c->c.config==config && c.status==com.jarvis.assistant.brain.ProviderConnectionStatus.VERIFIED}==true}.collectLatest{verified->mutableState.update{it.copy(selectedBrainVerified=verified)}}}
         scope.launch { store.messages.collectLatest { messages -> mutableState.update { it.copy(messages = messages) } } }
@@ -605,15 +620,42 @@ class AssistantRuntime(private val context: Context) {
     /** Legacy microphone interruption callbacks cannot cancel playback. */
     fun interruptSpokenReply(expected:Long)=Unit
 
-    fun finishConversation(voiced:Boolean=false){
-        cancelSession();pauseWake();cancelAuthorization(false)
+    private val conversationExit=com.jarvis.assistant.farewell.ConversationExitGate()
+    private var farewellCatalog:com.jarvis.assistant.farewell.FarewellCatalog?=null
+    fun finishConversation(voiced:Boolean=false,input:String=""){
+        conversationExit.finish()
+        cancelSession();pauseWake();stopWake();cancelAuthorization(false)
         clearAttachmentSelection(false);clearTemporaryConversation();tools.infinity.clearContext();clearSpeakerSuggestion()
-        mutableState.update{it.copy(phase=AssistantPhase.READY,voiceInteraction=false,error=null,pendingAction=null)}
+        val expected=sessionGeneration
+        val preferences=com.jarvis.assistant.titan.VoicePreferences(context)
+        val lang=language()
+        mutableState.update{it.copy(phase=AssistantPhase.READY,voiceInteraction=false,error=null,pendingAction=null,voiceWindowDeadline=0,followUpArming=false)}
         visuals.dismiss()
-        if(voiced){
-            val line=language().choose("Of course, sir. The live conversation is cleared.","Por supuesto, señor. La conversación temporal está borrada.","حتماً. گفت‌وگوی موقت پاک شد.")
-            speak(line,language(),allowCloudSpeech=true,completion={clearTemporaryConversation();visuals.dismiss()},failure={clearTemporaryConversation()},privateSpeech=false,publicOnly=true)
-        }else resumeWake()
+        if(!voiced)return
+        session=scope.launch{
+            var count=0;var checkIns=0;var calendarFact:String?=null
+            if(preferences.farewellContext && !locked()){
+                count=withContext(Dispatchers.IO){runCatching{reminders.store.upcoming(System.currentTimeMillis()+86_400_000).size}.getOrDefault(0)}
+                checkIns=withContext(Dispatchers.IO){runCatching{val now=System.currentTimeMillis();callMe.reload().count{it.status=="SCHEDULED" && it.at in now..now+86_400_000}}.getOrDefault(0)}
+                calendarFact=phone.farewellCalendarTomorrow(lang)
+            }
+            if(expected!=sessionGeneration)return@launch
+            val catalog=withContext(Dispatchers.IO){farewellCatalog ?: runCatching{context.assets.open("farewells/catalog.tsv").bufferedReader().use{com.jarvis.assistant.farewell.FarewellCatalog.parse(it.readText())}}.getOrNull()?.also{farewellCatalog=it}}
+            val detectedCategory=com.jarvis.assistant.farewell.FarewellCatalog.category(input,java.time.LocalTime.now().hour,reminders=count>0,calendar=calendarFact!=null,calls=checkIns>0)
+            val category=if(count==0 && checkIns==0 && calendarFact==null && preferences.farewellStyle!="AUTO")com.jarvis.assistant.farewell.FarewellCategory.valueOf(preferences.farewellStyle)else detectedCategory
+            val line=catalog?.choose(lang,category,preferences.courtesy) ?: lang.choose("Goodbye. Active listening is stopping.","Hasta luego. La escucha activa se detendrá.","خداحافظ. شنیدن فعال متوقف می‌شود.")
+            val contextLine=if(!locked())buildString{
+                if(count>0)append(lang.choose(" You have $count scheduled Jarvis reminder(s) in the next24 hours; delivery is approximate."," Tienes $count recordatorio(s) de Jarvis en las próximas24 horas; entrega aproximada."," در۲۴ ساعت آینده $count یادآوری ذخیره‌شده دارید؛ زمان اعلان تقریبی است."))
+                if(checkIns>0)append(lang.choose(" You have $checkIns scheduled Jarvis check-in invitation(s) in the next24 hours. These are not telephone calls."," Tienes $checkIns invitación(es) de Jarvis en las próximas24 horas. No son llamadas telefónicas."," در۲۴ ساعت آینده $checkIns دعوت گفت‌وگوی جارویس برنامه‌ریزی شده دارید؛ این تماس تلفنی نیست."))
+                calendarFact?.let{append("\n").append(it)}
+            }else ""
+            if(expected!=sessionGeneration)return@launch
+            val finish={if(expected==sessionGeneration){cancelSession();stopWake();clearTemporaryConversation();visuals.dismiss();mutableState.update{it.copy(phase=AssistantPhase.READY,voiceInteraction=false,voiceWindowDeadline=0,followUpArming=false)}}}
+            mutableState.update{it.copy(liveReply=line+contextLine,phase=AssistantPhase.THINKING)}
+            // Contextual facts use the existing separate private-speech consent. Failure also closes capture.
+            speak(line+contextLine,lang,expected,allowCloudSpeech=contextLine.isBlank(),resumeListening=false,followUpOnDone=false,
+                completion=finish,failure={finish()},privateSpeech=contextLine.isNotBlank(),publicOnly=contextLine.isBlank(),allowPlaybackControls=false)
+        }
     }
 
     suspend fun playEnrollmentPrompt(owner:Any,seconds:Int){
@@ -735,6 +777,17 @@ class AssistantRuntime(private val context: Context) {
         }
     }
 
+    private fun notificationAwareness(text:String):AssistantReply? {
+        val policy=com.jarvis.assistant.notifications.NotificationAwarenessPolicy
+        val normalized=com.jarvis.assistant.neural.AppMatching.normalize(text)
+        if(normalized in setOf("open notification awareness","open notification sources"))return AssistantReply(tools.launches.open(Intent(context,com.jarvis.assistant.notifications.NotificationAwarenessActivity::class.java),"Notification Awareness").detail)
+        if(!policy.request(text))return null
+        val source=policy.source(text)
+        val result=com.jarvis.assistant.tools.JarvisNotificationService.read(context,source)
+        val setup=if(result.status in setOf(com.jarvis.assistant.notifications.NotificationReadStatus.SOURCE_CONSENT_REQUIRED,com.jarvis.assistant.notifications.NotificationReadStatus.PERMISSION_REQUIRED))" "+tools.launches.open(Intent(context,com.jarvis.assistant.notifications.NotificationAwarenessActivity::class.java),"Notification Awareness").detail else ""
+        return AssistantReply(result.message+setup)
+    }
+
     suspend fun listGeminiModels(key: String): List<String> {
         if (locked()) throw ProviderException(unlockMessage())
         val job = currentCoroutineContext()[Job]
@@ -767,7 +820,7 @@ class AssistantRuntime(private val context: Context) {
         speak(sample.take(240), language(), allowCloudSpeech = true,publicOnly=true)
     }
 
-    fun listen(){phantomOverlay.reveal();listenAttempt(0)}
+    fun listen(){conversationExit.explicitStart();phantomOverlay.reveal();listenAttempt(0)}
     private fun listenAttempt(attempt:Int,preserveError:Boolean=false) {
         if(voiceSession.blocksRecognition())return
         if(cameraOwner!=null || com.jarvis.assistant.security.SystemCredentialPrivacy.pending(context))return
@@ -837,6 +890,16 @@ class AssistantRuntime(private val context: Context) {
             withContext(Dispatchers.IO){store.setApiKey(config.provider,validatedKey)}
         }
         brainManager.saveConfiguredModel(config)
+    }
+    private suspend fun restoreSelectedBrain(){
+        val config=brainManager.currentConfig()
+        if(config.mode==com.jarvis.assistant.brain.ProviderCredentialMode.LOCAL)return
+        val revision=if(config.mode==com.jarvis.assistant.brain.ProviderCredentialMode.CHATGPT_PLAN)openAiAuth.credentialDescriptor()?.let{it.accountId+":"+it.revision}.orEmpty() else store.getApiKeyRevision(config.provider).toString()
+        val key="${config.id}:${config.model}:$revision"
+        if(!providerReconnectGate.acquire(key))return
+        try{val result=brainManager.reconnect(config);providerReconnectGate.finish(key,result.failure)}
+        catch(e:CancellationException){providerReconnectGate.finish(key,com.jarvis.assistant.brain.ProviderFailureKind.CANCELLED);throw e}
+        catch(_:Exception){providerReconnectGate.finish(key,com.jarvis.assistant.brain.ProviderFailureKind.UNKNOWN)}
     }
     suspend fun brainApiModels(provider:String,key:String)=llm.availableApiModels(provider,key,language())
     suspend fun chatGptModels():List<com.jarvis.assistant.data.ChatGptPlanModel>{
@@ -1120,7 +1183,7 @@ class AssistantRuntime(private val context: Context) {
         if(callCommand==com.jarvis.assistant.call.AiCallCommand.START){requestAiCall(preserveFocus=voiced);return}
         if(callCommand==com.jarvis.assistant.call.AiCallCommand.ANSWER){openAiCall(aiCall.state.value.id,true);return}
         LanguageRules.languageRequest(text)?.let{switchSpokenLanguage(it,voiced);return}
-        if(com.jarvis.assistant.rebirth.ConversationCompletionPolicy.matches(text)){if(aiCall.state.value.active)endAiCall(aiCall.state.value.id,"CONVERSATION_FINISHED")else finishConversation(voiced);return}
+        if(com.jarvis.assistant.rebirth.ConversationCompletionPolicy.matches(text)){if(aiCall.state.value.active)endAiCall(aiCall.state.value.id,"CONVERSATION_FINISHED")else finishConversation(voiced,text);return}
         if(com.jarvis.assistant.checkin.CallMePolicy.isRequest(text)){
             if(locked()){lockedRequestDenied(voiced,false);return}
             reportNative(tools.launches.open(Intent(context,com.jarvis.assistant.checkin.CallMeActivity::class.java).putExtra("request",text),"editable Jarvis voice check-in date/time").detail,voiced,text);return
@@ -1151,6 +1214,11 @@ class AssistantRuntime(private val context: Context) {
             try{learning.match(text)?.let{recipe->runLearnedRecipe(recipe.id,voiced);return}}catch(_:Exception){polishActions.record("learning.store","FAILED","PRIVATE_STORE_UNAVAILABLE")}
         }
         com.jarvis.assistant.voice.LocalKnowledge.answer(text,language())?.let{answer->reportNative(answer,voiced,text);return}
+        com.jarvis.assistant.companion.DesktopRegistry.selectionCommand(text)?.let{query->
+            if(locked()){lockedRequestDenied(voiced,false);return}
+            val message=try{mission.cancel();val selected=companion.registry.select(query);"Selected computer: ${selected.label}. No remote command was executed. Each action still needs approval."}catch(_:Exception){"That computer is not uniquely available. Open Paired Computers and choose an approved target; no command was sent."}
+            reportNative(message,voiced,text);return
+        }
         com.jarvis.assistant.companion.CompanionPolicy.parse(text)?.let{request->
             if(locked()){lockedRequestDenied(voiced,false);return}
             cancelSession(preserveCapture=voiced);pauseWake();privateTurn=false;lastRequestWasVoice=voiced;lastReplyLanguage=language()
@@ -1259,7 +1327,6 @@ class AssistantRuntime(private val context: Context) {
             submit("open $correction",voiced,recognitionAlternatives=recognitionAlternatives,ownerPermit=ownerPermit);return
         }
         if (LanguageRules.isStop(text)) { stopEverything(); return }
-        if(com.jarvis.assistant.rebirth.RemovedMailIntegration.matches(text)){reportNative("Gmail account integration is not included in this build. I can still open your installed Gmail app when the phone is unlocked.",voiced,text);return}
         val isLocked = locked()
         if (isLocked && com.jarvis.assistant.core.LockedChatPolicy.requiresUnlock(text)) {
             protect("Continue protected command after unlocking") { submit(text, voiced,ownerPermit=ownerPermit?.afterDeviceAuthentication(sessionGeneration,speakers.ownerRevision,SystemClock.elapsedRealtime())) }; lockedRequestDenied(voiced,false); return
@@ -1302,7 +1369,7 @@ class AssistantRuntime(private val context: Context) {
         session = scope.launch {
             try {
                 phantom.event(TraceEvent.AUTOCORRECT_STARTED)
-                val corrected=if(voiced && !isLocked && com.jarvis.assistant.neural.AppMatching.commandTarget(text)!=null && com.jarvis.assistant.omnisystem.ModuleRoute.fromUserInput(text)!=com.jarvis.assistant.omnisystem.HudModule.CAMERA)withContext(Dispatchers.IO){com.jarvis.assistant.rebirth.SemanticAutocorrector.correct(text,recognitionAlternatives,appRegistry.apps(),appRegistry.aliases())} else com.jarvis.assistant.rebirth.CorrectedRecognition(text,text)
+                val corrected=if(voiced && !isLocked && com.jarvis.assistant.controls.AndroidControlParser.parse(text)==null && com.jarvis.assistant.neural.AppMatching.commandTarget(text)!=null && com.jarvis.assistant.omnisystem.ModuleRoute.fromUserInput(text)!=com.jarvis.assistant.omnisystem.HudModule.CAMERA)withContext(Dispatchers.IO){com.jarvis.assistant.rebirth.SemanticAutocorrector.correct(text,recognitionAlternatives,appRegistry.apps(),appRegistry.aliases())} else com.jarvis.assistant.rebirth.CorrectedRecognition(text,text)
                 val text=corrected.understood
                 if(generation!=sessionGeneration)return@launch
                 mutableState.update{it.copy(recognition=corrected,transcript=text)}
@@ -1336,7 +1403,7 @@ class AssistantRuntime(private val context: Context) {
                         val social=com.jarvis.assistant.rebirth.RebirthFastCommands.socialReply(text,lang==AppLanguage.ES,state.value.speakerOwnerConfident)
                         if(social!=null)privateTurn=false
                         val resolvedApp=corrected.targetPackage?.let{pkg->val label=com.jarvis.assistant.neural.AppMatching.commandTarget(corrected.understood) ?: "selected app";AssistantReply(tools.launches.launchPackage(pkg,label).detail,confirmedEntity=label)}
-                        val local = clarification ?: spokenSettings.route(text) ?: spokenContactRoute(text,voiced) ?: social ?: resolvedApp ?: worldClock ?: fast?.let{key->tools.fastRoute(key,lang)?.let{reply->if(key=="what time is it")reply.copy(allowCloudSpeech=true) else reply}} ?: deviceControl.route(text,lang) ?: locationAssistant.route(text,lang) ?: (if(appTarget!=null && presentation==null)tools.requestApp(appTarget,lang) else null) ?: routines.route(text,lang,neural) ?: presentation ?: neural.route(text,lang) ?: weatherQuestion(text,lang) ?: phone.route(text, lang) ?: tools.route(text, lang)
+                        val local = clarification ?: googleAssistant.route(text) ?: notificationAwareness(text) ?: reminders.route(text) ?: spokenSettings.route(text) ?: spokenContactRoute(text,voiced) ?: social ?: resolvedApp ?: worldClock ?: fast?.let{key->tools.fastRoute(key,lang)?.let{reply->if(key=="what time is it")reply.copy(allowCloudSpeech=true) else reply}} ?: androidControls.route(text,lang,voiced) ?: deviceControl.route(text,lang) ?: locationAssistant.route(text,lang) ?: (if(appTarget!=null && presentation==null)tools.requestApp(appTarget,lang) else null) ?: routines.route(text,lang,neural) ?: presentation ?: neural.route(text,lang) ?: weatherQuestion(text,lang) ?: phone.route(text, lang) ?: tools.route(text, lang)
                         phantom.event(TraceEvent.TOOL_COMPLETED)
                         if (local != null) { if(local.allowCloudSpeech)privateTurn=false;clearScreenContext(); awaitScreenQuestion = false; local }
                         else generate(text, lang, uris, generation)
@@ -1624,7 +1691,9 @@ class AssistantRuntime(private val context: Context) {
                     val j=org.json.JSONObject(proposal.payload)
                     val r=if(j.has("query"))com.jarvis.assistant.companion.DesktopRequest(j.getString("query"))else com.jarvis.assistant.companion.DesktopRequest(null)
                     if(r.query!=null)require(r.query.length in 1..300 && r.query.none(Char::isISOControl))
-                    mission.execute(r,true).message
+                    val device=j.optString("target_device_id").takeIf{com.jarvis.assistant.companion.CompanionPolicy.uuid(it)} ?: throw com.jarvis.assistant.companion.CompanionFailure("REVIEW_TARGET_REQUIRED")
+                    val targetSession=j.optString("session_id").takeIf{com.jarvis.assistant.companion.CompanionPolicy.uuid(it)} ?: throw com.jarvis.assistant.companion.CompanionFailure("REVIEW_TARGET_REQUIRED")
+                    mission.execute(r,true,device,targetSession).message
                 }catch(e:CancellationException){throw e}catch(e:com.jarvis.assistant.companion.CompanionFailure){"Paired computer: ${e.code}. No verified completion is claimed."}catch(_:Exception){"The desktop receipt could not be verified. Check the computer; no completed result is claimed."}
                 if(generation==sessionGeneration)deliver(AssistantReply(result,allowCloudSpeech=true),lastReplyLanguage,lastRequestWasVoice,generation)
                 return@launch
@@ -1646,6 +1715,7 @@ class AssistantRuntime(private val context: Context) {
     }
 
     fun startWake() {
+        conversationExit.explicitStart()
         phantomOverlay.reveal()
         if(cameraOwner!=null)return
         if (locked()) { fail(unlockMessage()); return }
@@ -1685,6 +1755,7 @@ class AssistantRuntime(private val context: Context) {
     }
     private var speechCooldownJob:Job?=null
     private fun resumeWake(followUp: Boolean = false) {
+        if(conversationExit.blocked)return
         if(voiceSession.blocksRecognition()){
             val wait=voiceSession.cooldownRemaining(sessionGeneration)
             if(wait>0){
@@ -1912,6 +1983,10 @@ class AssistantRuntime(private val context: Context) {
         mutableState.update{it.copy(transcript="",liveReply="",moduleResponse="",confirmedEntity=null,recognition=null,activeTask="ASSISTANT")}
     }
     fun stopEverything() {
+        conversationExit.finish()
+        conversationExit.finish()
+        androidControls.cancelPending()
+        com.jarvis.assistant.screen.VideoRecordingService.requestStop(context)
         if(aiCall.state.value.active)endAiCall(aiCall.state.value.id,"STOPPED")
         clearAttachmentSelection(false);clearTemporaryConversation()
         locationAssistant.cancel()

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.hud.WeatherClientTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-11-18T14:32:06" hostname="885caff30ac4" time="0.135">
+  <properties/>
+  <testcase name="approximateChoiceSkipsGeocoding" classname="com.jarvis.assistant.hud.WeatherClientTest" time="0.024"/>
+  <testcase name="cancelledRequestsFinishWithoutPublishingWeather" classname="com.jarvis.assistant.hud.WeatherClientTest" time="0.006"/>
+  <testcase name="httpErrorsUnknownCitiesAndOversizedResponsesAreExplicit" classname="com.jarvis.assistant.hud.WeatherClientTest" time="0.056"/>
+  <testcase name="cityAndForecastRequestsCarryOnlyNeededFields" classname="com.jarvis.assistant.hud.WeatherClientTest" time="0.048"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

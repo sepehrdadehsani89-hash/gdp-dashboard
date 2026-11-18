@@ -1,0 +1,204 @@
+{
+  "kind": "ACTUAL_JVM_POLICY_AND_MOCK_HTTP",
+  "physical_device_tests_executed": 0,
+  "groups": [
+    {
+      "feature_group": "Provider restoration and reconnect",
+      "suites": [
+        "BrainProviderManagerTest",
+        "ProviderReconnectGateTest"
+      ],
+      "totals": {
+        "tests": 124,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "feature_group": "OAuth rotation and saved accounts",
+      "suites": [
+        "OpenAiAuthManagerTest"
+      ],
+      "totals": {
+        "tests": 70,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "feature_group": "Visible-app discovery",
+      "suites": [
+        "AppDiscoveryRepairTest"
+      ],
+      "totals": {
+        "tests": 21,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "feature_group": "Typed Android-control parsing",
+      "suites": [
+        "AndroidControlParserTest"
+      ],
+      "totals": {
+        "tests": 44,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "feature_group": "Recording ownership/finalization",
+      "suites": [
+        "RecordingPolicyTest"
+      ],
+      "totals": {
+        "tests": 22,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "feature_group": "Google connections",
+      "suites": [
+        "GoogleConnectionsStoreTest"
+      ],
+      "totals": {
+        "tests": 27,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "feature_group": "Google REST and source boundaries",
+      "suites": [
+        "GoogleServicesClientTest",
+        "GoogleNativeReadBoundaryTest",
+        "GoogleFileIdentityTest"
+      ],
+      "totals": {
+        "tests": 76,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "feature_group": "Explicit Google project snapshots",
+      "suites": [
+        "GoogleProjectIndexTest"
+      ],
+      "totals": {
+        "tests": 22,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "feature_group": "Notification source/privacy policy",
+      "suites": [
+        "NotificationAwarenessPolicyTest"
+      ],
+      "totals": {
+        "tests": 27,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "feature_group": "Owned reminders",
+      "suites": [
+        "ReminderPolicyTest",
+        "ReminderStoreTest"
+      ],
+      "totals": {
+        "tests": 52,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "feature_group": "Calendar tomorrow/DST",
+      "suites": [
+        "CalendarReadWindowTest"
+      ],
+      "totals": {
+        "tests": 22,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "feature_group": "Farewell catalogue and intent",
+      "suites": [
+        "FarewellCatalogTest",
+        "FarewellIntentTest"
+      ],
+      "totals": {
+        "tests": 74,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "feature_group": "Voice-editable farewell preferences",
+      "suites": [
+        "FarewellVoiceSettingsTest"
+      ],
+      "totals": {
+        "tests": 22,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "feature_group": "Command lab classification",
+      "suites": [
+        "CommandDiagnosticPolicyTest"
+      ],
+      "totals": {
+        "tests": 24,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "feature_group": "Twenty-computer registry",
+      "suites": [
+        "DesktopRegistryTest"
+      ],
+      "totals": {
+        "tests": 26,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "feature_group": "Perplexity HTTP/protocol",
+      "suites": [
+        "PerplexityAgentHttpTest",
+        "PerplexityAgentProtocolTest"
+      ],
+      "totals": {
+        "tests": 50,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    }
+  ]
+}

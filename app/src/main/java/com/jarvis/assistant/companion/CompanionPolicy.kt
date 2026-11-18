@@ -11,6 +11,7 @@ import javax.crypto.spec.SecretKeySpec
 data class DesktopRequest(val query:String?){val action get()=if(query==null)"desktop.open_app" else "desktop.search_web";fun parameters()=if(query==null)JSONObject().put("app","chrome")else JSONObject().put("browser","chrome").put("query",query)}
 data class DesktopInvitation(val url:String,val pin:String,val deviceId:String,val pairingId:String,val code:String,val expires:Long)
 data class DesktopPair(val url:String,val pin:String,val deviceId:String,val clientId:String,val sessionId:String,val token:String){
+    override fun toString()="DesktopPair(device=$deviceId, credentials=redacted)"
     fun json()=JSONObject().put("url",url).put("pin",pin).put("device",deviceId).put("client",clientId).put("session",sessionId).put("token",token).toString()
     companion object {fun parse(raw:String)=JSONObject(raw).let{j->DesktopPair(CompanionPolicy.localUrl(j.getString("url")),j.getString("pin"),j.getString("device"),j.getString("client"),j.getString("session"),j.getString("token")).also{p->require(p.pin.matches(Regex("[a-f0-9]{64}")) && listOf(p.deviceId,p.clientId,p.sessionId).all(CompanionPolicy::uuid) && p.token.matches(Regex("[A-Za-z0-9_-]{43}")))}}}
 }

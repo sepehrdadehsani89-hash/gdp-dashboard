@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.controls.AndroidControlParserTest" tests="44" skipped="0" failures="0" errors="0" timestamp="2026-11-18T14:31:53" hostname="885caff30ac4" time="0.021">
+  <properties/>
+  <testcase name="classifiesOnlyAnExplicitSupportedNativeCommand[Hey Jarvis, turn on flashlight]" classname="com.jarvis.assistant.controls.AndroidControlParserTest" time="0.003"/>
+  <testcase name="classifiesOnlyAnExplicitSupportedNativeCommand[enable the torch]" classname="com.jarvis.assistant.controls.AndroidControlParserTest" time="0.0"/>
+  <testcase name="classifiesOnlyAnExplicitSupportedNativeCommand[disable torch]" classname="com.jarvis.assistant.controls.AndroidControlParserTest" time="0.0"/>
+  <testcase name="classifiesOnlyAnExplicitSupportedNativeCommand[turn on Wi-Fi]" classname="com.jarvis.assistant.controls.AndroidControlParserTest" time="0.0"/>
+  <testcase name="classifiesOnlyAnExplicitSupportedNativeCommand[turn off wifi]" classname="com.jarvis.assistant.controls.AndroidControlParserTest" time="0.001"/>
+  <testcase name="classifiesOnlyAnExplicitSupportedNativeCommand[show Wi-Fi settings]" classname="com.jarvis.assistant.controls.AndroidControlParserTest" time="0.0"/>
+  <testcase name="classifiesOnlyAnExplicitSupportedNativeCommand[is wifi on]" classname="com.jarvis.assistant.controls.AndroidControlParserTest" time="0.0"/>
+  <testcase name="classifiesOnlyAnExplicitSupportedNativeCommand[turn on Bluetooth]" classname="com.jarvis.assistant.controls.AndroidControlParserTest" time="0.0"/>
+  <testcase name="classifiesOnlyAnExplicitSupportedNativeCommand[turn off Bluetooth]" classname="com.jarvis.assistant.controls.AndroidControlParserTest" time="0.0"/>
+  <testcase name="classifiesOnlyAnExplicitSupportedNativeCommand[open Bluetooth settings]" classname="com.jarvis.assistant.controls.AndroidControlParserTest" time="0.0"/>
+  <testcase name="classifiesOnlyAnExplicitSupportedNativeCommand[open hotspot settings]" classname="com.jarvis.assistant.controls.AndroidControlParserTest" time="0.0"/>
+  <testcase name="classifiesOnlyAnExplicitSupportedNativeCommand[help me turn on Airplane Mode]" classname="com.jarvis.assistant.controls.AndroidControlParserTest" time="0.001"/>
+  <testcase name="classifiesOnlyAnExplicitSupportedNativeCommand[lower the volume]" classname="com.jarvis.assistant.controls.AndroidControlParserTest" time="0.0"/>
+  <testcase name="classifiesOnlyAnExplicitSupportedNativeCommand[set media volume to 40 percent]" classname="com.jarvis.assistant.controls.AndroidControlParserTest" time="0.0"/>
+  <testcase name="classifiesOnlyAnExplicitSupportedNativeCommand[mute my phone]" classname="com.jarvis.assistant.controls.AndroidControlParserTest" time="0.0"/>
+  <testcase name="classifiesOnlyAnExplicitSupportedNativeCommand[mute media]" classname="com.jarvis.assistant.controls.AndroidControlParserTest" time="0.0"/>
+  <testcase name="classifiesOnlyAnExplicitSupportedNativeCommand[unmute media]" classname="com.jarvis.assistant.controls.AndroidControlParserTest" time="0.0"/>
+  <testcase name="classifiesOnlyAnExplicitSupportedNativeCommand[switch to vibrate]" classname="com.jarvis.assistant.controls.AndroidControlParserTest" time="0.0"/>
+  <testcase name="classifiesOnlyAnExplicitSupportedNativeCommand[enable DND]" classname="com.jarvis.assistant.controls.AndroidControlParserTest" time="0.0"/>
+  <testcase name="classifiesOnlyAnExplicitSupportedNativeCommand[turn off do not disturb]" classname="com.jarvis.assistant.controls.AndroidControlParserTest" time="0.001"/>
+  <testcase name="classifiesOnlyAnExplicitSupportedNativeCommand[lock my phone]" classname="com.jarvis.assistant.controls.AndroidControlParserTest" time="0.001"/>
+  <testcase name="classifiesOnlyAnExplicitSupportedNativeCommand[unlock my phone]" classname="com.jarvis.assistant.controls.AndroidControlParserTest" time="0.01"/>
+  <testcase name="classifiesOnlyAnExplicitSupportedNativeCommand[check battery]" classname="com.jarvis.assistant.controls.AndroidControlParserTest" time="0.0"/>
+  <testcase name="classifiesOnlyAnExplicitSupportedNativeCommand[open battery saver settings]" classname="com.jarvis.assistant.controls.AndroidControlParserTest" time="0.0"/>
+  <testcase name="classifiesOnlyAnExplicitSupportedNativeCommand[set Jarvis to portrait]" classname="com.jarvis.assistant.controls.AndroidControlParserTest" time="0.0"/>
+  <testcase name="classifiesOnlyAnExplicitSupportedNativeCommand[open dark mode settings]" classname="com.jarvis.assistant.controls.AndroidControlParserTest" time="0.0"/>
+  <testcase name="classifiesOnlyAnExplicitSupportedNativeCommand[open reading mode]" classname="com.jarvis.assistant.controls.AndroidControlParserTest" time="0.0"/>
+  <testcase name="classifiesOnlyAnExplicitSupportedNativeCommand[open Cast]" classname="com.jarvis.assistant.controls.AndroidControlParserTest" time="0.0"/>
+  <testcase name="classifiesOnlyAnExplicitSupportedNativeCommand[open Quick Share]" classname="com.jarvis.assistant.controls.AndroidControlParserTest" time="0.0"/>
+  <testcase name="classifiesOnlyAnExplicitSupportedNativeCommand[open focus mode]" classname="com.jarvis.assistant.controls.AndroidControlParserTest" time="0.0"/>
+  <testcase name="classifiesOnlyAnExplicitSupportedNativeCommand[open bedtime mode]" classname="com.jarvis.assistant.controls.AndroidControlParserTest" time="0.0"/>
+  <testcase name="classifiesOnlyAnExplicitSupportedNativeCommand[open wallet]" classname="com.jarvis.assistant.controls.AndroidControlParserTest" time="0.0"/>
+  <testcase name="classifiesOnlyAnExplicitSupportedNativeCommand[start screen recording]" classname="com.jarvis.assistant.controls.AndroidControlParserTest" time="0.0"/>
+  <testcase name="classifiesOnlyAnExplicitSupportedNativeCommand[stop screen recording]" classname="com.jarvis.assistant.controls.AndroidControlParserTest" time="0.0"/>
+  <testcase name="classifiesOnlyAnExplicitSupportedNativeCommand[open sound settings]" classname="com.jarvis.assistant.controls.AndroidControlParserTest" time="0.0"/>
+  <testcase name="classifiesOnlyAnExplicitSupportedNativeCommand[enciende la linterna]" classname="com.jarvis.assistant.controls.AndroidControlParserTest" time="0.001"/>
+  <testcase name="classifiesOnlyAnExplicitSupportedNativeCommand[چراغ قوه را خاموش کن]" classname="com.jarvis.assistant.controls.AndroidControlParserTest" time="0.0"/>
+  <testcase name="classifiesOnlyAnExplicitSupportedNativeCommand[how do I turn on flashlight]" classname="com.jarvis.assistant.controls.AndroidControlParserTest" time="0.0"/>
+  <testcase name="classifiesOnlyAnExplicitSupportedNativeCommand[turn on flashlight and open Gmail]" classname="com.jarvis.assistant.controls.AndroidControlParserTest" time="0.0"/>
+  <testcase name="classifiesOnlyAnExplicitSupportedNativeCommand[set media volume to 101 percent]" classname="com.jarvis.assistant.controls.AndroidControlParserTest" time="0.0"/>
+  <testcase name="classifiesOnlyAnExplicitSupportedNativeCommand[set volume to -5]" classname="com.jarvis.assistant.controls.AndroidControlParserTest" time="0.0"/>
+  <testcase name="classifiesOnlyAnExplicitSupportedNativeCommand[run rm -rf /]" classname="com.jarvis.assistant.controls.AndroidControlParserTest" time="0.001"/>
+  <testcase name="classifiesOnlyAnExplicitSupportedNativeCommand[what does mute my phone mean]" classname="com.jarvis.assistant.controls.AndroidControlParserTest" time="0.0"/>
+  <testcase name="classifiesOnlyAnExplicitSupportedNativeCommand[open WhatsApp]" classname="com.jarvis.assistant.controls.AndroidControlParserTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

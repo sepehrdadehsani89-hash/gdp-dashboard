@@ -34,6 +34,8 @@ class BrainProviderManagerTest {
         val keys=mutableMapOf("openai" to "private-api-key", "anthropic" to "private-claude-key", "gemini" to "private-google-key")
         val revisions=mutableMapOf("openai" to 1L)
         var access:ChatGptPlanAccess?=null
+        var credentialFailure:Exception?=null
+        var planReads=0
         var localRevision:String?="sha256-model-revision"
         var clock=1_000_000L
         var beforeChanges=0
@@ -51,8 +53,8 @@ class BrainProviderManagerTest {
         var receivedIdentity=true
         var receivedConcise=true
         var receivedLanguage=AppLanguage.EN
-        fun createManager()=BrainProviderManager(
-            repository=repository,settings={settings},apiKey={keys[it].orEmpty()},apiRevision={revisions[it] ?: 0L},planAccess={access},
+        fun createManager(metadata:(()->PlanConnectionIdentity?)?=null)=BrainProviderManager(
+            repository=repository,settings={settings},apiKey={keys[it].orEmpty()},apiRevision={revisions[it] ?: 0L},planAccess={planReads++;credentialFailure?.let{throw it};access},
             probe={config,credential,isPlan->probes+=Invocation(config,credential,isPlan);probeAction(config)},
             answerRequest={config,credential,isPlan,text,language,context,history,onChunk,screenshot,identity,concise->
                 answers+=Invocation(config,credential,isPlan);receivedText=text;receivedLanguage=language;receivedContext=context
@@ -62,7 +64,7 @@ class BrainProviderManagerTest {
             saveSelection={settings=settings.copy(provider=it.provider,model=it.model)},
             removeKey={provider->removalFailure?.let{throw it};keys.remove(provider);revisions[provider]=(revisions[provider] ?: 0L)+1},
             disconnectPlan={disconnects++;disconnectFailure?.let{throw it};access=null},
-            localRevision={localRevision},beforeChange={beforeChanges++},now={clock},
+            localRevision={localRevision},beforeChange={beforeChanges++},now={clock},planMetadata=metadata,
         )
         val manager=createManager()
         suspend fun answer()=manager.answer("Hello",AppLanguage.EN,"",emptyList(),{})
@@ -252,9 +254,9 @@ class BrainProviderManagerTest {
         try{f.manager.disconnect(plan);fail("Expected disconnect failure")}catch(_:IllegalStateException){ }
         assertNull(f.repository.proof(plan.id));assertEquals(ProviderConnectionStatus.FAILED,f.manager.connections.value[plan.id]?.status)
     }
-    @Test fun unverifiedSelectedPlanCannotRunOrdinaryAnswerOrFallback()=runBlocking<Unit>{
+    @Test fun selectedAuthorizedPlanCanVerifyAnExplicitQuestionWithoutAnotherProbe()=runBlocking<Unit>{
         val f=Fixture();f.authorize();f.repository.setMode("openai",ProviderCredentialMode.CHATGPT_PLAN);f.settings=f.settings.copy(model=plan.model)
-        expect(ProviderFailureKind.NOT_VERIFIED){f.answer()};assertTrue(f.answers.isEmpty());assertTrue(f.probes.isEmpty())
+        assertEquals("Actual response",f.answer());assertEquals(1,f.answers.size);assertTrue(f.answers.single().plan);assertTrue(f.probes.isEmpty())
     }
     @Test fun existingApiProviderStillAnswersAndRealAnswerCreatesProof()=runBlocking<Unit>{
         val f=Fixture();assertEquals("Actual response",f.answer())
@@ -382,5 +384,27 @@ class BrainProviderManagerTest {
     @Test fun expiryMaintenancePreservesFailureEvidence()=runBlocking<Unit>{val f=Fixture();f.probeAction={throw ProviderException("bad",ProviderFailureKind.CREDITS,429)};expect(ProviderFailureKind.CREDITS){f.manager.verify(api)};f.clock+=BrainProviderManager.PROOF_MAX_AGE_MS+1;f.manager.expireStaleVerifications();assertEquals(ProviderFailureKind.CREDITS,f.manager.connections.value[api.id]?.failure)}
     @Test fun clockRollbackExpiresCurrentGreenBadge()=runBlocking<Unit>{val f=Fixture();f.manager.verify(api);f.clock--;f.manager.expireStaleVerifications();assertEquals(ProviderConnectionStatus.EXPIRED,f.manager.connections.value[api.id]?.status)}
     @Test fun expiryMaintenancePreservesPreviousVerificationTime()=runBlocking<Unit>{val f=Fixture();f.manager.verify(api);val time=f.clock;f.clock+=BrainProviderManager.PROOF_MAX_AGE_MS+1;f.manager.expireStaleVerifications();assertEquals(time,f.manager.connections.value[api.id]?.verifiedAt)}
+
+    private fun Fixture.metadata()=access?.let{PlanConnectionIdentity(it.accountId,it.scopes,it.revision)}
+    @Test fun apiReconnectRestoresConfigurationWithoutInference()=runBlocking<Unit>{val f=Fixture();val before=f.settings;f.manager.reconnect(api);assertTrue(f.probes.isEmpty());assertTrue(f.answers.isEmpty());assertEquals(before,f.settings)}
+    @Test fun planReconnectDoesNotSpendAModelProbe()=runBlocking<Unit>{val f=Fixture();f.authorize();val m=f.createManager{f.metadata()};assertNotEquals(ProviderConnectionStatus.VERIFIED,m.reconnect(plan).status);assertTrue(f.probes.isEmpty());assertEquals(1,f.planReads)}
+    @Test fun uiMetadataRefreshNeverRenewsOAuthOrRunsInference()=runBlocking<Unit>{val f=Fixture();f.authorize();val m=f.createManager{f.metadata()};repeat(20){m.refresh(plan)};assertEquals(0,f.planReads);assertTrue(f.probes.isEmpty())}
+    @Test fun restartRestoresSavedGrantWithoutFreshLogin()=runBlocking<Unit>{val f=Fixture();f.authorize();f.manager.verify(plan);f.manager.select(plan);val m=f.createManager{f.metadata()};assertEquals(ProviderConnectionStatus.PREVIOUSLY_VERIFIED,m.reconnect(plan).status);assertEquals("account-one",f.access?.accountId)}
+    @Test fun expiredPlanProofDoesNotBlockAnExplicitQuestion()=runBlocking<Unit>{val f=Fixture();f.authorize();f.manager.verify(plan);f.manager.select(plan);f.clock+=BrainProviderManager.PROOF_MAX_AGE_MS+1;f.manager.expireStaleVerifications();assertEquals("Actual response",f.answer());assertEquals(1,f.probes.size)}
+    @Test fun restartedExpiredPlanCanAnswerThroughSavedGrant()=runBlocking<Unit>{val f=Fixture();f.authorize();f.manager.verify(plan);f.manager.select(plan);f.clock+=BrainProviderManager.PROOF_MAX_AGE_MS+1;val m=f.createManager{f.metadata()};assertEquals("Actual response",m.answer("Hello",AppLanguage.EN,"",emptyList(),{}));assertEquals(ProviderConnectionStatus.VERIFIED,m.connections.value[plan.id]?.status)}
+    @Test fun scopeLessGrantStillCannotReachInference()=runBlocking<Unit>{val f=Fixture();f.authorize(grants=setOf("openid"));f.repository.setMode("openai",ProviderCredentialMode.CHATGPT_PLAN);expect(ProviderFailureKind.AUTHORIZATION){f.answer()};assertTrue(f.answers.isEmpty())}
+    @Test fun identityOnlyReconnectDoesNotCreateGreenProof()=runBlocking<Unit>{val f=Fixture();f.authorize(grants=setOf("openid"));val m=f.createManager{f.metadata()};val r=m.reconnect(plan);assertEquals(ProviderFailureKind.AUTHORIZATION,r.failure);assertNull(f.repository.proof(plan.id))}
+    @Test fun missingApiKeyReconnectDoesNotReachNetworkAdapter()=runBlocking<Unit>{val f=Fixture();f.keys.clear();assertEquals(ProviderFailureKind.AUTHENTICATION,f.manager.reconnect(api).failure);assertTrue(f.probes.isEmpty())}
+    @Test fun signedOutPlanReconnectDoesNotUseSavedApiKey()=runBlocking<Unit>{val f=Fixture();val r=f.manager.reconnect(plan);assertEquals(ProviderFailureKind.AUTHENTICATION,r.failure);assertEquals("private-api-key",f.keys["openai"]);assertTrue(f.answers.isEmpty())}
+    @Test fun transientRenewalFailureRetainsAccountAndApiKey()=runBlocking<Unit>{val f=Fixture();f.authorize();f.credentialFailure=ProviderException("network",ProviderFailureKind.NETWORK);val m=f.createManager{f.metadata()};assertEquals(ProviderFailureKind.NETWORK,m.reconnect(plan).failure);assertNotNull(f.access);assertEquals("private-api-key",f.keys["openai"])}
+    @Test fun failedRestorationSurvivesUiMetadataRefresh()=runBlocking<Unit>{val f=Fixture();f.authorize();val m=f.createManager{f.metadata()};f.credentialFailure=ProviderException("network",ProviderFailureKind.NETWORK);m.reconnect(plan);assertEquals(ProviderFailureKind.NETWORK,m.refresh(plan).failure)}
+    @Test fun failedRestorationCannotRestorePriorGreenBadge()=runBlocking<Unit>{val f=Fixture();f.authorize();val m=f.createManager{f.metadata()};m.verify(plan);f.credentialFailure=ProviderException("network",ProviderFailureKind.NETWORK);m.reconnect(plan);assertEquals(ProviderConnectionStatus.FAILED,m.refresh(plan).status)}
+    @Test fun temporaryFailureRetainsHistoricalProofMetadata()=runBlocking<Unit>{val f=Fixture();f.authorize();val m=f.createManager{f.metadata()};m.verify(plan);f.credentialFailure=ProviderException("timeout",ProviderFailureKind.TIMEOUT);m.reconnect(plan);assertNotNull(f.repository.proof(plan.id))}
+    @Test fun manualReconnectAfterNetworkRecoveryDoesNotCreateNewInference()=runBlocking<Unit>{val f=Fixture();f.authorize();val m=f.createManager{f.metadata()};f.credentialFailure=ProviderException("network",ProviderFailureKind.NETWORK);m.reconnect(plan);f.credentialFailure=null;m.reconnect(plan);assertTrue(f.probes.isEmpty());assertTrue(f.answers.isEmpty())}
+    @Test fun explicitQuestionAfterFailureIsOnlySuccessfulInferenceProof()=runBlocking<Unit>{val f=Fixture();f.authorize();f.repository.setMode("openai",ProviderCredentialMode.CHATGPT_PLAN);val m=f.createManager{f.metadata()};m.reconnect(plan);m.answer("Hello",AppLanguage.EN,"",emptyList(),{});assertEquals(1,f.answers.size);assertEquals(ProviderConnectionStatus.VERIFIED,m.connections.value[plan.id]?.status)}
+    @Test fun expiredStatusRetainsLastVerifiedTimeAcrossRefreshes()=runBlocking<Unit>{val f=Fixture();f.manager.verify(api);val at=f.clock;f.clock+=BrainProviderManager.PROOF_MAX_AGE_MS+1;f.manager.expireStaleVerifications();f.manager.refresh(api);assertEquals(at,f.manager.refresh(api).verifiedAt)}
+    @Test fun manualReconnectDoesNotChangeSelectedProvider()=runBlocking<Unit>{val f=Fixture();val before=f.settings;f.manager.reconnect(ProviderConfig("gemini","gemini-test"));assertEquals(before,f.settings);assertEquals(0,f.beforeChanges)}
+    @Test fun restorationCancellationRetainsGrant()=runBlocking<Unit>{val f=Fixture();f.authorize();f.credentialFailure=CancellationException("cancel");try{f.manager.reconnect(plan);fail("Expected cancellation")}catch(_:CancellationException){};assertNotNull(f.access);assertTrue(f.probes.isEmpty())}
+    @Test fun initialSelectionStillRequiresSuccessfulInference()=runBlocking<Unit>{val f=Fixture();f.authorize();f.manager.reconnect(plan);expect(ProviderFailureKind.NOT_VERIFIED){f.manager.select(plan)};assertEquals(0,f.beforeChanges)}
 
 }

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.google.GoogleCommandParserTest" tests="24" skipped="0" failures="0" errors="0" timestamp="2026-11-18T14:32:03" hostname="885caff30ac4" time="0.001">
+  <properties/>
+  <testcase name="actualIntentAndServiceAreClassified[Catch me up on my emails.]" classname="com.jarvis.assistant.google.GoogleCommandParserTest" time="0.0"/>
+  <testcase name="actualIntentAndServiceAreClassified[Hey Jarvis, summarize my Gmail]" classname="com.jarvis.assistant.google.GoogleCommandParserTest" time="0.001"/>
+  <testcase name="actualIntentAndServiceAreClassified[How many unread emails do I have?]" classname="com.jarvis.assistant.google.GoogleCommandParserTest" time="0.0"/>
+  <testcase name="actualIntentAndServiceAreClassified[What's my most important email?]" classname="com.jarvis.assistant.google.GoogleCommandParserTest" time="0.0"/>
+  <testcase name="actualIntentAndServiceAreClassified[Did my teacher email me?]" classname="com.jarvis.assistant.google.GoogleCommandParserTest" time="0.0"/>
+  <testcase name="actualIntentAndServiceAreClassified[Summarize today's messages.]" classname="com.jarvis.assistant.google.GoogleCommandParserTest" time="0.0"/>
+  <testcase name="actualIntentAndServiceAreClassified[Show unread emails]" classname="com.jarvis.assistant.google.GoogleCommandParserTest" time="0.0"/>
+  <testcase name="actualIntentAndServiceAreClassified[What projects am I working on?]" classname="com.jarvis.assistant.google.GoogleCommandParserTest" time="0.0"/>
+  <testcase name="actualIntentAndServiceAreClassified[Find my latest project]" classname="com.jarvis.assistant.google.GoogleCommandParserTest" time="0.0"/>
+  <testcase name="actualIntentAndServiceAreClassified[Which files did I recently edit?]" classname="com.jarvis.assistant.google.GoogleCommandParserTest" time="0.0"/>
+  <testcase name="actualIntentAndServiceAreClassified[my Google calendar today]" classname="com.jarvis.assistant.google.GoogleCommandParserTest" time="0.0"/>
+  <testcase name="actualIntentAndServiceAreClassified[show my Google tasks]" classname="com.jarvis.assistant.google.GoogleCommandParserTest" time="0.0"/>
+  <testcase name="actualIntentAndServiceAreClassified[lee mi último correo]" classname="com.jarvis.assistant.google.GoogleCommandParserTest" time="0.0"/>
+  <testcase name="actualIntentAndServiceAreClassified[muestra correos sin leer]" classname="com.jarvis.assistant.google.GoogleCommandParserTest" time="0.0"/>
+  <testcase name="actualIntentAndServiceAreClassified[Open Gmail]" classname="com.jarvis.assistant.google.GoogleCommandParserTest" time="0.0"/>
+  <testcase name="actualIntentAndServiceAreClassified[Open Chrome]" classname="com.jarvis.assistant.google.GoogleCommandParserTest" time="0.0"/>
+  <testcase name="actualIntentAndServiceAreClassified[How do I check my email?]" classname="com.jarvis.assistant.google.GoogleCommandParserTest" time="0.0"/>
+  <testcase name="actualIntentAndServiceAreClassified[Do not check my email]" classname="com.jarvis.assistant.google.GoogleCommandParserTest" time="0.0"/>
+  <testcase name="actualIntentAndServiceAreClassified[Send my teacher an email]" classname="com.jarvis.assistant.google.GoogleCommandParserTest" time="0.0"/>
+  <testcase name="actualIntentAndServiceAreClassified[Delete all my mail]" classname="com.jarvis.assistant.google.GoogleCommandParserTest" time="0.0"/>
+  <testcase name="actualIntentAndServiceAreClassified[What is Google Drive?]" classname="com.jarvis.assistant.google.GoogleCommandParserTest" time="0.0"/>
+  <testcase name="actualIntentAndServiceAreClassified[What does unread mean?]" classname="com.jarvis.assistant.google.GoogleCommandParserTest" time="0.0"/>
+  <testcase name="actualIntentAndServiceAreClassified[Open my Google password manager]" classname="com.jarvis.assistant.google.GoogleCommandParserTest" time="0.0"/>
+  <testcase name="actualIntentAndServiceAreClassified[Search YouTube for music]" classname="com.jarvis.assistant.google.GoogleCommandParserTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

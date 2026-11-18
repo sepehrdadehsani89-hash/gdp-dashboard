@@ -1,0 +1,1 @@
+Initial Google main compilation exited 1 (1m37s). Conflicting local declarations title/item in GoogleServicesClient.document: an old extract block remained below the new return. Removed that unreachable block, corrected Sheets first request to spreadsheet metadata, and bounded recursive extraction depth. This is a real failed build, not a test success.

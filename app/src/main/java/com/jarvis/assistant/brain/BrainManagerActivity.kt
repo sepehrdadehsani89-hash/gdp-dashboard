@@ -68,7 +68,7 @@ class BrainManagerActivity:PrivateModuleActivity(){
     }
     private fun browser(url:String){
         val uri=Uri.parse(url)
-        require(uri.scheme=="https" && uri.userInfo==null && uri.host in setOf("auth.openai.com","platform.openai.com","developers.openai.com","console.anthropic.com","platform.claude.com","chatgpt.com","aistudio.google.com"))
+        require(uri.scheme=="https" && uri.userInfo==null && uri.host in setOf("auth.openai.com","platform.openai.com","developers.openai.com","console.anthropic.com","platform.claude.com","chatgpt.com","aistudio.google.com","www.perplexity.ai","perplexity.ai","console.perplexity.ai"))
         startActivity(Intent(Intent.ACTION_VIEW,uri).addCategory(Intent.CATEGORY_BROWSABLE))
     }
     private fun signIn(accountId:String?){
@@ -100,6 +100,7 @@ class BrainManagerActivity:PrivateModuleActivity(){
         super.onCreate(savedInstanceState);if(isFinishing)return
         planModel=runtime.brainManager.configuredModel("openai",ProviderCredentialMode.CHATGPT_PLAN).orEmpty()
         screen(words("ARTIFICIAL INTELLIGENCE · AI BRAIN MANAGER","INTELIGENCIA ARTIFICIAL · GESTOR DE IA","مدیریت مغز هوش مصنوعی")){
+            OutlinedButton(onClick={startActivity(Intent(this@BrainManagerActivity,com.jarvis.assistant.google.GoogleAccountsActivity::class.java))}){Text("AI & Connected Accounts · Google setup")}
             val auth by runtime.openAiAuth.state.collectAsStateWithLifecycle()
             val shared by runtime.state.collectAsStateWithLifecycle()
             Text(words("Choose a verified brain for the existing voice assistant. Speech capture, output voice and phone permissions remain separate.","Elige un cerebro verificado para el asistente de voz existente. La captura, la voz de salida y los permisos del teléfono son independientes.","مغز تأییدشده را انتخاب کنید. میکروفن و صدای خروجی مستقل هستند."))
@@ -117,6 +118,7 @@ class BrainManagerActivity:PrivateModuleActivity(){
             planCard()
             apiCard("openai","OpenAI API", "")
             apiCard("anthropic","Claude · Anthropic", "claude-sonnet-4-20250514")
+            apiCard("perplexity","Perplexity · Agent API", "",collapsed=true)
             localCard()
             HorizontalDivider()
             Text(words("Existing integration retained","Integración existente conservada","اتصال قبلی حفظ شده است"),style=MaterialTheme.typography.titleMedium)
@@ -148,6 +150,7 @@ class BrainManagerActivity:PrivateModuleActivity(){
             ProviderConnectionStatus.VERIFIED->words("AI Connected · actual response verified","IA conectada · respuesta real verificada","اتصال با پاسخ واقعی تأیید شد")
             ProviderConnectionStatus.PREVIOUSLY_VERIFIED->words("Previously verified · check current access","Verificada anteriormente · comprueba el acceso actual","قبلاً تأیید شده؛ اکنون آزمایش کنید")
             ProviderConnectionStatus.VERIFYING->words("Testing actual inference…","Probando inferencia real…","در حال آزمایش پاسخ واقعی…")
+            ProviderConnectionStatus.RECONNECTING->words("Restoring saved access · inference not checked","Restaurando acceso · inferencia sin comprobar","بازیابی دسترسی ذخیره‌شده؛ پاسخ آزمایش نشده است")
             ProviderConnectionStatus.FAILED->words("Connection failed","Conexión fallida","اتصال ناموفق")
             else->words("Authorization or connection test required","Se requiere autorización o prueba","ورود یا آزمایش لازم است")
         },color=if(verified)Color(0xFF22C55E) else if(connection?.status==ProviderConnectionStatus.FAILED)Color(0xFFFFB3B3) else MaterialTheme.colorScheme.onSurfaceVariant)
@@ -181,6 +184,8 @@ class BrainManagerActivity:PrivateModuleActivity(){
                 RadioButton(saved.accountId==auth.selectedAccountId,{authorize{runtime.openAiAuth.selectAccount(saved.accountId);planModels=emptyList();revision++}},enabled=!working && !auth.signingIn)
                 Text(saved.label)
             }}
+            auth.accounts.forEach{saved->OutlinedButton(enabled=!working && !auth.signingIn,onClick={authorize{manage{status=runtime.openAiAuth.removeSavedConnection(saved.accountId).message;planModels=emptyList()}}}){Text("Remove saved connection · ${saved.label}")}}
+            Text("Removing a connection deletes this app's saved access and attempts supported revocation. It does not delete a ChatGPT account or workspace.",style=MaterialTheme.typography.bodySmall)
             Text(words("Uses authorized ChatGPT plan usage. Subscription eligibility, workspace and limits are decided by OpenAI. No automatic paid API fallback or conversation-history import.","Usa la cuota autorizada del plan ChatGPT. OpenAI determina elegibilidad, espacio y límites. No cambia automáticamente a API de pago ni importa chats.","سهمیهٔ مجاز ChatGPT استفاده می‌شود؛ تاریخچه وارد نمی‌شود."))
             TextButton(onClick={browser("https://chatgpt.com/settings/usage")}){Text(words("Manage ChatGPT usage","Gestionar uso de ChatGPT","مدیریت سهمیهٔ ChatGPT"))}
             OutlinedButton(enabled=!working && !auth.signingIn && account?.planAuthorized==true,onClick={manage{loadPlanModels();status=words("Available account models loaded; inference is not yet verified.","Modelos cargados; la inferencia aún no está verificada.","فهرست مدل‌ها دریافت شد؛ پاسخ هنوز تأیید نشده است.")}}){Text(words("Load authorized model choices","Cargar modelos autorizados","دریافت مدل‌های مجاز"))}
@@ -189,6 +194,7 @@ class BrainManagerActivity:PrivateModuleActivity(){
             val connection=config?.let{statusLine(it)}
             FlowRow{
                 Button(enabled=config!=null && account?.planAuthorized==true && !working && !auth.signingIn,onClick={manage{result(runtime.brainManager.verify(config!!))}}){Text(words("Test Connection","Probar conexión","آزمایش اتصال"))}
+                OutlinedButton(enabled=config!=null && !working && !auth.signingIn,onClick={manage{status=runtime.brainManager.reconnect(config!!).message}}){Text("Reconnect saved session · no inference")}
                 Button(enabled=config!=null && connection?.status==ProviderConnectionStatus.VERIFIED && !working,onClick={authorize{manage{runtime.selectBrain(config!!);status=words("ChatGPT is the selected AI Brain.","ChatGPT es el cerebro seleccionado.","ChatGPT انتخاب شد.")}}}){Text(words("Set as Primary Brain","Elegir cerebro principal","انتخاب به‌عنوان مغز اصلی"))}
                 TextButton(onClick={details="Official OAuth public client + PKCE, signed identity validation, separate plan scopes, Responses API.\n"+(account?.email ?: "Email unavailable")+"\nGranted permissions: "+runtime.openAiAuth.credentialDescriptor()?.scopes.orEmpty().sorted().joinToString(" ")+"\nLast verified response: "+(connection?.verifiedAt?.let{java.util.Date(it).toString()} ?: "Not verified")}){Text(words("Connection Details","Detalles de conexión","جزئیات اتصال"))}
                 OutlinedButton(enabled=account?.signedIn==true && !working,onClick={authorize{manage{status=if(config!=null)runtime.disconnectBrain(config) else runtime.openAiAuth.disconnect().message;planModels=emptyList()}}}){Text(words("Disconnect ChatGPT","Desconectar ChatGPT","قطع اتصال ChatGPT"))}
@@ -215,6 +221,7 @@ class BrainManagerActivity:PrivateModuleActivity(){
         val config=runCatching{ProviderConfig(provider,model.trim(),ProviderCredentialMode.API_KEY).validated()}.getOrNull()
         val auth by runtime.openAiAuth.state.collectAsStateWithLifecycle()
         providerBox(title){
+            if(provider=="perplexity")Text("Official Agent API · separate API key and usage. The public model catalog does not verify your account. Choose an exact listed vendor/model, then run an inference test. No Perplexity subscription login, chat-history import, remote device tools or automatic provider fallback is claimed.")
             Text(if(provider=="anthropic")words("Claude requires supported API access. Signing into claude.ai does not authorize this Android integration. Review your API account and available credits.","Claude requiere acceso API. Iniciar sesión en claude.ai no autoriza esta integración Android. Revisa tu cuenta API y sus créditos.","Claude به دسترسی API نیاز دارد.") else words("Explicit API access is separate from account sign-in and ChatGPT plan usage. It uses the provider API project's quota or billing.","El acceso API es independiente del inicio y del plan ChatGPT. Usa la cuota o facturación del proyecto API.","دسترسی API و سهمیهٔ آن مستقل است."))
             TextButton(enabled=!working,onClick={expanded=!expanded}){Text(words("Configure API Access","Configurar acceso API","تنظیم API"))}
             if(expanded){
@@ -230,7 +237,7 @@ class BrainManagerActivity:PrivateModuleActivity(){
                 Text(words("Test & Save stores this key in Android Keystore-protected storage and sends one small diagnostic request that may consume API credits. Listing models is not a successful inference test.","Probar y guardar almacena la clave protegida por Android Keystore y envía una pequeña petición de prueba. Listar modelos no prueba la inferencia.","آزمایش، کلید را امن ذخیره و یک درخواست کوچک اجرا می‌کند."),style=MaterialTheme.typography.bodySmall)
                 FlowRow{
                     Button(enabled=config!=null && !working && !auth.signingIn && retryReady,onClick={val candidate=key;authorize{manage{runtime.configureBrainApi(config!!,candidate);key="";result(runtime.brainManager.verify(config))}}}){Text(words("Test / Retry & Save Connection","Probar / reintentar y guardar","آزمایش دوباره و ذخیرهٔ اتصال"))}
-                    OutlinedButton(enabled=!working,onClick={val candidate=key;manage{models=emptyList();catalogError=null;try{models=runtime.brainApiModels(provider,candidate)}catch(e:ProviderException){catalogError="Unable to retrieve available models. ${e.kind}: ${e.message}";throw e};status=words("Account model list loaded; test the chosen model before selecting it.","Lista cargada; prueba el modelo antes de elegirlo.","فهرست دریافت شد؛ مدل را آزمایش کنید.")}}){Text(words("Refresh Models / Retry","Actualizar modelos / reintentar","دریافت دوبارهٔ مدل‌ها"))}
+                    OutlinedButton(enabled=!working,onClick={val candidate=key;manage{models=emptyList();catalogError=null;try{models=runtime.brainApiModels(provider,candidate)}catch(e:ProviderException){catalogError="Unable to retrieve available models. ${e.kind}: ${e.message}";throw e};status=words(if(provider=="perplexity")"Public model catalog loaded; account access is not verified. Test the chosen model." else "Account model list loaded; test the chosen model before selecting it.","Lista cargada; prueba el modelo antes de elegirlo.","فهرست دریافت شد؛ مدل را آزمایش کنید.")}}){Text(words("Refresh Models / Retry","Actualizar modelos / reintentar","دریافت دوبارهٔ مدل‌ها"))}
                     Button(enabled=key.isBlank() && connection?.status==ProviderConnectionStatus.VERIFIED && !working,onClick={authorize{manage{runtime.selectBrain(config!!);status="$title · "+words("Primary Brain selected","Cerebro principal elegido","مغز اصلی انتخاب شد")}}}){Text(words("Set as Primary Brain","Elegir cerebro principal","انتخاب مغز اصلی"))}
                 }
                 catalogError?.let{Text(it,color=Color(0xFFFFB3B3))}
@@ -247,7 +254,8 @@ class BrainManagerActivity:PrivateModuleActivity(){
                     Text("This explicit action lists your account's models, tests one listed text model using API credits, and selects it only if actual inference succeeds. No alternate model is silently tried.",style=MaterialTheme.typography.bodySmall)
                 }
                 FlowRow{
-                    TextButton(onClick={browser(when(provider){"anthropic"->"https://console.anthropic.com/";"gemini"->"https://aistudio.google.com/";else->"https://platform.openai.com/"})}){Text(words("Open provider console","Abrir consola del proveedor","کنسول ارائه‌دهنده"))}
+                    TextButton(onClick={browser(when(provider){"anthropic"->"https://console.anthropic.com/";"gemini"->"https://aistudio.google.com/";"perplexity"->"https://console.perplexity.ai/project/keys";else->"https://platform.openai.com/"})}){Text(words("Open provider console","Abrir consola del proveedor","کنسول ارائه‌دهنده"))}
+                    OutlinedButton(enabled=config!=null && !working,onClick={manage{status=runtime.brainManager.reconnect(config!!).message}}){Text("Reconnect saved access")}
                     TextButton(onClick={details=if(config==null)"Enter an exact model ID or discover available models. Backend: Not required." else ProviderDiagnostics.describe(config,connection,runtime.store.getApiKey(provider).isNotBlank(),internet,System.currentTimeMillis())}){Text(words("Connection Details","Detalles de conexión","جزئیات اتصال"))}
                     OutlinedButton(enabled=config!=null && !working,onClick={authorize{manage{status=runtime.disconnectBrain(config!!);key=""}}}){Text(words("Disconnect API Access","Desconectar acceso API","قطع اتصال API"))}
                 }

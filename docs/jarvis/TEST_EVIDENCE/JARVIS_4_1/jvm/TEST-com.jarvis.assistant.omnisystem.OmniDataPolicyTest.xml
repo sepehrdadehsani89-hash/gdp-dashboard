@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.omnisystem.OmniDataPolicyTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2026-11-18T14:32:07" hostname="885caff30ac4" time="0.022">
+  <properties/>
+  <testcase name="speakerSimilarityIsMeasuredAndAmbiguityDoesNotSelectAnIdentity" classname="com.jarvis.assistant.omnisystem.OmniDataPolicyTest" time="0.002"/>
+  <testcase name="silenceAndShortBuffersDoNotProduceProfileSamples" classname="com.jarvis.assistant.omnisystem.OmniDataPolicyTest" time="0.002"/>
+  <testcase name="speakerStorageEnforcesSixProfilesOneOwnerFiveGuestsAndConsentMetadata" classname="com.jarvis.assistant.omnisystem.OmniDataPolicyTest" time="0.003"/>
+  <testcase name="invalidOrZeroEmbeddingsCannotBecomeTemplates" classname="com.jarvis.assistant.omnisystem.OmniDataPolicyTest" time="0.001"/>
+  <testcase name="mapUsesActualCoordinatesAndRejectsUnsupportedOrUntrustedInputs" classname="com.jarvis.assistant.omnisystem.OmniDataPolicyTest" time="0.001"/>
+  <testcase name="imagePartsAreActuallySentToEachSupportedProviderWithoutAddedHistory" classname="com.jarvis.assistant.omnisystem.OmniDataPolicyTest" time="0.0"/>
+  <testcase name="incompatibleModelTemplatesAreNotMatched" classname="com.jarvis.assistant.omnisystem.OmniDataPolicyTest" time="0.0"/>
+  <testcase name="sampleBufferIsBoundedChronologicalAndDisabledBuffersAreDiscarded" classname="com.jarvis.assistant.omnisystem.OmniDataPolicyTest" time="0.003"/>
+  <testcase name="imageRequestsAreBoundedAndPlainTextProtocolStaysPlainText" classname="com.jarvis.assistant.omnisystem.OmniDataPolicyTest" time="0.009"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

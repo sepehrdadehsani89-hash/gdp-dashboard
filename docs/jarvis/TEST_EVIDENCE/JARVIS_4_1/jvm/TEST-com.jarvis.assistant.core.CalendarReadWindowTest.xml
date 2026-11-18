@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.core.CalendarReadWindowTest" tests="22" skipped="0" failures="0" errors="0" timestamp="2026-11-18T14:31:53" hostname="885caff30ac4" time="0.055">
+  <properties/>
+  <testcase name="eventEndingAtStartIsExcluded" classname="com.jarvis.assistant.core.CalendarReadWindowTest" time="0.041"/>
+  <testcase name="todayEndsAtLocalMidnight" classname="com.jarvis.assistant.core.CalendarReadWindowTest" time="0.001"/>
+  <testcase name="todayStartsAtActualCurrentInstant" classname="com.jarvis.assistant.core.CalendarReadWindowTest" time="0.001"/>
+  <testcase name="weekUsesLocalCalendarDaysAcrossDST" classname="com.jarvis.assistant.core.CalendarReadWindowTest" time="0.0"/>
+  <testcase name="existingTodayRequestIsPreserved" classname="com.jarvis.assistant.core.CalendarReadWindowTest" time="0.002"/>
+  <testcase name="unsupportedWeekOffsetIsRejected" classname="com.jarvis.assistant.core.CalendarReadWindowTest" time="0.004"/>
+  <testcase name="spanishTomorrowRequestHasTheSameWindow" classname="com.jarvis.assistant.core.CalendarReadWindowTest" time="0.0"/>
+  <testcase name="eventSpanningWindowStartIsIncluded" classname="com.jarvis.assistant.core.CalendarReadWindowTest" time="0.0"/>
+  <testcase name="DSTSpringTomorrowCanHaveTwentyThreeHours" classname="com.jarvis.assistant.core.CalendarReadWindowTest" time="0.0"/>
+  <testcase name="persianTomorrowRequestHasTheSameWindow" classname="com.jarvis.assistant.core.CalendarReadWindowTest" time="0.0"/>
+  <testcase name="tomorrowIsNotNextTwentyFourHoursFromNow" classname="com.jarvis.assistant.core.CalendarReadWindowTest" time="0.0"/>
+  <testcase name="DSTAutumnTomorrowCanHaveTwentyFiveHours" classname="com.jarvis.assistant.core.CalendarReadWindowTest" time="0.0"/>
+  <testcase name="mutationDoesNotBecomeCalendarRead" classname="com.jarvis.assistant.core.CalendarReadWindowTest" time="0.0"/>
+  <testcase name="unsupportedWindowLengthIsRejected" classname="com.jarvis.assistant.core.CalendarReadWindowTest" time="0.001"/>
+  <testcase name="eventStartingAtWindowStartIsIncluded" classname="com.jarvis.assistant.core.CalendarReadWindowTest" time="0.0"/>
+  <testcase name="exactEndBoundaryDoesNotLeakIntoWindow" classname="com.jarvis.assistant.core.CalendarReadWindowTest" time="0.0"/>
+  <testcase name="tomorrowStartsAtNextLocalMidnight" classname="com.jarvis.assistant.core.CalendarReadWindowTest" time="0.0"/>
+  <testcase name="englishTomorrowRequestDoesNotMeanToday" classname="com.jarvis.assistant.core.CalendarReadWindowTest" time="0.0"/>
+  <testcase name="questionAboutTheWordTomorrowDoesNotQueryCalendar" classname="com.jarvis.assistant.core.CalendarReadWindowTest" time="0.0"/>
+  <testcase name="targetZoneIsRetainedForDisplay" classname="com.jarvis.assistant.core.CalendarReadWindowTest" time="0.001"/>
+  <testcase name="negativeDayOffsetIsRejected" classname="com.jarvis.assistant.core.CalendarReadWindowTest" time="0.0"/>
+  <testcase name="tomorrowEndsAtFollowingLocalMidnight" classname="com.jarvis.assistant.core.CalendarReadWindowTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

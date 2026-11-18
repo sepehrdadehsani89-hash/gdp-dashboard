@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.reminders.ReminderPolicyTest" tests="24" skipped="0" failures="0" errors="0" timestamp="2026-11-18T14:32:08" hostname="885caff30ac4" time="0.009">
+  <properties/>
+  <testcase name="midnightIsConvertedCorrectly" classname="com.jarvis.assistant.reminders.ReminderPolicyTest" time="0.0"/>
+  <testcase name="cancelTargetIsPreserved" classname="com.jarvis.assistant.reminders.ReminderPolicyTest" time="0.0"/>
+  <testcase name="localTimeInDSTGapNeedsAnExplicitChoice" classname="com.jarvis.assistant.reminders.ReminderPolicyTest" time="0.0"/>
+  <testcase name="vagueMorningDoesNotInventNineAM" classname="com.jarvis.assistant.reminders.ReminderPolicyTest" time="0.001"/>
+  <testcase name="hugeDelayIsRejected" classname="com.jarvis.assistant.reminders.ReminderPolicyTest" time="0.0"/>
+  <testcase name="negationDoesNotCreateReminder" classname="com.jarvis.assistant.reminders.ReminderPolicyTest" time="0.0"/>
+  <testcase name="invalidHoursAreRejected" classname="com.jarvis.assistant.reminders.ReminderPolicyTest" time="0.0"/>
+  <testcase name="controlCharactersCannotEnterReminderTitles" classname="com.jarvis.assistant.reminders.ReminderPolicyTest" time="0.0"/>
+  <testcase name="noonIsNotMidnight" classname="com.jarvis.assistant.reminders.ReminderPolicyTest" time="0.0"/>
+  <testcase name="pastTimeNeedsDetails" classname="com.jarvis.assistant.reminders.ReminderPolicyTest" time="0.001"/>
+  <testcase name="explicitListIsRecognized" classname="com.jarvis.assistant.reminders.ReminderPolicyTest" time="0.0"/>
+  <testcase name="repeatedTimeAtDSTEndNeedsAnExplicitChoice" classname="com.jarvis.assistant.reminders.ReminderPolicyTest" time="0.001"/>
+  <testcase name="relativeDaysAreExplicitElapsedTime" classname="com.jarvis.assistant.reminders.ReminderPolicyTest" time="0.0"/>
+  <testcase name="relativeMinutesHaveAnActualFutureInstant" classname="com.jarvis.assistant.reminders.ReminderPolicyTest" time="0.0"/>
+  <testcase name="relativeHoursAreBounded" classname="com.jarvis.assistant.reminders.ReminderPolicyTest" time="0.0"/>
+  <testcase name="titleCaseAndContentArePreserved" classname="com.jarvis.assistant.reminders.ReminderPolicyTest" time="0.0"/>
+  <testcase name="pmConvertsCorrectly" classname="com.jarvis.assistant.reminders.ReminderPolicyTest" time="0.0"/>
+  <testcase name="ambiguousHourWithoutMinutesNeedsDetails" classname="com.jarvis.assistant.reminders.ReminderPolicyTest" time="0.0"/>
+  <testcase name="zeroDelayIsRejected" classname="com.jarvis.assistant.reminders.ReminderPolicyTest" time="0.0"/>
+  <testcase name="invalidTwelveHourClockIsRejected" classname="com.jarvis.assistant.reminders.ReminderPolicyTest" time="0.0"/>
+  <testcase name="tomorrowUsesPhonesTimeZone" classname="com.jarvis.assistant.reminders.ReminderPolicyTest" time="0.0"/>
+  <testcase name="invalidMinutesAreRejected" classname="com.jarvis.assistant.reminders.ReminderPolicyTest" time="0.0"/>
+  <testcase name="missingReminderTextNeedsDetails" classname="com.jarvis.assistant.reminders.ReminderPolicyTest" time="0.0"/>
+  <testcase name="questionAboutRemindersDoesNotCreateOne" classname="com.jarvis.assistant.reminders.ReminderPolicyTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

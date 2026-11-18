@@ -1,0 +1,9 @@
+{
+  "url": "https://dl.google.com/dl/android/maven2/com/google/android/gms/play-services-auth/22.0.0/play-services-auth-22.0.0.aar",
+  "purpose": "Read official Google authorization AAR compatibility metadata before changing dependencies.",
+  "metadata": {
+    "META-INF/com/android/build/gradle/aar-metadata.properties": "aarFormatVersion=1.0\naarMetadataVersion=1.0\nminCompileSdk=1\nminCompileSdkExtension=0\nminAndroidGradlePluginVersion=1.0.0\n"
+  },
+  "bytes": 195356,
+  "downloaded": true
+}

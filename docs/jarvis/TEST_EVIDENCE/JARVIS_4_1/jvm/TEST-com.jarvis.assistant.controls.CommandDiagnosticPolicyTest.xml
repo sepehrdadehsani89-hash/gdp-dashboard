@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.controls.CommandDiagnosticPolicyTest" tests="24" skipped="0" failures="0" errors="0" timestamp="2026-11-18T14:31:53" hostname="885caff30ac4" time="0.048">
+  <properties/>
+  <testcase name="diagnosticReportsTheActualNativeRouteOrNormalPipeline[Turn on flashlight.]" classname="com.jarvis.assistant.controls.CommandDiagnosticPolicyTest" time="0.015"/>
+  <testcase name="diagnosticReportsTheActualNativeRouteOrNormalPipeline[Hey Jarvis, turn on my flashlight.]" classname="com.jarvis.assistant.controls.CommandDiagnosticPolicyTest" time="0.002"/>
+  <testcase name="diagnosticReportsTheActualNativeRouteOrNormalPipeline[Lock my phone.]" classname="com.jarvis.assistant.controls.CommandDiagnosticPolicyTest" time="0.001"/>
+  <testcase name="diagnosticReportsTheActualNativeRouteOrNormalPipeline[Unlock my phone.]" classname="com.jarvis.assistant.controls.CommandDiagnosticPolicyTest" time="0.001"/>
+  <testcase name="diagnosticReportsTheActualNativeRouteOrNormalPipeline[Open Gmail.]" classname="com.jarvis.assistant.controls.CommandDiagnosticPolicyTest" time="0.0"/>
+  <testcase name="diagnosticReportsTheActualNativeRouteOrNormalPipeline[Mute the volume.]" classname="com.jarvis.assistant.controls.CommandDiagnosticPolicyTest" time="0.001"/>
+  <testcase name="diagnosticReportsTheActualNativeRouteOrNormalPipeline[Check battery.]" classname="com.jarvis.assistant.controls.CommandDiagnosticPolicyTest" time="0.002"/>
+  <testcase name="diagnosticReportsTheActualNativeRouteOrNormalPipeline[Show Wi-Fi settings.]" classname="com.jarvis.assistant.controls.CommandDiagnosticPolicyTest" time="0.001"/>
+  <testcase name="diagnosticReportsTheActualNativeRouteOrNormalPipeline[Start screen recording.]" classname="com.jarvis.assistant.controls.CommandDiagnosticPolicyTest" time="0.0"/>
+  <testcase name="diagnosticReportsTheActualNativeRouteOrNormalPipeline[Stop screen recording.]" classname="com.jarvis.assistant.controls.CommandDiagnosticPolicyTest" time="0.003"/>
+  <testcase name="diagnosticReportsTheActualNativeRouteOrNormalPipeline[Remind me tomorrow.]" classname="com.jarvis.assistant.controls.CommandDiagnosticPolicyTest" time="0.001"/>
+  <testcase name="diagnosticReportsTheActualNativeRouteOrNormalPipeline[Remind me in 20 minutes to read.]" classname="com.jarvis.assistant.controls.CommandDiagnosticPolicyTest" time="0.001"/>
+  <testcase name="diagnosticReportsTheActualNativeRouteOrNormalPipeline[Catch me up on notifications.]" classname="com.jarvis.assistant.controls.CommandDiagnosticPolicyTest" time="0.0"/>
+  <testcase name="diagnosticReportsTheActualNativeRouteOrNormalPipeline[Catch me up on my messages.]" classname="com.jarvis.assistant.controls.CommandDiagnosticPolicyTest" time="0.001"/>
+  <testcase name="diagnosticReportsTheActualNativeRouteOrNormalPipeline[Check my email.]" classname="com.jarvis.assistant.controls.CommandDiagnosticPolicyTest" time="0.002"/>
+  <testcase name="diagnosticReportsTheActualNativeRouteOrNormalPipeline[Jarvis, summarize my Gmail.]" classname="com.jarvis.assistant.controls.CommandDiagnosticPolicyTest" time="0.0"/>
+  <testcase name="diagnosticReportsTheActualNativeRouteOrNormalPipeline[Open Chrome on my desktop.]" classname="com.jarvis.assistant.controls.CommandDiagnosticPolicyTest" time="0.0"/>
+  <testcase name="diagnosticReportsTheActualNativeRouteOrNormalPipeline[Goodbye, Jarvis.]" classname="com.jarvis.assistant.controls.CommandDiagnosticPolicyTest" time="0.0"/>
+  <testcase name="diagnosticReportsTheActualNativeRouteOrNormalPipeline[Thank you, Jarvis. I have to go.]" classname="com.jarvis.assistant.controls.CommandDiagnosticPolicyTest" time="0.0"/>
+  <testcase name="diagnosticReportsTheActualNativeRouteOrNormalPipeline[What does goodbye mean?]" classname="com.jarvis.assistant.controls.CommandDiagnosticPolicyTest" time="0.003"/>
+  <testcase name="diagnosticReportsTheActualNativeRouteOrNormalPipeline[set farewell style to formal]" classname="com.jarvis.assistant.controls.CommandDiagnosticPolicyTest" time="0.002"/>
+  <testcase name="diagnosticReportsTheActualNativeRouteOrNormalPipeline[save perplexity api key private-value]" classname="com.jarvis.assistant.controls.CommandDiagnosticPolicyTest" time="0.0"/>
+  <testcase name="diagnosticReportsTheActualNativeRouteOrNormalPipeline[What's on my calendar tomorrow?]" classname="com.jarvis.assistant.controls.CommandDiagnosticPolicyTest" time="0.002"/>
+  <testcase name="diagnosticReportsTheActualNativeRouteOrNormalPipeline[select computer Office]" classname="com.jarvis.assistant.controls.CommandDiagnosticPolicyTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

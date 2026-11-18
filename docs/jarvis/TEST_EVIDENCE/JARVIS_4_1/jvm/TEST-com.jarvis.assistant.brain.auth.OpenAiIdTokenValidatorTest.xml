@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.brain.auth.OpenAiIdTokenValidatorTest" tests="27" skipped="0" failures="0" errors="0" timestamp="2026-11-18T14:31:50" hostname="885caff30ac4" time="2.623">
+  <properties/>
+  <testcase name="rejectsNoneAndHmacAlgorithmsBeforeRequestingKeys" classname="com.jarvis.assistant.brain.auth.OpenAiIdTokenValidatorTest" time="0.787"/>
+  <testcase name="redirectsAreRejectedAndErrorBodiesNeverReachExceptions" classname="com.jarvis.assistant.brain.auth.OpenAiIdTokenValidatorTest" time="0.048"/>
+  <testcase name="unknownKeyRefreshesOnceAndAcceptsARotatedKey" classname="com.jarvis.assistant.brain.auth.OpenAiIdTokenValidatorTest" time="0.2"/>
+  <testcase name="rejectsNonSigningKeysAndWeakRsaKeys" classname="com.jarvis.assistant.brain.auth.OpenAiIdTokenValidatorTest" time="0.083"/>
+  <testcase name="ignoresTokenSuppliedKeyLocations" classname="com.jarvis.assistant.brain.auth.OpenAiIdTokenValidatorTest" time="0.017"/>
+  <testcase name="appliesFiveSecondsOfClockSkew" classname="com.jarvis.assistant.brain.auth.OpenAiIdTokenValidatorTest" time="0.15"/>
+  <testcase name="reusesCachedKeys" classname="com.jarvis.assistant.brain.auth.OpenAiIdTokenValidatorTest" time="0.023"/>
+  <testcase name="optionalSessionIdMustBeANonemptyString" classname="com.jarvis.assistant.brain.auth.OpenAiIdTokenValidatorTest" time="0.076"/>
+  <testcase name="rejectsFutureIssuedAtAndNotBeforeClaims" classname="com.jarvis.assistant.brain.auth.OpenAiIdTokenValidatorTest" time="0.03"/>
+  <testcase name="rejectsDuplicateSigningKeyIds" classname="com.jarvis.assistant.brain.auth.OpenAiIdTokenValidatorTest" time="0.025"/>
+  <testcase name="rejectsOversizedFixedLengthAndChunkedKeyResponses" classname="com.jarvis.assistant.brain.auth.OpenAiIdTokenValidatorTest" time="0.18"/>
+  <testcase name="rejectsMalformedCompactTokensWithoutNetwork" classname="com.jarvis.assistant.brain.auth.OpenAiIdTokenValidatorTest" time="0.028"/>
+  <testcase name="rejectsEveryMissingRequiredIdentityClaim" classname="com.jarvis.assistant.brain.auth.OpenAiIdTokenValidatorTest" time="0.148"/>
+  <testcase name="aPersistentlyUnknownKeyCannotCauseAnUnboundedFetchLoop" classname="com.jarvis.assistant.brain.auth.OpenAiIdTokenValidatorTest" time="0.079"/>
+  <testcase name="rejectsASignatureFromAnotherRsaKey" classname="com.jarvis.assistant.brain.auth.OpenAiIdTokenValidatorTest" time="0.01"/>
+  <testcase name="cancellationCancelsAStalledKeyRequest" classname="com.jarvis.assistant.brain.auth.OpenAiIdTokenValidatorTest" time="0.459"/>
+  <testcase name="rejectsStringAndFractionalNumericDates" classname="com.jarvis.assistant.brain.auth.OpenAiIdTokenValidatorTest" time="0.054"/>
+  <testcase name="acceptsAnAudienceArrayAndOptionalAuthorizedParty" classname="com.jarvis.assistant.brain.auth.OpenAiIdTokenValidatorTest" time="0.008"/>
+  <testcase name="cachedUnknownKeyRefreshesOnlyOnce" classname="com.jarvis.assistant.brain.auth.OpenAiIdTokenValidatorTest" time="0.068"/>
+  <testcase name="rejectsWrongIssuer" classname="com.jarvis.assistant.brain.auth.OpenAiIdTokenValidatorTest" time="0.01"/>
+  <testcase name="rejectsAMismatchedAuthorizedParty" classname="com.jarvis.assistant.brain.auth.OpenAiIdTokenValidatorTest" time="0.008"/>
+  <testcase name="optionalIdentityFieldsAreNullableButRejectMalformedValues" classname="com.jarvis.assistant.brain.auth.OpenAiIdTokenValidatorTest" time="0.012"/>
+  <testcase name="rejectsMissingMismatchedAndNonStringNonce" classname="com.jarvis.assistant.brain.auth.OpenAiIdTokenValidatorTest" time="0.035"/>
+  <testcase name="rejectsWrongAudienceAndMalformedAudienceArrays" classname="com.jarvis.assistant.brain.auth.OpenAiIdTokenValidatorTest" time="0.03"/>
+  <testcase name="verifiesSignatureIdentityAndStringAudienceWithoutSendingCredentials" classname="com.jarvis.assistant.brain.auth.OpenAiIdTokenValidatorTest" time="0.014"/>
+  <testcase name="rejectsExpiredTokens" classname="com.jarvis.assistant.brain.auth.OpenAiIdTokenValidatorTest" time="0.017"/>
+  <testcase name="rejectsCriticalExtensionsAndUnencodedPayloads" classname="com.jarvis.assistant.brain.auth.OpenAiIdTokenValidatorTest" time="0.01"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[Nov 18, 2026 9:31:52 AM okhttp3.mockwebserver.MockWebServer$SocketHandler handle
+WARNING: MockWebServer[32817] connection from /127.0.0.1 didn't make a request
+]]></system-err>
+</testsuite>

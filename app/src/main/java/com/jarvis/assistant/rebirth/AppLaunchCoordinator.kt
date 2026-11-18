@@ -31,8 +31,13 @@ class AppLaunchCoordinator(private val context:Context){
     @Volatile var last:LaunchResult?=null;private set
     fun launchPackage(pkg:String,label:String):LaunchResult {
         if(ToolPolicy.protectedPackage(pkg))return result(LaunchStatus.PROTECTED,"Open this protected app yourself.",pkg)
-        val intent=context.packageManager.getLaunchIntentForPackage(pkg)
-            ?: return result(LaunchStatus.LAUNCH_INTENT_MISSING,"Android did not expose a launch intent. The app may be unavailable or hidden by package visibility. Check the saved alias.",pkg)
+        val pm=context.packageManager
+        val info=runCatching{pm.getApplicationInfo(pkg,0)}.getOrNull()
+            ?: return result(LaunchStatus.NOT_AVAILABLE_OR_VISIBLE,"Android cannot find this app in the current profile. It may be uninstalled, hidden, or unavailable to Jarvis.",pkg)
+        if(!info.enabled)return result(LaunchStatus.NOT_AVAILABLE_OR_VISIBLE,"This application is disabled in Android. Enable it in App settings before asking Jarvis to open it.",pkg)
+        val intent=pm.getLaunchIntentForPackage(pkg) ?: pm.queryIntentActivities(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER).setPackage(pkg),0)
+            .firstOrNull{it.activityInfo.enabled && it.activityInfo.exported && it.activityInfo.applicationInfo.enabled}?.let{Intent.makeMainActivity(ComponentName(pkg,it.activityInfo.name))}
+            ?: return result(LaunchStatus.LAUNCH_INTENT_MISSING,"Android exposed no launchable activity for this app/profile. No different app was opened.",pkg)
         return open(intent,label,pkg)
     }
     fun open(intent:Intent,label:String,pkg:String?=null):LaunchResult {

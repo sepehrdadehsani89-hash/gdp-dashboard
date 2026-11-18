@@ -14,12 +14,12 @@ class AppRegistry(private val context:Context){
         val now=android.os.SystemClock.elapsedRealtime()
         if(cachedAt>0 && now-cachedAt<60_000)return cached
         val alias=aliases()
-        cached=context.packageManager.queryIntentActivities(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER),0).distinctBy{it.activityInfo.packageName}.take(1000).map{info->
+        cached=context.packageManager.queryIntentActivities(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER),0).filter{AppDiscoveryPolicy.eligible(it.activityInfo.applicationInfo.enabled,it.activityInfo.enabled,it.activityInfo.exported)}.distinctBy{it.activityInfo.packageName}.take(1000).mapNotNull{info->runCatching{
             val pkg=info.activityInfo.packageName
             // Spelling variants never create packages; aliases apply only to discovered apps.
-            val known=when(pkg){"com.whatsapp"->listOf("واتساپ","واتس اپ");"com.google.android.youtube"->listOf("یوتیوب");"org.telegram.messenger"->listOf("تلگرام");"com.instagram.android"->listOf("اینستاگرام");"com.spotify.music"->listOf("اسپاتیفای");else->emptyList()}
+            val known=AppDiscoveryPolicy.names(pkg)
             DiscoveredApp(pkg,info.loadLabel(context.packageManager).toString(),known+alias.filterValues{it==pkg}.keys)
-        }.filterNot{ToolPolicy.protectedPackage(it.packageId)}
+        }.getOrNull()}.filterNot{ToolPolicy.protectedPackage(it.packageId)}
         // A user-approved package may expose an explicit launch intent despite launcher query filtering.
         val known=alias.values.distinct().filter{pkg->cached.none{it.packageId==pkg} && !ToolPolicy.protectedPackage(pkg)}.mapNotNull{pkg->
             val launch=context.packageManager.getLaunchIntentForPackage(pkg) ?: return@mapNotNull null

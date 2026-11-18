@@ -1,0 +1,6 @@
+test_https_command_reaches_real_browser_and_returns_verified_receipt (jarvis_controlled_browser_test.ActualBrowserTest.test_https_command_reaches_real_browser_and_returns_verified_receipt) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 3.369s
+
+OK

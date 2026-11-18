@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.screen.RecordingPolicyTest" tests="22" skipped="0" failures="0" errors="0" timestamp="2026-11-18T14:32:08" hostname="885caff30ac4" time="0.002">
+  <properties/>
+  <testcase name="savedMetadataDoesNotMeanRecorderStillActive" classname="com.jarvis.assistant.screen.RecordingPolicyTest" time="0.001"/>
+  <testcase name="freshConsentIsUsable" classname="com.jarvis.assistant.screen.RecordingPolicyTest" time="0.0"/>
+  <testcase name="smallValidScreenIsNotUpscaledUnnecessarily" classname="com.jarvis.assistant.screen.RecordingPolicyTest" time="0.001"/>
+  <testcase name="negativeDurationCannotClaimSavedVideo" classname="com.jarvis.assistant.screen.RecordingPolicyTest" time="0.0"/>
+  <testcase name="invalidScreenCannotStartRecorder" classname="com.jarvis.assistant.screen.RecordingPolicyTest" time="0.0"/>
+  <testcase name="zeroByteOutputCannotClaimSavedVideo" classname="com.jarvis.assistant.screen.RecordingPolicyTest" time="0.0"/>
+  <testcase name="consentAloneDoesNotClaimRecording" classname="com.jarvis.assistant.screen.RecordingPolicyTest" time="0.0"/>
+  <testcase name="differentProjectionCannotShareLease" classname="com.jarvis.assistant.screen.RecordingPolicyTest" time="0.0"/>
+  <testcase name="firstProjectionGetsExclusiveLease" classname="com.jarvis.assistant.screen.RecordingPolicyTest" time="0.0"/>
+  <testcase name="completedStoppedVideoRequiresActualBytesAndDuration" classname="com.jarvis.assistant.screen.RecordingPolicyTest" time="0.0"/>
+  <testcase name="failedRecorderCannotClaimSavedVideo" classname="com.jarvis.assistant.screen.RecordingPolicyTest" time="0.0"/>
+  <testcase name="futureConsentCannotBeReplayedAfterClockChange" classname="com.jarvis.assistant.screen.RecordingPolicyTest" time="0.0"/>
+  <testcase name="headerOnlyFileCannotClaimSavedVideo" classname="com.jarvis.assistant.screen.RecordingPolicyTest" time="0.0"/>
+  <testcase name="activeRecordingIsVisibleInStatus" classname="com.jarvis.assistant.screen.RecordingPolicyTest" time="0.0"/>
+  <testcase name="ownerCanObserveItsLease" classname="com.jarvis.assistant.screen.RecordingPolicyTest" time="0.0"/>
+  <testcase name="landscapeResolutionIsBounded" classname="com.jarvis.assistant.screen.RecordingPolicyTest" time="0.0"/>
+  <testcase name="otherOwnerCannotObserveOwnership" classname="com.jarvis.assistant.screen.RecordingPolicyTest" time="0.0"/>
+  <testcase name="consentExpiryHasFiniteBoundary" classname="com.jarvis.assistant.screen.RecordingPolicyTest" time="0.0"/>
+  <testcase name="zeroDurationCannotClaimSavedVideo" classname="com.jarvis.assistant.screen.RecordingPolicyTest" time="0.0"/>
+  <testcase name="releasedProjectionAllowsNewCapture" classname="com.jarvis.assistant.screen.RecordingPolicyTest" time="0.0"/>
+  <testcase name="portraitResolutionIsBoundedAndEven" classname="com.jarvis.assistant.screen.RecordingPolicyTest" time="0.0"/>
+  <testcase name="wrongReleaseCannotStopOtherProjection" classname="com.jarvis.assistant.screen.RecordingPolicyTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -9,6 +9,7 @@
     <uses-feature android:name="android.hardware.camera.any" android:required="false" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
@@ -59,6 +60,13 @@
         <receiver android:name=".neural.BriefingTimeReceiver" android:exported="true"><intent-filter><action android:name="android.intent.action.TIMEZONE_CHANGED" /><action android:name="android.intent.action.TIME_SET" /></intent-filter></receiver>
         <activity android:name=".widgets.WidgetCenterActivity" android:exported="false" android:launchMode="singleTop" />
         <activity android:name=".rebirth.AndroidSettingsActivity" android:exported="false" />
+        <activity android:name=".reminders.RemindersActivity" android:exported="false" />
+        <receiver android:name=".reminders.ReminderTimeReceiver" android:exported="false"><intent-filter><action android:name="android.intent.action.TIME_SET" /><action android:name="android.intent.action.TIMEZONE_CHANGED" /><action android:name="android.intent.action.MY_PACKAGE_REPLACED" /></intent-filter></receiver>
+        <activity android:name=".notifications.NotificationAwarenessActivity" android:exported="false" />
+        <activity android:name=".google.GoogleAccountsActivity" android:exported="false" />
+        <activity android:name=".controls.AndroidControlsActivity" android:exported="false" />
+        <activity android:name=".controls.AndroidControlActionActivity" android:exported="false" />
+        <activity android:name=".controls.VoiceCommandLabActivity" android:exported="false" />
         <activity android:name=".rebirth.RebirthCenterActivity" android:exported="false" />
         <activity android:name=".companion.CompanionActivity" android:exported="false" />
         <activity android:name=".checkin.CallMeActivity" android:exported="false" />
@@ -128,6 +136,8 @@
         <receiver android:name=".power.PowerReminderAction" android:exported="false" />
         <service android:name=".voice.WakeListenerService" android:exported="false" android:foregroundServiceType="microphone" />
         <activity android:name=".screen.ScreenCaptureActivity" android:exported="false" android:excludeFromRecents="true" android:taskAffinity="${applicationId}.screen" android:theme="@style/Theme.Jarvis.Capture" />
+        <activity android:name=".screen.VideoRecordingActivity" android:exported="false" android:excludeFromRecents="true" />
+        <service android:name=".screen.VideoRecordingService" android:exported="false" android:foregroundServiceType="mediaProjection" />
         <service android:name=".screen.ScreenCaptureService" android:exported="false" android:foregroundServiceType="mediaProjection" />
         <service android:name=".tools.JarvisAccessibilityService" android:exported="true" android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
             <intent-filter><action android:name="android.accessibilityservice.AccessibilityService" /></intent-filter>
