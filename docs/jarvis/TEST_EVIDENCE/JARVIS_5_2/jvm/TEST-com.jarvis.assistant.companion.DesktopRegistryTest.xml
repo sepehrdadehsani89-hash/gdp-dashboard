@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.companion.DesktopRegistryTest" tests="26" skipped="0" failures="0" errors="0" timestamp="2026-11-18T20:15:37" hostname="885caff30ac4" time="0.224">
+  <properties/>
+  <testcase name="selectingExactLabelRestoresThatTargetsOwnCredentials" classname="com.jarvis.assistant.companion.DesktopRegistryTest" time="0.008"/>
+  <testcase name="undecryptableLegacyIsNotOverwritten" classname="com.jarvis.assistant.companion.DesktopRegistryTest" time="0.002"/>
+  <testcase name="aliasCannotHijackAnotherTargetsName" classname="com.jarvis.assistant.companion.DesktopRegistryTest" time="0.003"/>
+  <testcase name="corruptRegistryIsPreserved" classname="com.jarvis.assistant.companion.DesktopRegistryTest" time="0.001"/>
+  <testcase name="duplicateLabelsCannotBeAdded" classname="com.jarvis.assistant.companion.DesktopRegistryTest" time="0.002"/>
+  <testcase name="aliasSelectsOneApprovedTarget" classname="com.jarvis.assistant.companion.DesktopRegistryTest" time="0.002"/>
+  <testcase name="forgettingMigratedPairDoesNotResurrectLegacyGrant" classname="com.jarvis.assistant.companion.DesktopRegistryTest" time="0.001"/>
+  <testcase name="twentyDistinctTargetsCanBeSaved" classname="com.jarvis.assistant.companion.DesktopRegistryTest" time="0.096"/>
+  <testcase name="migratedPairSurvivesRestart" classname="com.jarvis.assistant.companion.DesktopRegistryTest" time="0.002"/>
+  <testcase name="reviewedCommandRejectsRotatedSession" classname="com.jarvis.assistant.companion.DesktopRegistryTest" time="0.001"/>
+  <testcase name="legacyPairMigratesWithoutChangingCredentials" classname="com.jarvis.assistant.companion.DesktopRegistryTest" time="0.001"/>
+  <testcase name="diagnosticDoesNotExposePairTokenOrLabel" classname="com.jarvis.assistant.companion.DesktopRegistryTest" time="0.017"/>
+  <testcase name="undecryptableRegistryDoesNotFallBackToLegacy" classname="com.jarvis.assistant.companion.DesktopRegistryTest" time="0.001"/>
+  <testcase name="staleRevokeCannotRemoveANewPairing" classname="com.jarvis.assistant.companion.DesktopRegistryTest" time="0.002"/>
+  <testcase name="removingSelectedTargetDoesNotSilentlySelectAnother" classname="com.jarvis.assistant.companion.DesktopRegistryTest" time="0.003"/>
+  <testcase name="unknownNameDoesNotChangeActiveTarget" classname="com.jarvis.assistant.companion.DesktopRegistryTest" time="0.003"/>
+  <testcase name="twentyFirstTargetIsRejectedWithoutReplacement" classname="com.jarvis.assistant.companion.DesktopRegistryTest" time="0.067"/>
+  <testcase name="removingOtherTargetPreservesCurrent" classname="com.jarvis.assistant.companion.DesktopRegistryTest" time="0.002"/>
+  <testcase name="rePairingSameDeviceRotatesOnlyItsSession" classname="com.jarvis.assistant.companion.DesktopRegistryTest" time="0.002"/>
+  <testcase name="writeFailurePreservesPreviousSavedTargets" classname="com.jarvis.assistant.companion.DesktopRegistryTest" time="0.002"/>
+  <testcase name="reviewedCommandRejectsMissingTargetBinding" classname="com.jarvis.assistant.companion.DesktopRegistryTest" time="0.001"/>
+  <testcase name="reviewedCommandRejectsDifferentComputer" classname="com.jarvis.assistant.companion.DesktopRegistryTest" time="0.001"/>
+  <testcase name="addingTargetPreservesEveryExistingPair" classname="com.jarvis.assistant.companion.DesktopRegistryTest" time="0.001"/>
+  <testcase name="emptyRegistryDoesNotInventTarget" classname="com.jarvis.assistant.companion.DesktopRegistryTest" time="0.0"/>
+  <testcase name="voiceSelectionCannotExecuteArbitraryCommands" classname="com.jarvis.assistant.companion.DesktopRegistryTest" time="0.001"/>
+  <testcase name="reviewedCommandAcceptsOriginalComputerAndSession" classname="com.jarvis.assistant.companion.DesktopRegistryTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

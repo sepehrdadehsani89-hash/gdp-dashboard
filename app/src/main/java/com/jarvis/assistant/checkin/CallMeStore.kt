@@ -51,6 +51,7 @@ class CallMeStore(private val context:Context,private val vault:FeatureVault){
     @Synchronized fun receive(id:String,revision:String){
         val c=reload().firstOrNull{it.id==id} ?: return
         if(!CallMePolicy.due(c,revision,System.currentTimeMillis()))return
+        if(!com.jarvis.assistant.modes.SystemModePolicy.remindersAllowed(com.jarvis.assistant.modes.SystemModes.current(context))){mark(id,revision,"TEXT_ONLY");return}
         if(!alertsAllowed()){mark(id,revision,"TEXT_ONLY");return}
         if(System.currentTimeMillis()-c.at>24*3600_000L){mark(id,revision,"MISSED");return}
         mark(id,revision,"NOTIFIED");notify(c)

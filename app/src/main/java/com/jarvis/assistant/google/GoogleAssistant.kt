@@ -8,7 +8,7 @@ import com.jarvis.assistant.rebirth.AppLaunchCoordinator
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.withTimeout
 
-class GoogleAssistant(private val context:Context,private val store:GoogleConnectionsStore,private val authorization:GoogleAuthorization,private val client:GoogleServicesClient,private val index:GoogleProjectIndex,private val launches:AppLaunchCoordinator){
+class GoogleAssistant(private val context:Context,private val store:GoogleConnectionsStore,private val authorization:GoogleAuthorization,private val client:GoogleServicesClient,private val index:GoogleProjectIndex,private val launches:AppLaunchCoordinator,private val onVerified:(GoogleAccessSession,GoogleReadResult)->Unit={_,_->}){
     private fun unlocked()=context.getSystemService(KeyguardManager::class.java)?.isDeviceLocked==false
     private fun setup(product:GoogleProduct?=null):String=launches.open(Intent(context,GoogleAccountsActivity::class.java).apply{product?.let{putExtra("google_product",it.name)}},"AI & Connected Accounts").detail
     suspend fun route(text:String):AssistantReply? {
@@ -28,7 +28,7 @@ class GoogleAssistant(private val context:Context,private val store:GoogleConnec
                 is GoogleAuthorizationResult.Consent->AssistantReply("Google requires your account consent again. ${setup(query.product)} No Google data was read.")
                 is GoogleAuthorizationResult.Ready->{session=access.session;val result=client.read(access.session,query,row.email)
                     authorization.requireCurrent(row.id,access.session.epoch)
-                    if(!unlocked())AssistantReply("Google data is hidden while the phone is locked.")else{store.markVerified(row.id,query.product,access.session.epoch);AssistantReply(result.summary)}}
+                    if(!unlocked())AssistantReply("Google data is hidden while the phone is locked.")else{store.markVerified(row.id,query.product,access.session.epoch);onVerified(access.session,result);AssistantReply(result.summary)}}
             }
         }}catch(e:CancellationException){throw e}catch(e:GoogleServiceFailure){store.markFailure(row.id,query.product);if(e.status==401)session?.let{authorization.invalidate(it)};AssistantReply("${e.category}: ${e.message}")}
     }

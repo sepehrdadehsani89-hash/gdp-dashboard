@@ -1,0 +1,38 @@
+test_https_command_reaches_real_browser_and_returns_verified_receipt (test_browser_integration.ActualBrowserTest.test_https_command_reaches_real_browser_and_returns_verified_receipt) ... 36831.453 None Page.frameStartedNavigating None None None []
+36831.453 None Page.frameStartedLoading None None None []
+36831.453 None Network.requestWillBeSent Document None None []
+36831.472 None Network.responseReceived Document None 200 []
+36831.476 3 None None None None ['frameId', 'isDownload', 'loaderId']
+36831.48 None Network.requestWillBeSentExtraInfo None None None []
+36831.48 None Network.responseReceivedExtraInfo None None None []
+36831.594 None Network.policyUpdated None None None []
+36831.627 None Page.frameStartedLoading None None None []
+36831.646 None Network.policyUpdated None None None []
+36831.685 None Page.frameStoppedLoading None None None []
+36831.686 1 None None None None []
+36831.686 2 None None None None []
+36831.724 None Network.requestWillBeSent Other None None []
+36831.725 None Network.responseReceived Other None 200 []
+36831.726 None Network.requestWillBeSentExtraInfo None None None []
+36831.726 None Network.responseReceivedExtraInfo None None None []
+36831.735 None Network.dataReceived None None None []
+36831.735 None Network.dataReceived None None None []
+36831.735 None Network.loadingFinished None None None []
+FAIL
+
+======================================================================
+FAIL: test_https_command_reaches_real_browser_and_returns_verified_receipt (test_browser_integration.ActualBrowserTest.test_https_command_reaches_real_browser_and_returns_verified_receipt)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/gdp-dashboard/companion/tests/test_browser_integration.py", line 37, in test_https_command_reaches_real_browser_and_returns_verified_receipt
+    receipt=json.loads(raw);self.assertEqual('COMPLETED',receipt['state'],receipt.get('error_category'));self.assertEqual(digest(url_builder('ChatGPT').encode()),receipt['verified_postcondition']['url_sha256']);self.assertEqual(200,receipt['verified_postcondition']['http_status'])
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'COMPLETED' != 'FAILED'
+- COMPLETED
++ FAILED
+ : PAGE_LOAD_TIMEOUT
+
+----------------------------------------------------------------------
+Ran 1 test in 13.579s
+
+FAILED (failures=1)

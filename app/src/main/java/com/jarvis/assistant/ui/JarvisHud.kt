@@ -203,12 +203,13 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
 }
 @OptIn(ExperimentalFoundationApi::class)
 @Composable internal fun HudCore(state:JarvisUiState,modifier:Modifier=Modifier,actions:JarvisUiActions?=null) {
-    val t=state.hud.telemetry; val s=state.hud.settings; val b=t.battery
+    val effectiveHud=com.jarvis.assistant.modes.ModePresentation.hud(state.hud,state.systemMode)
+    val t=effectiveHud.telemetry; val s=effectiveHud.settings; val b=t.battery
     val lifecycle=LocalLifecycleOwner.current.lifecycle
     var frameNow by remember{mutableLongStateOf(SystemClock.elapsedRealtime())}
     val auth=state.authorization?.status
     val authorizing=auth in listOf(AuthorizationStatus.AUTHORIZATION_REQUIRED,AuthorizationStatus.AWAITING_CODEX,AuthorizationStatus.IDENTITY_CONFIRMATION)
-    val rawMode=if(authorizing)SentinelMode.AUTHORIZATION_REQUIRED else when(state.phase){AssistantPhase.LISTENING->SentinelMode.LISTENING;AssistantPhase.SPEAKING->SentinelMode.SPEAKING;AssistantPhase.THINKING->SentinelMode.PROCESSING;AssistantPhase.ERROR->SentinelMode.ERROR;else->state.sentinelVisual.mode}
+    val rawMode=if(state.systemMode.deep)SentinelMode.DORMANT else if(authorizing)SentinelMode.AUTHORIZATION_REQUIRED else when(state.phase){AssistantPhase.LISTENING->SentinelMode.LISTENING;AssistantPhase.SPEAKING->SentinelMode.SPEAKING;AssistantPhase.THINKING->SentinelMode.PROCESSING;AssistantPhase.ERROR->SentinelMode.ERROR;else->state.sentinelVisual.mode}
     val mode=when{CoreMotionPolicy.errorVisible(state.voiceErrorAt,frameNow)->SentinelMode.ERROR;rawMode==SentinelMode.ERROR && state.voiceErrorAt>0->SentinelMode.DORMANT;else->rawMode}
     val context=androidx.compose.ui.platform.LocalContext.current
     val lowRam=remember(context){context.getSystemService(android.app.ActivityManager::class.java).isLowRamDevice}
@@ -230,7 +231,9 @@ internal fun HudPanel(title:String, modifier:Modifier=Modifier, content:@Composa
             }
         }
     }
-    val boot=if(state.sentinelVisual.mode==SentinelMode.ACTIVATING && fps>0)ReactorGeometry.awakening(frameNow-state.sentinelVisual.activatedAt) else Awakening(1f,1f,1f,0f,true)
+    val awakeningDuration=com.jarvis.assistant.modes.SystemModePolicy.activationMillis(state.systemMode)
+    val awakeningElapsed=frameNow-state.sentinelVisual.activatedAt
+    val boot=if((state.sentinelVisual.mode==SentinelMode.ACTIVATING || awakeningDuration>2100 && state.sentinelVisual.activatedAt>0 && awakeningElapsed in 0..awakeningDuration) && fps>0)ReactorGeometry.awakening(if(awakeningDuration==2100L)awakeningElapsed else com.jarvis.assistant.modes.SystemModePolicy.animationElapsed(awakeningElapsed,awakeningDuration)) else Awakening(1f,1f,1f,0f,true)
     val speed by rememberUpdatedState(ReactorGeometry.speed(s,mode,state.execution==com.jarvis.assistant.phantom.ExecutionState.EXECUTING))
     val actualCharging=ReactorPalette.chargingAccent(state.hud.power.connected,state.hud.power.charging,s.sentinel.chargingEffects)
     val chargeActive by rememberUpdatedState(actualCharging)

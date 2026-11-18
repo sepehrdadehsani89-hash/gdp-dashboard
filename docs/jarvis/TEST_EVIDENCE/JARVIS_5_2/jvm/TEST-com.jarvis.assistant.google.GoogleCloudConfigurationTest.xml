@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.google.GoogleCloudConfigurationTest" tests="22" skipped="0" failures="0" errors="0" timestamp="2026-11-18T20:15:47" hostname="885caff30ac4" time="0.006">
+  <properties/>
+  <testcase name="diagnosticStringDoesNotRevealApiKey" classname="com.jarvis.assistant.google.GoogleCloudConfigurationTest" time="0.0"/>
+  <testcase name="writeFailurePreservesPreviousValues" classname="com.jarvis.assistant.google.GoogleCloudConfigurationTest" time="0.002"/>
+  <testcase name="projectCannotStartWithDigit" classname="com.jarvis.assistant.google.GoogleCloudConfigurationTest" time="0.0"/>
+  <testcase name="projectMinimumLengthEnforced" classname="com.jarvis.assistant.google.GoogleCloudConfigurationTest" time="0.0"/>
+  <testcase name="clientSecretIsNotAcceptedAsClientId" classname="com.jarvis.assistant.google.GoogleCloudConfigurationTest" time="0.001"/>
+  <testcase name="completeConfigurationRoundTrips" classname="com.jarvis.assistant.google.GoogleCloudConfigurationTest" time="0.0"/>
+  <testcase name="oauthAccessTokenIsNotAnApiKey" classname="com.jarvis.assistant.google.GoogleCloudConfigurationTest" time="0.0"/>
+  <testcase name="undecryptableExistingConfigurationIsPreserved" classname="com.jarvis.assistant.google.GoogleCloudConfigurationTest" time="0.001"/>
+  <testcase name="explicitRemoveOnlyTouchesThisStore" classname="com.jarvis.assistant.google.GoogleCloudConfigurationTest" time="0.0"/>
+  <testcase name="apiKeyCanBeConfiguredWithoutAnOAuthSecret" classname="com.jarvis.assistant.google.GoogleCloudConfigurationTest" time="0.0"/>
+  <testcase name="unsupportedVersionIsPreserved" classname="com.jarvis.assistant.google.GoogleCloudConfigurationTest" time="0.0"/>
+  <testcase name="apiKeyControlsRejected" classname="com.jarvis.assistant.google.GoogleCloudConfigurationTest" time="0.001"/>
+  <testcase name="malformedExistingConfigurationIsPreserved" classname="com.jarvis.assistant.google.GoogleCloudConfigurationTest" time="0.0"/>
+  <testcase name="initialStateIsConfigurationOnly" classname="com.jarvis.assistant.google.GoogleCloudConfigurationTest" time="0.0"/>
+  <testcase name="clientIdUsesGoogleSuffix" classname="com.jarvis.assistant.google.GoogleCloudConfigurationTest" time="0.0"/>
+  <testcase name="apiKeyWrongLengthRejected" classname="com.jarvis.assistant.google.GoogleCloudConfigurationTest" time="0.0"/>
+  <testcase name="googlePasswordIsNotAnApiKey" classname="com.jarvis.assistant.google.GoogleCloudConfigurationTest" time="0.0"/>
+  <testcase name="validProjectCanBeSaved" classname="com.jarvis.assistant.google.GoogleCloudConfigurationTest" time="0.0"/>
+  <testcase name="projectCannotContainAUrl" classname="com.jarvis.assistant.google.GoogleCloudConfigurationTest" time="0.001"/>
+  <testcase name="projectCannotEndWithHyphen" classname="com.jarvis.assistant.google.GoogleCloudConfigurationTest" time="0.0"/>
+  <testcase name="projectUppercaseRejected" classname="com.jarvis.assistant.google.GoogleCloudConfigurationTest" time="0.0"/>
+  <testcase name="projectMaximumLengthEnforced" classname="com.jarvis.assistant.google.GoogleCloudConfigurationTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

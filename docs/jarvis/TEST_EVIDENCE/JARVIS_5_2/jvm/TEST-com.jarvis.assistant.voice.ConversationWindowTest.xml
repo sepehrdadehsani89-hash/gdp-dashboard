@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.voice.ConversationWindowTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-11-18T20:15:52" hostname="885caff30ac4" time="0.002">
+  <properties/>
+  <testcase name="everyReplyMayOpenOneFreshFollowUpWindow" classname="com.jarvis.assistant.voice.ConversationWindowTest" time="0.001"/>
+  <testcase name="staleRecognizerResultsCannotReopenExpiredWindows" classname="com.jarvis.assistant.voice.ConversationWindowTest" time="0.0"/>
+  <testcase name="acceptingACommandPausesUntilTheResponseHasFinished" classname="com.jarvis.assistant.voice.ConversationWindowTest" time="0.0"/>
+  <testcase name="repeatedWakePartialsNeverExtendTheWindow" classname="com.jarvis.assistant.voice.ConversationWindowTest" time="0.0"/>
+  <testcase name="aWakeOpensAnInactivityGateAndNoUnprefixedCommandBeforeIt" classname="com.jarvis.assistant.voice.ConversationWindowTest" time="0.0"/>
+  <testcase name="unrelatedResumeReturnsToWakeOnlyAndStopCannotBeResurrected" classname="com.jarvis.assistant.voice.ConversationWindowTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

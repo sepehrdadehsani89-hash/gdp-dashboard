@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.companion.QrImageDecoderTest" tests="22" skipped="0" failures="0" errors="0" timestamp="2026-11-18T20:15:38" hostname="885caff30ac4" time="0.622">
+  <properties/>
+  <testcase name="nonInvitationQrIsDecodedThenRejectedByParser" classname="com.jarvis.assistant.companion.QrImageDecoderTest" time="0.062"/>
+  <testcase name="decodesFullPayload" classname="com.jarvis.assistant.companion.QrImageDecoderTest" time="0.042"/>
+  <testcase name="tooWideRejected" classname="com.jarvis.assistant.companion.QrImageDecoderTest" time="0.001"/>
+  <testcase name="zeroWidthRejected" classname="com.jarvis.assistant.companion.QrImageDecoderTest" time="0.0"/>
+  <testcase name="unicodeDataSurvivesLocalDecode" classname="com.jarvis.assistant.companion.QrImageDecoderTest" time="0.013"/>
+  <testcase name="decodesThreeQuarterTurn" classname="com.jarvis.assistant.companion.QrImageDecoderTest" time="0.035"/>
+  <testcase name="extraPixelsRejected" classname="com.jarvis.assistant.companion.QrImageDecoderTest" time="0.0"/>
+  <testcase name="transparentImageIsNotAConnection" classname="com.jarvis.assistant.companion.QrImageDecoderTest" time="0.003"/>
+  <testcase name="largeCodeWithinBudgetCanBeRead" classname="com.jarvis.assistant.companion.QrImageDecoderTest" time="0.171"/>
+  <testcase name="callerPixelsRemainUnchanged" classname="com.jarvis.assistant.companion.QrImageDecoderTest" time="0.02"/>
+  <testcase name="actualSmallCodeCanBeRead" classname="com.jarvis.assistant.companion.QrImageDecoderTest" time="0.001"/>
+  <testcase name="zeroHeightRejected" classname="com.jarvis.assistant.companion.QrImageDecoderTest" time="0.001"/>
+  <testcase name="incompletePixelBufferRejected" classname="com.jarvis.assistant.companion.QrImageDecoderTest" time="0.0"/>
+  <testcase name="decodesHalfTurn" classname="com.jarvis.assistant.companion.QrImageDecoderTest" time="0.036"/>
+  <testcase name="negativeDimensionRejected" classname="com.jarvis.assistant.companion.QrImageDecoderTest" time="0.002"/>
+  <testcase name="payloadIsNotTruncated" classname="com.jarvis.assistant.companion.QrImageDecoderTest" time="0.038"/>
+  <testcase name="whiteImageIsNotAConnection" classname="com.jarvis.assistant.companion.QrImageDecoderTest" time="0.002"/>
+  <testcase name="transparentBackgroundIsCompositedWhite" classname="com.jarvis.assistant.companion.QrImageDecoderTest" time="0.028"/>
+  <testcase name="blackImageIsNotAConnection" classname="com.jarvis.assistant.companion.QrImageDecoderTest" time="0.001"/>
+  <testcase name="decodesInvertedCode" classname="com.jarvis.assistant.companion.QrImageDecoderTest" time="0.135"/>
+  <testcase name="decodesQuarterTurn" classname="com.jarvis.assistant.companion.QrImageDecoderTest" time="0.027"/>
+  <testcase name="tooTallRejected" classname="com.jarvis.assistant.companion.QrImageDecoderTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -13,12 +13,14 @@ class DesktopRegistry internal constructor(
     private val readLegacy:()->String?,private val legacyExists:()->Boolean,private val deleteLegacy:()->Unit={},
     private val legacyLabel:(DesktopPair)->String?={null}
 ){
+    private val changed=kotlinx.coroutines.flow.MutableStateFlow(0L)
+    val changes:kotlinx.coroutines.flow.StateFlow<Long> = changed
     constructor(vault:FeatureVault):this({vault.read("desktop_connections")},{vault.contains("desktop_connections")},{vault.write("desktop_connections",it)},
         {vault.read("desktop_companion")},{vault.contains("desktop_companion")},{vault.remove("desktop_companion")},
         {pair->kotlin.runCatching{JSONObject(vault.read("mission_device_name_v_one") ?: "{}").takeIf{it.optString("device_id")==pair.deviceId}?.optString("name")?.takeIf{it.isNotBlank()}}.getOrNull()})
     private fun label(value:String)=value.trim().also{require(it.length in 1..60 && it.none(Char::isISOControl) && AppMatching.normalize(it).isNotBlank()){"Use a unique computer name of1–60 characters."}}
     private fun save(state:DesktopConnections){require(state.devices.size<=20);require(state.activeId==null || state.devices.any{it.pair.deviceId==state.activeId})
-        write(JSONObject().put("version",1).put("active",state.activeId.orEmpty()).put("devices",JSONArray().apply{state.devices.forEach{row->put(JSONObject().put("label",row.label).put("pair",JSONObject(row.pair.json())).put("aliases",JSONArray(row.aliases.toList())))}}).toString())}
+        write(JSONObject().put("version",1).put("active",state.activeId.orEmpty()).put("devices",JSONArray().apply{state.devices.forEach{row->put(JSONObject().put("label",row.label).put("pair",JSONObject(row.pair.json())).put("aliases",JSONArray(row.aliases.toList())))}}).toString());changed.value=changed.value+1}
     @Synchronized fun snapshot():DesktopConnections {
         val raw=read();if(raw==null){check(!exists()){"PRIVATE_PAIRING_UNAVAILABLE"};val legacy=readLegacy();check(legacy!=null || !legacyExists()){"PRIVATE_PAIRING_UNAVAILABLE"}
             if(legacy==null)return DesktopConnections(emptyList(),null)

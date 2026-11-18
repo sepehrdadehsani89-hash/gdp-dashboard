@@ -1,0 +1,8 @@
+{
+  "baseline": "c00e8c9c89c8fea534666dab3781faeece57016a",
+  "repository": "sepehrdadehsani89-hash/gdp-dashboard",
+  "branch": "jarvis-next",
+  "fetched_jarvis_next": "c00e8c9c89c8fea534666dab3781faeece57016a",
+  "rollback": "c00e8c9c89c8fea534666dab3781faeece57016a",
+  "note": "Default remote fetchspec tracks main only. Explicit non-force jarvis-next fetch updated stale local tracking ref; direct ls-remote confirmed expected c00e8c9. No unexpected remote commits and no push performed."
+}

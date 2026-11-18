@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.companion.PairingInvitationTest" tests="32" skipped="0" failures="0" errors="0" timestamp="2026-11-18T20:15:38" hostname="885caff30ac4" time="0.03">
+  <properties/>
+  <testcase name="challengeMustHaveARealTicket" classname="com.jarvis.assistant.companion.PairingInvitationTest" time="0.001"/>
+  <testcase name="endpointCredentialsAreRejected" classname="com.jarvis.assistant.companion.PairingInvitationTest" time="0.002"/>
+  <testcase name="oversizeInputHasExplicitError" classname="com.jarvis.assistant.companion.PairingInvitationTest" time="0.0"/>
+  <testcase name="certificateMustBeAFullHexPin" classname="com.jarvis.assistant.companion.PairingInvitationTest" time="0.001"/>
+  <testcase name="pinIsNotAnInvitation" classname="com.jarvis.assistant.companion.PairingInvitationTest" time="0.001"/>
+  <testcase name="normalizedPayloadIsIdempotent" classname="com.jarvis.assistant.companion.PairingInvitationTest" time="0.0"/>
+  <testcase name="malformedDeviceIdentityIsRejected" classname="com.jarvis.assistant.companion.PairingInvitationTest" time="0.0"/>
+  <testcase name="missingCodeIsRejected" classname="com.jarvis.assistant.companion.PairingInvitationTest" time="0.001"/>
+  <testcase name="displayNameControlsAreRejected" classname="com.jarvis.assistant.companion.PairingInvitationTest" time="0.0"/>
+  <testcase name="qrFilenameIsNotAnInvitation" classname="com.jarvis.assistant.companion.PairingInvitationTest" time="0.0"/>
+  <testcase name="numericStringSchemaIsNotAccepted" classname="com.jarvis.assistant.companion.PairingInvitationTest" time="0.0"/>
+  <testcase name="paddingCanBeTransported" classname="com.jarvis.assistant.companion.PairingInvitationTest" time="0.0"/>
+  <testcase name="wrappedPayloadIsAcceptedWithoutTruncation" classname="com.jarvis.assistant.companion.PairingInvitationTest" time="0.002"/>
+  <testcase name="urlIsNotAnInvitation" classname="com.jarvis.assistant.companion.PairingInvitationTest" time="0.0"/>
+  <testcase name="expirationMustBeAnInteger" classname="com.jarvis.assistant.companion.PairingInvitationTest" time="0.0"/>
+  <testcase name="expiryBoundaryIsExpired" classname="com.jarvis.assistant.companion.PairingInvitationTest" time="0.001"/>
+  <testcase name="malformedPairingIdentityIsRejected" classname="com.jarvis.assistant.companion.PairingInvitationTest" time="0.0"/>
+  <testcase name="unsupportedSchemaIsExplicit" classname="com.jarvis.assistant.companion.PairingInvitationTest" time="0.001"/>
+  <testcase name="httpEndpointIsRejected" classname="com.jarvis.assistant.companion.PairingInvitationTest" time="0.0"/>
+  <testcase name="invitationToStringRedactsTheSecret" classname="com.jarvis.assistant.companion.PairingInvitationTest" time="0.001"/>
+  <testcase name="legacyInvitationWithoutNameStillWorks" classname="com.jarvis.assistant.companion.PairingInvitationTest" time="0.012"/>
+  <testcase name="ticketIsNotAnInvitation" classname="com.jarvis.assistant.companion.PairingInvitationTest" time="0.0"/>
+  <testcase name="unsupportedPrefixIsExplicit" classname="com.jarvis.assistant.companion.PairingInvitationTest" time="0.0"/>
+  <testcase name="nonBase64InputIsRejected" classname="com.jarvis.assistant.companion.PairingInvitationTest" time="0.0"/>
+  <testcase name="publicEndpointIsRejected" classname="com.jarvis.assistant.companion.PairingInvitationTest" time="0.0"/>
+  <testcase name="emptyInputIsRejected" classname="com.jarvis.assistant.companion.PairingInvitationTest" time="0.0"/>
+  <testcase name="outerWhitespaceIsAccepted" classname="com.jarvis.assistant.companion.PairingInvitationTest" time="0.001"/>
+  <testcase name="companionWireFormatRetainsEveryIdentity" classname="com.jarvis.assistant.companion.PairingInvitationTest" time="0.0"/>
+  <testcase name="implausibleFutureClockIsExplained" classname="com.jarvis.assistant.companion.PairingInvitationTest" time="0.001"/>
+  <testcase name="expiredInvitationIsExplicit" classname="com.jarvis.assistant.companion.PairingInvitationTest" time="0.0"/>
+  <testcase name="challengeMustBeBoundedByInvitation" classname="com.jarvis.assistant.companion.PairingInvitationTest" time="0.0"/>
+  <testcase name="invalidUtf8IsRejected" classname="com.jarvis.assistant.companion.PairingInvitationTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

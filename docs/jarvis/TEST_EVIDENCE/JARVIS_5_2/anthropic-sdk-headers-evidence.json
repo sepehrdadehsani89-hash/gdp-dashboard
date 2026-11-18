@@ -1,0 +1,158 @@
+[
+  {
+    "file": "anthropic/_client.py",
+    "lines": [
+      "        api_key = self.api_key",
+      "        if api_key is None:",
+      "            return {}",
+      "        return {\"Authorization\": f\"Bearer {api_key}\"}",
+      "",
+      "    @property",
+      "    def _bearer_auth(self) -> dict[str, str]:"
+    ]
+  },
+  {
+    "file": "anthropic/_client.py",
+    "lines": [
+      "        auth_token = self.auth_token",
+      "        if auth_token is None:",
+      "            return {}",
+      "        return {\"Authorization\": f\"Bearer {auth_token}\"}",
+      "",
+      "    @property",
+      "    @override"
+    ]
+  },
+  {
+    "file": "anthropic/_client.py",
+    "lines": [
+      "        # the static-header check below \u2014 if a static api_key or auth_token",
+      "        # is set it will already be on default_headers; otherwise custom_auth",
+      "        # will fill in Authorization at request time.",
+      "        if self._token_cache is not None and not headers.get(\"X-Api-Key\") and not headers.get(\"Authorization\"):",
+      "            return",
+      "        # --- end credentials support ---",
+      "        if headers.get(\"Authorization\") or headers.get(\"X-Api-Key\"):"
+    ]
+  },
+  {
+    "file": "anthropic/_client.py",
+    "lines": [
+      "        if self._token_cache is not None and not headers.get(\"X-Api-Key\") and not headers.get(\"Authorization\"):",
+      "            return",
+      "        # --- end credentials support ---",
+      "        if headers.get(\"Authorization\") or headers.get(\"X-Api-Key\"):",
+      "            # valid",
+      "            return",
+      ""
+    ]
+  },
+  {
+    "file": "anthropic/_client.py",
+    "lines": [
+      "            # valid",
+      "            return",
+      "",
+      "        if headers.get(\"Authorization\") or \"authorization\" in omitted:",
+      "            return",
+      "",
+      "        raise TypeError("
+    ]
+  },
+  {
+    "file": "anthropic/_client.py",
+    "lines": [
+      "        api_key = self.api_key",
+      "        if api_key is None:",
+      "            return {}",
+      "        return {\"Authorization\": f\"Bearer {api_key}\"}",
+      "",
+      "    @property",
+      "    def _bearer_auth(self) -> dict[str, str]:"
+    ]
+  },
+  {
+    "file": "anthropic/_client.py",
+    "lines": [
+      "        auth_token = self.auth_token",
+      "        if auth_token is None:",
+      "            return {}",
+      "        return {\"Authorization\": f\"Bearer {auth_token}\"}",
+      "",
+      "    @property",
+      "    @override"
+    ]
+  },
+  {
+    "file": "anthropic/_client.py",
+    "lines": [
+      "    @override",
+      "    def _validate_headers(self, headers: httpx2.Headers, omitted: frozenset[str]) -> None:",
+      "        # --- credentials support (hand-written, upstream to Stainless) ---",
+      "        if self._token_cache is not None and not headers.get(\"X-Api-Key\") and not headers.get(\"Authorization\"):",
+      "            return",
+      "        # --- end credentials support ---",
+      "        if headers.get(\"Authorization\") or headers.get(\"X-Api-Key\"):"
+    ]
+  },
+  {
+    "file": "anthropic/_client.py",
+    "lines": [
+      "        if self._token_cache is not None and not headers.get(\"X-Api-Key\") and not headers.get(\"Authorization\"):",
+      "            return",
+      "        # --- end credentials support ---",
+      "        if headers.get(\"Authorization\") or headers.get(\"X-Api-Key\"):",
+      "            # valid",
+      "            return",
+      ""
+    ]
+  },
+  {
+    "file": "anthropic/_client.py",
+    "lines": [
+      "            # valid",
+      "            return",
+      "",
+      "        if headers.get(\"Authorization\") or \"authorization\" in omitted:",
+      "            return",
+      "",
+      "        raise TypeError("
+    ]
+  },
+  {
+    "file": "anthropic/_constants.py",
+    "lines": [
+      "",
+      "RAW_RESPONSE_HEADER = \"X-Stainless-Raw-Response\"",
+      "OVERRIDE_CAST_TO_HEADER = \"____stainless_override_cast_to\"",
+      "ANTHROPIC_API_VERSION = \"2026-10-21\"",
+      "",
+      "# default timeout is 10 minutes",
+      "DEFAULT_TIMEOUT = httpx2.Timeout(timeout=10 * 60, connect=5.0)"
+    ]
+  },
+  {
+    "file": "anthropic/lib/credentials/_auth.py",
+    "lines": [
+      "",
+      "    @staticmethod",
+      "    def _has_static_credential(request: httpx2.Request) -> bool:",
+      "        return bool(request.headers.get(\"X-Api-Key\") or request.headers.get(\"Authorization\"))",
+      "",
+      "    def _apply(self, request: httpx2.Request, token: str) -> None:",
+      "        request.headers[\"Authorization\"] = f\"Bearer {token}\""
+    ]
+  },
+  {
+    "file": "anthropic/lib/credentials/_auth.py",
+    "lines": [
+      "        return bool(request.headers.get(\"X-Api-Key\") or request.headers.get(\"Authorization\"))",
+      "",
+      "    def _apply(self, request: httpx2.Request, token: str) -> None:",
+      "        request.headers[\"Authorization\"] = f\"Bearer {token}\"",
+      "        existing_beta = request.headers.get(\"anthropic-beta\", \"\")",
+      "        # Tokenize the comma-separated header so dedupe matches whole flag",
+      "        # names rather than substrings \u2014 `oauth-2025-04-20` would otherwise"
+    ]
+  }
+]

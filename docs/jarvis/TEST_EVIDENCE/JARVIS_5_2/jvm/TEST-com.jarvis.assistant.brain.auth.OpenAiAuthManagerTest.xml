@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" tests="70" skipped="0" failures="0" errors="0" timestamp="2026-11-18T20:15:08" hostname="885caff30ac4" time="2.221">
+  <properties/>
+  <testcase name="callbackIsBoundBeforeBrowserOnNumericLoopbackOnly" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.553"/>
+  <testcase name="disconnectedAccountCanBeReauthorizedWithItsOwnRegistration" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.102"/>
+  <testcase name="removalOfSelectedAccountChoosesOnlyAnExistingConnection" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.011"/>
+  <testcase name="fractionalTokenLifetimeCannotCreateAnAuthorizedSession" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.03"/>
+  <testcase name="failedRemoteRevocationIsReportedHonestlyAfterLocalDisconnect" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.016"/>
+  <testcase name="transientRefreshFailurePreservesSavedCredentialForExplicitRetry" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.047"/>
+  <testcase name="removalWithNoRefreshTokenReportsRevocationUnknown" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.006"/>
+  <testcase name="unknownRefreshFieldShapeCannotInvalidateHealthyToken" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.019"/>
+  <testcase name="returningRegistrationRejectsDifferentIssuedClientID" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.014"/>
+  <testcase name="successfulRevocationClearsLocalSecretsAndRetainsAccountRegistration" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.023"/>
+  <testcase name="removalNeverCallsAnAccountDeletionEndpoint" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.041"/>
+  <testcase name="refreshedSubjectSubstitutionCannotReplaceSavedCredentials" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.018"/>
+  <testcase name="undocumentedLegacyRefreshTimestampCannotFreezeRefresh" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.027"/>
+  <testcase name="healthyRefreshRotatesTokensWithoutInvalidatingProofRevision" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.011"/>
+  <testcase name="retainedRegistrationIsBoundToItsInstallationHost" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.036"/>
+  <testcase name="malformedTokenLifetimeCannotCreateAnAuthorizedSession" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.011"/>
+  <testcase name="refreshRateLimitIsTypedAndNotReplayed" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.011"/>
+  <testcase name="cancelClosesListenerAndDoesNotSaveCredentials" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.007"/>
+  <testcase name="wrongStateDoesNotExchangeOrEndPendingTransaction" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.011"/>
+  <testcase name="callbackHTMLNeverReflectsCodeTokensOrState" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.01"/>
+  <testcase name="concurrentCallersUseOneRotatingRefreshTransaction" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.049"/>
+  <testcase name="removingSavedConnectionDoesNotDeleteProviderAccount" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.011"/>
+  <testcase name="refreshServiceFailureDoesNotFalselyRequireNewPassword" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.01"/>
+  <testcase name="newRegistrationCannotExchangeWithoutIssuedClientID" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.011"/>
+  <testcase name="removalPreservesOtherSavedAccounts" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.009"/>
+  <testcase name="canceledWaiterCannotLoseAnotherCallersNewGrant" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.023"/>
+  <testcase name="expiredTokenWithoutRefreshFailsWithoutNetwork" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.035"/>
+  <testcase name="validCallbackUsesIssuedClientAndExactRedirectInCodeExchange" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.037"/>
+  <testcase name="canceledUnstartedRestorationDoesNotSendRefreshPost" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.007"/>
+  <testcase name="healthyReconnectDoesNotRotateTokensUnnecessarily" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.011"/>
+  <testcase name="returningRegistrationRejectsDifferentSubject" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.01"/>
+  <testcase name="everyAttemptUsesFreshStateNonceAndChallenge" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.004"/>
+  <testcase name="revokeRedirectIsNotFollowed" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.037"/>
+  <testcase name="wipeDuringRefreshCannotRestoreRemovedCredentials" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.01"/>
+  <testcase name="tokenErrorBodyNeverLeaksItsPrivateContents" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.007"/>
+  <testcase name="malformedRefreshEligibilityResponseFailsOnceWithoutDeletingSession" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.007"/>
+  <testcase name="publicStateAndDescriptorNeverExposeBearerOrIDTokens" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.026"/>
+  <testcase name="signedIdentityAloneDoesNotAuthorizeInference" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.011"/>
+  <testcase name="callbackValidatesIDWithIssuedClientAndTransactionNonce" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.038"/>
+  <testcase name="reducedGrantAfterBackgroundCancellationDoesNotStayAuthorized" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.009"/>
+  <testcase name="invalidRefreshIDSignatureCannotReplaceSavedCredentials" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.009"/>
+  <testcase name="validatedIdentityRemovesPendingRegistration" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.013"/>
+  <testcase name="processRestartDoesNotRestorePendingState" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.008"/>
+  <testcase name="removingConnectionPreservesUnrelatedPrivateEntries" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.007"/>
+  <testcase name="anotherCallbackPathIsRejected" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.009"/>
+  <testcase name="healthyTokenDoesNotRequestRefreshBeforeNeeded" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.034"/>
+  <testcase name="bootstrapClientCanNeverBeUsedForTokenExchange" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.013"/>
+  <testcase name="savedConnectionRemovalDeletesOnlyLocalGrant" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.012"/>
+  <testcase name="numericUndocumentedRefreshFieldDoesNotOverrideExpiresIn" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.025"/>
+  <testcase name="newRefreshIDIsValidatedAgainstOriginalNonceAndSubject" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.012"/>
+  <testcase name="nonLoopbackHostHeaderIsRejected" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.011"/>
+  <testcase name="transactionDeadlineEndsWithoutFabricatedAccount" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.538"/>
+  <testcase name="failedAdditionalAccountCannotReplaceTheActiveValidatedIdentity" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.018"/>
+  <testcase name="duplicateQueryParametersAreRejectedWithoutTokenRequest" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.004"/>
+  <testcase name="terminalRefreshErrorClearsCredentialsButPreservesRegistration" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.006"/>
+  <testcase name="removeDuringRefreshCannotResurrectDeletedConnection" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.008"/>
+  <testcase name="publicRegistrationUsesOfficialAuthorityAndPKCE" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.002"/>
+  <testcase name="failedRevocationStillLeavesLocalConnectionRemoved" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.006"/>
+  <testcase name="backgroundCancellationStillPersistsRotatedGrant" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.009"/>
+  <testcase name="refreshWithoutScopeOrNewRefreshRetainsExistingGrant" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.013"/>
+  <testcase name="disconnectDuringRefreshCannotResurrectTheSession" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.019"/>
+  <testcase name="removingSignedOutConnectionNeedsNoRemoteRequest" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.003"/>
+  <testcase name="returningRegistrationUsesIssuedClientWithoutNewAgentHint" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.004"/>
+  <testcase name="invalidStateCannotPersistAnIssuedRegistration" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.01"/>
+  <testcase name="failedCodeExchangeRetainsIssuedRegistrationForFreshPKCERetry" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.022"/>
+  <testcase name="reducedScopesInvalidateRevisionAndDenyPlanAccess" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.007"/>
+  <testcase name="installationHostSurvivesNewAttempts" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.008"/>
+  <testcase name="userDenialIsCancellationWithoutCredentials" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.005"/>
+  <testcase name="tokenEndpointRedirectIsNotFollowed" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.008"/>
+  <testcase name="removingUnknownConnectionPreservesStoredBundle" classname="com.jarvis.assistant.brain.auth.OpenAiAuthManagerTest" time="0.004"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,4 +1,4 @@
-# Jarvis local companion — 2.11.6 development milestone
+# Jarvis local companion — agent 1.2 / Jarvis 5.2 preview
 
 This is the actual narrowly scoped companion used by the Android paired-computer screen. It opens Chrome in a **separate Jarvis browser profile** and can perform a Google search. The computer needs no microphone or speakers. Android captures the request and speaks the verified receipt. It does not control other apps, files, passwords, arbitrary terminals, existing browser profiles or remote internet desktops.
 
@@ -6,7 +6,7 @@ This is the actual narrowly scoped companion used by the Android paired-computer
 
 1. Install Python 3.11 or newer from [python.org](https://www.python.org/downloads/windows/) if it is not installed. Chrome must also be installed.
 2. Extract the companion source ZIP. In Windows Settings → Network & Internet → your connection's properties, note the private IPv4 address, such as `192.168.1.8`. The phone must be on a network that can reach that computer; guest Wi-Fi may isolate devices.
-3. Open PowerShell in the extracted companion folder and run `./start-windows.ps1 -Bind 192.168.1.8`. Substitute the computer's actual address. The launcher creates a private Python environment and installs the pinned requirements. It does not configure autorun, disable security software or silently add a firewall rule. Follow Windows' normal private-network permission prompt if one appears.
+3. Open PowerShell in the extracted companion folder and run `./start-windows.ps1 -Bind 192.168.1.8`. Substitute the computer's actual address. The launcher reuses its existing private Python environment and already-compatible dependencies; it creates that environment only when missing and installs only missing/mismatched pinned requirements. It does not upgrade Python or pip and stops on an installation failure without automatic retry. It does not configure autorun, disable security software or silently add a firewall rule. Follow Windows' normal private-network permission prompt if one appears.
 4. Leave the visible companion terminal open. Open its **private `pairing-qr.svg` file** from the path printed in that terminal. The QR expires in two minutes. Never upload that file, the text invitation or the private state folder to GitHub/chat.
 5. On Android: Settings → Rebirth → Paired computer → Scan computer's one-time QR. Alternatively paste the private invitation text directly into that screen. Review the displayed computer address and certificate, then request pairing.
 6. Compare the six-character code on the phone with the computer: enter `pending` in the companion terminal. Enter `approve TICKET`, substituting the matching ticket printed there. Tap **Finish after approving on the computer** on Android.
@@ -20,8 +20,9 @@ With Python 3.11+ and a supported Chrome/Chromium installation, run `./start-uni
 
 ## Controls and failures
 
-- `pending`: list waiting phone requests and comparison codes.
-- `approve TICKET`: explicitly approve the matching phone.
+- `pending`: list real waiting tickets, comparison codes, request age, expiration and client-ID suffix, or explicitly report that no pending requests exist.
+- `approve TICKET`: explicitly approve the matching phone, with distinct missing/expired/already-approved results.
+- `deny TICKET`: explicitly deny a pending request.
 - `invite`: generate a fresh two-minute invitation.
 - `revoke-all`: revoke all phone sessions and request cancellation of in-flight work.
 - `stop` or closing the terminal: close the server and its own Jarvis Chrome instance. Ordinary Chrome profiles are not touched.
@@ -46,4 +47,14 @@ The current companion adds an authenticated, nonce-bound capability manifest for
 
 Stop the old visible process and replace its source files, preserving the existing private state directory and IP/TLS identity, then restart normally. Do not delete pairing data or generate a new identity to update it. The new Android client keeps the legacy Chrome command path working when an older agent lacks readiness discovery, while clearly marking that readiness unknown.
 
-Current controlled verification: 36 Python tests, including local HTTPS and an actual isolated Chromium fixture, passed. Windows/macOS native runs, installers, Google results pages and Android audio round trips remain unverified. See [Mission Control implementation and capability matrix](../docs/finish-polish/Mission.md).
+The 5.2 final evidence records the current full-suite count and failures/skips; do not reuse the older milestone test count as a new run. Windows/macOS native runs, installers, live Google results pages and Android audio round trips remain unverified. See [5.2 implementation report](../docs/jarvis/JARVIS_5_2_REPORT.md) and [Mission Control capability matrix](../docs/finish-polish/Mission.md).
+
+## Pairing recovery and nearby discovery in agent 1.2
+
+The established JARVIS-PAIR-1 wire format and private TLS/database identity are preserved. A legitimate exact request retry reconciles its original ticket; a finish retry reconciles the same session only within its original challenge lifetime. No permanent plaintext session token is added to the database. Approval status requires the original request proof. `revoke-all` also invalidates pending requests/invitations and temporary completion responses.
+
+Best-effort mDNS uses `_jarvis-pc._tcp.local.` and only public device/protocol hints. It is never trust or authentication. A failed/missing advertisement does not prevent QR/manual pairing. Android discovery is bounded and foreground-only; it cannot silently select devices, rewrite endpoints or replace pins. Current Android signed connection proof expires after 60 seconds; saved trust is separate.
+
+Follow the [computer pairing guide](../docs/jarvis/JARVIS_COMPUTER_PAIRING_GUIDE.md) for the exact two-device flow, preserving `%USERPROFILE%\.jarvis-companion` on Windows. The source ZIP does not include any private state, invitation, certificate/key, pairing database or Python environment. Only the two reviewed Chrome actions are implemented. Windows power, media, files, native arbitrary-app control and shell commands remain unsupported.
+
+On Linux the 5.2 suite passed 103 tests. It exercised an actual Chromium search on a controlled local page, opening and reopening the Jarvis browser, and a real HTTP 404. The companion waits for browser event subscriptions and verifies the requested frame, document loader, final URL and ready state before reporting completion. The Windows launcher and your particular LAN still require testing.

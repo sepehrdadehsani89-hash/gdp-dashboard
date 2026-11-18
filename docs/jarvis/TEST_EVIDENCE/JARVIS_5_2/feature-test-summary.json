@@ -1,0 +1,176 @@
+{
+  "note": "Actual suite results. Coverage groups are not added again to the global total. Policy tests do not establish their corresponding physical UI, device or live account behavior.",
+  "features": [
+    {
+      "feature": "Invitation schema / expiry / normalization",
+      "suites": [
+        "PairingInvitationTest"
+      ],
+      "passed": 32,
+      "environment": "Host JVM: policies, image decoding, mock HTTP, or explicitly named real loopback TLS",
+      "physical_verified": false
+    },
+    {
+      "feature": "Actual local gallery QR decoding",
+      "suites": [
+        "QrImageDecoderTest"
+      ],
+      "passed": 22,
+      "environment": "Host JVM: policies, image decoding, mock HTTP, or explicitly named real loopback TLS",
+      "physical_verified": false
+    },
+    {
+      "feature": "Pairing lifecycle / busy / cancellation / diagnostics",
+      "suites": [
+        "PairingCoordinatorTest"
+      ],
+      "passed": 34,
+      "environment": "Host JVM: policies, image decoding, mock HTTP, or explicitly named real loopback TLS",
+      "physical_verified": false
+    },
+    {
+      "feature": "Production Kotlin-client and real Python HTTPS interoperability",
+      "suites": [
+        "CompanionTlsIntegrationTest"
+      ],
+      "passed": 28,
+      "environment": "Host JVM: policies, image decoding, mock HTTP, or explicitly named real loopback TLS",
+      "physical_verified": false
+    },
+    {
+      "feature": "Discovery untrusted-hint boundaries",
+      "suites": [
+        "NearbyCompanionPolicyTest"
+      ],
+      "passed": 22,
+      "environment": "Host JVM: policies, image decoding, mock HTTP, or explicitly named real loopback TLS",
+      "physical_verified": false
+    },
+    {
+      "feature": "Saved registry / names / selection",
+      "suites": [
+        "DesktopRegistryTest"
+      ],
+      "passed": 26,
+      "environment": "Host JVM: policies, image decoding, mock HTTP, or explicitly named real loopback TLS",
+      "physical_verified": false
+    },
+    {
+      "feature": "Current signed connection proof",
+      "suites": [
+        "DesktopConnectionProofTest"
+      ],
+      "passed": 20,
+      "environment": "Host JVM: policies, image decoding, mock HTTP, or explicitly named real loopback TLS",
+      "physical_verified": false
+    },
+    {
+      "feature": "Unsupported computer actions do not become fictional execution",
+      "suites": [
+        "DesktopUnsupportedActionsTest"
+      ],
+      "passed": 24,
+      "environment": "Host JVM: policies, image decoding, mock HTTP, or explicitly named real loopback TLS",
+      "physical_verified": false
+    },
+    {
+      "feature": "Encrypted Google Cloud configuration",
+      "suites": [
+        "GoogleCloudConfigurationTest"
+      ],
+      "passed": 22,
+      "environment": "Host JVM: policies, image decoding, mock HTTP, or explicitly named real loopback TLS",
+      "physical_verified": false
+    },
+    {
+      "feature": "Public API-key HTTP response/security policy (mock server)",
+      "suites": [
+        "GooglePublicKeyHttpTest"
+      ],
+      "passed": 24,
+      "environment": "Host JVM: policies, image decoding, mock HTTP, or explicitly named real loopback TLS",
+      "physical_verified": false
+    },
+    {
+      "feature": "One-read private AI summary consent/account/provider policy",
+      "suites": [
+        "GoogleSummaryPolicyTest"
+      ],
+      "passed": 24,
+      "environment": "Host JVM: policies, image decoding, mock HTTP, or explicitly named real loopback TLS",
+      "physical_verified": false
+    },
+    {
+      "feature": "Real Gmail count observation/privacy boundaries",
+      "suites": [
+        "GmailWidgetPolicyTest"
+      ],
+      "passed": 20,
+      "environment": "Host JVM: policies, image decoding, mock HTTP, or explicitly named real loopback TLS",
+      "physical_verified": false
+    },
+    {
+      "feature": "Google widget freshness/account/grant/lock boundaries",
+      "suites": [
+        "GoogleWidgetBoundaryTest"
+      ],
+      "passed": 20,
+      "environment": "Host JVM: policies, image decoding, mock HTTP, or explicitly named real loopback TLS",
+      "physical_verified": false
+    },
+    {
+      "feature": "Silent / Deep / wake / reminder / presentation policy",
+      "suites": [
+        "SystemModePolicyTest"
+      ],
+      "passed": 37,
+      "environment": "Host JVM: policies, image decoding, mock HTTP, or explicitly named real loopback TLS",
+      "physical_verified": false
+    },
+    {
+      "feature": "Mode persistence/corruption/write-failure boundaries",
+      "suites": [
+        "SystemModesStoreTest"
+      ],
+      "passed": 20,
+      "environment": "Host JVM: policies, image decoding, mock HTTP, or explicitly named real loopback TLS",
+      "physical_verified": false
+    },
+    {
+      "feature": "Studio full-spectrum color transformations",
+      "suites": [
+        "StudioColorTest"
+      ],
+      "passed": 28,
+      "environment": "Host JVM: policies, image decoding, mock HTTP, or explicitly named real loopback TLS",
+      "physical_verified": false
+    },
+    {
+      "feature": "Studio profiles/layers/transforms/privacy persistence",
+      "suites": [
+        "WallpaperStudioStoreTest"
+      ],
+      "passed": 36,
+      "environment": "Host JVM: policies, image decoding, mock HTTP, or explicitly named real loopback TLS",
+      "physical_verified": false
+    },
+    {
+      "feature": "Optional setup review/skip never equals live connection",
+      "suites": [
+        "NexusSetupPolicyTest"
+      ],
+      "passed": 22,
+      "environment": "Host JVM: policies, image decoding, mock HTTP, or explicitly named real loopback TLS",
+      "physical_verified": false
+    },
+    {
+      "feature": "Typed voice navigation never equals setting mutation",
+      "suites": [
+        "NexusNavigationPolicyTest"
+      ],
+      "passed": 22,
+      "environment": "Host JVM: policies, image decoding, mock HTTP, or explicitly named real loopback TLS",
+      "physical_verified": false
+    }
+  ]
+}

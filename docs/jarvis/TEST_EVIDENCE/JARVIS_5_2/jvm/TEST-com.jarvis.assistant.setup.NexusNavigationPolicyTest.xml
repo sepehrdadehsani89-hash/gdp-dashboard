@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.setup.NexusNavigationPolicyTest" tests="22" skipped="0" failures="0" errors="0" timestamp="2026-11-18T20:15:52" hostname="885caff30ac4" time="0.002">
+  <properties/>
+  <testcase name="wallpaperStudioIsExplicit" classname="com.jarvis.assistant.setup.NexusNavigationPolicyTest" time="0.001"/>
+  <testcase name="configureCloudDoesNotInventAProject" classname="com.jarvis.assistant.setup.NexusNavigationPolicyTest" time="0.0"/>
+  <testcase name="colorStudioIsPartOfActualEditor" classname="com.jarvis.assistant.setup.NexusNavigationPolicyTest" time="0.0"/>
+  <testcase name="commandLabIsExplicit" classname="com.jarvis.assistant.setup.NexusNavigationPolicyTest" time="0.0"/>
+  <testcase name="urlCannotBecomeADestination" classname="com.jarvis.assistant.setup.NexusNavigationPolicyTest" time="0.0"/>
+  <testcase name="cloudConfigurationUsesItsActualScreen" classname="com.jarvis.assistant.setup.NexusNavigationPolicyTest" time="0.0"/>
+  <testcase name="computerQrOpensReviewedPairing" classname="com.jarvis.assistant.setup.NexusNavigationPolicyTest" time="0.0"/>
+  <testcase name="spanishEditorNavigationWorks" classname="com.jarvis.assistant.setup.NexusNavigationPolicyTest" time="0.0"/>
+  <testcase name="existingChromeCommandIsNotShadowed" classname="com.jarvis.assistant.setup.NexusNavigationPolicyTest" time="0.0"/>
+  <testcase name="editorIntentDoesNotMutateAutomatically" classname="com.jarvis.assistant.setup.NexusNavigationPolicyTest" time="0.0"/>
+  <testcase name="negatedEditorRequestDoesNotOpen" classname="com.jarvis.assistant.setup.NexusNavigationPolicyTest" time="0.0"/>
+  <testcase name="modeSettingsDoNotApplyMode" classname="com.jarvis.assistant.setup.NexusNavigationPolicyTest" time="0.0"/>
+  <testcase name="arbitraryShellIsNotANavigationTool" classname="com.jarvis.assistant.setup.NexusNavigationPolicyTest" time="0.0"/>
+  <testcase name="ordinaryGmailLaunchIsNotShadowed" classname="com.jarvis.assistant.setup.NexusNavigationPolicyTest" time="0.0"/>
+  <testcase name="manageAccountsUsesExistingServices" classname="com.jarvis.assistant.setup.NexusNavigationPolicyTest" time="0.0"/>
+  <testcase name="widgetLibraryIsPartOfActualEditor" classname="com.jarvis.assistant.setup.NexusNavigationPolicyTest" time="0.0"/>
+  <testcase name="pairingDiagnosticsHaveARealDestination" classname="com.jarvis.assistant.setup.NexusNavigationPolicyTest" time="0.0"/>
+  <testcase name="questionDoesNotNavigate" classname="com.jarvis.assistant.setup.NexusNavigationPolicyTest" time="0.0"/>
+  <testcase name="servicePermissionsUseOfficialAccountManagement" classname="com.jarvis.assistant.setup.NexusNavigationPolicyTest" time="0.0"/>
+  <testcase name="wakePrefixAndPunctuationAreNormalized" classname="com.jarvis.assistant.setup.NexusNavigationPolicyTest" time="0.0"/>
+  <testcase name="deepSettingsDoNotExecuteShutdown" classname="com.jarvis.assistant.setup.NexusNavigationPolicyTest" time="0.0"/>
+  <testcase name="reconfigurationUsesNewWizard" classname="com.jarvis.assistant.setup.NexusNavigationPolicyTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

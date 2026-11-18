@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.neural.AppDiscoveryRepairTest" tests="21" skipped="0" failures="0" errors="0" timestamp="2026-11-18T20:15:51" hostname="885caff30ac4" time="0.032">
+  <properties/>
+  <testcase name="disabledApplicationsAreNotEligible" classname="com.jarvis.assistant.neural.AppDiscoveryRepairTest" time="0.001"/>
+  <testcase name="localizedInstagramHasCanonicalName" classname="com.jarvis.assistant.neural.AppDiscoveryRepairTest" time="0.001"/>
+  <testcase name="localizedYouTubeHasCanonicalName" classname="com.jarvis.assistant.neural.AppDiscoveryRepairTest" time="0.0"/>
+  <testcase name="nonexportedActivitiesAreNotEligible" classname="com.jarvis.assistant.neural.AppDiscoveryRepairTest" time="0.0"/>
+  <testcase name="pinnedAliasStillUsesOnlyAnActualVisibleTarget" classname="com.jarvis.assistant.neural.AppDiscoveryRepairTest" time="0.0"/>
+  <testcase name="missingAppDoesNotProduceAnInventedPackage" classname="com.jarvis.assistant.neural.AppDiscoveryRepairTest" time="0.001"/>
+  <testcase name="localizedMapsHasCanonicalName" classname="com.jarvis.assistant.neural.AppDiscoveryRepairTest" time="0.0"/>
+  <testcase name="disabledLauncherActivitiesAreNotEligible" classname="com.jarvis.assistant.neural.AppDiscoveryRepairTest" time="0.0"/>
+  <testcase name="localizedSpotifyHasCanonicalName" classname="com.jarvis.assistant.neural.AppDiscoveryRepairTest" time="0.0"/>
+  <testcase name="spanishWakePrefixPreservesIntent" classname="com.jarvis.assistant.neural.AppDiscoveryRepairTest" time="0.0"/>
+  <testcase name="compoundLaunchesAreNotSilentlyCombined" classname="com.jarvis.assistant.neural.AppDiscoveryRepairTest" time="0.001"/>
+  <testcase name="unknownPackageReceivesNoInventedCanonicalName" classname="com.jarvis.assistant.neural.AppDiscoveryRepairTest" time="0.0"/>
+  <testcase name="wakePrefixedGmailResolvesLocalizedLabel" classname="com.jarvis.assistant.neural.AppDiscoveryRepairTest" time="0.0"/>
+  <testcase name="enabledExportedLauncherIsEligible" classname="com.jarvis.assistant.neural.AppDiscoveryRepairTest" time="0.0"/>
+  <testcase name="twoRealCameraAppsRequireClarification" classname="com.jarvis.assistant.neural.AppDiscoveryRepairTest" time="0.0"/>
+  <testcase name="wakePrefixedWhatsAppDispatchesExactCandidate" classname="com.jarvis.assistant.neural.AppDiscoveryRepairTest" time="0.0"/>
+  <testcase name="missingPinnedAliasNeverSwitchesToDifferentApp" classname="com.jarvis.assistant.neural.AppDiscoveryRepairTest" time="0.0"/>
+  <testcase name="xiaomiCalculatorUsesActualPackage" classname="com.jarvis.assistant.neural.AppDiscoveryRepairTest" time="0.0"/>
+  <testcase name="xiaomiCameraUsesActualPackage" classname="com.jarvis.assistant.neural.AppDiscoveryRepairTest" time="0.0"/>
+  <testcase name="localizedChromeHasCanonicalName" classname="com.jarvis.assistant.neural.AppDiscoveryRepairTest" time="0.0"/>
+  <testcase name="questionsAboutOpeningAppsAreNotLaunchCommands" classname="com.jarvis.assistant.neural.AppDiscoveryRepairTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.voice.HalfDuplexVoiceTest" tests="30" skipped="0" failures="0" errors="0" timestamp="2026-11-18T20:15:52" hostname="885caff30ac4" time="0.002">
+  <properties/>
+  <testcase name="wakeWordCannotReplaceSpeakingState" classname="com.jarvis.assistant.voice.HalfDuplexVoiceTest" time="0.001"/>
+  <testcase name="finalizationIsRecordedBeforeInference" classname="com.jarvis.assistant.voice.HalfDuplexVoiceTest" time="0.0"/>
+  <testcase name="greetingCannotStartInsideCooldown" classname="com.jarvis.assistant.voice.HalfDuplexVoiceTest" time="0.0"/>
+  <testcase name="noiseErrorCannotReplaceSpeakingState" classname="com.jarvis.assistant.voice.HalfDuplexVoiceTest" time="0.0"/>
+  <testcase name="cooldownCannotBeDisabledAccidentally" classname="com.jarvis.assistant.voice.HalfDuplexVoiceTest" time="0.0"/>
+  <testcase name="cooldownHasAFiniteUpperBound" classname="com.jarvis.assistant.voice.HalfDuplexVoiceTest" time="0.0"/>
+  <testcase name="elapsedTimeAloneCannotCompleteAudio" classname="com.jarvis.assistant.voice.HalfDuplexVoiceTest" time="0.0"/>
+  <testcase name="synthesisAlreadyOwnsTheMicrophone" classname="com.jarvis.assistant.voice.HalfDuplexVoiceTest" time="0.0"/>
+  <testcase name="repeatedConversationHasNoSpeechCaptureOverlap" classname="com.jarvis.assistant.voice.HalfDuplexVoiceTest" time="0.001"/>
+  <testcase name="completionStartsCooldownWithoutMicrophone" classname="com.jarvis.assistant.voice.HalfDuplexVoiceTest" time="0.0"/>
+  <testcase name="finalInCooldownIsIgnored" classname="com.jarvis.assistant.voice.HalfDuplexVoiceTest" time="0.0"/>
+  <testcase name="lateOldCaptureCannotAffectNewTurn" classname="com.jarvis.assistant.voice.HalfDuplexVoiceTest" time="0.0"/>
+  <testcase name="audioFailureAlsoClearsEchoBeforeReady" classname="com.jarvis.assistant.voice.HalfDuplexVoiceTest" time="0.0"/>
+  <testcase name="explicitContinuousConversationCanRearm" classname="com.jarvis.assistant.voice.HalfDuplexVoiceTest" time="0.0"/>
+  <testcase name="backendWaitAlsoBlocksCapture" classname="com.jarvis.assistant.voice.HalfDuplexVoiceTest" time="0.0"/>
+  <testcase name="defaultConversationDoesNotAutoListen" classname="com.jarvis.assistant.voice.HalfDuplexVoiceTest" time="0.0"/>
+  <testcase name="playingNeverAcceptsRecognition" classname="com.jarvis.assistant.voice.HalfDuplexVoiceTest" time="0.0"/>
+  <testcase name="completionNeedsTheEntireCooldown" classname="com.jarvis.assistant.voice.HalfDuplexVoiceTest" time="0.0"/>
+  <testcase name="idleNotificationCannotReleaseSpeech" classname="com.jarvis.assistant.voice.HalfDuplexVoiceTest" time="0.0"/>
+  <testcase name="manualStopRetiresEveryOldPlaybackCallback" classname="com.jarvis.assistant.voice.HalfDuplexVoiceTest" time="0.0"/>
+  <testcase name="explicitlyAnsweredAiCallCanRearm" classname="com.jarvis.assistant.voice.HalfDuplexVoiceTest" time="0.0"/>
+  <testcase name="oldCompletionCannotReopenMicAfterHangup" classname="com.jarvis.assistant.voice.HalfDuplexVoiceTest" time="0.0"/>
+  <testcase name="readyReturnsToWakeOnlyUnlessExplicitlyArmed" classname="com.jarvis.assistant.voice.HalfDuplexVoiceTest" time="0.0"/>
+  <testcase name="captureReadinessCannotInterruptSpeech" classname="com.jarvis.assistant.voice.HalfDuplexVoiceTest" time="0.0"/>
+  <testcase name="responseReadyReleasesThinkingBeforeSpeechPreparation" classname="com.jarvis.assistant.voice.HalfDuplexVoiceTest" time="0.0"/>
+  <testcase name="readyCannotReleaseUnfinishedSpeech" classname="com.jarvis.assistant.voice.HalfDuplexVoiceTest" time="0.0"/>
+  <testcase name="armingCannotOverridePlaybackReservation" classname="com.jarvis.assistant.voice.HalfDuplexVoiceTest" time="0.0"/>
+  <testcase name="noRequestNeverStartsListening" classname="com.jarvis.assistant.voice.HalfDuplexVoiceTest" time="0.0"/>
+  <testcase name="staleFinalCannotReplaceSpeakingState" classname="com.jarvis.assistant.voice.HalfDuplexVoiceTest" time="0.0"/>
+  <testcase name="lateOldFailureCannotReleaseNewSpeech" classname="com.jarvis.assistant.voice.HalfDuplexVoiceTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

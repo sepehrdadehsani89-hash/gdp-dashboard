@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.farewell.FarewellIntentTest" tests="46" skipped="0" failures="0" errors="0" timestamp="2026-11-18T20:15:46" hostname="885caff30ac4" time="0.006">
+  <properties/>
+  <testcase name="genuineCompletionIsSeparatedFromQuestionsAndNegations[Goodbye, Jarvis.]" classname="com.jarvis.assistant.farewell.FarewellIntentTest" time="0.004"/>
+  <testcase name="genuineCompletionIsSeparatedFromQuestionsAndNegations[Thank you, Jarvis. I have to go.]" classname="com.jarvis.assistant.farewell.FarewellIntentTest" time="0.0"/>
+  <testcase name="genuineCompletionIsSeparatedFromQuestionsAndNegations[Thank you, Jarvis. What does goodbye mean?]" classname="com.jarvis.assistant.farewell.FarewellIntentTest" time="0.0"/>
+  <testcase name="genuineCompletionIsSeparatedFromQuestionsAndNegations[Goodbye.]" classname="com.jarvis.assistant.farewell.FarewellIntentTest" time="0.0"/>
+  <testcase name="genuineCompletionIsSeparatedFromQuestionsAndNegations[Bye!]" classname="com.jarvis.assistant.farewell.FarewellIntentTest" time="0.0"/>
+  <testcase name="genuineCompletionIsSeparatedFromQuestionsAndNegations[See you later.]" classname="com.jarvis.assistant.farewell.FarewellIntentTest" time="0.0"/>
+  <testcase name="genuineCompletionIsSeparatedFromQuestionsAndNegations[I have to go.]" classname="com.jarvis.assistant.farewell.FarewellIntentTest" time="0.0"/>
+  <testcase name="genuineCompletionIsSeparatedFromQuestionsAndNegations[Thank you, I'm done.]" classname="com.jarvis.assistant.farewell.FarewellIntentTest" time="0.0"/>
+  <testcase name="genuineCompletionIsSeparatedFromQuestionsAndNegations[That's all.]" classname="com.jarvis.assistant.farewell.FarewellIntentTest" time="0.0"/>
+  <testcase name="genuineCompletionIsSeparatedFromQuestionsAndNegations[You can rest.]" classname="com.jarvis.assistant.farewell.FarewellIntentTest" time="0.0"/>
+  <testcase name="genuineCompletionIsSeparatedFromQuestionsAndNegations[Stand down.]" classname="com.jarvis.assistant.farewell.FarewellIntentTest" time="0.0"/>
+  <testcase name="genuineCompletionIsSeparatedFromQuestionsAndNegations[Good night.]" classname="com.jarvis.assistant.farewell.FarewellIntentTest" time="0.0"/>
+  <testcase name="genuineCompletionIsSeparatedFromQuestionsAndNegations[Talk tomorrow.]" classname="com.jarvis.assistant.farewell.FarewellIntentTest" time="0.0"/>
+  <testcase name="genuineCompletionIsSeparatedFromQuestionsAndNegations[Stop listening.]" classname="com.jarvis.assistant.farewell.FarewellIntentTest" time="0.0"/>
+  <testcase name="genuineCompletionIsSeparatedFromQuestionsAndNegations[End conversation.]" classname="com.jarvis.assistant.farewell.FarewellIntentTest" time="0.0"/>
+  <testcase name="genuineCompletionIsSeparatedFromQuestionsAndNegations[Hey Jarvis, I'm done]" classname="com.jarvis.assistant.farewell.FarewellIntentTest" time="0.0"/>
+  <testcase name="genuineCompletionIsSeparatedFromQuestionsAndNegations[I'm done studying]" classname="com.jarvis.assistant.farewell.FarewellIntentTest" time="0.0"/>
+  <testcase name="genuineCompletionIsSeparatedFromQuestionsAndNegations[I am done working]" classname="com.jarvis.assistant.farewell.FarewellIntentTest" time="0.0"/>
+  <testcase name="genuineCompletionIsSeparatedFromQuestionsAndNegations[Hasta luego]" classname="com.jarvis.assistant.farewell.FarewellIntentTest" time="0.0"/>
+  <testcase name="genuineCompletionIsSeparatedFromQuestionsAndNegations[Adiós]" classname="com.jarvis.assistant.farewell.FarewellIntentTest" time="0.0"/>
+  <testcase name="genuineCompletionIsSeparatedFromQuestionsAndNegations[Buenas noches]" classname="com.jarvis.assistant.farewell.FarewellIntentTest" time="0.0"/>
+  <testcase name="genuineCompletionIsSeparatedFromQuestionsAndNegations[Ya terminé]" classname="com.jarvis.assistant.farewell.FarewellIntentTest" time="0.0"/>
+  <testcase name="genuineCompletionIsSeparatedFromQuestionsAndNegations[خداحافظ]" classname="com.jarvis.assistant.farewell.FarewellIntentTest" time="0.0"/>
+  <testcase name="genuineCompletionIsSeparatedFromQuestionsAndNegations[شب بخیر]" classname="com.jarvis.assistant.farewell.FarewellIntentTest" time="0.0"/>
+  <testcase name="genuineCompletionIsSeparatedFromQuestionsAndNegations[دیگه کافیه]" classname="com.jarvis.assistant.farewell.FarewellIntentTest" time="0.0"/>
+  <testcase name="genuineCompletionIsSeparatedFromQuestionsAndNegations[What does goodbye mean?]" classname="com.jarvis.assistant.farewell.FarewellIntentTest" time="0.0"/>
+  <testcase name="genuineCompletionIsSeparatedFromQuestionsAndNegations[Translate goodbye into Spanish]" classname="com.jarvis.assistant.farewell.FarewellIntentTest" time="0.001"/>
+  <testcase name="genuineCompletionIsSeparatedFromQuestionsAndNegations[How do I say bye in Persian?]" classname="com.jarvis.assistant.farewell.FarewellIntentTest" time="0.0"/>
+  <testcase name="genuineCompletionIsSeparatedFromQuestionsAndNegations[Do not stop listening]" classname="com.jarvis.assistant.farewell.FarewellIntentTest" time="0.0"/>
+  <testcase name="genuineCompletionIsSeparatedFromQuestionsAndNegations[Don't end this conversation]" classname="com.jarvis.assistant.farewell.FarewellIntentTest" time="0.0"/>
+  <testcase name="genuineCompletionIsSeparatedFromQuestionsAndNegations[I'm not done]" classname="com.jarvis.assistant.farewell.FarewellIntentTest" time="0.0"/>
+  <testcase name="genuineCompletionIsSeparatedFromQuestionsAndNegations[If I say goodbye, what happens?]" classname="com.jarvis.assistant.farewell.FarewellIntentTest" time="0.0"/>
+  <testcase name="genuineCompletionIsSeparatedFromQuestionsAndNegations[Remind me to say goodbye tomorrow]" classname="com.jarvis.assistant.farewell.FarewellIntentTest" time="0.0"/>
+  <testcase name="genuineCompletionIsSeparatedFromQuestionsAndNegations[Call Mom and say goodbye]" classname="com.jarvis.assistant.farewell.FarewellIntentTest" time="0.0"/>
+  <testcase name="genuineCompletionIsSeparatedFromQuestionsAndNegations[What's the song Goodbye?]" classname="com.jarvis.assistant.farewell.FarewellIntentTest" time="0.0"/>
+  <testcase name="genuineCompletionIsSeparatedFromQuestionsAndNegations[Good night mode settings]" classname="com.jarvis.assistant.farewell.FarewellIntentTest" time="0.0"/>
+  <testcase name="genuineCompletionIsSeparatedFromQuestionsAndNegations[See you later is a greeting?]" classname="com.jarvis.assistant.farewell.FarewellIntentTest" time="0.0"/>
+  <testcase name="genuineCompletionIsSeparatedFromQuestionsAndNegations[Thank you, what's my battery?]" classname="com.jarvis.assistant.farewell.FarewellIntentTest" time="0.0"/>
+  <testcase name="genuineCompletionIsSeparatedFromQuestionsAndNegations[I'm done with dinner, what's the weather?]" classname="com.jarvis.assistant.farewell.FarewellIntentTest" time="0.0"/>
+  <testcase name="genuineCompletionIsSeparatedFromQuestionsAndNegations[You can rest after you answer this]" classname="com.jarvis.assistant.farewell.FarewellIntentTest" time="0.0"/>
+  <testcase name="genuineCompletionIsSeparatedFromQuestionsAndNegations[What is standby?]" classname="com.jarvis.assistant.farewell.FarewellIntentTest" time="0.0"/>
+  <testcase name="genuineCompletionIsSeparatedFromQuestionsAndNegations[How do I end conversation?]" classname="com.jarvis.assistant.farewell.FarewellIntentTest" time="0.0"/>
+  <testcase name="genuineCompletionIsSeparatedFromQuestionsAndNegations[Stop listening to music]" classname="com.jarvis.assistant.farewell.FarewellIntentTest" time="0.0"/>
+  <testcase name="genuineCompletionIsSeparatedFromQuestionsAndNegations[No te despidas]" classname="com.jarvis.assistant.farewell.FarewellIntentTest" time="0.0"/>
+  <testcase name="genuineCompletionIsSeparatedFromQuestionsAndNegations[¿Qué significa adiós?]" classname="com.jarvis.assistant.farewell.FarewellIntentTest" time="0.0"/>
+  <testcase name="genuineCompletionIsSeparatedFromQuestionsAndNegations[خداحافظ یعنی چه]" classname="com.jarvis.assistant.farewell.FarewellIntentTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

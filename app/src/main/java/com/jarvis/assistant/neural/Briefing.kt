@@ -65,6 +65,7 @@ object BriefingScheduler {
 }
 class BriefingWorker(context:Context,params:WorkerParameters):CoroutineWorker(context,params){
     override suspend fun doWork():Result{
+        if(!com.jarvis.assistant.modes.SystemModePolicy.optionalActivityAllowed(com.jarvis.assistant.modes.SystemModes.current(applicationContext)))return Result.success()
         val s=NeuralPreferences(applicationContext).state.value
         if(!s.briefing)return Result.success()
         try{

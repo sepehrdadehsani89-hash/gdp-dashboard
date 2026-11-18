@@ -82,6 +82,7 @@ class WakeListenerService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if(!com.jarvis.assistant.modes.SystemModePolicy.wakeAllowed(com.jarvis.assistant.modes.SystemModes.current(this))){disableRecovery(this);stopImmediately();stopSelf();return START_NOT_STICKY}
         when (intent?.action) {
             ACTION_REFRESH_PICKUP -> {
                 pickupMonitor?.close();pickupMonitor=null

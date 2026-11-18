@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.infinity.InfinityPolicyTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2026-11-18T20:15:50" hostname="885caff30ac4" time="0.01">
+  <properties/>
+  <testcase name="missingWifiRssiNeverBecomesASignalMeasurement" classname="com.jarvis.assistant.infinity.InfinityPolicyTest" time="0.001"/>
+  <testcase name="ssidRedactionAndUnavailableMeasurementsStayUnavailable" classname="com.jarvis.assistant.infinity.InfinityPolicyTest" time="0.0"/>
+  <testcase name="aliasesAndOrdinalReferencesAreBoundToTheActualList" classname="com.jarvis.assistant.infinity.InfinityPolicyTest" time="0.002"/>
+  <testcase name="reactorSpeakingListeningAndChargingColorsRemainIndependent" classname="com.jarvis.assistant.infinity.InfinityPolicyTest" time="0.001"/>
+  <testcase name="deviceNameMatchingUsesOnlyRealCandidatesWithSpokenNumbers" classname="com.jarvis.assistant.infinity.InfinityPolicyTest" time="0.001"/>
+  <testcase name="fridayOneOffNeverBecomesAWeeklyAlarm" classname="com.jarvis.assistant.infinity.InfinityPolicyTest" time="0.001"/>
+  <testcase name="repeatingDaysRequireExplicitRecurrence" classname="com.jarvis.assistant.infinity.InfinityPolicyTest" time="0.002"/>
+  <testcase name="measuredThroughputHasCorrectUnitsAndRejectsMissingTime" classname="com.jarvis.assistant.infinity.InfinityPolicyTest" time="0.0"/>
+  <testcase name="explanatoryQuestionsDoNotBecomePrivateDeviceReads" classname="com.jarvis.assistant.infinity.InfinityPolicyTest" time="0.0"/>
+  <testcase name="dateAndLanguageAreParsedWithoutGuessingAnUnsupportedDate" classname="com.jarvis.assistant.infinity.InfinityPolicyTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

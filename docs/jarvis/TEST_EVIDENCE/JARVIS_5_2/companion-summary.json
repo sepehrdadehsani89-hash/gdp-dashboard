@@ -1,0 +1,8 @@
+{
+  "tests": 103,
+  "seconds": 9.402,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "platform": "Linux: policies/storage/operator CLI, real local HTTPS, mDNS and isolated actual Chromium fixture; not native Windows/macOS or live Google search"
+}

@@ -9,6 +9,7 @@ import com.jarvis.assistant.core.PendingAction
 import com.jarvis.assistant.core.ConnectionCheck
 
 data class JarvisUiState(
+    val systemMode:com.jarvis.assistant.modes.SystemModeState=com.jarvis.assistant.modes.SystemModeState(),
     val futureSuggestion:com.jarvis.assistant.finishpolish.predictive.FutureSuggestion?=null,
     val aiCall:com.jarvis.assistant.call.AiCallState=com.jarvis.assistant.call.AiCallState(),
     val voiceDelivery:com.jarvis.assistant.voice.VoiceDeliveryStatus=com.jarvis.assistant.voice.VoiceDeliveryStatus(),

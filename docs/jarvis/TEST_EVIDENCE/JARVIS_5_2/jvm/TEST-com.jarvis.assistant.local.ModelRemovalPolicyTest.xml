@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.local.ModelRemovalPolicyTest" tests="34" skipped="0" failures="0" errors="0" timestamp="2026-11-18T20:15:51" hostname="885caff30ac4" time="0.141">
+  <properties/>
+  <testcase name="aPartialDownloadIsNeverVerifiedAsInstalled" classname="com.jarvis.assistant.local.ModelRemovalPolicyTest" time="0.016"/>
+  <testcase name="sameSizeCorruptionCannotPassIntegrity" classname="com.jarvis.assistant.local.ModelRemovalPolicyTest" time="0.005"/>
+  <testcase name="removingLitePreservesOtherBrainFiles" classname="com.jarvis.assistant.local.ModelRemovalPolicyTest" time="0.004"/>
+  <testcase name="cancellationDuringStreamingLeavesInstallationUntouched" classname="com.jarvis.assistant.local.ModelRemovalPolicyTest" time="0.004"/>
+  <testcase name="foreignIdCannotBecomeADeletionTarget" classname="com.jarvis.assistant.local.ModelRemovalPolicyTest" time="0.001"/>
+  <testcase name="trustedPlatformAncestorAliasUsesCanonicalContainment" classname="com.jarvis.assistant.local.ModelRemovalPolicyTest" time="0.001"/>
+  <testcase name="removalPreservesVoiceAssetsUserFilesAndBenchmarks" classname="com.jarvis.assistant.local.ModelRemovalPolicyTest" time="0.006"/>
+  <testcase name="malformedManifestRequiresRepair" classname="com.jarvis.assistant.local.ModelRemovalPolicyTest" time="0.003"/>
+  <testcase name="removalDeletesOnlyCatalogFilesAndReturnsTheirBytes" classname="com.jarvis.assistant.local.ModelRemovalPolicyTest" time="0.003"/>
+  <testcase name="nondirectoryRootIsRejected" classname="com.jarvis.assistant.local.ModelRemovalPolicyTest" time="0.001"/>
+  <testcase name="linkedProfileDirectoryIsRejected" classname="com.jarvis.assistant.local.ModelRemovalPolicyTest" time="0.002"/>
+  <testcase name="removingAbsentProfileIsIdempotent" classname="com.jarvis.assistant.local.ModelRemovalPolicyTest" time="0.003"/>
+  <testcase name="manifestSizeMustMatchActualWeightsAndCatalogRange" classname="com.jarvis.assistant.local.ModelRemovalPolicyTest" time="0.006"/>
+  <testcase name="balancedFilesStayInTheirOwnProfileDirectory" classname="com.jarvis.assistant.local.ModelRemovalPolicyTest" time="0.001"/>
+  <testcase name="absentModelAndManifestAreNotInstalled" classname="com.jarvis.assistant.local.ModelRemovalPolicyTest" time="0.001"/>
+  <testcase name="malformedRevisionAndDigestCannotVerify" classname="com.jarvis.assistant.local.ModelRemovalPolicyTest" time="0.037"/>
+  <testcase name="oversizedManifestIsRejectedBeforeParsing" classname="com.jarvis.assistant.local.ModelRemovalPolicyTest" time="0.003"/>
+  <testcase name="realBytesMatchingManifestPassStreamingIntegrity" classname="com.jarvis.assistant.local.ModelRemovalPolicyTest" time="0.005"/>
+  <testcase name="orphanedManifestRequiresRepair" classname="com.jarvis.assistant.local.ModelRemovalPolicyTest" time="0.002"/>
+  <testcase name="liteHasExactlyFiveOwnedNames" classname="com.jarvis.assistant.local.ModelRemovalPolicyTest" time="0.002"/>
+  <testcase name="storageIncludesPartialAndMetadataBytesOnly" classname="com.jarvis.assistant.local.ModelRemovalPolicyTest" time="0.004"/>
+  <testcase name="linkedWeightsAreRejectedBeforeManifestDeletion" classname="com.jarvis.assistant.local.ModelRemovalPolicyTest" time="0.003"/>
+  <testcase name="linkedRootIsRejectedAndTargetPreserved" classname="com.jarvis.assistant.local.ModelRemovalPolicyTest" time="0.002"/>
+  <testcase name="cancellationBeforeVerificationDoesNotDeleteOrClaimCorruption" classname="com.jarvis.assistant.local.ModelRemovalPolicyTest" time="0.002"/>
+  <testcase name="missingRootIsNotCreatedByInspection" classname="com.jarvis.assistant.local.ModelRemovalPolicyTest" time="0.002"/>
+  <testcase name="missingManifestRequiresRepairWithoutDeletingWeights" classname="com.jarvis.assistant.local.ModelRemovalPolicyTest" time="0.002"/>
+  <testcase name="alteredCatalogLimitsCannotAuthorizeTinyWeights" classname="com.jarvis.assistant.local.ModelRemovalPolicyTest" time="0.001"/>
+  <testcase name="traversalFilenameIsRejectedBeforeAnyDeletion" classname="com.jarvis.assistant.local.ModelRemovalPolicyTest" time="0.001"/>
+  <testcase name="unavailableCatalogProfileCannotBeRemoved" classname="com.jarvis.assistant.local.ModelRemovalPolicyTest" time="0.001"/>
+  <testcase name="modifiedRepositoryIsRejected" classname="com.jarvis.assistant.local.ModelRemovalPolicyTest" time="0.002"/>
+  <testcase name="wrongFilenameCannotVerifyMatchingBytes" classname="com.jarvis.assistant.local.ModelRemovalPolicyTest" time="0.004"/>
+  <testcase name="danglingManagedLinkIsRejected" classname="com.jarvis.assistant.local.ModelRemovalPolicyTest" time="0.001"/>
+  <testcase name="directoryAtManagedFilenameIsNeverRecursivelyDeleted" classname="com.jarvis.assistant.local.ModelRemovalPolicyTest" time="0.002"/>
+  <testcase name="wrongRepositoryCannotVerifyMatchingBytes" classname="com.jarvis.assistant.local.ModelRemovalPolicyTest" time="0.004"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

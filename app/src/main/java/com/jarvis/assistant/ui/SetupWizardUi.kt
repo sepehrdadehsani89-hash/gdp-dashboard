@@ -26,6 +26,7 @@ fun SetupWizardUi(state:JarvisUiState,actions:JarvisUiActions){
     var heard by rememberSaveable{mutableStateOf(false)}
     var voiceGeneration by remember{mutableLongStateOf(-1L)}
     val scope=rememberCoroutineScope()
+    val setupContext=androidx.compose.ui.platform.LocalContext.current
     val config="${state.settings.provider}:${state.settings.model}"
     val tested=inference && testConfig==config && state.selectedBrainVerified
     val played=voiceGeneration>=0 && state.voiceDelivery.generation==voiceGeneration && state.voiceDelivery.output==VoiceOutputOutcome.COMPLETED
@@ -36,6 +37,7 @@ fun SetupWizardUi(state:JarvisUiState,actions:JarvisUiActions){
         Text("JARVIS · ${step+1} / ${SetupPolicy.steps.size}",style=MaterialTheme.typography.labelLarge)
         HudCore(state,Modifier.size(160.dp).align(Alignment.CenterHorizontally))
         Text(SetupPolicy.steps[step],style=MaterialTheme.typography.headlineMedium)
+        if(step==0)OutlinedButton(onClick={setupContext.startActivity(android.content.Intent(setupContext,com.jarvis.assistant.setup.NexusSetupActivity::class.java))}){Text("Open complete Google / wallpaper / computer setup wizard")}
         when(step){
             0->{Text("Your existing holographic assistant, settings and data stay in place. Setup can be skipped and reopened in Settings → About Jarvis.");OutlinedTextField(name,{name=it.take(80)},label={Text("Your name · optional")},modifier=Modifier.fillMaxWidth())}
             1->{AppLanguage.supported.forEach{l->OutlinedButton(onClick={actions.onLanguage(l)}){Text(l.label+if(state.settings.language==l)" · selected" else "")}};Text("Recognition packs and output voices are configured for each supported language.")}

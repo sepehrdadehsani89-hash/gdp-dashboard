@@ -15,6 +15,10 @@ import org.junit.Test
 
 /** Policy and in-flight lifecycle tests using an injected adapter, never live account credentials. */
 class BrainProviderManagerTest {
+    @Test fun reviewedProviderCannotSilentlyChangeBeforePrivateInference()=runBlocking<Unit>{val f=Fixture();expect(ProviderFailureKind.NOT_VERIFIED){f.manager.answer("private",AppLanguage.EN,"",emptyList(),{},expectedConfig=ProviderConfig("gemini","gemini-test"))};assertTrue(f.answers.isEmpty())}
+    @Test fun reviewedModelCannotSilentlyChangeBeforePrivateInference()=runBlocking<Unit>{val f=Fixture();expect(ProviderFailureKind.NOT_VERIFIED){f.manager.answer("private",AppLanguage.EN,"",emptyList(),{},expectedConfig=api.copy(model="other-model"))};assertTrue(f.answers.isEmpty())}
+    @Test fun reviewedApiCredentialCannotChangeBeforePrivateInference()=runBlocking<Unit>{val f=Fixture();val binding=f.manager.reviewCredentialBinding(api);f.revisions["openai"]=2;expect(ProviderFailureKind.NOT_VERIFIED){f.manager.answer("private",AppLanguage.EN,"",emptyList(),{},expectedConfig=api,expectedCredentialBinding=binding)};assertTrue(f.answers.isEmpty())}
+    @Test fun exactReviewedAccountUsesOnlyItsApprovedConnection()=runBlocking<Unit>{val f=Fixture();val binding=f.manager.reviewCredentialBinding(api);assertEquals("Actual response",f.manager.answer("private",AppLanguage.EN,"",emptyList(),{},expectedConfig=api,expectedCredentialBinding=binding));assertEquals(1,f.answers.size);assertEquals(api,f.answers.single().config)}
     @Test fun legacyGeminiModelsPrefixRemainsValid(){
         val config=ProviderConfig("gemini","models/gemini-2.5-flash")
         assertEquals(config,config.validated())

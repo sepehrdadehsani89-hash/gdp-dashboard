@@ -1,6 +1,7 @@
 package com.jarvis.assistant.sentinel
 
 import android.graphics.*
+import com.jarvis.assistant.studio.WallpaperPart
 import com.jarvis.assistant.core.AppLanguage
 import com.jarvis.assistant.core.choose
 import com.jarvis.assistant.hud.*
@@ -8,7 +9,7 @@ import kotlin.math.*
 import java.util.Locale
 
 /** Captions are ephemeral, explicitly opted in, and stripped at render time when locked. */
-data class WallpaperFrame(val hud:HudState=HudState(),val audio:AudioReading=AudioReading(),val visual:SentinelVisualState=SentinelVisualState(),val language:AppLanguage=AppLanguage.EN,val playback:PlaybackReading=PlaybackReading(),val followUpArming:Boolean=false,val commandDeadlineElapsed:Long=0,val caption:com.jarvis.assistant.phantom.LiveCaption=com.jarvis.assistant.phantom.LiveCaption(),val captionLines:Int=3,val restricted:Boolean=false,val refreshRate:Float=60f,val voiceErrorAt:Long=0,val execution:com.jarvis.assistant.phantom.ExecutionState=com.jarvis.assistant.phantom.ExecutionState.IDLE)
+data class WallpaperFrame(val hud:HudState=HudState(),val audio:AudioReading=AudioReading(),val visual:SentinelVisualState=SentinelVisualState(),val language:AppLanguage=AppLanguage.EN,val playback:PlaybackReading=PlaybackReading(),val followUpArming:Boolean=false,val commandDeadlineElapsed:Long=0,val caption:com.jarvis.assistant.phantom.LiveCaption=com.jarvis.assistant.phantom.LiveCaption(),val captionLines:Int=3,val restricted:Boolean=false,val refreshRate:Float=60f,val voiceErrorAt:Long=0,val execution:com.jarvis.assistant.phantom.ExecutionState=com.jarvis.assistant.phantom.ExecutionState.IDLE,val studio:com.jarvis.assistant.studio.StudioProfile?=null,val widgetValues:Map<com.jarvis.assistant.studio.WidgetSource,String> = emptyMap(),val awakeningDurationMillis:Long=2100,val notificationConsentKey:String="")
 
 /** Native dynamic artwork. Geometry/paints are reused; no video, full-screen blur or random sensor values. */
 class WallpaperRenderer {
@@ -34,7 +35,10 @@ class WallpaperRenderer {
     private var powerLabelKey="";private var powerLabel="";private var powerFinish=""
     fun pause(){reactorClock.pause();energyClock.pause();stripClock.pause()}
     fun clearCaption(){captionKey="";captionLayout=null}
-    fun draw(canvas:Canvas,frame:WallpaperFrame,now:Long) {
+    private var textScale=1f
+    companion object { private val allParts=WallpaperPart.entries.toSet() }
+    fun draw(canvas:Canvas,frame:WallpaperFrame,now:Long,parts:Set<WallpaperPart> = allParts,clearBackground:Boolean=true,forcedColor:Int?=null,fontScale:Float=1f) {
+        textScale=fontScale
         val s=frame.hud.settings;val v=s.sentinel;val battery=frame.hud.telemetry.battery
         val mode=when{CoreMotionPolicy.errorVisible(frame.voiceErrorAt,now)->SentinelMode.ERROR;frame.visual.mode==SentinelMode.ERROR && frame.voiceErrorAt>0->SentinelMode.DORMANT;else->frame.visual.mode}
         val motion=CoreMotionPolicy.pauseReason(s,frame.hud.telemetry.systemMotion)==null
@@ -45,10 +49,12 @@ class WallpaperRenderer {
         val stripPresent=strip.alpha>0f
         val dormant=mode==SentinelMode.DORMANT
         val returning=if(mode==SentinelMode.RETURNING_TO_WALLPAPER)((now-frame.visual.returningAt)/600f).coerceIn(0f,1f) else 0f
-        val activation=if(mode==SentinelMode.ACTIVATING && motion)ReactorGeometry.awakening(now-frame.visual.activatedAt) else Awakening(1f,1f,1f,0f,true)
+        val elapsed=now-frame.visual.activatedAt
+        val longActivation=frame.awakeningDurationMillis>2100 && frame.visual.activatedAt>0 && elapsed in 0..frame.awakeningDurationMillis
+        val activation=if((mode==SentinelMode.ACTIVATING || longActivation) && motion)ReactorGeometry.awakening(if(frame.awakeningDurationMillis==2100L)elapsed else com.jarvis.assistant.modes.SystemModePolicy.animationElapsed(elapsed,frame.awakeningDurationMillis)) else Awakening(1f,1f,1f,0f,true)
         val energy=CoreMotionPolicy.visualLevel(if(frame.audio.recording && mode in listOf(SentinelMode.LISTENING,SentinelMode.ACTIVATING))frame.audio.level else if(frame.playback.active)frame.playback.level else 0f)
         val active=if(dormant){if(v.cinematicWallpaper).35f else .2f} else (1-returning*.8f)
-        val color=ReactorPalette.core(mode,s.accent)
+        val color=forcedColor ?: ReactorPalette.core(mode,s.accent)
         val scale=v.reactorScale
         if(w!=canvas.width || h!=canvas.height || scale!=lastScale || color!=glowColor || stripPresent!=lastStrip){
             w=canvas.width;h=canvas.height;cx=w*.5f;cy=h*.46f
@@ -61,15 +67,17 @@ class WallpaperRenderer {
                 (frame.hud.telemetry.thermalStatus ?: 0)>=3 || s.animationProfile=="saver" || v.detail=="minimal"),
             green.angle/90f,w.toFloat(),h.toFloat(),cx,cy,radius)
         val chargeGlow=if(actualCharging)1f+green.alpha*(.2f+chargingParticles.absorption*.15f) else 1f
-        canvas.drawColor(Color.BLACK)
+        if(clearBackground)canvas.drawColor(Color.BLACK)
         val brightness=v.brightness*(if((battery.percent ?:100)<20).7f else 1f)
+        if(WallpaperPart.GRID in parts){
         // Faint static grid remains behind normal launcher icons.
         line.color=colorWithAlpha(color,(9*brightness).toInt());line.strokeWidth=1f
         val grid=max(32f,w/12f)
         var x=0f;while(x<w){canvas.drawLine(x,0f,x,h.toFloat(),line);x+=grid}
         var y=0f;while(y<h){canvas.drawLine(0f,y,w.toFloat(),y,line);y+=grid}
-        if(v.ambientGlow>0 && active>.2f){fill.shader=glow;fill.alpha=(v.ambientGlow*brightness*active*255*chargeGlow).toInt().coerceIn(0,255);canvas.drawCircle(cx,cy,radius*1.1f,fill);fill.shader=null;fill.alpha=255}
-        for(i in 0 until particleCount){val particle=chargingParticles.particles[i];val opacity=particle.alpha*green.alpha*brightness.coerceIn(0f,1f)
+        }
+        if(WallpaperPart.GLOW in parts && v.ambientGlow>0 && active>.2f){fill.shader=glow;fill.alpha=(v.ambientGlow*brightness*active*255*chargeGlow).toInt().coerceIn(0,255);canvas.drawCircle(cx,cy,radius*1.1f,fill);fill.shader=null;fill.alpha=255}
+        if(WallpaperPart.PARTICLES in parts)for(i in 0 until particleCount){val particle=chargingParticles.particles[i];val opacity=particle.alpha*green.alpha*brightness.coerceIn(0f,1f)
             line.color=colorWithAlpha(ReactorPalette.green,(opacity*80).toInt());line.strokeWidth=max(.8f,radius*.004f)
             canvas.drawLine(particle.tailX,particle.tailY,particle.x,particle.y,line)
             fill.color=colorWithAlpha(ReactorPalette.green,(opacity*30).toInt());canvas.drawCircle(particle.x,particle.y,particle.radius*2.6f,fill)
@@ -80,20 +88,20 @@ class WallpaperRenderer {
         val detail=when(v.detail){"minimal"->1;"cinematic"->3;else->2}
         val ringAlpha=(brightness*(45+active*150)*activation.rings).toInt()
         line.color=colorWithAlpha(color,ringAlpha);line.strokeWidth=max(1f,w/600f)
-        ReactorGeometry.ticks.forEachIndexed { i,p ->
+        if(WallpaperPart.RINGS in parts)ReactorGeometry.ticks.forEachIndexed { i,p ->
             if(detail==1 && i%3!=0)return@forEachIndexed
             val outer=radius;val inner=outer-radius*(if(i%5==0).035f else .014f)
             canvas.drawLine(cx+p.x*inner,cy+p.y*inner,cx+p.x*outer,cy+p.y*outer,line)
         }
-        ReactorGeometry.ringScales.forEach { factor ->
+        if(WallpaperPart.RINGS in parts)ReactorGeometry.ringScales.forEach { factor ->
             line.color=colorWithAlpha(color,(brightness*(30+active*100)*activation.rings).toInt());canvas.drawCircle(cx,cy,radius*factor,line)
         }
         val speed=ReactorGeometry.speed(s,mode,frame.execution==com.jarvis.assistant.phantom.ExecutionState.EXECUTING)
         if(!motion)reactorClock.pause()
         val reactorAngle=reactorClock.frame(now,if(motion)speed else 0f)
         // A visible orbit marker makes continuous motion legible even on dim/low-detail launchers.
-        if(motion){val orbit=reactorAngle*PI/180;fill.color=colorWithAlpha(color,(brightness*220).toInt());canvas.drawCircle(cx+cos(orbit).toFloat()*radius*.8f,cy+sin(orbit).toFloat()*radius*.8f,max(2f,radius*.018f),fill)}
-        ReactorGeometry.arcScales.forEachIndexed { index,factor ->
+        if(WallpaperPart.RINGS in parts && motion){val orbit=reactorAngle*PI/180;fill.color=colorWithAlpha(color,(brightness*220).toInt());canvas.drawCircle(cx+cos(orbit).toFloat()*radius*.8f,cy+sin(orbit).toFloat()*radius*.8f,max(2f,radius*.018f),fill)}
+        if(WallpaperPart.RINGS in parts)ReactorGeometry.arcScales.forEachIndexed { index,factor ->
             val r=radius*factor
             ring.set(cx-r,cy-r,cx+r,cy+r)
             line.strokeWidth=radius*(if(index==0).018f else .008f)
@@ -104,6 +112,7 @@ class WallpaperRenderer {
             }
         }
         val core=radius*.48f*(.98f+activation.core*.02f)*(if(frame.playback.active)1+energy*.035f else CoreMotionPolicy.breathing(now,mode,motion))
+        if(WallpaperPart.CORE in parts){
         fill.color=colorWithAlpha(color,(brightness*(8+active*17+energy*15)*activation.core).toInt());canvas.drawCircle(cx,cy,core,fill)
         line.color=colorWithAlpha(color,(brightness*(90+active*150)*activation.core).toInt());line.strokeWidth=max(1.2f,radius*.007f)
         canvas.drawCircle(cx,cy,core,line)
@@ -112,7 +121,8 @@ class WallpaperRenderer {
             line.color=colorWithAlpha(color,(brightness*20).toInt());line.strokeWidth=1f
             for(i in -3..3){val yy=i*core/4;val dx=sqrt(max(0f,core*core-yy*yy));canvas.drawLine(cx-dx,cy+yy,cx+dx,cy+yy,line)}
         }
-        if(detail>1 && v.particleDensity>0){
+        }
+        if(WallpaperPart.PARTICLES in parts && detail>1 && v.particleDensity>0){
             val count=(v.particleDensity*(if(dormant){if(v.cinematicWallpaper)24 else 12} else 28)).toInt()
             repeat(count){i->
                 val a=(i*2*PI/max(1,count)+reactorAngle*PI/180)
@@ -121,14 +131,14 @@ class WallpaperRenderer {
                 canvas.drawCircle(cx+cos(a).toFloat()*rr,cy+sin(a).toFloat()*rr,max(1f,radius*.004f),fill)
             }
         }
-        battery.percent?.let{percent->
+        if(WallpaperPart.BATTERY in parts)battery.percent?.let{percent->
             val tone=com.jarvis.assistant.titan.BatteryPolicy.band(percent).argb.toInt()
             val pulse=if(motion && percent<=10)(.65+.2*sin(now/1400.0)).toFloat() else .8f
             line.color=colorWithAlpha(tone,(pulse*255).toInt());line.strokeWidth=radius*.012f
             val rr=radius*.55f;ring.set(cx-rr,cy-rr,cx+rr,cy+rr)
             canvas.drawArc(ring,-90f,percent*3.6f,false,line)
         }
-        if(charging){
+        if(WallpaperPart.RINGS in parts && charging){
             line.color=colorWithAlpha(ReactorPalette.green,(brightness*210*green.alpha).toInt());line.strokeWidth=radius*.014f
             ring.set(cx-radius*1.025f,cy-radius*1.025f,cx+radius*1.025f,cy+radius*1.025f)
             canvas.drawArc(ring,green.angle,36f,false,line)
@@ -136,12 +146,12 @@ class WallpaperRenderer {
             canvas.drawArc(ring,green.angle-30,22f,false,line)
             if(green.pulse>0){line.color=colorWithAlpha(ReactorPalette.green,(green.pulse*100).toInt());canvas.drawCircle(cx,cy,radius*(1.025f+green.pulse*.07f),line)}
         }
-        if(activation.pulse>0){line.color=colorWithAlpha(color,(activation.pulse*110*brightness).toInt());line.strokeWidth=radius*.015f;canvas.drawCircle(cx,cy,radius*(.5f+activation.pulse*.55f),line)}
-        fill.color=colorWithAlpha(color,ringAlpha);canvas.drawPath(pointer,fill)
+        if(WallpaperPart.RINGS in parts && activation.pulse>0){line.color=colorWithAlpha(color,(activation.pulse*110*brightness).toInt());line.strokeWidth=radius*.015f;canvas.drawCircle(cx,cy,radius*(.5f+activation.pulse*.55f),line)}
+        if(WallpaperPart.RINGS in parts){fill.color=colorWithAlpha(color,ringAlpha);canvas.drawPath(pointer,fill)}
         val font=radius*.24f
         text.textLocale=Locale.forLanguageTag(frame.language.tag)
         text.color=com.jarvis.assistant.titan.BatteryPolicy.band(battery.percent).argb.toInt();text.textSize=font
-        if(v.wallpaperBattery)drawText(canvas,battery.percent?.let{"$it%"} ?: "—",cx,cy+font*.3f,text,frame.language)
+        if(WallpaperPart.BATTERY in parts && v.wallpaperBattery)drawText(canvas,battery.percent?.let{"$it%"} ?: "—",cx,cy+font*.3f,text,frame.language)
         text.textSize=radius*.045f
         val state=when(mode){
             SentinelMode.DORMANT->frame.language.choose("SENTINEL · STANDBY","SENTINEL · EN ESPERA","سنتینل · آماده‌باش")
@@ -153,17 +163,17 @@ class WallpaperRenderer {
             SentinelMode.ERROR->frame.language.choose("ATTENTION · OPEN JARVIS","ATENCIÓN · ABRE JARVIS","توجه · جارویس را باز کنید")
             SentinelMode.RETURNING_TO_WALLPAPER->frame.language.choose("RETURNING TO STANDBY","VOLVIENDO A ESPERA","بازگشت به آماده‌باش")
         }
-        drawText(canvas,state,cx,cy-core*.44f,text,frame.language)
+        if(WallpaperPart.CORE in parts)drawText(canvas,state,cx,cy-core*.44f,text,frame.language)
         text.textSize=radius*.048f;text.color=colorWithAlpha(color,(brightness*220).toInt())
-        drawText(canvas,if(battery.full)"FULL" else if(battery.charging)"CHARGING · ${battery.source}" else "BATTERY",cx,cy+core*.55f,text,frame.language)
-        if(frame.audio.recording && mode in listOf(SentinelMode.LISTENING,SentinelMode.ACTIVATING) || frame.playback.active){
+        if(WallpaperPart.BATTERY in parts)drawText(canvas,if(battery.full)"FULL" else if(battery.charging)"CHARGING · ${battery.source}" else "BATTERY",cx,cy+core*.55f,text,frame.language)
+        if(WallpaperPart.WAVEFORM in parts && (frame.audio.recording && mode in listOf(SentinelMode.LISTENING,SentinelMode.ACTIVATING) || frame.playback.active)){
             val values=if(frame.playback.active)frame.playback.history else frame.audio.history;val step=core*1.25f/32
             line.color=colorWithAlpha(Color.rgb(170,124,255),200);line.strokeWidth=max(1f,radius*.007f)
             values.forEachIndexed{i,value->val xx=cx-core*.625f+i*step;val amplitude=CoreMotionPolicy.visualLevel(value)*core*.14f;canvas.drawLine(xx,cy+core*.75f-amplitude,xx,cy+core*.75f+amplitude,line)}
         }
-        if(stripPresent)drawChargingStrip(canvas,frame,now,strip.alpha)
-        drawCaption(canvas,frame,now)
-        if(v.wallpaperClock){
+        if(WallpaperPart.POWER in parts && stripPresent)drawChargingStrip(canvas,frame,now,strip.alpha)
+        if(WallpaperPart.CAPTION in parts)drawCaption(canvas,frame,now)
+        if(WallpaperPart.CLOCK in parts && v.wallpaperClock){
             val t=frame.hud.telemetry
             val key="${t.epochMillis/60000}|${t.timezone}|${s.clockFormat}|${t.system24Hour}|${frame.language.code}"
             if(key!=clockKey){clockKey=key;val locale=Locale.forLanguageTag(frame.language.tag);clock=ClockDisplay.time(t.epochMillis,t.timezone,locale,s.clockFormat,t.system24Hour);date=ClockDisplay.date(t.epochMillis,t.timezone,locale)}
@@ -175,7 +185,7 @@ class WallpaperRenderer {
             val clockWidth=if(!landscape && v.wallpaperWeather).43f else if(landscape).28f else .92f
             drawText(canvas,clock,clockX,clockY,text,frame.language,clockWidth);text.textSize=short*.023f;drawText(canvas,date,clockX,dateY,text,frame.language,clockWidth)
         }
-        if(v.wallpaperWeather){
+        if(WallpaperPart.WEATHER in parts && v.wallpaperWeather){
             val weather=frame.hud.weather;val r=weather.reading
             val label=if(r==null)frame.language.choose("Weather unavailable · configure Jarvis","Clima no disponible · configura Jarvis","هوا در دسترس نیست · تنظیم در جارویس") else {
                 val temp=r.temperatureC?.let{if(s.fahrenheit)(it*9/5+32).roundToInt() else it.roundToInt()}
@@ -193,7 +203,7 @@ class WallpaperRenderer {
         if(!caption.visible(now)){captionLayout=null;captionKey="";return}
         val value="Jarvis · ${caption.assistant.take(900)}"
         val width=(w*.88f).toInt().coerceAtLeast(1)
-        val size=(min(w,h)*.031f).coerceAtLeast(16f)
+        val size=(min(w,h)*.031f).coerceAtLeast(16f)*textScale
         val key="$value|${caption.entity}|$width|$size|${frame.captionLines}|${powerLayout.captionHeight.toInt()}"
         if(captionKey!=key){
             captionKey=key
@@ -230,9 +240,9 @@ class WallpaperRenderer {
     private fun drawText(canvas:Canvas,value:String,x:Float,baseline:Float,paint:Paint,language:AppLanguage,widthFraction:Float=if(w>h).28f else .92f){
         // StaticLayout handles native shaping and bidirectional runs; cache bounded labels.
         val width=(w*widthFraction).toInt().coerceAtLeast(1)
-        val key="$value|${paint.textSize}|$width|${language.code}"
+        val key="$value|${paint.textSize*textScale}|$width|${language.code}"
         val layout=labelCache.getOrPut(key){
-            val copy=android.text.TextPaint(paint).apply{textAlign=Paint.Align.LEFT}
+            val copy=android.text.TextPaint(paint).apply{textAlign=Paint.Align.LEFT;textSize=paint.textSize*textScale}
             android.text.StaticLayout.Builder.obtain(value,0,value.length,copy,width)
                 .setAlignment(android.text.Layout.Alignment.ALIGN_CENTER).setIncludePad(false).setMaxLines(2)
                 .setEllipsize(android.text.TextUtils.TruncateAt.END)

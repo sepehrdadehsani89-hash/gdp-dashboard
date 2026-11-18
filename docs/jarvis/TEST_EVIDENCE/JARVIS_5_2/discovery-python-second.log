@@ -1,0 +1,16 @@
+test_actual_linux_mdns_advertisement_and_resolution (test_discovery.DiscoveryTest.test_actual_linux_mdns_advertisement_and_resolution) ... ok
+test_advertisement_contains_only_public_identity_hints (test_discovery.DiscoveryTest.test_advertisement_contains_only_public_identity_hints) ... /opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py:730: ResourceWarning: unclosed event loop <_UnixSelectorEventLoop running=False closed=False debug=False>
+  _warn(f"unclosed event loop {self!r}", ResourceWarning, source=self)
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_close_is_idempotent (test_discovery.DiscoveryTest.test_close_is_idempotent) ... ok
+test_loopback_is_not_advertised_to_lan (test_discovery.DiscoveryTest.test_loopback_is_not_advertised_to_lan) ... ok
+test_malformed_identity_is_rejected (test_discovery.DiscoveryTest.test_malformed_identity_is_rejected) ... ok
+test_public_host_is_rejected (test_discovery.DiscoveryTest.test_public_host_is_rejected) ... ok
+test_registration_failure_preserves_qr_fallback (test_discovery.DiscoveryTest.test_registration_failure_preserves_qr_fallback) ... ok
+test_wildcard_is_rejected (test_discovery.DiscoveryTest.test_wildcard_is_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 2.039s
+
+OK

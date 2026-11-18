@@ -46,7 +46,7 @@ class GoogleServicesClient internal constructor(
         if(!profile.optString("emailAddress").equals(email,true))throw GoogleServiceFailure("ACCOUNT_MISMATCH",message="Gmail returned a different account. No mail was displayed; select the correct Google account and authorize again.")
         if(query.kind==GoogleQueryKind.UNREAD){val label=get(session,"https://gmail.googleapis.com/gmail/v1/users/me/labels/UNREAD")
             if(!label.has("messagesUnread") || label.getLong("messagesUnread")<0)throw invalid()
-            return GoogleReadResult(GoogleProduct.GMAIL,"Gmail reports ${label.getLong("messagesUnread")} unread messages at the time of this request.")}
+            return GoogleReadResult(GoogleProduct.GMAIL,"Gmail reports ${label.getLong("messagesUnread")} unread messages at the time of this request.",unreadCount=label.getLong("messagesUnread"))}
         val parameters=mutableListOf("maxResults" to "10")
         when(query.kind){
             GoogleQueryKind.TODAY->{val day=LocalDate.now(clock);parameters+="q" to "after:${day.atStartOfDay(clock.zone).toEpochSecond()} before:${day.plusDays(1).atStartOfDay(clock.zone).toEpochSecond()}"}
@@ -65,7 +65,7 @@ class GoogleServicesClient internal constructor(
             GoogleReadItem(id,GoogleServicesPolicy.preview(header("Subject").ifBlank{"(No subject)"},180),GoogleServicesPolicy.preview("From: ${header("From")}\nDate: ${header("Date")}\nPreview: ${message.optString("snippet")}",800))
         }
         val heading=when(query.kind){GoogleQueryKind.TEACHER->"Available messages from your configured teacher address";GoogleQueryKind.UNREAD_MESSAGES->"Available unread Gmail previews";GoogleQueryKind.IMPORTANT->"Messages carrying Gmail's IMPORTANT label; this is not a personal urgency judgment";GoogleQueryKind.TODAY->"Today's available Gmail message previews";else->"Recent Gmail message previews"}
-        return GoogleReadResult(GoogleProduct.GMAIL,render(heading,items,root.has("nextPageToken"))+"\nPreviews are extracted locally. No message was sent, marked read, or uploaded to an AI provider.",items)
+        return GoogleReadResult(GoogleProduct.GMAIL,render(heading,items,root.has("nextPageToken"))+"\nThis read-only Gmail request sent no email and marked no message read. AI sharing is a separate explicitly reviewed action.",items)
     }
     private suspend fun drive(session:GoogleAccessSession,query:GoogleQuery):GoogleReadResult {
         val folders=query.kind==GoogleQueryKind.PROJECTS

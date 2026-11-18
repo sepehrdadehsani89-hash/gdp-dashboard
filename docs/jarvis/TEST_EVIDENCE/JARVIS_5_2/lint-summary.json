@@ -1,0 +1,385 @@
+{
+  "counts": {
+    "Fatal": 0,
+    "Error": 0,
+    "Warning": 74,
+    "Information": 1
+  },
+  "issues": [
+    {
+      "id": "ApplySharedPref",
+      "severity": "Warning",
+      "message": "Consider using `apply()` instead; `commit` writes its data to persistent storage immediately, whereas `apply` will handle it in the background"
+    },
+    {
+      "id": "ApplySharedPref",
+      "severity": "Warning",
+      "message": "Consider using `apply()` instead; `commit` writes its data to persistent storage immediately, whereas `apply` will handle it in the background"
+    },
+    {
+      "id": "ApplySharedPref",
+      "severity": "Warning",
+      "message": "Consider using `apply()` instead; `commit` writes its data to persistent storage immediately, whereas `apply` will handle it in the background"
+    },
+    {
+      "id": "UnusedAttribute",
+      "severity": "Warning",
+      "message": "Attribute `usesPermissionFlags` is only used in API level 31 and higher (current min is 29)"
+    },
+    {
+      "id": "ComposableNaming",
+      "severity": "Warning",
+      "message": "Composable functions that return Unit should start with an uppercase letter"
+    },
+    {
+      "id": "ComposableNaming",
+      "severity": "Warning",
+      "message": "Composable functions that return Unit should start with an uppercase letter"
+    },
+    {
+      "id": "ComposableNaming",
+      "severity": "Warning",
+      "message": "Composable functions that return Unit should start with an uppercase letter"
+    },
+    {
+      "id": "ComposableNaming",
+      "severity": "Warning",
+      "message": "Composable functions that return Unit should start with an uppercase letter"
+    },
+    {
+      "id": "ComposableNaming",
+      "severity": "Warning",
+      "message": "Composable functions that return Unit should start with an uppercase letter"
+    },
+    {
+      "id": "ComposableNaming",
+      "severity": "Warning",
+      "message": "Composable functions that return Unit should start with an uppercase letter"
+    },
+    {
+      "id": "ComposableNaming",
+      "severity": "Warning",
+      "message": "Composable functions that return Unit should start with an uppercase letter"
+    },
+    {
+      "id": "ComposableNaming",
+      "severity": "Warning",
+      "message": "Composable functions that return Unit should start with an uppercase letter"
+    },
+    {
+      "id": "ComposableNaming",
+      "severity": "Warning",
+      "message": "Composable functions that return Unit should start with an uppercase letter"
+    },
+    {
+      "id": "ComposableNaming",
+      "severity": "Warning",
+      "message": "Composable functions that return Unit should start with an uppercase letter"
+    },
+    {
+      "id": "ComposableNaming",
+      "severity": "Warning",
+      "message": "Composable functions that return Unit should start with an uppercase letter"
+    },
+    {
+      "id": "ComposableNaming",
+      "severity": "Warning",
+      "message": "Composable functions that return Unit should start with an uppercase letter"
+    },
+    {
+      "id": "ComposableNaming",
+      "severity": "Warning",
+      "message": "Composable functions that return Unit should start with an uppercase letter"
+    },
+    {
+      "id": "ComposableNaming",
+      "severity": "Warning",
+      "message": "Composable functions that return Unit should start with an uppercase letter"
+    },
+    {
+      "id": "DiscouragedApi",
+      "severity": "Warning",
+      "message": "Should not restrict activity to fixed orientation. This may not be suitable for different form factors, causing the app to be letterboxed."
+    },
+    {
+      "id": "ChromeOsAbiSupport",
+      "severity": "Warning",
+      "message": "Missing x86_64 ABI support for ChromeOS"
+    },
+    {
+      "id": "SetJavaScriptEnabled",
+      "severity": "Warning",
+      "message": "Using `setJavaScriptEnabled` can introduce XSS vulnerabilities into your application, review carefully"
+    },
+    {
+      "id": "TrustAllX509TrustManager",
+      "severity": "Warning",
+      "message": "`checkClientTrusted` is empty, which could cause insecure network traffic due to trusting arbitrary TLS/SSL certificates presented by peers"
+    },
+    {
+      "id": "TrustAllX509TrustManager",
+      "severity": "Warning",
+      "message": "`checkClientTrusted` is empty, which could cause insecure network traffic due to trusting arbitrary TLS/SSL certificates presented by peers"
+    },
+    {
+      "id": "TrustAllX509TrustManager",
+      "severity": "Warning",
+      "message": "`checkServerTrusted` is empty, which could cause insecure network traffic due to trusting arbitrary TLS/SSL certificates presented by peers"
+    },
+    {
+      "id": "CustomX509TrustManager",
+      "severity": "Warning",
+      "message": "Implementing a custom `X509TrustManager` is error-prone and likely to be insecure. It is likely to disable certificate validation altogether, and is non-trivial to implement correctly without calling Android's default implementation."
+    },
+    {
+      "id": "DrawAllocation",
+      "severity": "Warning",
+      "message": "Avoid object allocations during draw/layout operations (preallocate and reuse instead)"
+    },
+    {
+      "id": "DrawAllocation",
+      "severity": "Warning",
+      "message": "Avoid object allocations during draw/layout operations (preallocate and reuse instead)"
+    },
+    {
+      "id": "ObsoleteSdkInt",
+      "severity": "Warning",
+      "message": "Unnecessary; SDK_INT is always >= 29"
+    },
+    {
+      "id": "ObsoleteSdkInt",
+      "severity": "Warning",
+      "message": "Unnecessary; SDK_INT is always >= 29"
+    },
+    {
+      "id": "ObsoleteSdkInt",
+      "severity": "Warning",
+      "message": "Unnecessary; SDK_INT is always >= 29"
+    },
+    {
+      "id": "VectorPath",
+      "severity": "Warning",
+      "message": "Very long vector path (3941 characters), which is bad for performance. Considering reducing precision, removing minor details or rasterizing vector."
+    },
+    {
+      "id": "AutoboxingStateCreation",
+      "severity": "Information",
+      "message": "Prefer `mutableIntStateOf` instead of `mutableStateOf`"
+    },
+    {
+      "id": "UsableSpace",
+      "severity": "Warning",
+      "message": "Consider also using `StorageManager#getAllocatableBytes` and `allocateBytes` which will consider clearable cached data"
+    },
+    {
+      "id": "UsableSpace",
+      "severity": "Warning",
+      "message": "Consider also using `StorageManager#getAllocatableBytes` and `allocateBytes` which will consider clearable cached data"
+    },
+    {
+      "id": "UseTomlInstead",
+      "severity": "Warning",
+      "message": "Use version catalog instead"
+    },
+    {
+      "id": "UseTomlInstead",
+      "severity": "Warning",
+      "message": "Use version catalog instead"
+    },
+    {
+      "id": "UseTomlInstead",
+      "severity": "Warning",
+      "message": "Use version catalog instead"
+    },
+    {
+      "id": "UseTomlInstead",
+      "severity": "Warning",
+      "message": "Use version catalog instead"
+    },
+    {
+      "id": "UseTomlInstead",
+      "severity": "Warning",
+      "message": "Use version catalog instead"
+    },
+    {
+      "id": "UseTomlInstead",
+      "severity": "Warning",
+      "message": "Use version catalog instead"
+    },
+    {
+      "id": "UseTomlInstead",
+      "severity": "Warning",
+      "message": "Use version catalog instead"
+    },
+    {
+      "id": "UseTomlInstead",
+      "severity": "Warning",
+      "message": "Use version catalog instead"
+    },
+    {
+      "id": "UseTomlInstead",
+      "severity": "Warning",
+      "message": "Use version catalog instead"
+    },
+    {
+      "id": "UseTomlInstead",
+      "severity": "Warning",
+      "message": "Use version catalog instead"
+    },
+    {
+      "id": "UseTomlInstead",
+      "severity": "Warning",
+      "message": "Use version catalog instead"
+    },
+    {
+      "id": "UseTomlInstead",
+      "severity": "Warning",
+      "message": "Use version catalog instead"
+    },
+    {
+      "id": "UseTomlInstead",
+      "severity": "Warning",
+      "message": "Use version catalog instead"
+    },
+    {
+      "id": "UseTomlInstead",
+      "severity": "Warning",
+      "message": "Use version catalog instead"
+    },
+    {
+      "id": "UseTomlInstead",
+      "severity": "Warning",
+      "message": "Use version catalog instead"
+    },
+    {
+      "id": "UseTomlInstead",
+      "severity": "Warning",
+      "message": "Use version catalog instead"
+    },
+    {
+      "id": "UseTomlInstead",
+      "severity": "Warning",
+      "message": "Use version catalog instead"
+    },
+    {
+      "id": "UseTomlInstead",
+      "severity": "Warning",
+      "message": "Use version catalog instead"
+    },
+    {
+      "id": "SetTextI18n",
+      "severity": "Warning",
+      "message": "Do not concatenate text displayed with `setText`. Use resource string with placeholders."
+    },
+    {
+      "id": "SetTextI18n",
+      "severity": "Warning",
+      "message": "Do not concatenate text displayed with `setText`. Use resource string with placeholders."
+    },
+    {
+      "id": "SetTextI18n",
+      "severity": "Warning",
+      "message": "Do not concatenate text displayed with `setText`. Use resource string with placeholders."
+    },
+    {
+      "id": "SetTextI18n",
+      "severity": "Warning",
+      "message": "Do not concatenate text displayed with `setText`. Use resource string with placeholders."
+    },
+    {
+      "id": "SetTextI18n",
+      "severity": "Warning",
+      "message": "Do not concatenate text displayed with `setText`. Use resource string with placeholders."
+    },
+    {
+      "id": "SetTextI18n",
+      "severity": "Warning",
+      "message": "String literal in `setText` can not be translated. Use Android resources instead."
+    },
+    {
+      "id": "SetTextI18n",
+      "severity": "Warning",
+      "message": "String literal in `setText` can not be translated. Use Android resources instead."
+    },
+    {
+      "id": "SetTextI18n",
+      "severity": "Warning",
+      "message": "String literal in `setText` can not be translated. Use Android resources instead."
+    },
+    {
+      "id": "SetTextI18n",
+      "severity": "Warning",
+      "message": "String literal in `setText` can not be translated. Use Android resources instead."
+    },
+    {
+      "id": "SetTextI18n",
+      "severity": "Warning",
+      "message": "String literal in `setText` can not be translated. Use Android resources instead."
+    },
+    {
+      "id": "SetTextI18n",
+      "severity": "Warning",
+      "message": "String literal in `setText` can not be translated. Use Android resources instead."
+    },
+    {
+      "id": "SetTextI18n",
+      "severity": "Warning",
+      "message": "String literal in `setText` can not be translated. Use Android resources instead."
+    },
+    {
+      "id": "SetTextI18n",
+      "severity": "Warning",
+      "message": "String literal in `setText` can not be translated. Use Android resources instead."
+    },
+    {
+      "id": "SetTextI18n",
+      "severity": "Warning",
+      "message": "String literal in `setText` can not be translated. Use Android resources instead."
+    },
+    {
+      "id": "SetTextI18n",
+      "severity": "Warning",
+      "message": "String literal in `setText` can not be translated. Use Android resources instead."
+    },
+    {
+      "id": "SetTextI18n",
+      "severity": "Warning",
+      "message": "String literal in `setText` can not be translated. Use Android resources instead."
+    },
+    {
+      "id": "SetTextI18n",
+      "severity": "Warning",
+      "message": "String literal in `setText` can not be translated. Use Android resources instead."
+    },
+    {
+      "id": "SetTextI18n",
+      "severity": "Warning",
+      "message": "String literal in `setText` can not be translated. Use Android resources instead."
+    },
+    {
+      "id": "SetTextI18n",
+      "severity": "Warning",
+      "message": "Do not concatenate text displayed with `setText`. Use resource string with placeholders."
+    },
+    {
+      "id": "SetTextI18n",
+      "severity": "Warning",
+      "message": "Do not concatenate text displayed with `setText`. Use resource string with placeholders."
+    },
+    {
+      "id": "SetTextI18n",
+      "severity": "Warning",
+      "message": "Do not concatenate text displayed with `setText`. Use resource string with placeholders."
+    },
+    {
+      "id": "SetTextI18n",
+      "severity": "Warning",
+      "message": "String literal in `setText` can not be translated. Use Android resources instead."
+    },
+    {
+      "id": "RtlHardcoded",
+      "severity": "Warning",
+      "message": "Use \"`Gravity.START`\" instead of \"`Gravity.LEFT`\" to ensure correct behavior in right-to-left locales"
+    }
+  ]
+}

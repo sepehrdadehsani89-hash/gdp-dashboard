@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.studio.WallpaperStudioStoreTest" tests="36" skipped="0" failures="0" errors="0" timestamp="2026-11-18T20:15:52" hostname="885caff30ac4" time="0.077">
+  <properties/>
+  <testcase name="invalidFontScaleIsRejected" classname="com.jarvis.assistant.studio.WallpaperStudioStoreTest" time="0.001"/>
+  <testcase name="profileChangesDoNotReplaceAnother" classname="com.jarvis.assistant.studio.WallpaperStudioStoreTest" time="0.006"/>
+  <testcase name="restoringOriginalDoesNotDeleteProfiles" classname="com.jarvis.assistant.studio.WallpaperStudioStoreTest" time="0.001"/>
+  <testcase name="duplicateLayerIdsAreRejected" classname="com.jarvis.assistant.studio.WallpaperStudioStoreTest" time="0.001"/>
+  <testcase name="dragIsClampedToOwnedViewport" classname="com.jarvis.assistant.studio.WallpaperStudioStoreTest" time="0.0"/>
+  <testcase name="profileUpdateRetainsItsIdentity" classname="com.jarvis.assistant.studio.WallpaperStudioStoreTest" time="0.001"/>
+  <testcase name="invalidOpacityIsRejected" classname="com.jarvis.assistant.studio.WallpaperStudioStoreTest" time="0.0"/>
+  <testcase name="unknownComponentIsRejected" classname="com.jarvis.assistant.studio.WallpaperStudioStoreTest" time="0.0"/>
+  <testcase name="selectingOtherProfileIsExplicit" classname="com.jarvis.assistant.studio.WallpaperStudioStoreTest" time="0.002"/>
+  <testcase name="freePlacementIsNotForcedToGrid" classname="com.jarvis.assistant.studio.WallpaperStudioStoreTest" time="0.001"/>
+  <testcase name="unknownSelectionCannotReplaceActiveProfile" classname="com.jarvis.assistant.studio.WallpaperStudioStoreTest" time="0.001"/>
+  <testcase name="nonFinitePositionIsRejected" classname="com.jarvis.assistant.studio.WallpaperStudioStoreTest" time="0.001"/>
+  <testcase name="outOfBoundsScaleIsRejected" classname="com.jarvis.assistant.studio.WallpaperStudioStoreTest" time="0.0"/>
+  <testcase name="failedWritePreservesOldProfile" classname="com.jarvis.assistant.studio.WallpaperStudioStoreTest" time="0.002"/>
+  <testcase name="snapUsesFivePercentGrid" classname="com.jarvis.assistant.studio.WallpaperStudioStoreTest" time="0.0"/>
+  <testcase name="invalidLayerOrderIsRejected" classname="com.jarvis.assistant.studio.WallpaperStudioStoreTest" time="0.0"/>
+  <testcase name="gradientRequiresFirstStop" classname="com.jarvis.assistant.studio.WallpaperStudioStoreTest" time="0.0"/>
+  <testcase name="corruptStorageKeepsOriginalAndReportsUnavailable" classname="com.jarvis.assistant.studio.WallpaperStudioStoreTest" time="0.0"/>
+  <testcase name="layersAndColorsRoundTripExactly" classname="com.jarvis.assistant.studio.WallpaperStudioStoreTest" time="0.001"/>
+  <testcase name="allEightThemesAreRealValidatedProfiles" classname="com.jarvis.assistant.studio.WallpaperStudioStoreTest" time="0.0"/>
+  <testcase name="userOptInAndUnlockedActiveStateAreRequired" classname="com.jarvis.assistant.studio.WallpaperStudioStoreTest" time="0.001"/>
+  <testcase name="quietModeCannotDisplayPrivateWidgets" classname="com.jarvis.assistant.studio.WallpaperStudioStoreTest" time="0.0"/>
+  <testcase name="undecryptableStorageIsPreserved" classname="com.jarvis.assistant.studio.WallpaperStudioStoreTest" time="0.0"/>
+  <testcase name="invalidRotationIsRejected" classname="com.jarvis.assistant.studio.WallpaperStudioStoreTest" time="0.003"/>
+  <testcase name="emptyStoreKeepsOriginalWallpaper" classname="com.jarvis.assistant.studio.WallpaperStudioStoreTest" time="0.0"/>
+  <testcase name="deletingOtherProfileKeepsCurrent" classname="com.jarvis.assistant.studio.WallpaperStudioStoreTest" time="0.003"/>
+  <testcase name="unknownThemeDoesNotBecomeFakeSavedState" classname="com.jarvis.assistant.studio.WallpaperStudioStoreTest" time="0.0"/>
+  <testcase name="explicitApplyPersistsChosenLayout" classname="com.jarvis.assistant.studio.WallpaperStudioStoreTest" time="0.002"/>
+  <testcase name="outOfBoundsPositionIsRejected" classname="com.jarvis.assistant.studio.WallpaperStudioStoreTest" time="0.001"/>
+  <testcase name="corruptStorageCannotBeSilentlyOverwritten" classname="com.jarvis.assistant.studio.WallpaperStudioStoreTest" time="0.0"/>
+  <testcase name="lockedDeviceCannotDisplayPrivateWidgets" classname="com.jarvis.assistant.studio.WallpaperStudioStoreTest" time="0.0"/>
+  <testcase name="maximumProfilesIsEnforced" classname="com.jarvis.assistant.studio.WallpaperStudioStoreTest" time="0.046"/>
+  <testcase name="privateWidgetsAreOffByDefault" classname="com.jarvis.assistant.studio.WallpaperStudioStoreTest" time="0.001"/>
+  <testcase name="savingProfileRequiresExplicitApply" classname="com.jarvis.assistant.studio.WallpaperStudioStoreTest" time="0.0"/>
+  <testcase name="deletingSelectedProfileFallsBackToOriginal" classname="com.jarvis.assistant.studio.WallpaperStudioStoreTest" time="0.0"/>
+  <testcase name="excessiveLayersAreRejected" classname="com.jarvis.assistant.studio.WallpaperStudioStoreTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

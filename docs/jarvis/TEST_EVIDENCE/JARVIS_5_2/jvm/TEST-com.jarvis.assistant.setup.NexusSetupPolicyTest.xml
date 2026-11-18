@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.setup.NexusSetupPolicyTest" tests="22" skipped="0" failures="0" errors="0" timestamp="2026-11-18T20:15:52" hostname="885caff30ac4" time="0.001">
+  <properties/>
+  <testcase name="pendingProgressIsNotLiveProof" classname="com.jarvis.assistant.setup.NexusSetupPolicyTest" time="0.0"/>
+  <testcase name="missingAccountIsNotLiveEvenWithStaleFlags" classname="com.jarvis.assistant.setup.NexusSetupPolicyTest" time="0.0"/>
+  <testcase name="manuallyClaimedConnectedProgressIsRejected" classname="com.jarvis.assistant.setup.NexusSetupPolicyTest" time="0.0"/>
+  <testcase name="firstStageIsWelcome" classname="com.jarvis.assistant.setup.NexusSetupPolicyTest" time="0.0"/>
+  <testcase name="corruptProgressFailsToPending" classname="com.jarvis.assistant.setup.NexusSetupPolicyTest" time="0.0"/>
+  <testcase name="scopeOnlyIsNotLive" classname="com.jarvis.assistant.setup.NexusSetupPolicyTest" time="0.0"/>
+  <testcase name="skippedAccountIsNotMarkedConnected" classname="com.jarvis.assistant.setup.NexusSetupPolicyTest" time="0.0"/>
+  <testcase name="missingScopeTellsUserWhatToDo" classname="com.jarvis.assistant.setup.NexusSetupPolicyTest" time="0.0"/>
+  <testcase name="completionPreservesUnverifiedServices" classname="com.jarvis.assistant.setup.NexusSetupPolicyTest" time="0.0"/>
+  <testcase name="skippedMissingAccountDoesNotNeedFakeAuthorization" classname="com.jarvis.assistant.setup.NexusSetupPolicyTest" time="0.0"/>
+  <testcase name="missingAccountTellsUserWhatToDo" classname="com.jarvis.assistant.setup.NexusSetupPolicyTest" time="0.0"/>
+  <testcase name="oldReadWithoutScopeIsNotLive" classname="com.jarvis.assistant.setup.NexusSetupPolicyTest" time="0.0"/>
+  <testcase name="backFromFirstStageDoesNotCrash" classname="com.jarvis.assistant.setup.NexusSetupPolicyTest" time="0.0"/>
+  <testcase name="authorizationAloneIsNotARead" classname="com.jarvis.assistant.setup.NexusSetupPolicyTest" time="0.0"/>
+  <testcase name="nextFromFinalStageDoesNotRunUnknownControl" classname="com.jarvis.assistant.setup.NexusSetupPolicyTest" time="0.0"/>
+  <testcase name="wizardContainsAllFifteenStages" classname="com.jarvis.assistant.setup.NexusSetupPolicyTest" time="0.0"/>
+  <testcase name="userReviewIsExplicitlyUserReview" classname="com.jarvis.assistant.setup.NexusSetupPolicyTest" time="0.0"/>
+  <testcase name="accountOnlyIsNotLive" classname="com.jarvis.assistant.setup.NexusSetupPolicyTest" time="0.0"/>
+  <testcase name="actualCurrentAccountScopeAndReadAreRequired" classname="com.jarvis.assistant.setup.NexusSetupPolicyTest" time="0.001"/>
+  <testcase name="completionDoesNotInferPhysicalTests" classname="com.jarvis.assistant.setup.NexusSetupPolicyTest" time="0.0"/>
+  <testcase name="lastStageDoesNotInventConnectivity" classname="com.jarvis.assistant.setup.NexusSetupPolicyTest" time="0.0"/>
+  <testcase name="skipIsPreserved" classname="com.jarvis.assistant.setup.NexusSetupPolicyTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

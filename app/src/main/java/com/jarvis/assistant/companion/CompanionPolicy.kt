@@ -9,7 +9,9 @@ import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
 data class DesktopRequest(val query:String?){val action get()=if(query==null)"desktop.open_app" else "desktop.search_web";fun parameters()=if(query==null)JSONObject().put("app","chrome")else JSONObject().put("browser","chrome").put("query",query)}
-data class DesktopInvitation(val url:String,val pin:String,val deviceId:String,val pairingId:String,val code:String,val expires:Long)
+data class DesktopInvitation(val url:String,val pin:String,val deviceId:String,val pairingId:String,val code:String,val expires:Long,val deviceName:String="Jarvis computer"){
+    override fun toString()="DesktopInvitation(device=$deviceId, invitation=redacted)"
+}
 data class DesktopPair(val url:String,val pin:String,val deviceId:String,val clientId:String,val sessionId:String,val token:String){
     override fun toString()="DesktopPair(device=$deviceId, credentials=redacted)"
     fun json()=JSONObject().put("url",url).put("pin",pin).put("device",deviceId).put("client",clientId).put("session",sessionId).put("token",token).toString()
@@ -29,12 +31,7 @@ object CompanionPolicy {
         return text.trimEnd('/')
     }
     fun invitation(text:String,now:Long):DesktopInvitation {
-        require(text.length in 100..8192 && text.startsWith("JARVIS-PAIR-1:"))
-        val j=JSONObject(Base64.getUrlDecoder().decode(text.removePrefix("JARVIS-PAIR-1:")).toString(Charsets.UTF_8))
-        require(j.getInt("schema_version")==1)
-        return DesktopInvitation(localUrl(j.getString("url")),j.getString("certificate_sha256"),j.getString("device_id"),j.getString("pairing_id"),j.getString("code"),j.getLong("expires_at")).also{
-            require(it.pin.matches(Regex("[a-f0-9]{64}")) && uuid(it.deviceId) && uuid(it.pairingId) && it.code.matches(Regex("[A-Za-z0-9_-]{43}")) && it.expires in (now+1)..(now+150_000))
-        }
+        return PairingInvitation.parse(text,now)
     }
     fun parse(text:String):DesktopRequest? {
         val clean=text.trim().removeSuffix(".")

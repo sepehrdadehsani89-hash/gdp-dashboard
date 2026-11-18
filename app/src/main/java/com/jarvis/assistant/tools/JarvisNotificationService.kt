@@ -10,12 +10,15 @@ import com.jarvis.assistant.notifications.*
 /** Explicit local previews from per-source consent; no history collection or cloud upload. */
 class JarvisNotificationService:NotificationListenerService(){
     override fun onCreate(){super.onCreate();instance=this}
-    override fun onListenerConnected(){instance=this;connected=true}
-    override fun onListenerDisconnected(){connected=false}
-    override fun onDestroy(){if(instance===this){connected=false;instance=null};super.onDestroy()}
-    override fun onNotificationPosted(sbn:StatusBarNotification?)=Unit
-    override fun onNotificationRemoved(sbn:StatusBarNotification?)=Unit
+    override fun onListenerConnected(){instance=this;connected=true;changed()}
+    override fun onListenerDisconnected(){connected=false;changed()}
+    override fun onDestroy(){if(instance===this){connected=false;instance=null;changed()};super.onDestroy()}
+    override fun onNotificationPosted(sbn:StatusBarNotification?){changed()}
+    override fun onNotificationRemoved(sbn:StatusBarNotification?){changed()}
     companion object {
+        private val signal=kotlinx.coroutines.flow.MutableStateFlow(0L)
+        val changes:kotlinx.coroutines.flow.StateFlow<Long> = signal
+        @Synchronized fun changed(){signal.value=signal.value+1}
         @Volatile var connected=false;private set
         @Volatile private var instance:JarvisNotificationService?=null
         fun read(context:Context,source:String?=null):NotificationSnapshot {

@@ -1,0 +1,18 @@
+{
+  "official_sdk": "anthropic",
+  "version": "2.10.0",
+  "wheel_sha256": "1b91b2b4aa2bab44db8712e8a9053454bcff6daa3e6f5f11d85dc38b37d0a2a3",
+  "source_file": "anthropic/_client.py",
+  "default_header_evidence": [
+    "            **super().default_headers,",
+    "            \"X-Stainless-Async\": \"false\",",
+    "            \"anthropic-version\": ANTHROPIC_API_VERSION,",
+    "            **self._credential_headers,",
+    "            **self._custom_headers,",
+    "            **super().default_headers,",
+    "            \"X-Stainless-Async\": f\"async:{get_async_library()}\",",
+    "            \"anthropic-version\": ANTHROPIC_API_VERSION,",
+    "            **self._credential_headers,",
+    "            **self._custom_headers,"
+  ]
+}

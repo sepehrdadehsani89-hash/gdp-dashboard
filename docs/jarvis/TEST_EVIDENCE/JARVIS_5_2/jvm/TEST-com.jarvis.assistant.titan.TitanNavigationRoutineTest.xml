@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.titan.TitanNavigationRoutineTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-11-18T20:15:52" hostname="885caff30ac4" time="0.004">
+  <properties/>
+  <testcase name="nativeGlobeProjectionUsesFiniteRealCoordinatesAndFrontBackVisibility" classname="com.jarvis.assistant.titan.TitanNavigationRoutineTest" time="0.0"/>
+  <testcase name="officialNavigationUsesApprovedCoordinatesAndValidatedTravelMode" classname="com.jarvis.assistant.titan.TitanNavigationRoutineTest" time="0.001"/>
+  <testcase name="homeMustBeUniqueAndNeverInventedFromAnUnrelatedDestination" classname="com.jarvis.assistant.titan.TitanNavigationRoutineTest" time="0.001"/>
+  <testcase name="routineStepsUseRegisteredSupportedToolsWithoutArbitraryAutomation" classname="com.jarvis.assistant.titan.TitanNavigationRoutineTest" time="0.001"/>
+  <testcase name="locationCommandsRequireCurrentUserIntentNotQuotedInstructions" classname="com.jarvis.assistant.titan.TitanNavigationRoutineTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

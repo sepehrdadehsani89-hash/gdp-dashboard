@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.settings.FarewellVoiceSettingsTest" tests="22" skipped="0" failures="0" errors="0" timestamp="2026-11-18T20:15:52" hostname="885caff30ac4" time="0.009">
+  <properties/>
+  <testcase name="voiceSettingsStayDeterministicAndCredentialSafe[set farewell style to formal]" classname="com.jarvis.assistant.settings.FarewellVoiceSettingsTest" time="0.002"/>
+  <testcase name="voiceSettingsStayDeterministicAndCredentialSafe[set farewell style to short]" classname="com.jarvis.assistant.settings.FarewellVoiceSettingsTest" time="0.001"/>
+  <testcase name="voiceSettingsStayDeterministicAndCredentialSafe[change goodbye style to friendly]" classname="com.jarvis.assistant.settings.FarewellVoiceSettingsTest" time="0.0"/>
+  <testcase name="voiceSettingsStayDeterministicAndCredentialSafe[set farewell style to relaxed]" classname="com.jarvis.assistant.settings.FarewellVoiceSettingsTest" time="0.0"/>
+  <testcase name="voiceSettingsStayDeterministicAndCredentialSafe[set farewell style to focus]" classname="com.jarvis.assistant.settings.FarewellVoiceSettingsTest" time="0.0"/>
+  <testcase name="voiceSettingsStayDeterministicAndCredentialSafe[set farewell style to general]" classname="com.jarvis.assistant.settings.FarewellVoiceSettingsTest" time="0.001"/>
+  <testcase name="voiceSettingsStayDeterministicAndCredentialSafe[set farewell style to auto]" classname="com.jarvis.assistant.settings.FarewellVoiceSettingsTest" time="0.0"/>
+  <testcase name="voiceSettingsStayDeterministicAndCredentialSafe[turn farewell courtesy off]" classname="com.jarvis.assistant.settings.FarewellVoiceSettingsTest" time="0.0"/>
+  <testcase name="voiceSettingsStayDeterministicAndCredentialSafe[turn farewell courtesy on]" classname="com.jarvis.assistant.settings.FarewellVoiceSettingsTest" time="0.0"/>
+  <testcase name="voiceSettingsStayDeterministicAndCredentialSafe[disable sir preference]" classname="com.jarvis.assistant.settings.FarewellVoiceSettingsTest" time="0.001"/>
+  <testcase name="voiceSettingsStayDeterministicAndCredentialSafe[enable sir preference]" classname="com.jarvis.assistant.settings.FarewellVoiceSettingsTest" time="0.001"/>
+  <testcase name="voiceSettingsStayDeterministicAndCredentialSafe[enable farewell private context]" classname="com.jarvis.assistant.settings.FarewellVoiceSettingsTest" time="0.0"/>
+  <testcase name="voiceSettingsStayDeterministicAndCredentialSafe[disable farewell private context]" classname="com.jarvis.assistant.settings.FarewellVoiceSettingsTest" time="0.001"/>
+  <testcase name="voiceSettingsStayDeterministicAndCredentialSafe[turn farewell reminder context on]" classname="com.jarvis.assistant.settings.FarewellVoiceSettingsTest" time="0.0"/>
+  <testcase name="voiceSettingsStayDeterministicAndCredentialSafe[turn farewell reminder context off]" classname="com.jarvis.assistant.settings.FarewellVoiceSettingsTest" time="0.0"/>
+  <testcase name="voiceSettingsStayDeterministicAndCredentialSafe[use perplexity as my ai brain]" classname="com.jarvis.assistant.settings.FarewellVoiceSettingsTest" time="0.001"/>
+  <testcase name="voiceSettingsStayDeterministicAndCredentialSafe[set ai brain to perplexity]" classname="com.jarvis.assistant.settings.FarewellVoiceSettingsTest" time="0.0"/>
+  <testcase name="voiceSettingsStayDeterministicAndCredentialSafe[Do not enable farewell private context]" classname="com.jarvis.assistant.settings.FarewellVoiceSettingsTest" time="0.0"/>
+  <testcase name="voiceSettingsStayDeterministicAndCredentialSafe[What does farewell mean?]" classname="com.jarvis.assistant.settings.FarewellVoiceSettingsTest" time="0.001"/>
+  <testcase name="voiceSettingsStayDeterministicAndCredentialSafe[save perplexity api key secret-value]" classname="com.jarvis.assistant.settings.FarewellVoiceSettingsTest" time="0.0"/>
+  <testcase name="voiceSettingsStayDeterministicAndCredentialSafe[remember google access token private-token]" classname="com.jarvis.assistant.settings.FarewellVoiceSettingsTest" time="0.0"/>
+  <testcase name="voiceSettingsStayDeterministicAndCredentialSafe[How do I change farewell style?]" classname="com.jarvis.assistant.settings.FarewellVoiceSettingsTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

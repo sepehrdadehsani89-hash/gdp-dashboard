@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.brain.ProviderReconnectGateTest" tests="20" skipped="0" failures="0" errors="0" timestamp="2026-11-18T20:15:08" hostname="885caff30ac4" time="0.013">
+  <properties/>
+  <testcase name="changedCredentialRevisionResetsOldFailure" classname="com.jarvis.assistant.brain.ProviderReconnectGateTest" time="0.002"/>
+  <testcase name="secondFailureIncreasesDelay" classname="com.jarvis.assistant.brain.ProviderReconnectGateTest" time="0.001"/>
+  <testcase name="healthyRestoreIsNotContinuouslyRepeated" classname="com.jarvis.assistant.brain.ProviderReconnectGateTest" time="0.0"/>
+  <testcase name="authenticationFailureStopsAutomaticReconnect" classname="com.jarvis.assistant.brain.ProviderReconnectGateTest" time="0.0"/>
+  <testcase name="unavailableModelNeedsExplicitChoice" classname="com.jarvis.assistant.brain.ProviderReconnectGateTest" time="0.0"/>
+  <testcase name="firstForegroundRestorationIsAllowed" classname="com.jarvis.assistant.brain.ProviderReconnectGateTest" time="0.0"/>
+  <testcase name="laterForegroundEventMayRestoreHealthyGrant" classname="com.jarvis.assistant.brain.ProviderReconnectGateTest" time="0.0"/>
+  <testcase name="changedProviderCanRestoreIndependently" classname="com.jarvis.assistant.brain.ProviderReconnectGateTest" time="0.0"/>
+  <testcase name="timeoutKeepsBoundedRetryAvailable" classname="com.jarvis.assistant.brain.ProviderReconnectGateTest" time="0.0"/>
+  <testcase name="threeFailedAttemptsEndThisWindow" classname="com.jarvis.assistant.brain.ProviderReconnectGateTest" time="0.0"/>
+  <testcase name="explicitResetAllowsNewAttempt" classname="com.jarvis.assistant.brain.ProviderReconnectGateTest" time="0.0"/>
+  <testcase name="authorizationFailureRequiresUserAction" classname="com.jarvis.assistant.brain.ProviderReconnectGateTest" time="0.0"/>
+  <testcase name="cancellationDoesNotCreateTerminalAuthenticationFailure" classname="com.jarvis.assistant.brain.ProviderReconnectGateTest" time="0.001"/>
+  <testcase name="creditsFailureNeverTriggersAutomaticInferenceRetry" classname="com.jarvis.assistant.brain.ProviderReconnectGateTest" time="0.0"/>
+  <testcase name="networkEventsCanRetryInANewFiniteWindow" classname="com.jarvis.assistant.brain.ProviderReconnectGateTest" time="0.0"/>
+  <testcase name="retryIsAllowedAtBackoffBoundary" classname="com.jarvis.assistant.brain.ProviderReconnectGateTest" time="0.0"/>
+  <testcase name="staleCallbackCannotClearNewRestoration" classname="com.jarvis.assistant.brain.ProviderReconnectGateTest" time="0.002"/>
+  <testcase name="firstFailureHasBackoff" classname="com.jarvis.assistant.brain.ProviderReconnectGateTest" time="0.001"/>
+  <testcase name="concurrentNetworkAndForegroundEventsCoalesce" classname="com.jarvis.assistant.brain.ProviderReconnectGateTest" time="0.0"/>
+  <testcase name="staleFailureCannotInvalidateNewCredential" classname="com.jarvis.assistant.brain.ProviderReconnectGateTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

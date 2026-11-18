@@ -17,10 +17,12 @@ import kotlin.coroutines.resumeWithException
 enum class CompanionProgress { SENT, RUNNING }
 data class CompanionExecution(val state:String,val detail:String,val verified:Boolean,val errorCode:String?=null)
 
-class CompanionClient(private val vault:FeatureVault){
-    val registry=DesktopRegistry(vault)
+class CompanionClient internal constructor(val registry:DesktopRegistry):PairingGateway{
+    constructor(vault:FeatureVault):this(DesktopRegistry(vault))
+    private val proof=kotlinx.coroutines.flow.MutableStateFlow<DesktopConnectionProof?>(null)
+    val connectionProof:kotlinx.coroutines.flow.StateFlow<DesktopConnectionProof?> = proof
     fun paired():DesktopPair?=registry.active()?.pair
-    fun forget(){registry.active()?.let{registry.remove(it.pair.deviceId,it.pair.sessionId)}}
+    fun forget(){registry.active()?.let{registry.remove(it.pair.deviceId,it.pair.sessionId);proof.value=null}}
     private fun requireCurrent(pair:DesktopPair){val current=paired();if(current==null || !DesktopRegistry.reviewed(current,pair.deviceId,pair.sessionId))throw CompanionFailure("PAIRED_TARGET_CHANGED_REVIEW_AGAIN")}
     private fun transport(url:String,pin:String,onSent:()->Unit={}):OkHttpClient {
         CompanionPolicy.localUrl(url);require(pin.matches(Regex("[a-f0-9]{64}")))
@@ -55,27 +57,47 @@ class CompanionClient(private val vault:FeatureVault){
             }
         })
     }
-    suspend fun requestPair(i:DesktopInvitation,clientId:String,nonce:String):JSONObject {
+    override suspend fun requestPair(i:DesktopInvitation,clientId:String,nonce:String):JSONObject {
         val saved=registry.snapshot();check(saved.devices.size<20 || saved.devices.any{it.pair.deviceId==i.deviceId}){"TWENTY_COMPUTER_LIMIT"}
-        require(System.currentTimeMillis()<i.expires)
+        if(System.currentTimeMillis()>=i.expires)throw CompanionFailure("INVITATION_EXPIRED")
+        require(CompanionPolicy.uuid(clientId) && CompanionPolicy.uuid(nonce))
         val proof=CompanionPolicy.mac(i.code.toByteArray(),"${i.pairingId}\n$clientId\n$nonce".toByteArray())
         return request(i.url,i.pin,"/v1/pair/request",JSONObject().put("pairing_id",i.pairingId).put("client_id",clientId).put("nonce",nonce).put("proof",proof))
     }
-    suspend fun finishPair(i:DesktopInvitation,ticket:String,clientId:String,nonce:String):DesktopPair {
+    override suspend fun inspectInvitation(i:DesktopInvitation){
+        if(System.currentTimeMillis()>=i.expires)throw CompanionFailure("INVITATION_EXPIRED")
+        val j=request(i.url,i.pin,"/v1/health",null)
+        if(j.optInt("schema_version")!=1 || j.optString("device_id")!=i.deviceId || j.optString("service")!="jarvis-companion")throw CompanionFailure("INVALID_DESKTOP_RESPONSE")
+    }
+    override suspend fun pairingStatus(i:DesktopInvitation,c:PairingChallenge,clientId:String,nonce:String):Boolean {
+        if(System.currentTimeMillis()>=c.expires)throw CompanionFailure("PAIRING_EXPIRED")
+        val proof=CompanionPolicy.mac(i.code.toByteArray(),"${i.pairingId}\n$clientId\n$nonce".toByteArray())
+        val j=try{request(i.url,i.pin,"/v1/pair/status",JSONObject().put("ticket",c.ticket).put("client_id",clientId).put("nonce",nonce).put("proof",proof))}catch(e:CompanionFailure){if(e.code=="ROUTE_NOT_FOUND")throw CompanionFailure("PAIR_STATUS_UNSUPPORTED");throw e}
+        require(j.getString("ticket")==c.ticket && j.getString("device_id")==i.deviceId && j.getString("client_id")==clientId && j.getLong("expires_at")==c.expires && j.getString("state") in setOf("APPROVED","PENDING","DENIED"))
+        if(j.getString("state")=="DENIED")throw CompanionFailure("PAIRING_DENIED")
+        return j.getString("state")=="APPROVED"
+    }
+    override suspend fun finishPair(i:DesktopInvitation,ticket:String,clientId:String,nonce:String):DesktopPair {
         require(System.currentTimeMillis()<i.expires && CompanionPolicy.uuid(ticket))
         val proof=CompanionPolicy.mac(i.code.toByteArray(),"${i.pairingId}\n$clientId\n$nonce".toByteArray())
         val j=request(i.url,i.pin,"/v1/pair/complete",JSONObject().put("ticket",ticket).put("client_id",clientId).put("nonce",nonce).put("proof",proof))
         require(j.getInt("schema_version")==1 && j.getString("device_id")==i.deviceId && j.getString("client_id")==clientId)
         val p=DesktopPair.parse(DesktopPair(i.url,i.pin,i.deviceId,clientId,j.getString("session_id"),j.getString("token")).json())
-        withContext(Dispatchers.IO){registry.add(p)};return p
+        withContext(Dispatchers.IO){val existing=registry.snapshot().devices.any{it.pair.deviceId==p.deviceId};registry.add(p,i.deviceName.takeIf{!existing && it!="Jarvis computer"})};return p
     }
+    override suspend fun verifyPair(pair:DesktopPair){requireCurrent(pair);capabilitiesFor(pair);requireCurrent(pair)}
     suspend fun health():JSONObject {val p=paired() ?: throw CompanionFailure("NO_PAIRED_COMPUTER");return request(p.url,p.pin,"/v1/health",null).also{requireCurrent(p);require(it.getInt("schema_version")==1 && it.getString("device_id")==p.deviceId && it.getString("service")=="jarvis-companion")}}
-    suspend fun revoke(){val p=paired() ?: return;request(p.url,p.pin,"/v1/revoke",JSONObject(),p.token);withContext(Dispatchers.IO){registry.remove(p.deviceId,p.sessionId)}}
+    suspend fun revoke(){val p=paired() ?: return;request(p.url,p.pin,"/v1/revoke",JSONObject(),p.token);withContext(Dispatchers.IO){registry.remove(p.deviceId,p.sessionId);proof.value=null}}
     suspend fun capabilities():com.jarvis.assistant.finishpolish.mission.DesktopReadiness {
         val p=withContext(Dispatchers.IO){paired()} ?: throw CompanionFailure("NO_PAIRED_COMPUTER")
+        return capabilitiesFor(p)
+    }
+    private suspend fun capabilitiesFor(p:DesktopPair):com.jarvis.assistant.finishpolish.mission.DesktopReadiness {
         val nonce=UUID.randomUUID().toString()
         val response=request(p.url,p.pin,"/v1/capabilities",JSONObject().put("nonce",nonce),p.token)
-        return try{com.jarvis.assistant.finishpolish.mission.MissionPolicy.parseManifest(response,p,nonce,System.currentTimeMillis())}catch(_:Exception){throw CompanionFailure("CAPABILITY_VERIFICATION_FAILED")}
+        requireCurrent(p)
+        val verified=try{com.jarvis.assistant.finishpolish.mission.MissionPolicy.parseManifest(response,p,nonce,System.currentTimeMillis())}catch(_:Exception){throw CompanionFailure("CAPABILITY_VERIFICATION_FAILED")}
+        proof.value=DesktopConnectionProof(p.deviceId,p.sessionId,System.currentTimeMillis());return verified
     }
     suspend fun execute(r:DesktopRequest):String=executeObserved(r).detail
     /** SENT follows actual HTTP request-body transmission; RUNNING follows an authenticated

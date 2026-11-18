@@ -98,6 +98,7 @@ class BatteryAlerts(private val context:Context,private val hud:HudRepository,pr
         }
     }
     private fun blocked():String? {
+        if(!com.jarvis.assistant.modes.SystemModePolicy.optionalActivityAllowed(com.jarvis.assistant.modes.SystemModes.current(context)))return "SYSTEM_MODE_QUIET"
         val p=preferences
         val audio=context.getSystemService(AudioManager::class.java)
         val permission=ContextCompat.checkSelfPermission(context,Manifest.permission.READ_PHONE_STATE)==PackageManager.PERMISSION_GRANTED

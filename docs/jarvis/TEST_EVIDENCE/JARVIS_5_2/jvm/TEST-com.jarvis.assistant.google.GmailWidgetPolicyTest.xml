@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.google.GmailWidgetPolicyTest" tests="20" skipped="0" failures="0" errors="0" timestamp="2026-11-18T20:15:47" hostname="885caff30ac4" time="0.003">
+  <properties/>
+  <testcase name="diagnosticsRedactAccountAndCount" classname="com.jarvis.assistant.google.GmailWidgetPolicyTest" time="0.001"/>
+  <testcase name="expiryBoundaryIsDefined" classname="com.jarvis.assistant.google.GmailWidgetPolicyTest" time="0.001"/>
+  <testcase name="grantEpochChangeHidesPreviousCount" classname="com.jarvis.assistant.google.GmailWidgetPolicyTest" time="0.001"/>
+  <testcase name="largeActualCountIsNotTruncatedToANotificationLimit" classname="com.jarvis.assistant.google.GmailWidgetPolicyTest" time="0.0"/>
+  <testcase name="expiredCountIsNotLive" classname="com.jarvis.assistant.google.GmailWidgetPolicyTest" time="0.0"/>
+  <testcase name="privateOptOutHidesCount" classname="com.jarvis.assistant.google.GmailWidgetPolicyTest" time="0.0"/>
+  <testcase name="negativeCountIsNotInventedAsZero" classname="com.jarvis.assistant.google.GmailWidgetPolicyTest" time="0.0"/>
+  <testcase name="accountChangeHidesPreviousCount" classname="com.jarvis.assistant.google.GmailWidgetPolicyTest" time="0.0"/>
+  <testcase name="revokedScopeNeedsAuthorization" classname="com.jarvis.assistant.google.GmailWidgetPolicyTest" time="0.0"/>
+  <testcase name="countFromAnotherGrantCannotBeUsed" classname="com.jarvis.assistant.google.GmailWidgetPolicyTest" time="0.0"/>
+  <testcase name="backwardClockDoesNotReviveARead" classname="com.jarvis.assistant.google.GmailWidgetPolicyTest" time="0.0"/>
+  <testcase name="actualZeroIsDistinctFromMissingRead" classname="com.jarvis.assistant.google.GmailWidgetPolicyTest" time="0.0"/>
+  <testcase name="notificationsCannotCreateAnUnreadObservation" classname="com.jarvis.assistant.google.GmailWidgetPolicyTest" time="0.0"/>
+  <testcase name="countComesFromTypedReadRatherThanParsingText" classname="com.jarvis.assistant.google.GmailWidgetPolicyTest" time="0.0"/>
+  <testcase name="genuineUnreadCountIsDisplayed" classname="com.jarvis.assistant.google.GmailWidgetPolicyTest" time="0.0"/>
+  <testcase name="absentReadTellsUserHowToRefresh" classname="com.jarvis.assistant.google.GmailWidgetPolicyTest" time="0.0"/>
+  <testcase name="privateGateWinsEvenIfReadWasVerified" classname="com.jarvis.assistant.google.GmailWidgetPolicyTest" time="0.0"/>
+  <testcase name="absentObservationIsUnverified" classname="com.jarvis.assistant.google.GmailWidgetPolicyTest" time="0.0"/>
+  <testcase name="timestampIsMarkedAsAnActualRead" classname="com.jarvis.assistant.google.GmailWidgetPolicyTest" time="0.0"/>
+  <testcase name="removedAccountNeedsSetup" classname="com.jarvis.assistant.google.GmailWidgetPolicyTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

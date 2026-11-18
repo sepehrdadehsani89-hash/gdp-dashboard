@@ -47,6 +47,64 @@ def validate_command(request,device_id,client_id,now):
         q=params['query'];require(isinstance(q,str) and 1<=len(q)<=300 and len(q.encode())<=1000 and all(ord(c)>=32 and ord(c)!=127 for c in q),'INVALID_SEARCH')
     return action,params
 
+def verify_browser_navigation(action, url, call, receive):
+    # Chrome can finish a fast navigation before Page.enable acknowledges.
+    for method, arguments in [('Page.enable', {}), ('Network.enable', {}),
+                              ('Page.setLifecycleEventsEnabled', {'enabled': True})]:
+        command_id = call(method, arguments)
+        while True:
+            message = receive()
+            if message.get('id') == command_id:
+                require('result' in message and 'error' not in message, 'BROWSER_UNVERIFIED')
+                break
+
+    navigate = call('Page.navigate', {'url': url})
+    requested_document = None
+    loaded_documents = set()
+    document_status = {}
+    while (requested_document is None or requested_document not in loaded_documents
+           or (action == 'desktop.search_web' and requested_document not in document_status)):
+        message = receive()
+        if message.get('id') == navigate:
+            result = message.get('result', {})
+            require(not message.get('error') and not result.get('errorText')
+                    and not result.get('isDownload') and result.get('frameId') and result.get('loaderId'), 'PAGE_LOAD_FAILED')
+            requested_document = (result['frameId'], result['loaderId'])
+        event = message.get('method')
+        details = message.get('params', {})
+        document = (details.get('frameId'), details.get('loaderId'))
+        if event == 'Page.lifecycleEvent' and details.get('name') == 'load':
+            loaded_documents.add(document)
+        if event == 'Network.responseReceived' and details.get('type') == 'Document':
+            response = details.get('response', {})
+            if same_search_page(response.get('url', ''), url):
+                document_status[document] = int(response.get('status', 0))
+    http_status = document_status.get(requested_document)
+    probe_id = call('Runtime.evaluate', {
+        'expression': 'JSON.stringify({url:location.href,document:document.documentURI,ready:document.readyState})',
+        'returnByValue': True,
+    })
+    while True:
+        message = receive()
+        if message.get('id') == probe_id:
+            break
+    result = message.get('result', {})
+    value = result.get('result', {}).get('value')
+    require(not result.get('exceptionDetails') and isinstance(value, str), 'POSTCONDITION_UNVERIFIED')
+    try:
+        observed = json.loads(value)
+    except ValueError:
+        raise Failure('POSTCONDITION_UNVERIFIED')
+    require(isinstance(observed, dict) and isinstance(observed.get('url'), str)
+            and same_search_page(observed['url'], url) and observed.get('ready') == 'complete'
+            and observed.get('document') == observed['url'], 'POSTCONDITION_UNVERIFIED')
+    if action == 'desktop.search_web':
+        require(200 <= http_status < 300, 'PAGE_HTTP_ERROR')
+    return {'kind': 'CHROME_DOCUMENT_LOADED', 'url_sha256': digest(url.encode()),
+            'actual_url_sha256': digest(observed['url'].encode()), 'document_ready': 'complete',
+            'http_status': http_status}
+
+
 class ChromeAdapter:
     def __init__(self,state:Path,executable=None,extra_args=(),url_builder=search_url):
         self.state=state;self.executable=executable;self.extra_args=tuple(extra_args);self.url_builder=url_builder
@@ -89,30 +147,19 @@ class ChromeAdapter:
                 seq=0
                 def call(method,arguments=None):
                     nonlocal seq;seq+=1;ws.send(json.dumps({'id':seq,'method':method,'params':arguments or {}}));return seq
-                call('Page.enable');call('Network.enable')
-                url=self.url_builder(params['query']) if action=='desktop.search_web' else 'about:blank'
-                navigate=call('Page.navigate',{'url':url});deadline=time.monotonic()+12;http_status=None;loaded=False
-                while time.monotonic()<deadline:
-                    require(not cancel.is_set(),'CANCELLED')
-                    try:message=json.loads(ws.recv())
-                    except websocket.WebSocketTimeoutException:continue
-                    if message.get('id')==navigate:require(not message.get('result',{}).get('errorText') and not message.get('error'),'PAGE_LOAD_FAILED')
-                    if message.get('method')=='Network.responseReceived':
-                        p=message.get('params',{});response=p.get('response',{})
-                        if p.get('type')=='Document' and same_search_page(response.get('url',''),url):http_status=int(response.get('status',0))
-                    if message.get('method')=='Page.loadEventFired':loaded=True;break
-                require(loaded,'PAGE_LOAD_TIMEOUT')
-                probe=call('Runtime.evaluate',{'expression':'JSON.stringify({url:location.href,document:document.documentURI,ready:document.readyState})','returnByValue':True})
-                observed=None
-                while time.monotonic()<deadline:
-                    require(not cancel.is_set(),'CANCELLED')
-                    try:message=json.loads(ws.recv())
-                    except websocket.WebSocketTimeoutException:continue
-                    if message.get('id')==probe:
-                        observed=json.loads(message.get('result',{}).get('result',{}).get('value','{}'));break
-                require(observed and same_search_page(observed.get('url',''),url) and observed.get('ready')=='complete' and observed.get('document')==observed.get('url'),'POSTCONDITION_UNVERIFIED')
-                if action=='desktop.search_web':require(http_status is not None and 200<=http_status<300,'PAGE_HTTP_ERROR')
-                return {'kind':'CHROME_DOCUMENT_LOADED','url_sha256':digest(url.encode()),'actual_url_sha256':digest(observed['url'].encode()),'document_ready':'complete','http_status':http_status}
+                url = self.url_builder(params['query']) if action == 'desktop.search_web' else 'about:blank'
+                deadline = time.monotonic() + 12
+
+                def receive():
+                    while time.monotonic() < deadline:
+                        require(not cancel.is_set(), 'CANCELLED')
+                        try:
+                            return json.loads(ws.recv())
+                        except websocket.WebSocketTimeoutException:
+                            continue
+                    raise Failure('PAGE_LOAD_TIMEOUT')
+
+                return verify_browser_navigation(action, url, call, receive)
             finally:ws.close()
         finally:self.lock.release()
     def close(self):
@@ -145,33 +192,63 @@ class Companion:
     def new_invitation(self,url,pin):
         p=urlparse(url);require(p.scheme=='https' and local_address(p.hostname) and p.port and not p.username and not p.query and p.path in ('','/'))
         with self.lock:
-            self.invite={'schema_version':1,'url':url.rstrip('/'),'certificate_sha256':pin,'device_id':self.device_id,'pairing_id':str(uuid.uuid4()),'code':secrets.token_urlsafe(32),'expires_at':self.now()+120000,'device_name':'Jarvis computer'}
+            name=''.join(c for c in socket.gethostname().strip() if ord(c)>=32 and ord(c)!=127)[:60] or 'Jarvis computer'
+            self.invite={'schema_version':1,'url':url.rstrip('/'),'certificate_sha256':pin,'device_id':self.device_id,'pairing_id':str(uuid.uuid4()),'code':secrets.token_urlsafe(32),'expires_at':self.now()+120000,'device_name':name}
             return dict(self.invite)
     def request_pair(self,request):
         with self.lock:
+            require(isinstance(request,dict) and set(request)=={'pairing_id','client_id','nonce','proof'} and all(uid(request[k]) for k in ('pairing_id','client_id','nonce')) and isinstance(request['proof'],str))
+            # Reconcile an identical authorized request after a lost response. A different
+            # nonce/proof never inherits its ticket; the invitation remains one-time.
+            for ticket,p in self.pending.items():
+                if p.get('pairing_id')==request['pairing_id'] and p['client']==request['client_id'] and p['nonce']==request['nonce'] and hmac.compare_digest(p['proof'],request['proof']):
+                    require(self.now()<p['expires'],'PAIRING_EXPIRED');require(not p.get('denied'),'PAIRING_DENIED')
+                    return {'ticket':ticket,'compare_code':p['compare_code'],'expires_at':p['expires']}
             invite=self.invite;require(invite is not None and self.now()<invite['expires_at'],'PAIRING_EXPIRED')
-            require(set(request)=={'pairing_id','client_id','nonce','proof'} and uid(request['client_id']) and uid(request['nonce']))
             queue=self.rates['pair'];self._rate(queue,5)
             expected=hmac.new(invite['code'].encode(),(request['pairing_id']+'\n'+request['client_id']+'\n'+request['nonce']).encode(),hashlib.sha256).hexdigest()
             require(request['pairing_id']==invite['pairing_id'] and hmac.compare_digest(expected,str(request['proof'])),'PAIRING_PROOF_INVALID')
             ticket=str(uuid.uuid4());code=secrets.token_hex(3).upper()
-            self.pending[ticket]={'client':request['client_id'],'nonce':request['nonce'],'proof':request['proof'],'expires':invite['expires_at'],'approved':False,'compare_code':code}
+            self.pending={t:p for t,p in self.pending.items() if p['expires']>self.now()-600000}
+            require(len(self.pending)<64,'PENDING_LIMIT')
+            self.pending[ticket]={'pairing_id':invite['pairing_id'],'client':request['client_id'],'nonce':request['nonce'],'proof':request['proof'],'expires':invite['expires_at'],'created':self.now(),'approved':False,'denied':False,'compare_code':code}
             self.invite=None
             return {'ticket':ticket,'compare_code':code,'expires_at':self.pending[ticket]['expires']}
     def approve(self,ticket):
         with self.lock:
-            p=self.pending.get(ticket);require(p is not None and self.now()<p['expires'],'PAIRING_EXPIRED');p['approved']=True
+            p=self._ticket(ticket);require(not p.get('result'),'PAIRING_ALREADY_COMPLETED');require(not p.get('denied'),'PAIRING_DENIED');require(not p['approved'],'ALREADY_APPROVED');p['approved']=True
+    def _ticket(self,ticket):
+        require(uid(ticket),'INVALID_TICKET')
+        p=self.pending.get(ticket);require(p is not None,'TICKET_NOT_FOUND');require(self.now()<p['expires'],'PAIRING_EXPIRED');return p
+    def _challenge(self,request):
+        require(isinstance(request,dict) and set(request)=={'ticket','client_id','nonce','proof'})
+        p=self._ticket(request['ticket'])
+        require(p['client']==request['client_id'] and p['nonce']==request['nonce'] and isinstance(request['proof'],str) and hmac.compare_digest(p['proof'],request['proof']),'PAIRING_PROOF_INVALID')
+        return p
+    def deny(self,ticket):
+        with self.lock:
+            p=self._ticket(ticket);require(not p.get('result'),'PAIRING_ALREADY_COMPLETED');p['denied']=True
+    def pairing_status(self,request):
+        with self.lock:
+            p=self._challenge(request)
+            return {'ticket':request['ticket'],'device_id':self.device_id,'client_id':p['client'],'expires_at':p['expires'],'state':'DENIED' if p.get('denied') else 'APPROVED' if p['approved'] else 'PENDING'}
+    def pending_lines(self):
+        with self.lock:
+            rows=[f'Ticket {ticket} | phone {p["client"][-8:]} | compare code {p["compare_code"]} | age {max(0,(self.now()-p["created"])//1000)} seconds | expires in {max(0,(p["expires"]-self.now())//1000)} seconds | {"APPROVED: finish on phone" if p["approved"] else "AWAITING APPROVAL"}' for ticket,p in self.pending.items() if self.now()<p['expires'] and not p.get('denied') and not p.get('result')]
+            return rows or ['No pending pairing requests. Generate a fresh invitation with invite, then request pairing on the phone.']
     def finish_pair(self,request):
         with self.lock:
-            require(set(request)=={'ticket','client_id','nonce','proof'})
-            p=self.pending.get(request['ticket']);require(p is not None and self.now()<p['expires'],'PAIRING_EXPIRED')
-            require(p['client']==request['client_id'] and p['nonce']==request['nonce'] and hmac.compare_digest(p['proof'],str(request['proof'])),'PAIRING_PROOF_INVALID')
+            p=self._challenge(request);require(not p.get('denied'),'PAIRING_DENIED')
             require(p['approved'],'DESKTOP_APPROVAL_REQUIRED')
+            if p.get('result'):
+                result=p['result'];row=self.authenticate(result['token']);require(row[1]==result['session_id'],'UNAUTHORIZED');return dict(result)
             for c in self.db.execute('SELECT id FROM commands WHERE client=?',(p['client'],)).fetchall():
                 if c[0] in self.cancels:self.cancels[c[0]].set()
             token=secrets.token_urlsafe(32);session=str(uuid.uuid4())
-            self.db.execute('INSERT OR REPLACE INTO pairs VALUES (?,?,?,0)',(p['client'],session,digest(token.encode())));self.db.commit();del self.pending[request['ticket']]
-            return {'schema_version':1,'device_id':self.device_id,'client_id':p['client'],'session_id':session,'token':token,'capabilities':CAPABILITIES}
+            self.db.execute('INSERT OR REPLACE INTO pairs VALUES (?,?,?,0)',(p['client'],session,digest(token.encode())));self.db.commit()
+            # RAM-only response reconciliation, bounded by the original challenge expiry.
+            p['result']={'schema_version':1,'device_id':self.device_id,'client_id':p['client'],'session_id':session,'token':token,'capabilities':CAPABILITIES}
+            return dict(p['result'])
     def authenticate(self,token):
         require(isinstance(token,str) and 30<=len(token)<=100,'UNAUTHORIZED')
         with self.lock:
@@ -218,7 +295,7 @@ class Companion:
         platform='windows' if sys.platform=='win32' else 'macos' if sys.platform=='darwin' else 'linux' if sys.platform.startswith('linux') else 'unsupported'
         capabilities=[{'action_id':action,'status':status,'reason':reason,'app':'chrome','verification':'CHROME_DOCUMENT_LOADED'} for action in CAPABILITIES]
         capabilities += [{'action_id':action,'status':'UNAVAILABLE','reason':'NOT_IMPLEMENTED','verification':None} for action in ('desktop.open_document','desktop.transfer_file','desktop.arbitrary_app','desktop.screen_capture','desktop.remote_shell')]
-        value={'schema_version':1,'agent_version':'1.1','service':'jarvis-companion','device_id':self.device_id,'client_id':row[0],'session_id':row[1],'request_nonce':request['nonce'],'sampled_at':self.now(),'platform':platform,'capabilities':capabilities}
+        value={'schema_version':1,'agent_version':'1.2','service':'jarvis-companion','device_id':self.device_id,'client_id':row[0],'session_id':row[1],'request_nonce':request['nonce'],'sampled_at':self.now(),'platform':platform,'capabilities':capabilities}
         raw=canonical(value)
         return {'manifest':base64.urlsafe_b64encode(raw).decode().rstrip('='),'signature':hmac.new(bytes.fromhex(row[2]),raw,hashlib.sha256).hexdigest()}
     def receipt(self,token,command_id):
@@ -242,6 +319,8 @@ class Companion:
     def revoke_all(self):
         with self.lock:
             self.db.execute('UPDATE pairs SET revoked=1');self.db.commit()
+            self.invite=None
+            for p in self.pending.values():p['denied']=True;p.pop('result',None)
             for event in self.cancels.values():event.set()
     def close(self):
         for event in self.cancels.values():event.set()
@@ -267,6 +346,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
             body=self.rfile.read(size);require(len(body)==size)
             app=self.server.app
             if self.path=='/v1/pair/request':value=app.request_pair(json.loads(body))
+            elif self.path=='/v1/pair/status':value=app.pairing_status(json.loads(body))
             elif self.path=='/v1/pair/complete':value=app.finish_pair(json.loads(body))
             elif self.path=='/v1/commands':value=app.command(self.token(),body)
             elif self.path=='/v1/capabilities':value=app.capabilities(self.token(),json.loads(body))
@@ -321,6 +401,28 @@ def save_invitation(state,invitation):
     qr=qrcode.make(payload,image_factory=qrcode.image.svg.SvgPathImage);path=state/'pairing-qr.svg';qr.save(path);path.chmod(0o600)
     return path
 
+class DiscoveryAnnouncer:
+    """mDNS contains public identity hints only, never invitations or session credentials."""
+    service_type='_jarvis-pc._tcp.local.'
+    def __init__(self):self.connection=None;self.info=None;self.last_error=None
+    def start(self,host,port,device_id):
+        require(local_address(host) and not host.startswith('127.') and uid(device_id),'DISCOVERY_PRIVATE_LAN_REQUIRED')
+        try:
+            from zeroconf import Zeroconf,ServiceInfo,IPVersion
+            self.connection=Zeroconf(interfaces=[host],ip_version=IPVersion.V4Only)
+            self.info=ServiceInfo(self.service_type,f'Jarvis-{device_id}.{self.service_type}',addresses=[socket.inet_aton(host)],port=port,properties={'protocol':'1','device':device_id},server=f'jarvis-{device_id}.local.')
+            self.connection.register_service(self.info,allow_name_change=True)
+            return True
+        except Exception as error:
+            self.last_error=type(error).__name__
+            self.close();return False
+    def close(self):
+        if self.connection:
+            try:
+                if self.info:self.connection.unregister_service(self.info)
+            except Exception:pass
+            finally:self.connection.close();self.connection=None;self.info=None
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--bind',default='127.0.0.1');parser.add_argument('--port',type=int,default=8765);parser.add_argument('--state',type=Path,default=Path.home()/'.jarvis-companion');parser.add_argument('--chrome-path');args=parser.parse_args()
     require(local_address(args.bind) and 1024<=args.port<=65535,'PRIVATE_LAN_ADDRESS_REQUIRED')
@@ -331,22 +433,26 @@ def main():
     def invite():
         path=save_invitation(args.state,app.new_invitation(f'https://{args.bind}:{args.port}',pin));print(f'New private QR: {path}\nValid for 120 seconds. Scan in Jarvis, compare the code, then approve the phone here. Do not share the invitation publicly.')
     invite();thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start()
-    print('Visible companion running. Only Chrome open/search are enabled. Commands: pending | approve TICKET | invite | revoke-all | stop. No mic or speakers are used.')
+    discovery=DiscoveryAnnouncer()
+    if args.bind.startswith('127.'):print('Nearby discovery is disabled on loopback. Bind the actual private LAN address for phone access.')
+    elif discovery.start(args.bind,args.port,app.device_id):print('Nearby mDNS discovery is advertised. It does not authorize any phone; QR and both approvals remain required.')
+    else:print('Nearby discovery unavailable. QR/manual pairing still works; check the pinned zeroconf dependency and local multicast access.')
+    print('Visible companion running. Only Chrome open/search are enabled. Commands: pending | approve TICKET | deny TICKET | invite | revoke-all | stop. No mic or speakers are used.')
     try:
         while True:
             command=input('Jarvis companion> ').strip()
             try:
                 if command=='stop':break
                 if command=='pending':
-                    with app.lock:
-                        for ticket,p in app.pending.items():print(f'Ticket {ticket} | phone {p["client"][-8:]} | compare code {p["compare_code"]} | expires in {max(0,(p["expires"]-app.now())//1000)} seconds')
+                    for line in app.pending_lines():print(line)
                 elif command.startswith('approve '):app.approve(command.split(' ',1)[1]);print('Approved. Finish pairing on the phone.')
+                elif command.startswith('deny '):app.deny(command.split(' ',1)[1]);print('Denied. No phone session was created.')
                 elif command=='invite':invite()
                 elif command=='revoke-all':app.revoke_all();print('All phone sessions revoked; in-flight cancellation requested.')
-                else:print('Use pending, approve TICKET, invite, revoke-all or stop.')
+                else:print('Use pending, approve TICKET, deny TICKET, invite, revoke-all or stop.')
             except Failure as e:print(e.code)
     except (EOFError,KeyboardInterrupt):pass
-    finally:server.shutdown();server.server_close();app.close();(args.state/'pairing-invitation.txt').unlink(missing_ok=True);(args.state/'pairing-qr.svg').unlink(missing_ok=True)
+    finally:discovery.close();server.shutdown();server.server_close();app.close();(args.state/'pairing-invitation.txt').unlink(missing_ok=True);(args.state/'pairing-qr.svg').unlink(missing_ok=True)
 if __name__=='__main__':
     try:main()
     except Failure as e:print('Companion could not start: '+e.code,file=sys.stderr);sys.exit(1)

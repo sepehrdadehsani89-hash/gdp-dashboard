@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.companion.NearbyCompanionPolicyTest" tests="22" skipped="0" failures="0" errors="0" timestamp="2026-11-18T20:15:37" hostname="885caff30ac4" time="0.02">
+  <properties/>
+  <testcase name="unsupportedProtocolRejected" classname="com.jarvis.assistant.companion.NearbyCompanionPolicyTest" time="0.001"/>
+  <testcase name="lowPortRejected" classname="com.jarvis.assistant.companion.NearbyCompanionPolicyTest" time="0.001"/>
+  <testcase name="missingProtocolRejected" classname="com.jarvis.assistant.companion.NearbyCompanionPolicyTest" time="0.0"/>
+  <testcase name="unknownIdentityStillRequiresPairing" classname="com.jarvis.assistant.companion.NearbyCompanionPolicyTest" time="0.0"/>
+  <testcase name="overrangePortRejected" classname="com.jarvis.assistant.companion.NearbyCompanionPolicyTest" time="0.0"/>
+  <testcase name="missingDeviceRejected" classname="com.jarvis.assistant.companion.NearbyCompanionPolicyTest" time="0.001"/>
+  <testcase name="internetHostnameRejected" classname="com.jarvis.assistant.companion.NearbyCompanionPolicyTest" time="0.0"/>
+  <testcase name="malformedDeviceRejected" classname="com.jarvis.assistant.companion.NearbyCompanionPolicyTest" time="0.0"/>
+  <testcase name="exactServiceTypeRetainsProtocol" classname="com.jarvis.assistant.companion.NearbyCompanionPolicyTest" time="0.0"/>
+  <testcase name="otherDeviceCannotHijackSavedEndpoint" classname="com.jarvis.assistant.companion.NearbyCompanionPolicyTest" time="0.0"/>
+  <testcase name="noSavedPairIsCreatedByDiscovery" classname="com.jarvis.assistant.companion.NearbyCompanionPolicyTest" time="0.004"/>
+  <testcase name="publicAddressRejected" classname="com.jarvis.assistant.companion.NearbyCompanionPolicyTest" time="0.001"/>
+  <testcase name="sameDeviceAtAnotherPortIsNotSilentlyRebound" classname="com.jarvis.assistant.companion.NearbyCompanionPolicyTest" time="0.0"/>
+  <testcase name="unknownCandidateCannotUseSavedEndpoint" classname="com.jarvis.assistant.companion.NearbyCompanionPolicyTest" time="0.0"/>
+  <testcase name="savedIdentityIsOnlyATrustCandidate" classname="com.jarvis.assistant.companion.NearbyCompanionPolicyTest" time="0.0"/>
+  <testcase name="sameDeviceAtAnotherAddressIsNotSilentlyRebound" classname="com.jarvis.assistant.companion.NearbyCompanionPolicyTest" time="0.0"/>
+  <testcase name="wildcardBindRejected" classname="com.jarvis.assistant.companion.NearbyCompanionPolicyTest" time="0.001"/>
+  <testcase name="exactSavedEndpointCanBeAuthenticated" classname="com.jarvis.assistant.companion.NearbyCompanionPolicyTest" time="0.0"/>
+  <testcase name="linkLocalMetadataAddressRejected" classname="com.jarvis.assistant.companion.NearbyCompanionPolicyTest" time="0.0"/>
+  <testcase name="injectedCertificateDoesNotReplaceTrust" classname="com.jarvis.assistant.companion.NearbyCompanionPolicyTest" time="0.0"/>
+  <testcase name="storedCredentialsAreNotInTheCandidate" classname="com.jarvis.assistant.companion.NearbyCompanionPolicyTest" time="0.011"/>
+  <testcase name="ipv6UnsupportedIsExplicitlyExcluded" classname="com.jarvis.assistant.companion.NearbyCompanionPolicyTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

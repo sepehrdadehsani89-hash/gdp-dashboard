@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.google.GoogleProjectIndexTest" tests="22" skipped="0" failures="0" errors="0" timestamp="2026-11-18T20:15:47" hostname="885caff30ac4" time="0.009">
+  <properties/>
+  <testcase name="undecryptableExistingIndexIsPreserved" classname="com.jarvis.assistant.google.GoogleProjectIndexTest" time="0.001"/>
+  <testcase name="chatIsNotIndexedByProjectActions" classname="com.jarvis.assistant.google.GoogleProjectIndexTest" time="0.0"/>
+  <testcase name="invalidAccountIdCannotWriteSnapshot" classname="com.jarvis.assistant.google.GoogleProjectIndexTest" time="0.0"/>
+  <testcase name="sourceTimestampIsRecorded" classname="com.jarvis.assistant.google.GoogleProjectIndexTest" time="0.001"/>
+  <testcase name="gmailIsNotIndexedByProjectActions" classname="com.jarvis.assistant.google.GoogleProjectIndexTest" time="0.0"/>
+  <testcase name="slidesExplicitSnapshotIsAllowed" classname="com.jarvis.assistant.google.GoogleProjectIndexTest" time="0.0"/>
+  <testcase name="summariesDiscloseStaleness" classname="com.jarvis.assistant.google.GoogleProjectIndexTest" time="0.001"/>
+  <testcase name="corruptExistingIndexIsPreserved" classname="com.jarvis.assistant.google.GoogleProjectIndexTest" time="0.001"/>
+  <testcase name="mapsAreNotIndexedByProjectActions" classname="com.jarvis.assistant.google.GoogleProjectIndexTest" time="0.0"/>
+  <testcase name="snapshotContentIsBounded" classname="com.jarvis.assistant.google.GoogleProjectIndexTest" time="0.001"/>
+  <testcase name="refreshReplacesOnlyThatAccountsServiceSnapshot" classname="com.jarvis.assistant.google.GoogleProjectIndexTest" time="0.0"/>
+  <testcase name="deletingLastSnapshotLeavesAnExplicitEmptyIndex" classname="com.jarvis.assistant.google.GoogleProjectIndexTest" time="0.0"/>
+  <testcase name="accountPartitionsAreSeparate" classname="com.jarvis.assistant.google.GoogleProjectIndexTest" time="0.0"/>
+  <testcase name="failedWriteDoesNotPretendToSave" classname="com.jarvis.assistant.google.GoogleProjectIndexTest" time="0.0"/>
+  <testcase name="docsExplicitSnapshotIsAllowed" classname="com.jarvis.assistant.google.GoogleProjectIndexTest" time="0.0"/>
+  <testcase name="serviceDeletePreservesOtherServices" classname="com.jarvis.assistant.google.GoogleProjectIndexTest" time="0.0"/>
+  <testcase name="emptyIndexDoesNotInventProjects" classname="com.jarvis.assistant.google.GoogleProjectIndexTest" time="0.001"/>
+  <testcase name="snapshotPersistsOnlyAfterExplicitIndexCall" classname="com.jarvis.assistant.google.GoogleProjectIndexTest" time="0.0"/>
+  <testcase name="accountDeletePreservesOthers" classname="com.jarvis.assistant.google.GoogleProjectIndexTest" time="0.0"/>
+  <testcase name="calendarExplicitSnapshotIsAllowed" classname="com.jarvis.assistant.google.GoogleProjectIndexTest" time="0.0"/>
+  <testcase name="contactsAreNotIndexedByProjectActions" classname="com.jarvis.assistant.google.GoogleProjectIndexTest" time="0.001"/>
+  <testcase name="sheetsExplicitSnapshotIsAllowed" classname="com.jarvis.assistant.google.GoogleProjectIndexTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -3,8 +3,8 @@ import org.junit.Assert.*
 import org.junit.Test
 class SettingsDirectoryTest {
     private fun ids(q:String)=SettingsDirectory.search(q).map{it.id}
-    @Test fun emptySearchShowsTenSections(){assertEquals(10,ids("").size)}
-    @Test fun whitespaceSearchShowsSections(){assertEquals(10,ids("   ").size)}
+    @Test fun emptySearchShowsElevenSections(){assertEquals(11,ids("").size)}
+    @Test fun whitespaceSearchShowsSections(){assertEquals(11,ids("   ").size)}
     @Test fun microphoneIsDiscoverable(){assertTrue("voice" in ids("microphone"))}
     @Test fun motionIsDiscoverable(){assertTrue("appearance" in ids("reduced motion"))}
     @Test fun captionsIsDiscoverable(){assertTrue("voice" in ids("captions"))}

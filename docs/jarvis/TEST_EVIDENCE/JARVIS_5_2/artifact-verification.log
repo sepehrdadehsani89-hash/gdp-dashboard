@@ -1,0 +1,19 @@
+{
+  "artifact": "app/build/outputs/apk/debug/app-debug.apk",
+  "sha256": "cd1a5f9718763e0f2cf6d35402d5f9e503c41b100fa80fb402fb95175c832c76",
+  "bytes": 60514307,
+  "signer_sha256": "f9f13af1f84515b787b89c0f3abc8695f1d0d45e8a647d1192966c4c810964c7",
+  "previous_preview_sha256": "361872bb26f569aabb9bb13a686de97c6dbdc97fec839f625f552dd2abc68152",
+  "package": "com.jarvis.next.phoenix",
+  "version_code": 33,
+  "version_name": "5.2.0-preview.1-debug",
+  "minimum_sdk": 29,
+  "target_sdk": 35,
+  "architectures": [
+    "arm64-v8a"
+  ],
+  "environment": "Linux cloud SDK/ZIP inspection; no Android device or emulator",
+  "physical_device_tests_executed": 0,
+  "passed": 35,
+  "failed": 0
+}

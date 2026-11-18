@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.voice.SpokenControlsTest" tests="13" skipped="0" failures="0" errors="0" timestamp="2026-11-18T20:15:52" hostname="885caff30ac4" time="0.021">
+  <properties/>
+  <testcase name="languageMentionsQuestionsNegationsAndCompoundsDoNotChangeSettings" classname="com.jarvis.assistant.voice.SpokenControlsTest" time="0.001"/>
+  <testcase name="lowRiskExceptionNeverAuthorizesTelephoneContactsOrProtectedCompoundActions" classname="com.jarvis.assistant.voice.SpokenControlsTest" time="0.0"/>
+  <testcase name="allExactCallStartAliasesKeepPickupAsASeparateAction" classname="com.jarvis.assistant.voice.SpokenControlsTest" time="0.001"/>
+  <testcase name="explicitSpanishModeKeepsTheSpanishVoiceLanguageForEnglishWordedQuestions" classname="com.jarvis.assistant.voice.SpokenControlsTest" time="0.0"/>
+  <testcase name="malformedScoresAndBlankResultsCannotCreateAnAiCall" classname="com.jarvis.assistant.voice.SpokenControlsTest" time="0.001"/>
+  <testcase name="lowWordScoresStillReachTheLocalRingingHandlerAcrossRepeatedWakeCycles" classname="com.jarvis.assistant.voice.SpokenControlsTest" time="0.011"/>
+  <testcase name="automaticReplyLanguageDetectionRemainsAvailableWhenModeIsNotPinned" classname="com.jarvis.assistant.voice.SpokenControlsTest" time="0.0"/>
+  <testcase name="requestedEnglishAndSpanishModeAliasesAreRecognizedLocally" classname="com.jarvis.assistant.voice.SpokenControlsTest" time="0.001"/>
+  <testcase name="validNbestFinalsAreNotRejectedForMissingWordPosteriorsForOtherExistingAbilities" classname="com.jarvis.assistant.voice.SpokenControlsTest" time="0.0"/>
+  <testcase name="actualVoskNbestSchemaWithTimingsButNoWordScoresReachesTheCallHandler" classname="com.jarvis.assistant.voice.SpokenControlsTest" time="0.004"/>
+  <testcase name="diagnosticsKeepOnlyMetadataWithoutStoringTheHeardWords" classname="com.jarvis.assistant.voice.SpokenControlsTest" time="0.0"/>
+  <testcase name="malformedOrPartiallySuppliedWordScoresAreStillRejected" classname="com.jarvis.assistant.voice.SpokenControlsTest" time="0.0"/>
+  <testcase name="languagePartialsWaitForConfidenceCheckedFinals" classname="com.jarvis.assistant.voice.SpokenControlsTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.companion.CompanionTlsIntegrationTest" tests="28" skipped="0" failures="0" errors="0" timestamp="2026-11-18T20:15:14" hostname="885caff30ac4" time="23.305">
+  <properties/>
+  <testcase name="realRedirectIsNotFollowed" classname="com.jarvis.assistant.companion.CompanionTlsIntegrationTest" time="0.967"/>
+  <testcase name="signedStaleManifestCannotVerifySession" classname="com.jarvis.assistant.companion.CompanionTlsIntegrationTest" time="0.901"/>
+  <testcase name="badCapabilitySignatureCannotVerifySession" classname="com.jarvis.assistant.companion.CompanionTlsIntegrationTest" time="0.847"/>
+  <testcase name="oversizedRealResponseIsRejected" classname="com.jarvis.assistant.companion.CompanionTlsIntegrationTest" time="0.744"/>
+  <testcase name="actualTlsFinishRequiresDesktopApproval" classname="com.jarvis.assistant.companion.CompanionTlsIntegrationTest" time="0.79"/>
+  <testcase name="realDesktopDenialIsNotAConnection" classname="com.jarvis.assistant.companion.CompanionTlsIntegrationTest" time="0.847"/>
+  <testcase name="exactCertificatePinIsActuallyEnforced" classname="com.jarvis.assistant.companion.CompanionTlsIntegrationTest" time="0.746"/>
+  <testcase name="wrongPairingIdentityCannotRequestATicket" classname="com.jarvis.assistant.companion.CompanionTlsIntegrationTest" time="0.818"/>
+  <testcase name="expiredPinnedCertificateIsActuallyRejected" classname="com.jarvis.assistant.companion.CompanionTlsIntegrationTest" time="0.765"/>
+  <testcase name="wrongCompletionNonceIsRejectedByActualServer" classname="com.jarvis.assistant.companion.CompanionTlsIntegrationTest" time="0.907"/>
+  <testcase name="restartClientReusesSavedTrustWithoutRescanning" classname="com.jarvis.assistant.companion.CompanionTlsIntegrationTest" time="0.898"/>
+  <testcase name="cancellingActualHttpsDoesNotClaimPaired" classname="com.jarvis.assistant.companion.CompanionTlsIntegrationTest" time="0.854"/>
+  <testcase name="actualTlsPairingCreatesSavedAndAuthenticatedSession" classname="com.jarvis.assistant.companion.CompanionTlsIntegrationTest" time="0.933"/>
+  <testcase name="realRevokeInvalidatesTheSavedSession" classname="com.jarvis.assistant.companion.CompanionTlsIntegrationTest" time="0.886"/>
+  <testcase name="signedWrongNonceCannotVerifySession" classname="com.jarvis.assistant.companion.CompanionTlsIntegrationTest" time="0.895"/>
+  <testcase name="actualPinnedPublicHealthDoesNotCreatePairingOrAuthProof" classname="com.jarvis.assistant.companion.CompanionTlsIntegrationTest" time="0.747"/>
+  <testcase name="pinnedCertificateStillRequiresMatchingHostname" classname="com.jarvis.assistant.companion.CompanionTlsIntegrationTest" time="0.71"/>
+  <testcase name="realPendingStatusIsNotApproval" classname="com.jarvis.assistant.companion.CompanionTlsIntegrationTest" time="0.884"/>
+  <testcase name="expiredInvitationIsRejectedBeforeTransmission" classname="com.jarvis.assistant.companion.CompanionTlsIntegrationTest" time="0.721"/>
+  <testcase name="realApprovedStatusDoesNotSaveBeforePhoneFinishes" classname="com.jarvis.assistant.companion.CompanionTlsIntegrationTest" time="0.801"/>
+  <testcase name="signedWrongSessionCannotVerifySession" classname="com.jarvis.assistant.companion.CompanionTlsIntegrationTest" time="0.899"/>
+  <testcase name="notYetValidPinnedCertificateIsActuallyRejected" classname="com.jarvis.assistant.companion.CompanionTlsIntegrationTest" time="0.76"/>
+  <testcase name="wrongInvitationSecretCannotRequestATicket" classname="com.jarvis.assistant.companion.CompanionTlsIntegrationTest" time="0.751"/>
+  <testcase name="identicalRealHttpsRetryReturnsSameChallenge" classname="com.jarvis.assistant.companion.CompanionTlsIntegrationTest" time="0.782"/>
+  <testcase name="malformedRealChallengeDoesNotSavePairing" classname="com.jarvis.assistant.companion.CompanionTlsIntegrationTest" time="0.772"/>
+  <testcase name="completionRetryRetainsSameSessionAndRegistryEntry" classname="com.jarvis.assistant.companion.CompanionTlsIntegrationTest" time="0.877"/>
+  <testcase name="signedWrongDeviceCannotVerifySession" classname="com.jarvis.assistant.companion.CompanionTlsIntegrationTest" time="0.978"/>
+  <testcase name="malformedRealJsonIsRejected" classname="com.jarvis.assistant.companion.CompanionTlsIntegrationTest" time="0.813"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

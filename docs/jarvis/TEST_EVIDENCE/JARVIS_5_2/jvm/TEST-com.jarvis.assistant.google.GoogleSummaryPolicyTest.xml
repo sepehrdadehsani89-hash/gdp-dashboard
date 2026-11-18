@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.google.GoogleSummaryPolicyTest" tests="24" skipped="0" failures="0" errors="0" timestamp="2026-11-18T20:15:50" hostname="885caff30ac4" time="0.007">
+  <properties/>
+  <testcase name="modelSwitchInvalidatesReview" classname="com.jarvis.assistant.google.GoogleSummaryPolicyTest" time="0.001"/>
+  <testcase name="noConfirmationMeansNoSharing" classname="com.jarvis.assistant.google.GoogleSummaryPolicyTest" time="0.0"/>
+  <testcase name="productSwitchInvalidatesReview" classname="com.jarvis.assistant.google.GoogleSummaryPolicyTest" time="0.0"/>
+  <testcase name="backwardClockCannotReviveAReview" classname="com.jarvis.assistant.google.GoogleSummaryPolicyTest" time="0.0"/>
+  <testcase name="expiredReviewCannotAuthorizeARequest" classname="com.jarvis.assistant.google.GoogleSummaryPolicyTest" time="0.0"/>
+  <testcase name="emptyCredentialBindingCannotBeApproved" classname="com.jarvis.assistant.google.GoogleSummaryPolicyTest" time="0.0"/>
+  <testcase name="excerptIsActualSourceText" classname="com.jarvis.assistant.google.GoogleSummaryPolicyTest" time="0.0"/>
+  <testcase name="explicitCurrentReadCanBeSummarized" classname="com.jarvis.assistant.google.GoogleSummaryPolicyTest" time="0.0"/>
+  <testcase name="exactReviewExpiryBoundaryIsHandled" classname="com.jarvis.assistant.google.GoogleSummaryPolicyTest" time="0.001"/>
+  <testcase name="mapsHistoryIsNotInvented" classname="com.jarvis.assistant.google.GoogleSummaryPolicyTest" time="0.0"/>
+  <testcase name="providerAccountChangeInvalidatesReview" classname="com.jarvis.assistant.google.GoogleSummaryPolicyTest" time="0.0"/>
+  <testcase name="providerSwitchInvalidatesReview" classname="com.jarvis.assistant.google.GoogleSummaryPolicyTest" time="0.0"/>
+  <testcase name="emptySourceIsNotReviewed" classname="com.jarvis.assistant.google.GoogleSummaryPolicyTest" time="0.001"/>
+  <testcase name="accountSwitchInvalidatesReview" classname="com.jarvis.assistant.google.GoogleSummaryPolicyTest" time="0.0"/>
+  <testcase name="localBrainIsAnExplicitSeparateDestination" classname="com.jarvis.assistant.google.GoogleSummaryPolicyTest" time="0.0"/>
+  <testcase name="grantEpochChangeInvalidatesReview" classname="com.jarvis.assistant.google.GoogleSummaryPolicyTest" time="0.0"/>
+  <testcase name="privateExcerptChangeInvalidatesReview" classname="com.jarvis.assistant.google.GoogleSummaryPolicyTest" time="0.001"/>
+  <testcase name="promptTreatsMailInstructionsAsUntrusted" classname="com.jarvis.assistant.google.GoogleSummaryPolicyTest" time="0.0"/>
+  <testcase name="credentialModeSwitchInvalidatesReview" classname="com.jarvis.assistant.google.GoogleSummaryPolicyTest" time="0.0"/>
+  <testcase name="unsupportedConsumerPhotosAccessIsNotInvented" classname="com.jarvis.assistant.google.GoogleSummaryPolicyTest" time="0.001"/>
+  <testcase name="consumerKeepAccessIsNotInvented" classname="com.jarvis.assistant.google.GoogleSummaryPolicyTest" time="0.0"/>
+  <testcase name="excerptIsBounded" classname="com.jarvis.assistant.google.GoogleSummaryPolicyTest" time="0.0"/>
+  <testcase name="reviewDiagnosticsDoNotRevealPrivateContent" classname="com.jarvis.assistant.google.GoogleSummaryPolicyTest" time="0.0"/>
+  <testcase name="lockMeansNoSharing" classname="com.jarvis.assistant.google.GoogleSummaryPolicyTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.google.GoogleConnectionsStoreTest" tests="27" skipped="0" failures="0" errors="0" timestamp="2026-11-18T20:15:47" hostname="885caff30ac4" time="0.054">
+  <properties/>
+  <testcase name="undecryptableStorageIsNotOverwritten" classname="com.jarvis.assistant.google.GoogleConnectionsStoreTest" time="0.032"/>
+  <testcase name="clockRollbackDoesNotKeepGreenStatus" classname="com.jarvis.assistant.google.GoogleConnectionsStoreTest" time="0.002"/>
+  <testcase name="pendingConsentCannotGrantToAnUnselectedAccount" classname="com.jarvis.assistant.google.GoogleConnectionsStoreTest" time="0.001"/>
+  <testcase name="wrongScopeDoesNotGrantMail" classname="com.jarvis.assistant.google.GoogleConnectionsStoreTest" time="0.001"/>
+  <testcase name="verificationExpiresAfterAnHour" classname="com.jarvis.assistant.google.GoogleConnectionsStoreTest" time="0.0"/>
+  <testcase name="savedSenderFilterSurvivesRestart" classname="com.jarvis.assistant.google.GoogleConnectionsStoreTest" time="0.0"/>
+  <testcase name="localRemovalPreservesOtherAccounts" classname="com.jarvis.assistant.google.GoogleConnectionsStoreTest" time="0.001"/>
+  <testcase name="onlyActualReadAddsCurrentVerification" classname="com.jarvis.assistant.google.GoogleConnectionsStoreTest" time="0.0"/>
+  <testcase name="diagnosticStringsDoNotRevealEmail" classname="com.jarvis.assistant.google.GoogleConnectionsStoreTest" time="0.001"/>
+  <testcase name="emptyStorageIsUnconnected" classname="com.jarvis.assistant.google.GoogleConnectionsStoreTest" time="0.0"/>
+  <testcase name="aStaleReadCannotVerifyAfterAccountSwitch" classname="com.jarvis.assistant.google.GoogleConnectionsStoreTest" time="0.002"/>
+  <testcase name="identitiesAreCaseInsensitive" classname="com.jarvis.assistant.google.GoogleConnectionsStoreTest" time="0.0"/>
+  <testcase name="metadataSurvivesRestartWithoutClaimingVerification" classname="com.jarvis.assistant.google.GoogleConnectionsStoreTest" time="0.001"/>
+  <testcase name="failedReadClearsGreenWithoutDeletingGrant" classname="com.jarvis.assistant.google.GoogleConnectionsStoreTest" time="0.0"/>
+  <testcase name="addingSameAccountDoesNotDuplicateIt" classname="com.jarvis.assistant.google.GoogleConnectionsStoreTest" time="0.001"/>
+  <testcase name="noCredentialsOrMailAreSerialized" classname="com.jarvis.assistant.google.GoogleConnectionsStoreTest" time="0.0"/>
+  <testcase name="accountLimitIsEnforcedBeforeOverwriting" classname="com.jarvis.assistant.google.GoogleConnectionsStoreTest" time="0.005"/>
+  <testcase name="accountsRemainSeparate" classname="com.jarvis.assistant.google.GoogleConnectionsStoreTest" time="0.001"/>
+  <testcase name="senderQuerySyntaxCannotBeInjected" classname="com.jarvis.assistant.google.GoogleConnectionsStoreTest" time="0.001"/>
+  <testcase name="addingAnAccountDoesNotGrantAService" classname="com.jarvis.assistant.google.GoogleConnectionsStoreTest" time="0.0"/>
+  <testcase name="aRemovedServiceCannotBeVerifiedByAnInflightRead" classname="com.jarvis.assistant.google.GoogleConnectionsStoreTest" time="0.001"/>
+  <testcase name="removeSelectedPicksRemainingMetadataOnly" classname="com.jarvis.assistant.google.GoogleConnectionsStoreTest" time="0.001"/>
+  <testcase name="storageFailureDoesNotPublishUnsavedConnection" classname="com.jarvis.assistant.google.GoogleConnectionsStoreTest" time="0.0"/>
+  <testcase name="noGrantRemainsAfterLastRemoval" classname="com.jarvis.assistant.google.GoogleConnectionsStoreTest" time="0.001"/>
+  <testcase name="APIlessServicesCannotBeMarkedAuthorized" classname="com.jarvis.assistant.google.GoogleConnectionsStoreTest" time="0.0"/>
+  <testcase name="senderCanBeClearedWithoutRemovingMailGrant" classname="com.jarvis.assistant.google.GoogleConnectionsStoreTest" time="0.001"/>
+  <testcase name="corruptStorageIsNotOverwritten" classname="com.jarvis.assistant.google.GoogleConnectionsStoreTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

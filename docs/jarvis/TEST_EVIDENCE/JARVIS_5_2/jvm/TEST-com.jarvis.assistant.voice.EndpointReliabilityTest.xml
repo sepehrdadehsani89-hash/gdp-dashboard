@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.voice.EndpointReliabilityTest" tests="44" skipped="0" failures="0" errors="0" timestamp="2026-11-18T20:15:52" hostname="885caff30ac4" time="0.073">
+  <properties/>
+  <testcase name="incompleteEnglishClauseGetsALongerPause" classname="com.jarvis.assistant.voice.EndpointReliabilityTest" time="0.001"/>
+  <testcase name="backwardMonotonicClockFailsReadStallClosed" classname="com.jarvis.assistant.voice.EndpointReliabilityTest" time="0.0"/>
+  <testcase name="emptyBoundaryCannotDropAnUnfinishedCompoundTail" classname="com.jarvis.assistant.voice.EndpointReliabilityTest" time="0.001"/>
+  <testcase name="noiseWithoutRecognizedWordsCannotCreateACommand" classname="com.jarvis.assistant.voice.EndpointReliabilityTest" time="0.0"/>
+  <testcase name="lateActivityCannotTurnFinalizationBackIntoListening" classname="com.jarvis.assistant.voice.EndpointReliabilityTest" time="0.007"/>
+  <testcase name="resumedEmptyBoundaryClearsAbandonedLatencyButNotCaptureClock" classname="com.jarvis.assistant.voice.EndpointReliabilityTest" time="0.0"/>
+  <testcase name="continuouslyGrowingBackgroundSpeechStillReachesAbsoluteCaptureLimit" classname="com.jarvis.assistant.voice.EndpointReliabilityTest" time="0.048"/>
+  <testcase name="captureThatReturnsNoPcmStopsAtThreeSecondBoundary" classname="com.jarvis.assistant.voice.EndpointReliabilityTest" time="0.0"/>
+  <testcase name="genuinelyGrowingSpeechCanExceedTheStablePartialDeadline" classname="com.jarvis.assistant.voice.EndpointReliabilityTest" time="0.002"/>
+  <testcase name="incompleteStableWordsHaveABoundedFourSecondNoiseFallback" classname="com.jarvis.assistant.voice.EndpointReliabilityTest" time="0.001"/>
+  <testcase name="sameLengthDecoderRewritesCannotRenewTheTurnForever" classname="com.jarvis.assistant.voice.EndpointReliabilityTest" time="0.001"/>
+  <testcase name="customReadDeadlineStillHasAnExactFiniteBoundary" classname="com.jarvis.assistant.voice.EndpointReliabilityTest" time="0.0"/>
+  <testcase name="backwardClockNeverPublishesNegativeElapsedOrFinalizationTime" classname="com.jarvis.assistant.voice.EndpointReliabilityTest" time="0.0"/>
+  <testcase name="aLowConfidenceActionFinalCannotBeReplacedByDisplayedPartial" classname="com.jarvis.assistant.voice.EndpointReliabilityTest" time="0.0"/>
+  <testcase name="boundedDiagnosticErrorCodeIsRetainedForTroubleshooting" classname="com.jarvis.assistant.voice.EndpointReliabilityTest" time="0.0"/>
+  <testcase name="callbacksFromRetiredCaptureCannotOverwriteCurrentDiagnostic" classname="com.jarvis.assistant.voice.EndpointReliabilityTest" time="0.0"/>
+  <testcase name="emptyFinalWithoutAnyAcceptedWordsCannotCreateACommand" classname="com.jarvis.assistant.voice.EndpointReliabilityTest" time="0.001"/>
+  <testcase name="diagnosticReportsMeasuredTimeFromFinalizationRequestToCompletion" classname="com.jarvis.assistant.voice.EndpointReliabilityTest" time="0.0"/>
+  <testcase name="configuredNineHundredMillisecondPauseRequestsAnEngineFinal" classname="com.jarvis.assistant.voice.EndpointReliabilityTest" time="0.0"/>
+  <testcase name="stableWordsReachFinalizationDespiteContinuousRoomEnergy" classname="com.jarvis.assistant.voice.EndpointReliabilityTest" time="0.001"/>
+  <testcase name="diagnosticCaptureReadinessStartsActualCaptureClock" classname="com.jarvis.assistant.voice.EndpointReliabilityTest" time="0.001"/>
+  <testcase name="aNonpositiveReadDeadlineIsRejected" classname="com.jarvis.assistant.voice.EndpointReliabilityTest" time="0.0"/>
+  <testcase name="userCancellationCannotBeReopenedByLateProviderCallbacks" classname="com.jarvis.assistant.voice.EndpointReliabilityTest" time="0.0"/>
+  <testcase name="newCaptureClearsPriorErrorAndFinalizationMetadata" classname="com.jarvis.assistant.voice.EndpointReliabilityTest" time="0.001"/>
+  <testcase name="emptyDecoderBoundaryPreservesPreviouslyAcceptedFinalWords" classname="com.jarvis.assistant.voice.EndpointReliabilityTest" time="0.0"/>
+  <testcase name="anUnfinishedCompoundTailPreventsDispatchOfEarlierAcceptedWords" classname="com.jarvis.assistant.voice.EndpointReliabilityTest" time="0.0"/>
+  <testcase name="invalidAndSubthresholdEnergyCannotDelayNaturalSilence" classname="com.jarvis.assistant.voice.EndpointReliabilityTest" time="0.001"/>
+  <testcase name="emptyBoundaryCannotDropUnfinishedTailDuringOrdinaryDecoderCallback" classname="com.jarvis.assistant.voice.EndpointReliabilityTest" time="0.0"/>
+  <testcase name="aPartialActionNeverBecomesAnAcceptedFinalByWaiting" classname="com.jarvis.assistant.voice.EndpointReliabilityTest" time="0.0"/>
+  <testcase name="acceptedFinalWaitsForConfiguredNaturalPause" classname="com.jarvis.assistant.voice.EndpointReliabilityTest" time="0.0"/>
+  <testcase name="minimumPauseAllowsSixHundredFiftyMilliseconds" classname="com.jarvis.assistant.voice.EndpointReliabilityTest" time="0.0"/>
+  <testcase name="ShrinkingAndOscillatingHypothesesCannotRenewGrowthDeadline" classname="com.jarvis.assistant.voice.EndpointReliabilityTest" time="0.001"/>
+  <testcase name="emptyPartialDoesNotEraseAnUnfinishedUtterance" classname="com.jarvis.assistant.voice.EndpointReliabilityTest" time="0.0"/>
+  <testcase name="completionCannotBeReopenedByLateCaptureCallbacks" classname="com.jarvis.assistant.voice.EndpointReliabilityTest" time="0.0"/>
+  <testcase name="repeatedFinalizationCallbacksCannotResetLatencyMeasurement" classname="com.jarvis.assistant.voice.EndpointReliabilityTest" time="0.0"/>
+  <testcase name="failureCannotBeReplacedByLateSuccessOrActivity" classname="com.jarvis.assistant.voice.EndpointReliabilityTest" time="0.0"/>
+  <testcase name="incompleteSpanishClauseGetsALongerPause" classname="com.jarvis.assistant.voice.EndpointReliabilityTest" time="0.0"/>
+  <testcase name="abandonedBoundaryCallbackCannotReopenCancelledCapture" classname="com.jarvis.assistant.voice.EndpointReliabilityTest" time="0.0"/>
+  <testcase name="actualPcmProgressRenewsOnlyTheReadStallDeadline" classname="com.jarvis.assistant.voice.EndpointReliabilityTest" time="0.0"/>
+  <testcase name="invalidRawErrorMessagesAreReplacedWithMetadataOnlyCode" classname="com.jarvis.assistant.voice.EndpointReliabilityTest" time="0.003"/>
+  <testcase name="invalidShortPauseCannotCutOffSpeechImmediately" classname="com.jarvis.assistant.voice.EndpointReliabilityTest" time="0.001"/>
+  <testcase name="maximumPauseAllowsEighteenHundredMilliseconds" classname="com.jarvis.assistant.voice.EndpointReliabilityTest" time="0.001"/>
+  <testcase name="InvalidLongPauseCannotDisableEndpointing" classname="com.jarvis.assistant.voice.EndpointReliabilityTest" time="0.0"/>
+  <testcase name="resetCannotCarryAcceptedWordsOrGrowthDeadlineIntoNewCapture" classname="com.jarvis.assistant.voice.EndpointReliabilityTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.google.GoogleFileIdentityTest" tests="20" skipped="0" failures="0" errors="0" timestamp="2026-11-18T20:15:47" hostname="885caff30ac4" time="0.171">
+  <properties/>
+  <testcase name="explicitFileConsentCannotVerifyAnEmptyOrDifferentFile[DOCS matching]" classname="com.jarvis.assistant.google.GoogleFileIdentityTest" time="0.018"/>
+  <testcase name="explicitFileConsentCannotVerifyAnEmptyOrDifferentFile[DOCS missing]" classname="com.jarvis.assistant.google.GoogleFileIdentityTest" time="0.006"/>
+  <testcase name="explicitFileConsentCannotVerifyAnEmptyOrDifferentFile[DOCS different]" classname="com.jarvis.assistant.google.GoogleFileIdentityTest" time="0.005"/>
+  <testcase name="explicitFileConsentCannotVerifyAnEmptyOrDifferentFile[DOCS non_string]" classname="com.jarvis.assistant.google.GoogleFileIdentityTest" time="0.004"/>
+  <testcase name="explicitFileConsentCannotVerifyAnEmptyOrDifferentFile[DOCS invalid_input]" classname="com.jarvis.assistant.google.GoogleFileIdentityTest" time="0.005"/>
+  <testcase name="explicitFileConsentCannotVerifyAnEmptyOrDifferentFile[SHEETS matching]" classname="com.jarvis.assistant.google.GoogleFileIdentityTest" time="0.048"/>
+  <testcase name="explicitFileConsentCannotVerifyAnEmptyOrDifferentFile[SHEETS missing]" classname="com.jarvis.assistant.google.GoogleFileIdentityTest" time="0.005"/>
+  <testcase name="explicitFileConsentCannotVerifyAnEmptyOrDifferentFile[SHEETS different]" classname="com.jarvis.assistant.google.GoogleFileIdentityTest" time="0.01"/>
+  <testcase name="explicitFileConsentCannotVerifyAnEmptyOrDifferentFile[SHEETS non_string]" classname="com.jarvis.assistant.google.GoogleFileIdentityTest" time="0.009"/>
+  <testcase name="explicitFileConsentCannotVerifyAnEmptyOrDifferentFile[SHEETS invalid_input]" classname="com.jarvis.assistant.google.GoogleFileIdentityTest" time="0.002"/>
+  <testcase name="explicitFileConsentCannotVerifyAnEmptyOrDifferentFile[SLIDES matching]" classname="com.jarvis.assistant.google.GoogleFileIdentityTest" time="0.004"/>
+  <testcase name="explicitFileConsentCannotVerifyAnEmptyOrDifferentFile[SLIDES missing]" classname="com.jarvis.assistant.google.GoogleFileIdentityTest" time="0.005"/>
+  <testcase name="explicitFileConsentCannotVerifyAnEmptyOrDifferentFile[SLIDES different]" classname="com.jarvis.assistant.google.GoogleFileIdentityTest" time="0.004"/>
+  <testcase name="explicitFileConsentCannotVerifyAnEmptyOrDifferentFile[SLIDES non_string]" classname="com.jarvis.assistant.google.GoogleFileIdentityTest" time="0.007"/>
+  <testcase name="explicitFileConsentCannotVerifyAnEmptyOrDifferentFile[SLIDES invalid_input]" classname="com.jarvis.assistant.google.GoogleFileIdentityTest" time="0.001"/>
+  <testcase name="explicitFileConsentCannotVerifyAnEmptyOrDifferentFile[FORMS matching]" classname="com.jarvis.assistant.google.GoogleFileIdentityTest" time="0.006"/>
+  <testcase name="explicitFileConsentCannotVerifyAnEmptyOrDifferentFile[FORMS missing]" classname="com.jarvis.assistant.google.GoogleFileIdentityTest" time="0.004"/>
+  <testcase name="explicitFileConsentCannotVerifyAnEmptyOrDifferentFile[FORMS different]" classname="com.jarvis.assistant.google.GoogleFileIdentityTest" time="0.007"/>
+  <testcase name="explicitFileConsentCannotVerifyAnEmptyOrDifferentFile[FORMS non_string]" classname="com.jarvis.assistant.google.GoogleFileIdentityTest" time="0.013"/>
+  <testcase name="explicitFileConsentCannotVerifyAnEmptyOrDifferentFile[FORMS invalid_input]" classname="com.jarvis.assistant.google.GoogleFileIdentityTest" time="0.006"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

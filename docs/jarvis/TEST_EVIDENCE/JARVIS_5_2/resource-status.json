@@ -1,0 +1,6 @@
+{
+  "disk": "Filesystem      Size  Used Avail Use% Mounted on\noverlay          63G   11G   50G  17% /workspace\n",
+  "memory": "8589934592",
+  "cpu": "200000 100000",
+  "verification": "Read-only resource status; no emulator or additional toolchain installed for 5.2"
+}

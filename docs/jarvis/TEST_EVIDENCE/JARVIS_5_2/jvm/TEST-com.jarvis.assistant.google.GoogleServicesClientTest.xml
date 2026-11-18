@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.google.GoogleServicesClientTest" tests="34" skipped="0" failures="0" errors="0" timestamp="2026-11-18T20:15:47" hostname="885caff30ac4" time="2.787">
+  <properties/>
+  <testcase name="sheetsIsBoundedToFirstTwentyRowsAndColumns" classname="com.jarvis.assistant.google.GoogleServicesClientTest" time="0.06"/>
+  <testcase name="missingResourceIsNotCalledAnAuthError" classname="com.jarvis.assistant.google.GoogleServicesClientTest" time="0.01"/>
+  <testcase name="docsRequireExplicitFileSelection" classname="com.jarvis.assistant.google.GoogleServicesClientTest" time="0.002"/>
+  <testcase name="serviceTokenCannotBeUsedForAnotherProduct" classname="com.jarvis.assistant.google.GoogleServicesClientTest" time="0.001"/>
+  <testcase name="malformedJsonIsNotASuccessfulRead" classname="com.jarvis.assistant.google.GoogleServicesClientTest" time="0.009"/>
+  <testcase name="emailAccountMismatchStopsBeforeMailboxRead" classname="com.jarvis.assistant.google.GoogleServicesClientTest" time="0.009"/>
+  <testcase name="todayUsesActualLocalDayAcrossDST" classname="com.jarvis.assistant.google.GoogleServicesClientTest" time="0.054"/>
+  <testcase name="deniedAuthenticationIsTypedAndRedacted" classname="com.jarvis.assistant.google.GoogleServicesClientTest" time="0.009"/>
+  <testcase name="contactsRequestNamesNotAddressesOrPhoneNumbers" classname="com.jarvis.assistant.google.GoogleServicesClientTest" time="0.01"/>
+  <testcase name="missingUnreadCountIsNotInventedAsZero" classname="com.jarvis.assistant.google.GoogleServicesClientTest" time="0.051"/>
+  <testcase name="serviceFailureDoesNotAutomaticallyRetry" classname="com.jarvis.assistant.google.GoogleServicesClientTest" time="0.005"/>
+  <testcase name="calendarReadsLocalWindowAndExpandsRecurringEvents" classname="com.jarvis.assistant.google.GoogleServicesClientTest" time="0.006"/>
+  <testcase name="disabledAPIOrScopeIsTypedAndRedacted" classname="com.jarvis.assistant.google.GoogleServicesClientTest" time="0.004"/>
+  <testcase name="docsReadsOnlySelectedDocumentText" classname="com.jarvis.assistant.google.GoogleServicesClientTest" time="0.007"/>
+  <testcase name="emptyMailQueryReportsNoEntries" classname="com.jarvis.assistant.google.GoogleServicesClientTest" time="0.051"/>
+  <testcase name="importantMessagesUseActualGmailLabel" classname="com.jarvis.assistant.google.GoogleServicesClientTest" time="0.048"/>
+  <testcase name="previewsShowRealSenderSubjectDateWithoutMarkingRead" classname="com.jarvis.assistant.google.GoogleServicesClientTest" time="0.099"/>
+  <testcase name="productionEndpointOverrideCannotTargetAnExternalHost" classname="com.jarvis.assistant.google.GoogleServicesClientTest" time="0.002"/>
+  <testcase name="fileDiscoveryRequestsMetadataOnly" classname="com.jarvis.assistant.google.GoogleServicesClientTest" time="0.004"/>
+  <testcase name="teacherIdentityMustBeConfigured" classname="com.jarvis.assistant.google.GoogleServicesClientTest" time="0.004"/>
+  <testcase name="bearerTokenIsOnlyInHeader" classname="com.jarvis.assistant.google.GoogleServicesClientTest" time="0.004"/>
+  <testcase name="teacherFilterUsesOnlyConfiguredAddress" classname="com.jarvis.assistant.google.GoogleServicesClientTest" time="0.054"/>
+  <testcase name="quotaFailureDoesNotAutomaticallyRetry" classname="com.jarvis.assistant.google.GoogleServicesClientTest" time="0.003"/>
+  <testcase name="diagnosticSessionDoesNotExposeToken" classname="com.jarvis.assistant.google.GoogleServicesClientTest" time="0.001"/>
+  <testcase name="taskReadDoesNotIncludeCompletedDeletedTasks" classname="com.jarvis.assistant.google.GoogleServicesClientTest" time="0.005"/>
+  <testcase name="gmailReadsMetadataOnlyAndSelectsRequiredHeaders" classname="com.jarvis.assistant.google.GoogleServicesClientTest" time="0.091"/>
+  <testcase name="callerCancellationStopsTheReadWithoutRetry" classname="com.jarvis.assistant.google.GoogleServicesClientTest" time="2.004"/>
+  <testcase name="messageIdsCannotRedirectCredentialRequests" classname="com.jarvis.assistant.google.GoogleServicesClientTest" time="0.049"/>
+  <testcase name="apiLessProductsNeverSendCredentials" classname="com.jarvis.assistant.google.GoogleServicesClientTest" time="0.004"/>
+  <testcase name="redirectsAreNotFollowedAndNeverBecomeSuccess" classname="com.jarvis.assistant.google.GoogleServicesClientTest" time="0.008"/>
+  <testcase name="unreadCountComesFromUnreadLabelNotAnEstimate" classname="com.jarvis.assistant.google.GoogleServicesClientTest" time="0.047"/>
+  <testcase name="projectFolderNamesAreNotEvidenceOfCurrentWork" classname="com.jarvis.assistant.google.GoogleServicesClientTest" time="0.005"/>
+  <testcase name="unreadPreviewsUseUnreadFilter" classname="com.jarvis.assistant.google.GoogleServicesClientTest" time="0.051"/>
+  <testcase name="oversizedResponseIsRejected" classname="com.jarvis.assistant.google.GoogleServicesClientTest" time="0.013"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

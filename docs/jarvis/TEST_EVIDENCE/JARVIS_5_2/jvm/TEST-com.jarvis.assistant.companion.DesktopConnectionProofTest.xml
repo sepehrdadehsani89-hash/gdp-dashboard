@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.companion.DesktopConnectionProofTest" tests="20" skipped="0" failures="0" errors="0" timestamp="2026-11-18T20:15:37" hostname="885caff30ac4" time="0.005">
+  <properties/>
+  <testcase name="differentDeviceCannotUseProof" classname="com.jarvis.assistant.companion.DesktopConnectionProofTest" time="0.0"/>
+  <testcase name="currentSignedSessionCanBeMarkedVerified" classname="com.jarvis.assistant.companion.DesktopConnectionProofTest" time="0.001"/>
+  <testcase name="localPairTextDoesNotClaimOnline" classname="com.jarvis.assistant.companion.DesktopConnectionProofTest" time="0.001"/>
+  <testcase name="negativeTimestampCannotCreateProof" classname="com.jarvis.assistant.companion.DesktopConnectionProofTest" time="0.0"/>
+  <testcase name="futureProofIsNotAcceptedAfterClockRollback" classname="com.jarvis.assistant.companion.DesktopConnectionProofTest" time="0.0"/>
+  <testcase name="proofForAnotherDeviceIsRejected" classname="com.jarvis.assistant.companion.DesktopConnectionProofTest" time="0.0"/>
+  <testcase name="proofDiagnosticsNeverContainSessionId" classname="com.jarvis.assistant.companion.DesktopConnectionProofTest" time="0.001"/>
+  <testcase name="expiredTextDoesNotClaimAuthenticated" classname="com.jarvis.assistant.companion.DesktopConnectionProofTest" time="0.0"/>
+  <testcase name="zeroTimestampCannotCreateProof" classname="com.jarvis.assistant.companion.DesktopConnectionProofTest" time="0.0"/>
+  <testcase name="proofWithoutSavedGrantIsNotVerified" classname="com.jarvis.assistant.companion.DesktopConnectionProofTest" time="0.0"/>
+  <testcase name="noProofOrPairIsUnpaired" classname="com.jarvis.assistant.companion.DesktopConnectionProofTest" time="0.0"/>
+  <testcase name="savedPairAloneIsNotVerified" classname="com.jarvis.assistant.companion.DesktopConnectionProofTest" time="0.0"/>
+  <testcase name="staleConnectionIsNotPermanentlyOnline" classname="com.jarvis.assistant.companion.DesktopConnectionProofTest" time="0.0"/>
+  <testcase name="exactExpiryBoundaryIsDefined" classname="com.jarvis.assistant.companion.DesktopConnectionProofTest" time="0.0"/>
+  <testcase name="recentConnectionRemainsCurrent" classname="com.jarvis.assistant.companion.DesktopConnectionProofTest" time="0.0"/>
+  <testcase name="proofDiagnosticsNeverContainDeviceIdentity" classname="com.jarvis.assistant.companion.DesktopConnectionProofTest" time="0.0"/>
+  <testcase name="currentTextNeverContainsSessionToken" classname="com.jarvis.assistant.companion.DesktopConnectionProofTest" time="0.0"/>
+  <testcase name="proofForAnotherSessionIsRejected" classname="com.jarvis.assistant.companion.DesktopConnectionProofTest" time="0.0"/>
+  <testcase name="currentTextDistinguishesCommandCompletion" classname="com.jarvis.assistant.companion.DesktopConnectionProofTest" time="0.001"/>
+  <testcase name="rotatedSessionCannotUseOldProof" classname="com.jarvis.assistant.companion.DesktopConnectionProofTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

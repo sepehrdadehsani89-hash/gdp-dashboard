@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.google.GoogleWidgetBoundaryTest" tests="20" skipped="0" failures="0" errors="0" timestamp="2026-11-18T20:15:50" hostname="885caff30ac4" time="0.002">
+  <properties/>
+  <testcase name="onlyCurrentAuthorizedAccountDataCanBeDisplayed[CALENDAR actual]" classname="com.jarvis.assistant.google.GoogleWidgetBoundaryTest" time="0.002"/>
+  <testcase name="onlyCurrentAuthorizedAccountDataCanBeDisplayed[CALENDAR absent]" classname="com.jarvis.assistant.google.GoogleWidgetBoundaryTest" time="0.0"/>
+  <testcase name="onlyCurrentAuthorizedAccountDataCanBeDisplayed[CALENDAR account]" classname="com.jarvis.assistant.google.GoogleWidgetBoundaryTest" time="0.0"/>
+  <testcase name="onlyCurrentAuthorizedAccountDataCanBeDisplayed[CALENDAR removed]" classname="com.jarvis.assistant.google.GoogleWidgetBoundaryTest" time="0.0"/>
+  <testcase name="onlyCurrentAuthorizedAccountDataCanBeDisplayed[CALENDAR epoch]" classname="com.jarvis.assistant.google.GoogleWidgetBoundaryTest" time="0.0"/>
+  <testcase name="onlyCurrentAuthorizedAccountDataCanBeDisplayed[CALENDAR revoked]" classname="com.jarvis.assistant.google.GoogleWidgetBoundaryTest" time="0.0"/>
+  <testcase name="onlyCurrentAuthorizedAccountDataCanBeDisplayed[CALENDAR hidden]" classname="com.jarvis.assistant.google.GoogleWidgetBoundaryTest" time="0.0"/>
+  <testcase name="onlyCurrentAuthorizedAccountDataCanBeDisplayed[CALENDAR expired]" classname="com.jarvis.assistant.google.GoogleWidgetBoundaryTest" time="0.0"/>
+  <testcase name="onlyCurrentAuthorizedAccountDataCanBeDisplayed[CALENDAR backward]" classname="com.jarvis.assistant.google.GoogleWidgetBoundaryTest" time="0.0"/>
+  <testcase name="onlyCurrentAuthorizedAccountDataCanBeDisplayed[CALENDAR product]" classname="com.jarvis.assistant.google.GoogleWidgetBoundaryTest" time="0.0"/>
+  <testcase name="onlyCurrentAuthorizedAccountDataCanBeDisplayed[TASKS actual]" classname="com.jarvis.assistant.google.GoogleWidgetBoundaryTest" time="0.0"/>
+  <testcase name="onlyCurrentAuthorizedAccountDataCanBeDisplayed[TASKS absent]" classname="com.jarvis.assistant.google.GoogleWidgetBoundaryTest" time="0.0"/>
+  <testcase name="onlyCurrentAuthorizedAccountDataCanBeDisplayed[TASKS account]" classname="com.jarvis.assistant.google.GoogleWidgetBoundaryTest" time="0.0"/>
+  <testcase name="onlyCurrentAuthorizedAccountDataCanBeDisplayed[TASKS removed]" classname="com.jarvis.assistant.google.GoogleWidgetBoundaryTest" time="0.0"/>
+  <testcase name="onlyCurrentAuthorizedAccountDataCanBeDisplayed[TASKS epoch]" classname="com.jarvis.assistant.google.GoogleWidgetBoundaryTest" time="0.0"/>
+  <testcase name="onlyCurrentAuthorizedAccountDataCanBeDisplayed[TASKS revoked]" classname="com.jarvis.assistant.google.GoogleWidgetBoundaryTest" time="0.0"/>
+  <testcase name="onlyCurrentAuthorizedAccountDataCanBeDisplayed[TASKS hidden]" classname="com.jarvis.assistant.google.GoogleWidgetBoundaryTest" time="0.0"/>
+  <testcase name="onlyCurrentAuthorizedAccountDataCanBeDisplayed[TASKS expired]" classname="com.jarvis.assistant.google.GoogleWidgetBoundaryTest" time="0.0"/>
+  <testcase name="onlyCurrentAuthorizedAccountDataCanBeDisplayed[TASKS backward]" classname="com.jarvis.assistant.google.GoogleWidgetBoundaryTest" time="0.0"/>
+  <testcase name="onlyCurrentAuthorizedAccountDataCanBeDisplayed[TASKS product]" classname="com.jarvis.assistant.google.GoogleWidgetBoundaryTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

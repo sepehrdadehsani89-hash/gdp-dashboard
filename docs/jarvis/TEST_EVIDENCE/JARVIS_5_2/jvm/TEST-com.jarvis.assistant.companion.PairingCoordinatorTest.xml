@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.companion.PairingCoordinatorTest" tests="34" skipped="0" failures="0" errors="0" timestamp="2026-11-18T20:15:37" hostname="885caff30ac4" time="0.171">
+  <properties/>
+  <testcase name="newScanDoesNotReuseAnOldPendingTicket" classname="com.jarvis.assistant.companion.PairingCoordinatorTest" time="0.059"/>
+  <testcase name="revocationIsSeparateFromOffline" classname="com.jarvis.assistant.companion.PairingCoordinatorTest" time="0.002"/>
+  <testcase name="desktopApprovalStillNeedsPhoneFinish" classname="com.jarvis.assistant.companion.PairingCoordinatorTest" time="0.004"/>
+  <testcase name="permissionFailureGivesAlternative" classname="com.jarvis.assistant.companion.PairingCoordinatorTest" time="0.002"/>
+  <testcase name="existingTicketIsNotReplaced" classname="com.jarvis.assistant.companion.PairingCoordinatorTest" time="0.002"/>
+  <testcase name="diagnosticsExcludeAllPairingSecrets" classname="com.jarvis.assistant.companion.PairingCoordinatorTest" time="0.006"/>
+  <testcase name="scanningIsNotPairing" classname="com.jarvis.assistant.companion.PairingCoordinatorTest" time="0.025"/>
+  <testcase name="successfulFinishPerformsAuthenticatedVerification" classname="com.jarvis.assistant.companion.PairingCoordinatorTest" time="0.003"/>
+  <testcase name="requestHasImmediateProgress" classname="com.jarvis.assistant.companion.PairingCoordinatorTest" time="0.002"/>
+  <testcase name="validScanRequiresExplicitRequest" classname="com.jarvis.assistant.companion.PairingCoordinatorTest" time="0.003"/>
+  <testcase name="validRequestShowsActualChallenge" classname="com.jarvis.assistant.companion.PairingCoordinatorTest" time="0.002"/>
+  <testcase name="captureConflictIsExplained" classname="com.jarvis.assistant.companion.PairingCoordinatorTest" time="0.001"/>
+  <testcase name="expiredInvitationCannotBeSubmitted" classname="com.jarvis.assistant.companion.PairingCoordinatorTest" time="0.002"/>
+  <testcase name="newScanClearsPriorInvitationAndPreview" classname="com.jarvis.assistant.companion.PairingCoordinatorTest" time="0.001"/>
+  <testcase name="scanCancellationIsVisible" classname="com.jarvis.assistant.companion.PairingCoordinatorTest" time="0.002"/>
+  <testcase name="finishClearsPrivateInvitationAndChallenge" classname="com.jarvis.assistant.companion.PairingCoordinatorTest" time="0.002"/>
+  <testcase name="scannerCannotLaunchTwice" classname="com.jarvis.assistant.companion.PairingCoordinatorTest" time="0.002"/>
+  <testcase name="historicalProofExpiresInsteadOfPermanentOnline" classname="com.jarvis.assistant.companion.PairingCoordinatorTest" time="0.003"/>
+  <testcase name="scannerDiagnosticsContainOnlyTypedEngineAndStatus" classname="com.jarvis.assistant.companion.PairingCoordinatorTest" time="0.002"/>
+  <testcase name="targetChangeInvalidatesOldLiveState" classname="com.jarvis.assistant.companion.PairingCoordinatorTest" time="0.001"/>
+  <testcase name="savedPairingAndFailedConnectionAreDifferent" classname="com.jarvis.assistant.companion.PairingCoordinatorTest" time="0.003"/>
+  <testcase name="invitationExpiryUpdatesWhileVisible" classname="com.jarvis.assistant.companion.PairingCoordinatorTest" time="0.002"/>
+  <testcase name="startsUnpairedWithoutNetwork" classname="com.jarvis.assistant.companion.PairingCoordinatorTest" time="0.002"/>
+  <testcase name="cancelClearsSecretsAndTracksOperation" classname="com.jarvis.assistant.companion.PairingCoordinatorTest" time="0.005"/>
+  <testcase name="wrongCertificateIsAnExplicitFailure" classname="com.jarvis.assistant.companion.PairingCoordinatorTest" time="0.003"/>
+  <testcase name="offlineErrorDoesNotClaimPairing" classname="com.jarvis.assistant.companion.PairingCoordinatorTest" time="0.002"/>
+  <testcase name="approvalPendingIsNotConnected" classname="com.jarvis.assistant.companion.PairingCoordinatorTest" time="0.005"/>
+  <testcase name="invalidScanNeverSendsARequest" classname="com.jarvis.assistant.companion.PairingCoordinatorTest" time="0.002"/>
+  <testcase name="duplicateTapDoesNotSendTwice" classname="com.jarvis.assistant.companion.PairingCoordinatorTest" time="0.004"/>
+  <testcase name="rejectedApprovalDoesNotSaveSession" classname="com.jarvis.assistant.companion.PairingCoordinatorTest" time="0.002"/>
+  <testcase name="scannerOpeningIsExplicit" classname="com.jarvis.assistant.companion.PairingCoordinatorTest" time="0.002"/>
+  <testcase name="tlsDiagnosticsAreNotPairingOrAuthentication" classname="com.jarvis.assistant.companion.PairingCoordinatorTest" time="0.005"/>
+  <testcase name="privateExceptionTextCannotBeExported" classname="com.jarvis.assistant.companion.PairingCoordinatorTest" time="0.001"/>
+  <testcase name="lostResponseRetryRetainsProofIdentity" classname="com.jarvis.assistant.companion.PairingCoordinatorTest" time="0.004"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

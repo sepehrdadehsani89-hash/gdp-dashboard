@@ -20,7 +20,9 @@ class JarvisWallpaperService:WallpaperService() {
         private val scope=CoroutineScope(SupervisorJob()+Dispatchers.Main.immediate)
         private val worker=HandlerThread("JarvisWallpaper").apply{start()}
         private val renderHandler=Handler(worker.looper)
-        private val renderer=WallpaperRenderer()
+        private val renderer=com.jarvis.assistant.studio.StudioWallpaperRenderer()
+        private var widgetStamp=""
+        private var widgetValues:Map<com.jarvis.assistant.studio.WidgetSource,String> = emptyMap()
         private val surfaceRetry=WallpaperSurfaceRetry()
         private val surfaceLock=Any()
         @Volatile private var visible=false
@@ -60,7 +62,19 @@ class JarvisWallpaperService:WallpaperService() {
                         canvas=try{surfaceHolder.lockHardwareCanvas()}catch(_:Exception){surfaceHolder.lockCanvas()}
                         if(canvas!=null){
                             val safe=runtime.phantomPreferences.state.value.captions && getSystemService(android.app.KeyguardManager::class.java)?.isDeviceLocked==false && !com.jarvis.assistant.security.SystemCredentialPrivacy.pending(this@JarvisWallpaperService)
-                            renderer.draw(canvas,if(safe)frame else frame.copy(caption=com.jarvis.assistant.phantom.LiveCaption()),started);drawn=true
+                            val shown=if(safe && com.jarvis.assistant.modes.SystemModePolicy.privatePreviewsAllowed(runtime.systemModes.state.value))frame else frame.copy(caption=com.jarvis.assistant.phantom.LiveCaption())
+                            val privateAllowed=shown.studio?.privateWidgets==true && getSystemService(android.app.KeyguardManager::class.java)?.isDeviceLocked==false && !com.jarvis.assistant.security.SystemCredentialPrivacy.pending(this@JarvisWallpaperService) && com.jarvis.assistant.modes.SystemModePolicy.privatePreviewsAllowed(runtime.systemModes.state.value)
+                            var widgetData=shown.widgetValues
+                            if(com.jarvis.assistant.studio.WidgetSource.GMAIL_UNREAD in widgetData)widgetData=widgetData+(com.jarvis.assistant.studio.WidgetSource.GMAIL_UNREAD to runtime.gmailWidgetText())
+                            if(com.jarvis.assistant.studio.WidgetSource.COMPUTER in widgetData)widgetData=widgetData+(com.jarvis.assistant.studio.WidgetSource.COMPUTER to com.jarvis.assistant.companion.DesktopConnectionProofPolicy.text(runtime.companion.connectionProof.value,runtime.companion.paired(),System.currentTimeMillis()))
+                            if(com.jarvis.assistant.studio.WidgetSource.CALENDAR in widgetData)widgetData=widgetData+(com.jarvis.assistant.studio.WidgetSource.CALENDAR to runtime.googleReadWidgetText(com.jarvis.assistant.google.GoogleProduct.CALENDAR))
+                            if(com.jarvis.assistant.studio.WidgetSource.TASKS in widgetData)widgetData=widgetData+(com.jarvis.assistant.studio.WidgetSource.TASKS to runtime.googleReadWidgetText(com.jarvis.assistant.google.GoogleProduct.TASKS))
+                            if(com.jarvis.assistant.studio.WidgetSource.NOTIFICATIONS in widgetData){
+                                val consent=com.jarvis.assistant.notifications.NotificationSourcePreferences(this@JarvisWallpaperService).allowed().sorted().joinToString("|")
+                                val granted=getSystemService(android.app.NotificationManager::class.java).isNotificationListenerAccessGranted(ComponentName(this@JarvisWallpaperService,com.jarvis.assistant.tools.JarvisNotificationService::class.java))
+                                if(consent!=shown.notificationConsentKey || !granted || !com.jarvis.assistant.tools.JarvisNotificationService.connected)widgetData=widgetData+(com.jarvis.assistant.studio.WidgetSource.NOTIFICATIONS to "Notification access changed · previews hidden")
+                            }
+                            renderer.draw(canvas,shown,started,shown.studio,widgetData,privateAllowed);drawn=true
                         }
                     }catch(_:IllegalArgumentException){/* Surface is being replaced by Android. */}
                     catch(_:IllegalStateException){/* A hidden/destroyed surface is not a render target. */}
@@ -95,27 +109,40 @@ class JarvisWallpaperService:WallpaperService() {
         }
         private fun startObservation(){
             interactive=getSystemService(PowerManager::class.java).isInteractive
-            runtime.hud.startVisible(this,includeWeather=runtime.hud.state.value.settings.sentinel.wallpaperWeather)
+            runtime.hud.startVisible(this,includeWeather=!runtime.systemModes.state.value.deep && runtime.hud.state.value.settings.sentinel.wallpaperWeather)
             if(!registered){ContextCompat.registerReceiver(this@JarvisWallpaperService,screenReceiver,IntentFilter().apply{addAction(Intent.ACTION_SCREEN_OFF);addAction(Intent.ACTION_SCREEN_ON);addAction(Intent.ACTION_USER_PRESENT)},ContextCompat.RECEIVER_EXPORTED);registered=true}
             observation?.cancel()
-            observation=scope.launch{combine(runtime.state,runtime.phantom.state,runtime.phantomPreferences.state){state,phantom,prefs->Triple(state,phantom,prefs)}.collect{(state,phantom,prefs)->
-                val hud=state.hud
+            observation=scope.launch{combine(runtime.state,runtime.phantom.state,runtime.phantomPreferences.state){state,phantom,prefs->Triple(state,phantom,prefs)}
+                .combine(runtime.wallpaperStudio.state){triple,library->triple to library}
+                .combine(runtime.gmailWidget){observed,_->observed}
+                .combine(runtime.googleWidgetReadings){observed,_->observed}
+                .combine(runtime.companion.connectionProof){observed,_->observed}
+                .combine(runtime.companion.registry.changes){observed,_->observed}
+                .combine(com.jarvis.assistant.tools.JarvisNotificationService.changes){observed,_->observed}
+                .collect{(observed,library)->
+                val (state,phantom,prefs)=observed
+                val profile=library.selected()
+                val hud=com.jarvis.assistant.modes.ModePresentation.hud(state.hud,state.systemMode,profile?.quality)
                 // Observe only visible artwork. Memory/network/PCM wake-only updates and
                 // sub-minute timestamps must not wake a static wallpaper renderer.
                 val telemetry=hud.telemetry.copy(epochMillis=hud.telemetry.epochMillis/60_000*60_000,
                     network="Unavailable",internetValidated=false,systemAvailableBytes=null,systemTotalBytes=null,appPssKiB=null)
                 val mode=state.sentinelVisual.mode
+                val privateAllowed=profile?.privateWidgets==true && getSystemService(android.app.KeyguardManager::class.java)?.isDeviceLocked==false && com.jarvis.assistant.modes.SystemModePolicy.privatePreviewsAllowed(state.systemMode)
+                val consentKey=if(profile?.layers?.any{it.visible && it.kind=="WIDGET:NOTIFICATIONS"}==true)com.jarvis.assistant.notifications.NotificationSourcePreferences(this@JarvisWallpaperService).allowed().sorted().joinToString("|")else""
+                val stamp=if(profile==null)""else"${state.hud.telemetry.epochMillis/1000}|${profile.hashCode()}|${state.systemMode}|${state.settings.provider}|${state.selectedBrainVerified}|${runtime.gmailWidget.value?.at}|${runtime.googleWidgetReadings.value.hashCode()}|${runtime.companion.connectionProof.value?.at}|${runtime.companion.registry.changes.value}|${runtime.googleConnections.epoch}|${com.jarvis.assistant.tools.JarvisNotificationService.changes.value}|$privateAllowed|$consentKey"
+                if(profile==null)widgetValues=emptyMap() else if(stamp!=widgetStamp){widgetStamp=stamp;widgetValues=withContext(Dispatchers.IO){com.jarvis.assistant.studio.WallpaperWidgetValues.sample(this@JarvisWallpaperService,runtime,profile,privateAllowed)}}
                 val audio=if(mode in listOf(SentinelMode.LISTENING,SentinelMode.ACTIVATING))state.audio else com.jarvis.assistant.hud.AudioReading()
                 val playback=if(mode==SentinelMode.SPEAKING)state.playback else PlaybackReading()
                 val safe=prefs.captions && getSystemService(android.app.KeyguardManager::class.java)?.isDeviceLocked==false && !com.jarvis.assistant.security.SystemCredentialPrivacy.pending(this@JarvisWallpaperService)
-                val next=WallpaperFrame(hud.copy(telemetry=telemetry,weather=if(hud.settings.sentinel.wallpaperWeather)hud.weather else com.jarvis.assistant.hud.WeatherState()),audio,state.sentinelVisual,state.settings.language,playback,state.followUpArming,state.voiceWindowDeadline,if(safe)phantom.caption else com.jarvis.assistant.phantom.LiveCaption(),prefs.lines,state.performanceRestricted || getSystemService(android.app.ActivityManager::class.java).isLowRamDevice,getSystemService(android.hardware.display.DisplayManager::class.java).getDisplay(android.view.Display.DEFAULT_DISPLAY)?.refreshRate ?: 60f,state.voiceErrorAt,state.execution)
-                runtime.hud.weatherInterest(this@SentinelEngine,hud.settings.sentinel.wallpaperWeather)
+                val next=WallpaperFrame(hud.copy(telemetry=telemetry,weather=if(hud.settings.sentinel.wallpaperWeather)hud.weather else com.jarvis.assistant.hud.WeatherState()),audio,state.sentinelVisual,state.settings.language,playback,state.followUpArming,state.voiceWindowDeadline,if(safe)phantom.caption else com.jarvis.assistant.phantom.LiveCaption(),prefs.lines,state.performanceRestricted || getSystemService(android.app.ActivityManager::class.java).isLowRamDevice,getSystemService(android.hardware.display.DisplayManager::class.java).getDisplay(android.view.Display.DEFAULT_DISPLAY)?.refreshRate ?: 60f,state.voiceErrorAt,state.execution).copy(studio=profile,widgetValues=widgetValues,awakeningDurationMillis=com.jarvis.assistant.modes.SystemModePolicy.activationMillis(state.systemMode),notificationConsentKey=consentKey,visual=if(state.systemMode.deep)state.sentinelVisual.copy(mode=SentinelMode.DORMANT)else state.sentinelVisual)
+                runtime.hud.weatherInterest(this@SentinelEngine,!state.systemMode.deep && (hud.settings.sentinel.wallpaperWeather || profile?.layers?.any{it.visible && it.kind in setOf("WIDGET:WEATHER","WIDGET:CITY","WIDGET:TEMPERATURE","WIDGET:FORECAST","WIDGET:SUNRISE","WIDGET:SUNSET")}==true))
                 if(next!=frame){frame=next;requestFrame()}
             }}
             requestFrame()
         }
         private fun stopObservation(){
-            frame=frame.copy(caption=com.jarvis.assistant.phantom.LiveCaption())
+            widgetValues=emptyMap();widgetStamp="";frame=frame.copy(caption=com.jarvis.assistant.phantom.LiveCaption(),widgetValues=emptyMap())
             renderHandler.post{renderer.clearCaption()}
             renderHandler.removeCallbacks(draw)
             renderHandler.removeCallbacks(schedule)

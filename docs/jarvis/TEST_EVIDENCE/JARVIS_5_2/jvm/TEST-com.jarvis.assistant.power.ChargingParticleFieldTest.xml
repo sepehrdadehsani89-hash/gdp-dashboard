@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.power.ChargingParticleFieldTest" tests="20" skipped="0" failures="0" errors="0" timestamp="2026-11-18T20:15:51" hostname="885caff30ac4" time="0.007">
+  <properties/>
+  <testcase name="invalidGeometryAndPhaseProduceNoCoordinates" classname="com.jarvis.assistant.power.ChargingParticleFieldTest" time="0.001"/>
+  <testcase name="confirmedChargingAllocatesASmallParticleBudget" classname="com.jarvis.assistant.power.ChargingParticleFieldTest" time="0.0"/>
+  <testcase name="generatedCoordinatesAndOpacityAreFiniteAndBounded" classname="com.jarvis.assistant.power.ChargingParticleFieldTest" time="0.001"/>
+  <testcase name="disabledChargingEffectsRemainDisabled" classname="com.jarvis.assistant.power.ChargingParticleFieldTest" time="0.001"/>
+  <testcase name="powerAndThermalBudgetKeepsAtMostSixParticles" classname="com.jarvis.assistant.power.ChargingParticleFieldTest" time="0.0"/>
+  <testcase name="reducedOrPausedMotionUsesOnlyTheExistingStaticIndicator" classname="com.jarvis.assistant.power.ChargingParticleFieldTest" time="0.0"/>
+  <testcase name="excessiveDensityIsCappedAtTheFixedBuffer" classname="com.jarvis.assistant.power.ChargingParticleFieldTest" time="0.0"/>
+  <testcase name="phaseWrapIsDeterministicAndDoesNotAccumulateHiddenTime" classname="com.jarvis.assistant.power.ChargingParticleFieldTest" time="0.0"/>
+  <testcase name="zeroParticleDensityHonorsTheSavedPreference" classname="com.jarvis.assistant.power.ChargingParticleFieldTest" time="0.0"/>
+  <testcase name="knownChargingDoesNotFabricateAnUnavailablePercentage" classname="com.jarvis.assistant.power.ChargingParticleFieldTest" time="0.0"/>
+  <testcase name="hiddenWallpaperDoesNotHaveAParticleWorkload" classname="com.jarvis.assistant.power.ChargingParticleFieldTest" time="0.0"/>
+  <testcase name="verifiedFullBatteryStopsIncomingParticles" classname="com.jarvis.assistant.power.ChargingParticleFieldTest" time="0.001"/>
+  <testcase name="aZeroBudgetClearsTheActiveFieldWithoutResidualAbsorption" classname="com.jarvis.assistant.power.ChargingParticleFieldTest" time="0.0"/>
+  <testcase name="connectedButNotChargingDoesNotTransportEnergy" classname="com.jarvis.assistant.power.ChargingParticleFieldTest" time="0.0"/>
+  <testcase name="unpluggingImmediatelyDisablesTransport" classname="com.jarvis.assistant.power.ChargingParticleFieldTest" time="0.0"/>
+  <testcase name="particlesShrinkAndFadeAsTheyAreAbsorbedByTheCore" classname="com.jarvis.assistant.power.ChargingParticleFieldTest" time="0.0"/>
+  <testcase name="unknownBatteryStateCannotInventCharging" classname="com.jarvis.assistant.power.ChargingParticleFieldTest" time="0.0"/>
+  <testcase name="malformedDensityDoesNotCreateUnboundedWork" classname="com.jarvis.assistant.power.ChargingParticleFieldTest" time="0.0"/>
+  <testcase name="successiveVisiblePhasesActuallyChangeParticleCoordinates" classname="com.jarvis.assistant.power.ChargingParticleFieldTest" time="0.0"/>
+  <testcase name="updatesReuseTheSameParticleObjects" classname="com.jarvis.assistant.power.ChargingParticleFieldTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -61,7 +61,7 @@ class CompanionTest(unittest.TestCase):
         i=self.invite;proof=hmac.new(i['code'].encode(),(i['pairing_id']+'\n'+self.client+'\n'+self.nonce).encode(),hashlib.sha256).hexdigest();p=self.app.request_pair(dict(pairing_id=i['pairing_id'],client_id=self.client,nonce=self.nonce,proof=proof));self.assertFailure('DESKTOP_APPROVAL_REQUIRED',lambda:self.app.finish_pair(dict(ticket=p['ticket'],client_id=self.client,nonce=self.nonce,proof=proof)))
     def test_invalid_proof_never_pairs(self):self.assertFailure('PAIRING_PROOF_INVALID',lambda:self.app.request_pair(dict(pairing_id=self.invite['pairing_id'],client_id=self.client,nonce=self.nonce,proof='0'*64)))
     def test_expired_invitation_never_pairs(self):self.now+=120001;self.assertFailure('PAIRING_EXPIRED',self.pair)
-    def test_invitation_is_one_time(self):self.pair();self.assertFailure('PAIRING_EXPIRED',self.pair)
+    def test_invitation_is_one_time(self):self.pair();self.assertFailure('PAIRING_EXPIRED',lambda:self.pair(str(uuid.uuid4())))
     def test_pairing_rate_limit(self):
         bad=dict(pairing_id=self.invite['pairing_id'],client_id=self.client,nonce=self.nonce,proof='0'*64)
         for _ in range(5):self.assertFailure('PAIRING_PROOF_INVALID',lambda:self.app.request_pair(bad))

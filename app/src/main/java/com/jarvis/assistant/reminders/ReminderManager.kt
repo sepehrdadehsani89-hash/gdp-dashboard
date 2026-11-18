@@ -47,6 +47,7 @@ class ReminderManager(private val context:Context,vault:FeatureVault,private val
     }
     @android.annotation.SuppressLint("MissingPermission")
     suspend fun deliver(id:String,revision:String):Boolean=withContext(Dispatchers.IO){
+        if(!com.jarvis.assistant.modes.SystemModePolicy.remindersAllowed(com.jarvis.assistant.modes.SystemModes.current(context)))return@withContext false
         val row=store.list().firstOrNull{it.id==id} ?: return@withContext true
         if(row.revision==revision && row.status==ReminderStatus.SCHEDULED && row.at>System.currentTimeMillis())return@withContext false
         if(!ReminderPolicy.due(row,revision,System.currentTimeMillis()))return@withContext true

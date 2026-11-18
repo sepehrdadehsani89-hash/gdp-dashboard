@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.sentinel.PcmPlaybackEnvelopeTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2026-11-18T20:15:52" hostname="885caff30ac4" time="0.007">
+  <properties/>
+  <testcase name="floatPcmIsMeasuredAndMalformedSamplesCannotCreateInfiniteEnergy" classname="com.jarvis.assistant.sentinel.PcmPlaybackEnvelopeTest" time="0.002"/>
+  <testcase name="invalidFormatsAndNonMonotonicTimestampsAreRejected" classname="com.jarvis.assistant.sentinel.PcmPlaybackEnvelopeTest" time="0.002"/>
+  <testcase name="boundedTimelineAndCleanupRetainNoFutureFakeFrames" classname="com.jarvis.assistant.sentinel.PcmPlaybackEnvelopeTest" time="0.0"/>
+  <testcase name="onlyTheCodecOutputSliceIsMeasured" classname="com.jarvis.assistant.sentinel.PcmPlaybackEnvelopeTest" time="0.0"/>
+  <testcase name="silenceHasZeroRealEnergyButNoDecodedAudioIsUnavailable" classname="com.jarvis.assistant.sentinel.PcmPlaybackEnvelopeTest" time="0.0"/>
+  <testcase name="anObsoleteDecoderCannotClearOrPublishIntoTheNextVoiceMeter" classname="com.jarvis.assistant.sentinel.PcmPlaybackEnvelopeTest" time="0.002"/>
+  <testcase name="sourceEnergyChangesAtActualPlaybackTimestamps" classname="com.jarvis.assistant.sentinel.PcmPlaybackEnvelopeTest" time="0.0"/>
+  <testcase name="unavailableGapsAndPausedPlayersNeverInventSound" classname="com.jarvis.assistant.sentinel.PcmPlaybackEnvelopeTest" time="0.0"/>
+  <testcase name="stereoChannelsDoNotDoubleTheMediaDuration" classname="com.jarvis.assistant.sentinel.PcmPlaybackEnvelopeTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

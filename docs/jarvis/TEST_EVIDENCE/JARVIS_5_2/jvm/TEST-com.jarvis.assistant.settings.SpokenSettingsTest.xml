@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.settings.SpokenSettingsTest" tests="41" skipped="0" failures="0" errors="0" timestamp="2026-11-18T20:15:52" hostname="885caff30ac4" time="0.045">
+  <properties/>
+  <testcase name="privateSpeechRequiresConfirmation" classname="com.jarvis.assistant.settings.SpokenSettingsTest" time="0.001"/>
+  <testcase name="securityExplanationIsNotCredential" classname="com.jarvis.assistant.settings.SpokenSettingsTest" time="0.0"/>
+  <testcase name="fractionalRingSpeedAllowed" classname="com.jarvis.assistant.settings.SpokenSettingsTest" time="0.005"/>
+  <testcase name="arbitraryPreferencePathNotExecutable" classname="com.jarvis.assistant.settings.SpokenSettingsTest" time="0.001"/>
+  <testcase name="lockedChatRequiresConfirmation" classname="com.jarvis.assistant.settings.SpokenSettingsTest" time="0.0"/>
+  <testcase name="unsupportedLanguageNotFalselySaved" classname="com.jarvis.assistant.settings.SpokenSettingsTest" time="0.001"/>
+  <testcase name="rateMustBeSupported" classname="com.jarvis.assistant.settings.SpokenSettingsTest" time="0.022"/>
+  <testcase name="settingsHelpIsNative" classname="com.jarvis.assistant.settings.SpokenSettingsTest" time="0.001"/>
+  <testcase name="acceptsSpokenPercent" classname="com.jarvis.assistant.settings.SpokenSettingsTest" time="0.001"/>
+  <testcase name="rejectsNegativeVolume" classname="com.jarvis.assistant.settings.SpokenSettingsTest" time="0.001"/>
+  <testcase name="explicitReadOnlyQuery" classname="com.jarvis.assistant.settings.SpokenSettingsTest" time="0.001"/>
+  <testcase name="minimumCooldownAccepted" classname="com.jarvis.assistant.settings.SpokenSettingsTest" time="0.001"/>
+  <testcase name="rejectsNaN" classname="com.jarvis.assistant.settings.SpokenSettingsTest" time="0.0"/>
+  <testcase name="rejectsInfinity" classname="com.jarvis.assistant.settings.SpokenSettingsTest" time="0.001"/>
+  <testcase name="clientSecretDetected" classname="com.jarvis.assistant.settings.SpokenSettingsTest" time="0.0"/>
+  <testcase name="passwordRequestStoppedBeforeModel" classname="com.jarvis.assistant.settings.SpokenSettingsTest" time="0.0"/>
+  <testcase name="cooldownCannotBeDisabled" classname="com.jarvis.assistant.settings.SpokenSettingsTest" time="0.001"/>
+  <testcase name="boundedInput" classname="com.jarvis.assistant.settings.SpokenSettingsTest" time="0.0"/>
+  <testcase name="fractionalMillisecondsRejected" classname="com.jarvis.assistant.settings.SpokenSettingsTest" time="0.0"/>
+  <testcase name="endpointRemainsBounded" classname="com.jarvis.assistant.settings.SpokenSettingsTest" time="0.001"/>
+  <testcase name="controlCharactersRejected" classname="com.jarvis.assistant.settings.SpokenSettingsTest" time="0.0"/>
+  <testcase name="unknownColorNotSilentlyReset" classname="com.jarvis.assistant.settings.SpokenSettingsTest" time="0.001"/>
+  <testcase name="credentialNeverTreatedAsSetting" classname="com.jarvis.assistant.settings.SpokenSettingsTest" time="0.0"/>
+  <testcase name="restrictedMicrophoneUsesConfirmation" classname="com.jarvis.assistant.settings.SpokenSettingsTest" time="0.0"/>
+  <testcase name="acceptsNumericPercent" classname="com.jarvis.assistant.settings.SpokenSettingsTest" time="0.001"/>
+  <testcase name="reducedMotionCanBeTurnedOff" classname="com.jarvis.assistant.settings.SpokenSettingsTest" time="0.0"/>
+  <testcase name="forgedSettingCannotValidate" classname="com.jarvis.assistant.settings.SpokenSettingsTest" time="0.0"/>
+  <testcase name="belowMinimumBrightnessRejected" classname="com.jarvis.assistant.settings.SpokenSettingsTest" time="0.001"/>
+  <testcase name="rejectsOverHundredPercent" classname="com.jarvis.assistant.settings.SpokenSettingsTest" time="0.0"/>
+  <testcase name="arbitraryTextNotSettingAction" classname="com.jarvis.assistant.settings.SpokenSettingsTest" time="0.0"/>
+  <testcase name="arbitraryProviderRejected" classname="com.jarvis.assistant.settings.SpokenSettingsTest" time="0.001"/>
+  <testcase name="prefixedCredentialNeverEntersHistory" classname="com.jarvis.assistant.settings.SpokenSettingsTest" time="0.0"/>
+  <testcase name="privateTextValuePreserved" classname="com.jarvis.assistant.settings.SpokenSettingsTest" time="0.0"/>
+  <testcase name="promptInjectionSuffixCannotRunAction" classname="com.jarvis.assistant.settings.SpokenSettingsTest" time="0.0"/>
+  <testcase name="SpanishSettingVerb" classname="com.jarvis.assistant.settings.SpokenSettingsTest" time="0.001"/>
+  <testcase name="leadingWakePhrase" classname="com.jarvis.assistant.settings.SpokenSettingsTest" time="0.0"/>
+  <testcase name="cooldownCannotExceedBound" classname="com.jarvis.assistant.settings.SpokenSettingsTest" time="0.0"/>
+  <testcase name="tokenRequestStoppedBeforeHistory" classname="com.jarvis.assistant.settings.SpokenSettingsTest" time="0.001"/>
+  <testcase name="pinCannotBeEdited" classname="com.jarvis.assistant.settings.SpokenSettingsTest" time="0.0"/>
+  <testcase name="leadingOnSyntax" classname="com.jarvis.assistant.settings.SpokenSettingsTest" time="0.0"/>
+  <testcase name="brainCannotBypassProofGate" classname="com.jarvis.assistant.settings.SpokenSettingsTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

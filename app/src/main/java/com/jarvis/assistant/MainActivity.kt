@@ -50,6 +50,7 @@ class MainActivity : ComponentActivity() {
         else {wakeAfterGrant=true;micAfterGrant=false;startupPrefs.edit().putBoolean("pending_wake",true).apply();microphone.launch(Manifest.permission.RECORD_AUDIO)}
     }
     private fun maybeStartWake(){
+        if(!com.jarvis.assistant.modes.SystemModePolicy.wakeAllowed(runtime.systemModes.state.value)){com.jarvis.assistant.voice.WakeListenerService.disableRecovery(this);return}
         val action=com.jarvis.assistant.voice.ListeningStartupPolicy.decide(wakePrefs.getBoolean("enabled",false),ContextCompat.checkSelfPermission(this,Manifest.permission.RECORD_AUDIO)==PackageManager.PERMISSION_GRANTED,runtime.installedWakeModelForCalibration()!=null,lifecycle.currentState.isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED),getSystemService(android.app.KeyguardManager::class.java).isDeviceLocked,com.jarvis.assistant.voice.WakeListenerService.state.value.running,runtime.voiceSession.blocksRecognition())
         when(action){
             com.jarvis.assistant.voice.ListeningStartupAction.START_WAKE->runtime.startWake()
@@ -300,7 +301,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    override fun onResume() { super.onResume(); runtime.configureConversationFocus(); runtime.refreshCapabilities();if(intent.getBooleanExtra("rebirth_home",false) && !getSystemService(android.app.KeyguardManager::class.java).isDeviceLocked){intent.removeExtra("rebirth_home");runtime.selectModule(com.jarvis.assistant.omnisystem.HudModule.ASSISTANT)} }
+    override fun onResume() { super.onResume();if(runtime.systemModes.state.value.deep)runtime.reactivateJarvisManually();runtime.configureConversationFocus(); runtime.refreshCapabilities();if(intent.getBooleanExtra("rebirth_home",false) && !getSystemService(android.app.KeyguardManager::class.java).isDeviceLocked){intent.removeExtra("rebirth_home");runtime.selectModule(com.jarvis.assistant.omnisystem.HudModule.ASSISTANT)} }
 
     private fun openPermission(name: String) {
         runtime.effects.play(if(name=="licenses")com.jarvis.assistant.sentinel.SentinelSound.PANEL_OPEN else com.jarvis.assistant.sentinel.SentinelSound.PERMISSION)

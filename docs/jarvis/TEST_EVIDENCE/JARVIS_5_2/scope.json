@@ -1,0 +1,11 @@
+{
+  "base_commit": "c00e8c9c89c8fea534666dab3781faeece57016a",
+  "branch": "jarvis-next",
+  "source_directive_sha256": "9dc41451f26ae189678628df4f28641f2ff3dfb8b1c8ecc7dddc4258687f89df",
+  "physical_android_tests_executed": 0,
+  "native_windows_tests_executed": 0,
+  "native_macos_tests_executed": 0,
+  "live_owner_api_tests_executed": 0,
+  "publication_status": "Not published in this evidence collection; separate exact-push approval required",
+  "adb_enumeration": "blocked: managed adb attempts read-only /home/agent/.android; workspace-specific Android user-home override ineffective; no device-specific installer error obtained"
+}

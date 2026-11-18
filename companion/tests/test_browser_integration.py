@@ -36,7 +36,19 @@ class ActualBrowserTest(unittest.TestCase):
                 self.assertTrue(hmac.compare_digest(result['signature'],hmac.new(hashlib.sha256(pair['token'].encode()).digest(),raw,hashlib.sha256).hexdigest()))
                 receipt=json.loads(raw);self.assertEqual('COMPLETED',receipt['state'],receipt.get('error_category'));self.assertEqual(digest(url_builder('ChatGPT').encode()),receipt['verified_postcondition']['url_sha256']);self.assertEqual(200,receipt['verified_postcondition']['http_status'])
                 duplicate=post('/v1/commands',command,pair['token']);self.assertEqual(result,duplicate)
+                # Both a transition from search and opening Chrome on an already blank tab must work.
+                for _ in range(2):
+                    opening = request('unused')
+                    opening.update(action_type='desktop.open_app', normalized_parameters={'app': 'chrome'},
+                                   required_capabilities=['desktop.open_app'])
+                    reply = post('/v1/commands', opening, pair['token'])
+                    body = base64.urlsafe_b64decode(reply['receipt'] + '==')
+                    self.assertTrue(hmac.compare_digest(reply['signature'],
+                                    hmac.new(hashlib.sha256(pair['token'].encode()).digest(), body, hashlib.sha256).hexdigest()))
+                    evidence = json.loads(body)
+                    self.assertEqual('COMPLETED', evidence['state'], evidence.get('error_category'))
+                    self.assertEqual(digest(b'about:blank'), evidence['verified_postcondition']['actual_url_sha256'])
                 failed=post('/v1/commands',request('Missing'),pair['token']);v=json.loads(base64.urlsafe_b64decode(failed['receipt']+'=='));self.assertEqual('FAILED',v['state']);self.assertEqual('PAGE_HTTP_ERROR',v['error_category']);self.assertIsNone(v['verified_postcondition'])
-                Path(os.environ.get('JARVIS_COMPANION_BROWSER_REPORT',str(state/'browser-result.json'))).write_text(json.dumps({'kind':'ACTUAL_CHROMIUM_PLUS_HTTPS_ON_LOCAL_FIXTURE','capability_manifest_verified':True,'capability_probe_did_not_launch_browser':True,'completed_receipt_verified':True,'duplicate_idempotent':True,'actual_404_failed_truthfully':True,'google_search_tested':False,'windows_tested':False,'android_voice_tested':False,'sandbox_disabled_only_for_cloud_headless_fixture':True},indent=2)+'\n')
+                Path(os.environ.get('JARVIS_COMPANION_BROWSER_REPORT',str(state/'browser-result.json'))).write_text(json.dumps({'kind':'ACTUAL_CHROMIUM_PLUS_HTTPS_ON_LOCAL_FIXTURE','capability_manifest_verified':True,'capability_probe_did_not_launch_browser':True,'completed_receipt_verified':True,'open_then_reopen_chrome_verified':True,'duplicate_idempotent':True,'actual_404_failed_truthfully':True,'google_search_tested':False,'windows_tested':False,'android_voice_tested':False,'sandbox_disabled_only_for_cloud_headless_fixture':True},indent=2)+'\n')
             finally:server.shutdown();server.server_close();app.close();fixture.shutdown();fixture.server_close()
 if __name__=='__main__':unittest.main()

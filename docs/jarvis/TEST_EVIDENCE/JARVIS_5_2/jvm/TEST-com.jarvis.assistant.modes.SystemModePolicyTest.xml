@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.modes.SystemModePolicyTest" tests="37" skipped="0" failures="0" errors="0" timestamp="2026-11-18T20:15:51" hostname="885caff30ac4" time="0.003">
+  <properties/>
+  <testcase name="exactSilentCommandHasTypedIntent" classname="com.jarvis.assistant.modes.SystemModePolicyTest" time="0.001"/>
+  <testcase name="animationMappingDoesNotDelayExecution" classname="com.jarvis.assistant.modes.SystemModePolicyTest" time="0.0"/>
+  <testcase name="activeAllowsSeparateSourceConsents" classname="com.jarvis.assistant.modes.SystemModePolicyTest" time="0.0"/>
+  <testcase name="silentBlocksOptionalBackgroundActivity" classname="com.jarvis.assistant.modes.SystemModePolicyTest" time="0.0"/>
+  <testcase name="deepCanPauseRemindersWithoutDeletingThem" classname="com.jarvis.assistant.modes.SystemModePolicyTest" time="0.0"/>
+  <testcase name="deepCommandIsRecognized" classname="com.jarvis.assistant.modes.SystemModePolicyTest" time="0.0"/>
+  <testcase name="unrelatedPhoneShutdownIsNotAssistantShutdown" classname="com.jarvis.assistant.modes.SystemModePolicyTest" time="0.0"/>
+  <testcase name="normalActivationDurationIsPreserved" classname="com.jarvis.assistant.modes.SystemModePolicyTest" time="0.0"/>
+  <testcase name="explicitSilentWakeExceptionIsAllowed" classname="com.jarvis.assistant.modes.SystemModePolicyTest" time="0.0"/>
+  <testcase name="deepBlocksEvenSilentWakeException" classname="com.jarvis.assistant.modes.SystemModePolicyTest" time="0.0"/>
+  <testcase name="exitQuietIsASeparateIntent" classname="com.jarvis.assistant.modes.SystemModePolicyTest" time="0.0"/>
+  <testcase name="modeSettingsAreSeparateFromMutation" classname="com.jarvis.assistant.modes.SystemModePolicyTest" time="0.0"/>
+  <testcase name="silentHidesPrivatePreviews" classname="com.jarvis.assistant.modes.SystemModePolicyTest" time="0.0"/>
+  <testcase name="originalVisualSettingsStayIdenticalInActiveMode" classname="com.jarvis.assistant.modes.SystemModePolicyTest" time="0.001"/>
+  <testcase name="deepDisablesOwnedMotion" classname="com.jarvis.assistant.modes.SystemModePolicyTest" time="0.0"/>
+  <testcase name="animationMappingHandlesStaleTimes" classname="com.jarvis.assistant.modes.SystemModePolicyTest" time="0.0"/>
+  <testcase name="deactivateAssistantRequiresDeepConfirmation" classname="com.jarvis.assistant.modes.SystemModePolicyTest" time="0.0"/>
+  <testcase name="deepPreservesOnlyChosenReminderException" classname="com.jarvis.assistant.modes.SystemModePolicyTest" time="0.0"/>
+  <testcase name="silentPreservesReminderExceptionByDefault" classname="com.jarvis.assistant.modes.SystemModePolicyTest" time="0.0"/>
+  <testcase name="deepBlocksOptionalBackgroundActivity" classname="com.jarvis.assistant.modes.SystemModePolicyTest" time="0.0"/>
+  <testcase name="activeRemindersWorkWithoutQuietException" classname="com.jarvis.assistant.modes.SystemModePolicyTest" time="0.0"/>
+  <testcase name="deepHidesPrivatePreviews" classname="com.jarvis.assistant.modes.SystemModePolicyTest" time="0.0"/>
+  <testcase name="negatedShutdownDoesNotTrigger" classname="com.jarvis.assistant.modes.SystemModePolicyTest" time="0.0"/>
+  <testcase name="quietVisualsDoNotMutateSavedSettings" classname="com.jarvis.assistant.modes.SystemModePolicyTest" time="0.0"/>
+  <testcase name="naturalQuietCommandHasTypedIntent" classname="com.jarvis.assistant.modes.SystemModePolicyTest" time="0.0"/>
+  <testcase name="highQualityDoesNotChangeSavedDefault" classname="com.jarvis.assistant.modes.SystemModePolicyTest" time="0.0"/>
+  <testcase name="questionAboutModeDoesNotExecuteIt" classname="com.jarvis.assistant.modes.SystemModePolicyTest" time="0.0"/>
+  <testcase name="focusProtocolIsRecognized" classname="com.jarvis.assistant.modes.SystemModePolicyTest" time="0.0"/>
+  <testcase name="deepAlwaysBlocksWake" classname="com.jarvis.assistant.modes.SystemModePolicyTest" time="0.0"/>
+  <testcase name="quotedTaskDoesNotTriggerShutdown" classname="com.jarvis.assistant.modes.SystemModePolicyTest" time="0.0"/>
+  <testcase name="activeAllowsExistingOptionalActivity" classname="com.jarvis.assistant.modes.SystemModePolicyTest" time="0.0"/>
+  <testcase name="silentDefaultsToNoWake" classname="com.jarvis.assistant.modes.SystemModePolicyTest" time="0.001"/>
+  <testcase name="silentWakeAnimationHasFourSecondTimeline" classname="com.jarvis.assistant.modes.SystemModePolicyTest" time="0.0"/>
+  <testcase name="activePreservesWakePolicy" classname="com.jarvis.assistant.modes.SystemModePolicyTest" time="0.0"/>
+  <testcase name="deepWakePrefixIsRecognized" classname="com.jarvis.assistant.modes.SystemModePolicyTest" time="0.0"/>
+  <testcase name="explicitReducedMotionRemainsRespected" classname="com.jarvis.assistant.modes.SystemModePolicyTest" time="0.0"/>
+  <testcase name="explicitSilentReminderOptOutIsRespected" classname="com.jarvis.assistant.modes.SystemModePolicyTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

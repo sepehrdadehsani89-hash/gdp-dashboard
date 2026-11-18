@@ -44,7 +44,7 @@ object GoogleCommandParser {
     fun parse(raw:String):GoogleQuery? {
         val text=AppMatching.normalize(raw).removePrefix("hey jarvis ").removePrefix("jarvis ")
         return when(text){
-            "catch me up on my emails","catch me up on emails","summarize my gmail","check my email","show my email","read my latest email","read my last email","check my last email","what email did i just get","what s my newest gmail","whats my newest gmail","who emailed me","summarize the last email","summarize my latest email","lee mi ultimo correo","revisa mi correo","resume el ultimo correo"->GoogleQuery(GoogleProduct.GMAIL)
+            "check my gmail","summarize my inbox","catch me up on my emails","catch me up on emails","summarize my gmail","check my email","show my email","read my latest email","read my last email","check my last email","what email did i just get","what s my newest gmail","whats my newest gmail","who emailed me","summarize the last email","summarize my latest email","lee mi ultimo correo","revisa mi correo","resume el ultimo correo"->GoogleQuery(GoogleProduct.GMAIL)
             "show my unread messages","show unread emails","muestra correos sin leer"->GoogleQuery(GoogleProduct.GMAIL,GoogleQueryKind.UNREAD_MESSAGES)
             "did my teacher email me","has my teacher emailed me"->GoogleQuery(GoogleProduct.GMAIL,GoogleQueryKind.TEACHER)
             "how many unread emails do i have","count my unread emails","unread gmail count"->GoogleQuery(GoogleProduct.GMAIL,GoogleQueryKind.UNREAD)
@@ -60,5 +60,5 @@ object GoogleCommandParser {
     fun navigation(raw:String)=AppMatching.normalize(raw).removePrefix("hey jarvis ").removePrefix("jarvis ") in setOf("open account center","open my account settings","open account settings","open google setup","open connected accounts","open ai and connected accounts")
 }
 class GoogleServiceFailure(val category:String,val status:Int?=null,message:String):Exception(message)
-class GoogleReadResult(val product:GoogleProduct,val summary:String,val items:List<GoogleReadItem> = emptyList()) {override fun toString()="GoogleReadResult(product=$product, content=redacted)"}
+class GoogleReadResult(val product:GoogleProduct,val summary:String,val items:List<GoogleReadItem> = emptyList(),val unreadCount:Long?=null) {override fun toString()="GoogleReadResult(product=$product, content=redacted)"}
 data class GoogleReadItem(val id:String,val title:String,val detail:String,val mimeType:String?=null)

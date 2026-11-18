@@ -22,6 +22,8 @@ class GoogleAccountsActivity:PrivateModuleActivity(){
     private var resultEpoch:Long?=null
     private var viewRevision by mutableIntStateOf(0)
     private var removal by mutableStateOf<GoogleAccountConnection?>(null)
+    private var summaryReview by mutableStateOf<Pair<GoogleSummaryReview,GoogleReadResult>?>(null)
+    private var aiDraft by mutableStateOf("")
     private val accountPicker=registerForActivityResult(ActivityResultContracts.StartActivityForResult()){result->
         endHandoff()
         if(result.resultCode!=Activity.RESULT_OK || locked()){status="Account selection cancelled. No Google service is connected.";return@registerForActivityResult}
@@ -36,7 +38,7 @@ class GoogleAccountsActivity:PrivateModuleActivity(){
         googleTask{val session=runtime.googleAuthorization.complete(result.data,request);read(session,GoogleQuery(session.product))}
     }
     private fun endHandoff(){handoff?.let(runtime::finishAndroidUi);handoff=null}
-    private fun clearResult(){lastResult=null;resultAccount=null;resultEpoch=null;viewRevision++}
+    private fun clearResult(){lastResult=null;resultAccount=null;resultEpoch=null;summaryReview=null;aiDraft="";viewRevision++}
     private fun googleTask(block:suspend ()->Unit)=task{try{block()}catch(e:CancellationException){throw e}catch(e:GoogleServiceFailure){clearResult();status="${e.category}: ${e.message}"}}
     private fun request(product:GoogleProduct,resource:String?=null){clearResult();googleTask{
         when(val answer=runtime.googleAuthorization.request(product)){
@@ -52,6 +54,7 @@ class GoogleAccountsActivity:PrivateModuleActivity(){
         runtime.googleAuthorization.requireCurrent(row.id,session.epoch)
         if(locked())return
         runtime.googleConnections.markVerified(row.id,session.product,session.epoch)
+        runtime.recordGoogleWidget(session,result)
         lastResult=result;resultAccount=row.id;resultEpoch=session.epoch;viewRevision++
         status="VERIFIED · A real ${GoogleServicesPolicy.definition(session.product).label} read succeeded. Result below; this does not verify other services."
     }
@@ -65,6 +68,7 @@ class GoogleAccountsActivity:PrivateModuleActivity(){
             Button(onClick={startActivity(Intent(this@GoogleAccountsActivity,com.jarvis.assistant.brain.BrainManagerActivity::class.java))}){Text("Existing AI Brain Manager · accounts & API keys")}
             Text("First-time Google setup: create a Google Cloud project; configure Google Auth Platform consent and test users; enable each API you need; create an Android OAuth client for ${packageName} with this APK's signing SHA-1. No client secret belongs in the app. The full guide is docs/jarvis/GOOGLE_SETUP.md in the repository.")
             TextButton(onClick={startActivity(Intent(Intent.ACTION_VIEW,Uri.parse("https://console.cloud.google.com/apis/credentials")))}){Text("Open official Google Cloud setup")}
+            OutlinedButton(onClick={startActivity(Intent(this@GoogleAccountsActivity,GoogleCloudConfigurationActivity::class.java))}){Text("Saved Google Cloud Configuration · key vs OAuth setup")}
             connections.error?.let{Text(it)}
             Button(enabled=!working,onClick={authorize{clearResult();handoff=runtime.pauseForAndroidUi();runtime.phantomOverlay.hide()
                 try{accountPicker.launch(AccountManager.newChooseAccountIntent(null,null,arrayOf("com.google"),null,null,null,null))}
@@ -93,10 +97,13 @@ class GoogleAccountsActivity:PrivateModuleActivity(){
                 }else TextButton(onClick={val intent=when(definition.product){GoogleProduct.PHOTOS->Intent(this@GoogleAccountsActivity,com.jarvis.assistant.rebirth.PersonalContentActivity::class.java);GoogleProduct.MAPS->Intent(Intent.ACTION_VIEW,Uri.parse("geo:0,0?q="));else->Intent(Intent.ACTION_VIEW,Uri.parse("https://keep.google.com/"))};status=runtime.googleLaunch(intent,definition.label)}){Text("Open official app / existing content picker")}
             }
             lastResult?.let{result->
-                HorizontalDivider();Text("Actual read result · private, not sent to an AI provider");Text(result.summary)
+                HorizontalDivider();Text("Actual Google read result · private. AI sharing is a separate reviewed action.");Text(result.summary)
+                OutlinedButton(enabled=!working,onClick={val id=resultAccount;val epoch=resultEpoch;if(id!=null && epoch!=null){googleTask{summaryReview=runtime.reviewGoogleSummary(result,id,epoch) to result}}}){Text("Review an AI summary of this result · separate consent")}
                 val indexable=result.product in setOf(GoogleProduct.DRIVE,GoogleProduct.DOCS,GoogleProduct.SHEETS,GoogleProduct.SLIDES,GoogleProduct.CALENDAR,GoogleProduct.TASKS)
                 if(indexable)OutlinedButton(enabled=!working,onClick={authorize{val id=resultAccount;check(id!=null && id==runtime.googleConnections.selected()?.id && resultEpoch==runtime.googleConnections.epoch);runtime.googleProjectIndex.index(id,result);viewRevision++;status="This bounded result was indexed in encrypted local storage. It is separate from general AI retrieval. Nothing was indexed automatically."}}){Text("Index this result locally · explicit snapshot")}
             }
+            summaryReview?.let{(review,result)->AlertDialog(onDismissRequest={summaryReview=null},title={Text("Share this one result with the selected AI?")},text={Text("Destination: ${review.provider.provider} · ${review.provider.mode} · ${review.provider.model}. This sends only the first ${GoogleSummaryPolicy.excerpt(result).length} characters of the displayed ${result.product} result. Cloud providers receive that private excerpt; Local Brain stays on this device. No conversation history, general memory, tools, automatic speech or fallback is included. The answer is a draft, not a verified Google fact.")},confirmButton={TextButton(onClick={summaryReview=null;authorize{googleTask{aiDraft=runtime.summarizeGoogleRead(result,review,true);status="AI draft summary from the explicitly reviewed provider. Check it against the real Google result; no remote action was executed."}}}){Text("Approve this one summary")}},dismissButton={TextButton(onClick={summaryReview=null}){Text("Cancel · keep result private")}})}
+            if(aiDraft.isNotBlank()){HorizontalDivider();Text("AI draft summary · private, source may be incomplete");Text(aiDraft);TextButton(onClick={aiDraft=""}){Text("Clear this draft")}}
             if(selected!=null){
                 val pages=remember(viewRevision,selected.id){runCatching{runtime.googleProjectIndex.list(selected.id)}.getOrDefault(emptyList())}
                 Text("Indexed snapshots: ${pages.size}. Snapshots can become stale; no background or historical access is implied.")
@@ -106,6 +113,6 @@ class GoogleAccountsActivity:PrivateModuleActivity(){
             removal?.let{row->AlertDialog(onDismissRequest={removal=null},title={Text("Disconnect ${row.email}?")},text={Text("Only Jarvis connection metadata and this account's local Google snapshots will be removed. Google account data will remain. A remote revoke can fail offline.")},confirmButton={TextButton(onClick={removal=null;authorize{googleTask{runtime.googleProjectIndex.delete(row.id);val revoked=runtime.googleAuthorization.revoke(row);clearResult();status=if(revoked)"Saved connection removed; Google revocation completed (or no service grant existed)." else "Saved connection removed locally. Remote revocation was not confirmed; revoke Jarvis in Google Account settings."}}}){Text("Disconnect and request revoke")}},dismissButton={TextButton(onClick={removal=null;authorize{runtime.googleProjectIndex.delete(row.id);runtime.googleConnections.removeAccount(row.id);clearResult();status="Saved connection removed locally. Google's grant was not revoked; use Google Account settings if needed."}}){Text("Remove locally only")}})}
         }
     }
-    override fun onStop(){lastResult=null;super.onStop()}
+    override fun onStop(){lastResult=null;summaryReview=null;aiDraft="";super.onStop()}
     override fun onDestroy(){pending=null;endHandoff();super.onDestroy()}
 }

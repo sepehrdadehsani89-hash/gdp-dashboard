@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.voice.AiAnswerProvenanceTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-11-18T20:15:52" hostname="885caff30ac4" time="0.002">
+  <properties/>
+  <testcase name="fallbackTrackingDoesNotCreditOpenAiWithLocalReply" classname="com.jarvis.assistant.voice.AiAnswerProvenanceTest" time="0.001"/>
+  <testcase name="englishFallbackDisclosesLocalSourceInSpokenText" classname="com.jarvis.assistant.voice.AiAnswerProvenanceTest" time="0.0"/>
+  <testcase name="spanishFallbackDisclosesLocalSource" classname="com.jarvis.assistant.voice.AiAnswerProvenanceTest" time="0.0"/>
+  <testcase name="stoppedFallbackCannotReviveOldUtterance" classname="com.jarvis.assistant.voice.AiAnswerProvenanceTest" time="0.0"/>
+  <testcase name="persianFallbackDisclosesLocalSource" classname="com.jarvis.assistant.voice.AiAnswerProvenanceTest" time="0.0"/>
+  <testcase name="whitespaceLocalInferenceCannotBecomeCannedSuccess" classname="com.jarvis.assistant.voice.AiAnswerProvenanceTest" time="0.0"/>
+  <testcase name="fallbackFailureCannotLeaveFalseResponseEvidence" classname="com.jarvis.assistant.voice.AiAnswerProvenanceTest" time="0.001"/>
+  <testcase name="failedLocalInferenceCannotBecomeCannedSuccess" classname="com.jarvis.assistant.voice.AiAnswerProvenanceTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

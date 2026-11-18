@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.companion.DesktopUnsupportedActionsTest" tests="24" skipped="0" failures="0" errors="0" timestamp="2026-11-18T20:15:37" hostname="885caff30ac4" time="0.03">
+  <properties/>
+  <testcase name="computerMutationAndPrivateTelemetryNeverBecomeFictionalAiResults[Shut down my computer]" classname="com.jarvis.assistant.companion.DesktopUnsupportedActionsTest" time="0.003"/>
+  <testcase name="computerMutationAndPrivateTelemetryNeverBecomeFictionalAiResults[Restart my PC]" classname="com.jarvis.assistant.companion.DesktopUnsupportedActionsTest" time="0.001"/>
+  <testcase name="computerMutationAndPrivateTelemetryNeverBecomeFictionalAiResults[Sleep my desktop]" classname="com.jarvis.assistant.companion.DesktopUnsupportedActionsTest" time="0.001"/>
+  <testcase name="computerMutationAndPrivateTelemetryNeverBecomeFictionalAiResults[Lock my Windows computer]" classname="com.jarvis.assistant.companion.DesktopUnsupportedActionsTest" time="0.004"/>
+  <testcase name="computerMutationAndPrivateTelemetryNeverBecomeFictionalAiResults[Open Photoshop on my computer]" classname="com.jarvis.assistant.companion.DesktopUnsupportedActionsTest" time="0.004"/>
+  <testcase name="computerMutationAndPrivateTelemetryNeverBecomeFictionalAiResults[Mute my computer]" classname="com.jarvis.assistant.companion.DesktopUnsupportedActionsTest" time="0.0"/>
+  <testcase name="computerMutationAndPrivateTelemetryNeverBecomeFictionalAiResults[Increase computer volume]" classname="com.jarvis.assistant.companion.DesktopUnsupportedActionsTest" time="0.0"/>
+  <testcase name="computerMutationAndPrivateTelemetryNeverBecomeFictionalAiResults[Play music on my computer]" classname="com.jarvis.assistant.companion.DesktopUnsupportedActionsTest" time="0.001"/>
+  <testcase name="computerMutationAndPrivateTelemetryNeverBecomeFictionalAiResults[Read my computer status]" classname="com.jarvis.assistant.companion.DesktopUnsupportedActionsTest" time="0.0"/>
+  <testcase name="computerMutationAndPrivateTelemetryNeverBecomeFictionalAiResults[Show my desktop telemetry]" classname="com.jarvis.assistant.companion.DesktopUnsupportedActionsTest" time="0.001"/>
+  <testcase name="computerMutationAndPrivateTelemetryNeverBecomeFictionalAiResults[What is my computer RAM]" classname="com.jarvis.assistant.companion.DesktopUnsupportedActionsTest" time="0.001"/>
+  <testcase name="computerMutationAndPrivateTelemetryNeverBecomeFictionalAiResults[How much RAM does my computer have]" classname="com.jarvis.assistant.companion.DesktopUnsupportedActionsTest" time="0.0"/>
+  <testcase name="computerMutationAndPrivateTelemetryNeverBecomeFictionalAiResults[Open my computer files]" classname="com.jarvis.assistant.companion.DesktopUnsupportedActionsTest" time="0.0"/>
+  <testcase name="computerMutationAndPrivateTelemetryNeverBecomeFictionalAiResults[Copy files on my PC]" classname="com.jarvis.assistant.companion.DesktopUnsupportedActionsTest" time="0.0"/>
+  <testcase name="computerMutationAndPrivateTelemetryNeverBecomeFictionalAiResults[Delete my computer files]" classname="com.jarvis.assistant.companion.DesktopUnsupportedActionsTest" time="0.001"/>
+  <testcase name="computerMutationAndPrivateTelemetryNeverBecomeFictionalAiResults[Access my desktop workspace]" classname="com.jarvis.assistant.companion.DesktopUnsupportedActionsTest" time="0.006"/>
+  <testcase name="computerMutationAndPrivateTelemetryNeverBecomeFictionalAiResults[Open Chrome on my computer]" classname="com.jarvis.assistant.companion.DesktopUnsupportedActionsTest" time="0.001"/>
+  <testcase name="computerMutationAndPrivateTelemetryNeverBecomeFictionalAiResults[Open Chrome on my computer and search for Jarvis]" classname="com.jarvis.assistant.companion.DesktopUnsupportedActionsTest" time="0.0"/>
+  <testcase name="computerMutationAndPrivateTelemetryNeverBecomeFictionalAiResults[Open Gmail]" classname="com.jarvis.assistant.companion.DesktopUnsupportedActionsTest" time="0.0"/>
+  <testcase name="computerMutationAndPrivateTelemetryNeverBecomeFictionalAiResults[Lock my phone]" classname="com.jarvis.assistant.companion.DesktopUnsupportedActionsTest" time="0.0"/>
+  <testcase name="computerMutationAndPrivateTelemetryNeverBecomeFictionalAiResults[How do I restart my computer]" classname="com.jarvis.assistant.companion.DesktopUnsupportedActionsTest" time="0.001"/>
+  <testcase name="computerMutationAndPrivateTelemetryNeverBecomeFictionalAiResults[Translate restart my computer into Spanish]" classname="com.jarvis.assistant.companion.DesktopUnsupportedActionsTest" time="0.0"/>
+  <testcase name="computerMutationAndPrivateTelemetryNeverBecomeFictionalAiResults[Do not shut down my computer]" classname="com.jarvis.assistant.companion.DesktopUnsupportedActionsTest" time="0.0"/>
+  <testcase name="computerMutationAndPrivateTelemetryNeverBecomeFictionalAiResults[Remind me to restart my computer]" classname="com.jarvis.assistant.companion.DesktopUnsupportedActionsTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

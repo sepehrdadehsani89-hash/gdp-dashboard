@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.data.ProviderRetryPolicyTest" tests="22" skipped="0" failures="0" errors="0" timestamp="2026-11-18T20:15:45" hostname="885caff30ac4" time="0.003">
+  <properties/>
+  <testcase name="rejectedKeyNeverRetries" classname="com.jarvis.assistant.data.ProviderRetryPolicyTest" time="0.0"/>
+  <testcase name="transientServiceFailureMayRetrySafeRead" classname="com.jarvis.assistant.data.ProviderRetryPolicyTest" time="0.0"/>
+  <testcase name="unavailableModelNeverRetries" classname="com.jarvis.assistant.data.ProviderRetryPolicyTest" time="0.0"/>
+  <testcase name="zeroSecondsAllowsImmediateRetry" classname="com.jarvis.assistant.data.ProviderRetryPolicyTest" time="0.0"/>
+  <testcase name="secondsAreConvertedToMilliseconds" classname="com.jarvis.assistant.data.ProviderRetryPolicyTest" time="0.0"/>
+  <testcase name="negativeDelayIsRejected" classname="com.jarvis.assistant.data.ProviderRetryPolicyTest" time="0.0"/>
+  <testcase name="missingRetryAfterIsUnknown" classname="com.jarvis.assistant.data.ProviderRetryPolicyTest" time="0.0"/>
+  <testcase name="unknownStatusNeverRetries" classname="com.jarvis.assistant.data.ProviderRetryPolicyTest" time="0.0"/>
+  <testcase name="firstSafeReadRetryHasBackoff" classname="com.jarvis.assistant.data.ProviderRetryPolicyTest" time="0.0"/>
+  <testcase name="invalidAttemptCannotRetry" classname="com.jarvis.assistant.data.ProviderRetryPolicyTest" time="0.0"/>
+  <testcase name="unauthorizedCapabilityNeverRetries" classname="com.jarvis.assistant.data.ProviderRetryPolicyTest" time="0.0"/>
+  <testcase name="serverWaitIsRespected" classname="com.jarvis.assistant.data.ProviderRetryPolicyTest" time="0.0"/>
+  <testcase name="pastRfcDateCannotProduceNegativeWait" classname="com.jarvis.assistant.data.ProviderRetryPolicyTest" time="0.001"/>
+  <testcase name="malformedDelayIsIgnored" classname="com.jarvis.assistant.data.ProviderRetryPolicyTest" time="0.0"/>
+  <testcase name="jitterIsBounded" classname="com.jarvis.assistant.data.ProviderRetryPolicyTest" time="0.0"/>
+  <testcase name="rfcDateIsRelativeToActualClock" classname="com.jarvis.assistant.data.ProviderRetryPolicyTest" time="0.001"/>
+  <testcase name="longServerWaitIsLeftForExplicitUserRetry" classname="com.jarvis.assistant.data.ProviderRetryPolicyTest" time="0.0"/>
+  <testcase name="secondSafeReadRetryIncreasesBackoff" classname="com.jarvis.assistant.data.ProviderRetryPolicyTest" time="0.0"/>
+  <testcase name="excessiveDelayIsBounded" classname="com.jarvis.assistant.data.ProviderRetryPolicyTest" time="0.0"/>
+  <testcase name="invalidRequestNeverRetries" classname="com.jarvis.assistant.data.ProviderRetryPolicyTest" time="0.0"/>
+  <testcase name="insufficientCreditsNeverRetry" classname="com.jarvis.assistant.data.ProviderRetryPolicyTest" time="0.0"/>
+  <testcase name="readRetriesAreFinite" classname="com.jarvis.assistant.data.ProviderRetryPolicyTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

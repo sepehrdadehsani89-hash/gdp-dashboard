@@ -95,6 +95,7 @@ class OwnedTimers(private val context:Context){
         val current=read();val timer=current.firstOrNull{it.id==id && it.nonce==nonce} ?: return
         if(action=="dismiss"){cancel(id);return}
         if(action!="elapsed" || timer.status !in setOf("PREPARING","SCHEDULED") || timer.boot!=boot() || SystemClock.elapsedRealtime()<timer.deadline)return
+        if(!com.jarvis.assistant.modes.SystemModePolicy.remindersAllowed(com.jarvis.assistant.modes.SystemModes.current(context))){write(current.map{if(it.id==id)it.copy(status="ALERT_BLOCKED")else it});return}
         if(!alertsAllowed()){write(current.map{if(it.id==id)it.copy(status="ALERT_BLOCKED")else it});return}
         val language=(context.applicationContext as JarvisApplication).runtime.store.settings.value.language
         val open=PendingIntent.getActivity(context,id,Intent(context,ClockHudActivity::class.java),PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)

@@ -5,6 +5,7 @@ object SettingsDirectory {
     val sections=listOf(
         SettingsSection("account","Account & Identity","Name and saved personal preferences","profile owner"),
         SettingsSection("ai","AI Brain & Providers","Verified model access and local models","chatgpt claude gemini perplexity local inference authentication"),
+        SettingsSection("connections","Connections","Google Cloud configuration, connected services and paired computers","google gmail cloud oauth api key computers qr pairing"),
         SettingsSection("voice","Voice & Microphone","Speech, wake listening and audio diagnostics","cooldown captions echo noise stop speaking"),
         SettingsSection("device","Device Control","Supported Android actions and contact nicknames","flashlight volume brightness wifi bluetooth battery timers alarm contacts ma mom"),
         SettingsSection("security","Security & Permissions","Android authentication and access controls","privacy screen lock pin unlock permission"),

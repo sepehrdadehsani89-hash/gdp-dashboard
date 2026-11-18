@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.studio.StudioColorTest" tests="28" skipped="0" failures="0" errors="0" timestamp="2026-11-18T20:15:52" hostname="885caff30ac4" time="0.005">
+  <properties/>
+  <testcase name="hslRejectsInvalidLightness" classname="com.jarvis.assistant.studio.StudioColorTest" time="0.0"/>
+  <testcase name="hslZeroLightnessIsBlack" classname="com.jarvis.assistant.studio.StudioColorTest" time="0.002"/>
+  <testcase name="invalidAlphaIsRejected" classname="com.jarvis.assistant.studio.StudioColorTest" time="0.0"/>
+  <testcase name="shortAmbiguousHexIsRejected" classname="com.jarvis.assistant.studio.StudioColorTest" time="0.001"/>
+  <testcase name="rgbAlphaIsApplied" classname="com.jarvis.assistant.studio.StudioColorTest" time="0.0"/>
+  <testcase name="hsvZeroSaturationIsGray" classname="com.jarvis.assistant.studio.StudioColorTest" time="0.0"/>
+  <testcase name="hslPreservesAlpha" classname="com.jarvis.assistant.studio.StudioColorTest" time="0.0"/>
+  <testcase name="hsvGreenIsCorrect" classname="com.jarvis.assistant.studio.StudioColorTest" time="0.0"/>
+  <testcase name="hslFullLightnessIsWhite" classname="com.jarvis.assistant.studio.StudioColorTest" time="0.0"/>
+  <testcase name="hslRedIsCorrect" classname="com.jarvis.assistant.studio.StudioColorTest" time="0.0"/>
+  <testcase name="hsvBlueIsCorrect" classname="com.jarvis.assistant.studio.StudioColorTest" time="0.0"/>
+  <testcase name="argbRoundTripPreservesAllChannels" classname="com.jarvis.assistant.studio.StudioColorTest" time="0.001"/>
+  <testcase name="surroundingWhitespaceWorks" classname="com.jarvis.assistant.studio.StudioColorTest" time="0.0"/>
+  <testcase name="rgbUsesActualChannels" classname="com.jarvis.assistant.studio.StudioColorTest" time="0.0"/>
+  <testcase name="nonHexIsRejected" classname="com.jarvis.assistant.studio.StudioColorTest" time="0.0"/>
+  <testcase name="fullCircleHueWrapsCorrectly" classname="com.jarvis.assistant.studio.StudioColorTest" time="0.0"/>
+  <testcase name="hsvRedIsCorrect" classname="com.jarvis.assistant.studio.StudioColorTest" time="0.0"/>
+  <testcase name="rgbOutOfRangeIsRejected" classname="com.jarvis.assistant.studio.StudioColorTest" time="0.0"/>
+  <testcase name="hslYellowIsCorrect" classname="com.jarvis.assistant.studio.StudioColorTest" time="0.0"/>
+  <testcase name="rgbHexIsOpaque" classname="com.jarvis.assistant.studio.StudioColorTest" time="0.001"/>
+  <testcase name="negativeRgbIsRejected" classname="com.jarvis.assistant.studio.StudioColorTest" time="0.0"/>
+  <testcase name="hsvRejectsUnnormalizedSaturation" classname="com.jarvis.assistant.studio.StudioColorTest" time="0.0"/>
+  <testcase name="excessiveHexIsRejected" classname="com.jarvis.assistant.studio.StudioColorTest" time="0.0"/>
+  <testcase name="argbHexPreservesTransparency" classname="com.jarvis.assistant.studio.StudioColorTest" time="0.0"/>
+  <testcase name="hsvRejectsNonFiniteValues" classname="com.jarvis.assistant.studio.StudioColorTest" time="0.0"/>
+  <testcase name="fullSpectrumIsNotLimitedToPresets" classname="com.jarvis.assistant.studio.StudioColorTest" time="0.0"/>
+  <testcase name="hsvZeroValueIsBlack" classname="com.jarvis.assistant.studio.StudioColorTest" time="0.0"/>
+  <testcase name="lowercaseHexWorks" classname="com.jarvis.assistant.studio.StudioColorTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

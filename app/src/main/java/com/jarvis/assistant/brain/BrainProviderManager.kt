@@ -67,6 +67,8 @@ class BrainProviderManager internal constructor(
         if(identity.accountId.isBlank() || !identity.scopes.containsAll(setOf(ChatGptPlanAccess.INFERENCE_SCOPE,"resource.invoke")))throw ProviderException("This ChatGPT connection has not authorized model inference.",ProviderFailureKind.AUTHORIZATION)
         return hash("${config.id}:${identity.accountId}:${identity.revision}:${identity.scopes.sorted().joinToString(" ")}")
     }
+    /** Nonsecret identity binding for an explicit private-data review; never creates inference proof. */
+    suspend fun reviewCredentialBinding(config:ProviderConfig):String=metadataBinding(config)
     @Synchronized private fun record(config:ProviderConfig,binding:String,expectedEpoch:Long=epoch(config.id),check:ConnectionCheck?=null):ProviderVerificationProof {
         if(epoch(config.id)!=expectedEpoch)throw ProviderException("Connection changed during this request. Test again.",ProviderFailureKind.NOT_VERIFIED)
         val proof=ProviderVerificationProof(config,binding,now(),UUID.randomUUID().toString());repository.save(proof);sessionProofs[config.id]=proof.nonce;failedBindings.remove(config.id)
@@ -158,9 +160,11 @@ class BrainProviderManager internal constructor(
     }
     @Synchronized fun resetAfterWipe(){(epochs.keys+mutable.value.keys).toSet().forEach{epochs[it]=epoch(it)+1};mutable.value=emptyMap();sessionProofs.clear();failedBindings.clear()}
     /** Existing configured providers may answer; only the resulting real response can create proof. */
-    suspend fun answer(userText:String,language:AppLanguage,context:String,history:List<ChatMessage>,onChunk:(String)->Unit,screenshot:ByteArray?=null,includeIdentity:Boolean=true,concise:Boolean=true):String {
+    suspend fun answer(userText:String,language:AppLanguage,context:String,history:List<ChatMessage>,onChunk:(String)->Unit,screenshot:ByteArray?=null,includeIdentity:Boolean=true,concise:Boolean=true,expectedConfig:ProviderConfig?=null,expectedCredentialBinding:String?=null):String {
         val config=currentConfig().validated();require(config.mode!=ProviderCredentialMode.LOCAL){"Local inference uses the existing LocalBrain."}
+        if(expectedConfig!=null && expectedConfig!=config)throw ProviderException("The reviewed provider or model changed. Review sharing again; no request was sent.",ProviderFailureKind.NOT_VERIFIED)
         val requestEpoch=epoch(config.id);val c=credential(config)
+        if(expectedCredentialBinding!=null && expectedCredentialBinding!=c.binding)throw ProviderException("The reviewed provider account or credential changed. Review sharing again; no request was sent.",ProviderFailureKind.NOT_VERIFIED)
         // A saved user's selected grant may serve a new explicit question after proof expiry/restart.
         // Credential/scopes are checked above; only completed inference below creates a green proof.
         try{val result=answerRequest(config,c.secret,config.mode==ProviderCredentialMode.CHATGPT_PLAN,userText,language,context,history,{chunk->if(requestEpoch==epoch(config.id))onChunk(chunk)},screenshot,includeIdentity,concise)

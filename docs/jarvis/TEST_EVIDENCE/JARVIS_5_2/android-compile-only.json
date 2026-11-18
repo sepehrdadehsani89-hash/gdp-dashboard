@@ -1,0 +1,140 @@
+{
+  "status": "compileDebugAndroidTestKotlin passed; no instrumentation execution",
+  "declared_test_methods": 130,
+  "note": "Parameterized cases exceed method counts. New bundled QR suite has 20 scenarios and Studio has 24 cases. Total device cases were not enumerated or executed.",
+  "new_qr_scenarios": 20,
+  "new_studio_cases": 24,
+  "device_tests_executed": 0,
+  "sources": [
+    {
+      "source": "app/src/androidTest/java/com/jarvis/assistant/BundledQrDecoderInstrumentedTest.kt",
+      "declared_test_methods": 1,
+      "executed": 0
+    },
+    {
+      "source": "app/src/androidTest/java/com/jarvis/assistant/CameraHudFlowTest.kt",
+      "declared_test_methods": 1,
+      "executed": 0
+    },
+    {
+      "source": "app/src/androidTest/java/com/jarvis/assistant/ConnectedFolderFlowTest.kt",
+      "declared_test_methods": 2,
+      "executed": 0
+    },
+    {
+      "source": "app/src/androidTest/java/com/jarvis/assistant/GeminiSettingsTest.kt",
+      "declared_test_methods": 3,
+      "executed": 0
+    },
+    {
+      "source": "app/src/androidTest/java/com/jarvis/assistant/HudFlowTest.kt",
+      "declared_test_methods": 7,
+      "executed": 0
+    },
+    {
+      "source": "app/src/androidTest/java/com/jarvis/assistant/InfinityEngineTest.kt",
+      "declared_test_methods": 2,
+      "executed": 0
+    },
+    {
+      "source": "app/src/androidTest/java/com/jarvis/assistant/InfinityFlowTest.kt",
+      "declared_test_methods": 4,
+      "executed": 0
+    },
+    {
+      "source": "app/src/androidTest/java/com/jarvis/assistant/JarvisFlowTest.kt",
+      "declared_test_methods": 7,
+      "executed": 0
+    },
+    {
+      "source": "app/src/androidTest/java/com/jarvis/assistant/LiveControlFlowTest.kt",
+      "declared_test_methods": 1,
+      "executed": 0
+    },
+    {
+      "source": "app/src/androidTest/java/com/jarvis/assistant/NativeEngineTest.kt",
+      "declared_test_methods": 2,
+      "executed": 0
+    },
+    {
+      "source": "app/src/androidTest/java/com/jarvis/assistant/NeuralFlowTest.kt",
+      "declared_test_methods": 9,
+      "executed": 0
+    },
+    {
+      "source": "app/src/androidTest/java/com/jarvis/assistant/OmniPrivateFeatureTest.kt",
+      "declared_test_methods": 4,
+      "executed": 0
+    },
+    {
+      "source": "app/src/androidTest/java/com/jarvis/assistant/OmnisystemFlowTest.kt",
+      "declared_test_methods": 3,
+      "executed": 0
+    },
+    {
+      "source": "app/src/androidTest/java/com/jarvis/assistant/PhoenixChargingParticleRenderTest.kt",
+      "declared_test_methods": 4,
+      "executed": 0
+    },
+    {
+      "source": "app/src/androidTest/java/com/jarvis/assistant/PhoenixWallpaperFrameTest.kt",
+      "declared_test_methods": 6,
+      "executed": 0
+    },
+    {
+      "source": "app/src/androidTest/java/com/jarvis/assistant/PrivateMemoryImportUiTest.kt",
+      "declared_test_methods": 1,
+      "executed": 0
+    },
+    {
+      "source": "app/src/androidTest/java/com/jarvis/assistant/PrivateMemoryRestoreTest.kt",
+      "declared_test_methods": 4,
+      "executed": 0
+    },
+    {
+      "source": "app/src/androidTest/java/com/jarvis/assistant/ScreenCaptureFlowTest.kt",
+      "declared_test_methods": 1,
+      "executed": 0
+    },
+    {
+      "source": "app/src/androidTest/java/com/jarvis/assistant/SentinelContactStorageTest.kt",
+      "declared_test_methods": 1,
+      "executed": 0
+    },
+    {
+      "source": "app/src/androidTest/java/com/jarvis/assistant/SentinelFlowTest.kt",
+      "declared_test_methods": 6,
+      "executed": 0
+    },
+    {
+      "source": "app/src/androidTest/java/com/jarvis/assistant/SentinelSecurityFlowTest.kt",
+      "declared_test_methods": 4,
+      "executed": 0
+    },
+    {
+      "source": "app/src/androidTest/java/com/jarvis/assistant/SentinelVoiceSettingsTest.kt",
+      "declared_test_methods": 1,
+      "executed": 0
+    },
+    {
+      "source": "app/src/androidTest/java/com/jarvis/assistant/StabilizationPreferencesTest.kt",
+      "declared_test_methods": 20,
+      "executed": 0
+    },
+    {
+      "source": "app/src/androidTest/java/com/jarvis/assistant/V2WallpaperMotionTest.kt",
+      "declared_test_methods": 2,
+      "executed": 0
+    },
+    {
+      "source": "app/src/androidTest/java/com/jarvis/assistant/WallpaperStudioRenderTest.kt",
+      "declared_test_methods": 24,
+      "executed": 0
+    },
+    {
+      "source": "app/src/androidTest/java/com/jarvis/assistant/ui/HudCoreRenderingTest.kt",
+      "declared_test_methods": 10,
+      "executed": 0
+    }
+  ]
+}

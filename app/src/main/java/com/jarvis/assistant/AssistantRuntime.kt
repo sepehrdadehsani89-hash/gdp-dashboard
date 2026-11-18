@@ -79,8 +79,61 @@ class AssistantRuntime(private val context: Context) {
     val googleAuthorization by lazy{com.jarvis.assistant.google.GoogleAuthorization(context,googleConnections)}
     val googleClient by lazy{com.jarvis.assistant.google.GoogleServicesClient()}
     val googleProjectIndex by lazy{com.jarvis.assistant.google.GoogleProjectIndex(features)}
-    val googleAssistant by lazy{com.jarvis.assistant.google.GoogleAssistant(context,googleConnections,googleAuthorization,googleClient,googleProjectIndex,tools.launches)}
+    val googleAssistant by lazy{com.jarvis.assistant.google.GoogleAssistant(context,googleConnections,googleAuthorization,googleClient,googleProjectIndex,tools.launches,::recordGoogleWidget)}
+    val gmailWidget=kotlinx.coroutines.flow.MutableStateFlow<com.jarvis.assistant.google.GmailWidgetObservation?>(null)
+    val googleWidgetReadings=kotlinx.coroutines.flow.MutableStateFlow<Map<com.jarvis.assistant.google.GoogleProduct,com.jarvis.assistant.google.GoogleWidgetObservation>>(emptyMap())
+    val systemModes by lazy{com.jarvis.assistant.modes.SystemModes(context)}
+    val wallpaperStudio by lazy{com.jarvis.assistant.studio.WallpaperStudioStore(features)}
+    fun recordGoogleWidget(session:com.jarvis.assistant.google.GoogleAccessSession,result:com.jarvis.assistant.google.GoogleReadResult){
+        googleAuthorization.requireCurrent(session.accountId,session.epoch)
+        require(session.product==result.product)
+        if(locked())return
+        if(result.product in setOf(com.jarvis.assistant.google.GoogleProduct.CALENDAR,com.jarvis.assistant.google.GoogleProduct.TASKS))googleWidgetReadings.update{it+(result.product to com.jarvis.assistant.google.GoogleWidgetObservation(session.accountId,session.epoch,result.product,result.summary.take(1200),System.currentTimeMillis()))}
+        if(result.product==com.jarvis.assistant.google.GoogleProduct.GMAIL)result.unreadCount?.takeIf{it>=0}?.let{gmailWidget.value=com.jarvis.assistant.google.GmailWidgetObservation(session.accountId,session.epoch,it,System.currentTimeMillis())}
+    }
+    fun gmailWidgetText():String {
+        val connections=googleConnections.state.value;val row=connections.accounts.firstOrNull{it.id==connections.selected}
+        return com.jarvis.assistant.google.GmailWidgetPolicy.text(gmailWidget.value,row?.id,googleConnections.epoch,row?.services?.contains(com.jarvis.assistant.google.GoogleProduct.GMAIL)==true,System.currentTimeMillis(),!locked() && com.jarvis.assistant.modes.SystemModePolicy.privatePreviewsAllowed(systemModes.state.value))
+    }
+    fun googleReadWidgetText(product:com.jarvis.assistant.google.GoogleProduct):String {
+        val connections=googleConnections.state.value;val row=connections.accounts.firstOrNull{it.id==connections.selected}
+        return com.jarvis.assistant.google.GoogleWidgetPolicy.text(googleWidgetReadings.value[product],product,row?.id,googleConnections.epoch,row?.services?.contains(product)==true,System.currentTimeMillis(),!locked() && com.jarvis.assistant.modes.SystemModePolicy.privatePreviewsAllowed(systemModes.state.value))
+    }
+    fun setSilentMode(enabled:Boolean,wake:Boolean,reminders:Boolean){
+        check(!locked());systemModes.silent(enabled,wake,reminders)
+        if(enabled || !com.jarvis.assistant.modes.SystemModePolicy.wakeAllowed(systemModes.state.value)){stopEverything()}
+        else if(enabled){batteryAlerts.cancel();phantom.clearCaption()}
+        if(!enabled)scope.launch{runCatching{this@AssistantRuntime.reminders.restore()}}
+    }
+    fun enterDeepShutdown(keepReminders:Boolean){check(!locked());systemModes.save(systemModes.state.value.copy(deep=true,keepReminders=keepReminders));gmailWidget.value=null;googleWidgetReadings.value=emptyMap();stopEverything()}
+    fun reactivateJarvisManually(){if(locked())return;runCatching{systemModes.reopen()}.onSuccess{phantomOverlay.start();mutableState.update{it.copy(phase=AssistantPhase.READY)};scope.launch{runCatching{reminders.restore()}}}.onFailure{fail("Mode preferences are unavailable. Use the explicit recovery control in System Modes; saved data was preserved.")}}
     fun googleLaunch(intent:Intent,label:String)=tools.launches.open(intent,label).detail
+    suspend fun reviewGoogleSummary(result:com.jarvis.assistant.google.GoogleReadResult,account:String,epoch:Long):com.jarvis.assistant.google.GoogleSummaryReview {
+        googleAuthorization.requireCurrent(account,epoch);check(!locked())
+        val provider=brainManager.currentConfig()
+        val binding=withContext(Dispatchers.IO){brainManager.reviewCredentialBinding(provider)}
+        googleAuthorization.requireCurrent(account,epoch);check(provider==brainManager.currentConfig() && !locked())
+        return com.jarvis.assistant.google.GoogleSummaryPolicy.review(result,account,epoch,provider,System.currentTimeMillis(),binding)
+    }
+    /** Explicit one-read sharing only: no history, memory, tools, fallback, automatic TTS or persistence. */
+    suspend fun summarizeGoogleRead(result:com.jarvis.assistant.google.GoogleReadResult,review:com.jarvis.assistant.google.GoogleSummaryReview,confirmed:Boolean):String {
+        suspend fun requireReview(){
+            googleAuthorization.requireCurrent(review.account,review.epoch)
+            val binding=withContext(Dispatchers.IO){brainManager.reviewCredentialBinding(review.provider)}
+            com.jarvis.assistant.google.GoogleSummaryPolicy.requireAllowed(review,result,googleConnections.selected()?.id.orEmpty(),googleConnections.epoch,brainManager.currentConfig(),System.currentTimeMillis(),!locked(),confirmed,binding)
+        }
+        requireReview()
+        val prompt=com.jarvis.assistant.google.GoogleSummaryPolicy.prompt(result)
+        val answer=kotlinx.coroutines.withTimeout(60_000){
+            if(review.provider.mode==com.jarvis.assistant.brain.ProviderCredentialMode.LOCAL){
+                val profile=com.jarvis.assistant.neural.BrainProfiles.all.single{it.available && it.id==review.provider.model}
+                check(brain.installed(profile)){"The reviewed local model is not installed."}
+                brain.answer(prompt,language(),emptyList(),{},concise=true,profileOverride=profile)
+            }else brainManager.answer(prompt,language(),"",emptyList(),{},includeIdentity=false,concise=true,expectedConfig=review.provider,expectedCredentialBinding=review.providerBinding)
+        }
+        requireReview();check(answer.isNotBlank()){"The reviewed provider returned no summary."}
+        return answer.take(24_000)
+    }
     val lastApplicationLaunch get()=tools.launches.last
     val polishActions=com.jarvis.assistant.finishpolish.shared.PolishActionJournal()
     val learning by lazy{com.jarvis.assistant.finishpolish.learning.LearningStore(features)}
@@ -291,8 +344,9 @@ class AssistantRuntime(private val context: Context) {
     fun initialize() {
         if (initialized) return
         initialized = true
+        scope.launch{systemModes.state.collect{mode->mutableState.update{it.copy(systemMode=mode)}}}
         crashDiagnostics.install()
-        phantomOverlay.start()
+        if(!systemModes.state.value.deep)phantomOverlay.start()
         val startupWallTime=System.currentTimeMillis()
         scope.launch(Dispatchers.IO){context.cacheDir.listFiles()?.filter{it.isFile && it.lastModified()<startupWallTime && it.extension=="mp3" && (it.name.startsWith("reply-") || it.name.startsWith("voice-preview-"))}?.forEach{it.delete()}}
         scope.launch{while(true){
@@ -469,6 +523,7 @@ class AssistantRuntime(private val context: Context) {
     }
 
     fun wakeActivated(){
+        if(!com.jarvis.assistant.modes.SystemModePolicy.wakeAllowed(systemModes.state.value))return
         if(cameraOwner!=null || voiceSession.blocksRecognition())return
         speakers.firstSpeakerFocus.reset()
         voiceSession.wake(sessionGeneration)
@@ -486,6 +541,7 @@ class AssistantRuntime(private val context: Context) {
     private var callAnswerJob:Job?=null
     private var callWarmup:Job?=null
     fun requestAiCall(source:com.jarvis.assistant.call.AiCallSource=com.jarvis.assistant.call.AiCallSource.USER,referenceId:String?=null,referenceRevision:String?=null,showUi:Boolean=true,answerOnOpen:Boolean=false,preserveFocus:Boolean=false,onStarted:()->Unit={},onDone:()->Unit={},onFailed:((String)->Unit)?=null):Boolean {
+        if(systemModes.state.value.deep || source!=com.jarvis.assistant.call.AiCallSource.USER && !com.jarvis.assistant.modes.SystemModePolicy.optionalActivityAllowed(systemModes.state.value))return false
         val previous=aiCall.state.value
         if(previous.active){if(showUi)openAiCall(previous.id,answerOnOpen && source==previous.source && referenceId==previous.referenceId && referenceRevision==previous.referenceRevision);return false}
         if(com.jarvis.assistant.security.SystemCredentialPrivacy.pending(context) || cameraOwner!=null)return false
@@ -822,6 +878,7 @@ class AssistantRuntime(private val context: Context) {
 
     fun listen(){conversationExit.explicitStart();phantomOverlay.reveal();listenAttempt(0)}
     private fun listenAttempt(attempt:Int,preserveError:Boolean=false) {
+        if(systemModes.state.value.deep){fail("Jarvis is in Deep Shutdown. Open the main app or use System Modes to reactivate; microphone permission is never granted automatically.");return}
         if(voiceSession.blocksRecognition())return
         if(cameraOwner!=null || com.jarvis.assistant.security.SystemCredentialPrivacy.pending(context))return
         if (locked() && !store.settings.value.allowLockedChat) { fail(unlockMessage()); return }
@@ -892,6 +949,7 @@ class AssistantRuntime(private val context: Context) {
         brainManager.saveConfiguredModel(config)
     }
     private suspend fun restoreSelectedBrain(){
+        if(!com.jarvis.assistant.modes.SystemModePolicy.optionalActivityAllowed(systemModes.state.value))return
         val config=brainManager.currentConfig()
         if(config.mode==com.jarvis.assistant.brain.ProviderCredentialMode.LOCAL)return
         val revision=if(config.mode==com.jarvis.assistant.brain.ProviderCredentialMode.CHATGPT_PLAN)openAiAuth.credentialDescriptor()?.let{it.accountId+":"+it.revision}.orEmpty() else store.getApiKeyRevision(config.provider).toString()
@@ -1170,6 +1228,7 @@ class AssistantRuntime(private val context: Context) {
         if(cameraOwner!=null || voiced && voiceSession.blocksRecognition() && !(voiceSession.snapshot().stage==com.jarvis.assistant.voice.VoiceStage.THINKING && ownerPermit?.valid(sessionGeneration,speakers.ownerRevision,SystemClock.elapsedRealtime())==true))return
         val text = input.trim().take(8000)
         if (text.isBlank()) return
+        if(systemModes.state.value.deep && !LanguageRules.isStop(text)){fail("Jarvis is in Deep Shutdown. Open the main app manually to reactivate before a new request.");return}
         if(com.jarvis.assistant.settings.SpokenSettings.credentialRequest(text)){
             reportNative("Enter credentials in the private AI Brain Manager. No credential was stored or sent to an AI model.",voiced,"Private credential request withheld");return
         }
@@ -1179,6 +1238,23 @@ class AssistantRuntime(private val context: Context) {
         if(voiced){voiceSession.recognized(sessionGeneration,text.length);aiCall.activity()}
         if(voiced && speakers.ownerOnlyRequested && !LanguageRules.isStop(text) && ownerPermit?.valid(sessionGeneration,speakers.ownerRevision,SystemClock.elapsedRealtime())!=true){
             verifyOwnerCommand(text,speakerSampleId,recognitionAlternatives);return
+        }
+        com.jarvis.assistant.modes.SystemModePolicy.parse(text)?.let{mode->
+            if(locked()){lockedRequestDenied(voiced,false);return}
+            reportNative(tools.launches.open(Intent(context,com.jarvis.assistant.modes.SystemModesActivity::class.java).putExtra("requested_mode",mode.name),"Jarvis System Modes confirmation").detail+" Review and confirm the requested mode there; no mode change is claimed yet.",voiced,text);return
+        }
+        com.jarvis.assistant.setup.NexusNavigationPolicy.parse(text)?.let{destination->
+            if(locked()){lockedRequestDenied(voiced,false);return}
+            val activity=when(destination){
+                com.jarvis.assistant.setup.NexusDestination.GOOGLE_CLOUD->com.jarvis.assistant.google.GoogleCloudConfigurationActivity::class.java
+                com.jarvis.assistant.setup.NexusDestination.GOOGLE_SERVICES->com.jarvis.assistant.google.GoogleAccountsActivity::class.java
+                com.jarvis.assistant.setup.NexusDestination.WALLPAPER_STUDIO->com.jarvis.assistant.studio.WallpaperStudioActivity::class.java
+                com.jarvis.assistant.setup.NexusDestination.COMPUTERS->com.jarvis.assistant.companion.CompanionActivity::class.java
+                com.jarvis.assistant.setup.NexusDestination.SETUP->com.jarvis.assistant.setup.NexusSetupActivity::class.java
+                com.jarvis.assistant.setup.NexusDestination.SYSTEM_MODES->com.jarvis.assistant.modes.SystemModesActivity::class.java
+                com.jarvis.assistant.setup.NexusDestination.COMMAND_LAB->com.jarvis.assistant.controls.VoiceCommandLabActivity::class.java
+            }
+            reportNative(tools.launches.open(Intent(context,activity),"Jarvis ${destination.name.lowercase().replace('_',' ')}").detail+" Review the controls there. Opening a screen does not execute or verify a setting change.",voiced,text);return
         }
         if(callCommand==com.jarvis.assistant.call.AiCallCommand.START){requestAiCall(preserveFocus=voiced);return}
         if(callCommand==com.jarvis.assistant.call.AiCallCommand.ANSWER){openAiCall(aiCall.state.value.id,true);return}
@@ -1231,6 +1307,7 @@ class AssistantRuntime(private val context: Context) {
             session=scope.launch{deliver(AssistantReply(description,action=proposal,allowCloudSpeech=false),language(),voiced,sessionGeneration)}
             return
         }
+        if(com.jarvis.assistant.companion.DesktopUnsupportedActions.matches(text)){reportNative(com.jarvis.assistant.companion.DesktopUnsupportedActions.MESSAGE,voiced,text);return}
         phantomOverlay.reveal()
         com.jarvis.assistant.voice.ConversationInterruptPolicy.replacement(text)?.let{replacement->submit(replacement,voiced,speakerSampleId,recognitionAlternatives,ownerPermit);return}
         mutableState.update{it.copy(confirmedEntity=null,recognition=null)}
@@ -1715,6 +1792,7 @@ class AssistantRuntime(private val context: Context) {
     }
 
     fun startWake() {
+        if(!com.jarvis.assistant.modes.SystemModePolicy.wakeAllowed(systemModes.state.value)){fail("Wake listening is disabled by System Modes. Use the manual microphone in Silent Mode, enable its wake exception, or reactivate Deep Shutdown.");return}
         conversationExit.explicitStart()
         phantomOverlay.reveal()
         if(cameraOwner!=null)return
@@ -1755,6 +1833,7 @@ class AssistantRuntime(private val context: Context) {
     }
     private var speechCooldownJob:Job?=null
     private fun resumeWake(followUp: Boolean = false) {
+        if(!com.jarvis.assistant.modes.SystemModePolicy.wakeAllowed(systemModes.state.value))return
         if(conversationExit.blocked)return
         if(voiceSession.blocksRecognition()){
             val wait=voiceSession.cooldownRemaining(sessionGeneration)
@@ -1983,7 +2062,6 @@ class AssistantRuntime(private val context: Context) {
         mutableState.update{it.copy(transcript="",liveReply="",moduleResponse="",confirmedEntity=null,recognition=null,activeTask="ASSISTANT")}
     }
     fun stopEverything() {
-        conversationExit.finish()
         conversationExit.finish()
         androidControls.cancelPending()
         com.jarvis.assistant.screen.VideoRecordingService.requestStop(context)
