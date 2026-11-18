@@ -2,6 +2,8 @@ package com.jarvis.assistant.brain
 
 import android.content.Intent
 import android.net.Uri
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.os.StatFs
 import androidx.compose.foundation.BorderStroke
@@ -22,6 +24,7 @@ import com.jarvis.assistant.brain.auth.OpenAiAuthException
 import com.jarvis.assistant.R
 import com.jarvis.assistant.core.ConnectionCheck
 import com.jarvis.assistant.data.ChatGptPlanModel
+import com.jarvis.assistant.data.OpenAiModelCatalog
 import com.jarvis.assistant.data.ProviderException
 import com.jarvis.assistant.local.ModelDownloadPolicy
 import com.jarvis.assistant.local.ModelInstallPolicy
@@ -32,6 +35,7 @@ import com.jarvis.assistant.omnisystem.PrivateModuleActivity
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.delay
 
 /** Private settings around the existing adapters; provider passwords never enter this activity. */
 @OptIn(ExperimentalLayoutApi::class)
@@ -111,7 +115,7 @@ class BrainManagerActivity:PrivateModuleActivity(){
                 }
             }
             planCard()
-            apiCard("openai","OpenAI API", "gpt-4o-mini",collapsed=true)
+            apiCard("openai","OpenAI API", "")
             apiCard("anthropic","Claude · Anthropic", "claude-sonnet-4-20250514")
             localCard()
             HorizontalDivider()
@@ -128,15 +132,21 @@ class BrainManagerActivity:PrivateModuleActivity(){
     }
     override fun onResume(){super.onResume();resumeEpoch++}
 
-    @Composable private fun statusLine(config:ProviderConfig):ProviderConnection?{
+    @Composable private fun statusLine(config:ProviderConfig,credentialDraft:Boolean=false):ProviderConnection?{
         val connections by runtime.brainManager.connections.collectAsStateWithLifecycle()
         val shared by runtime.state.collectAsStateWithLifecycle()
-        LaunchedEffect(config,revision){runtime.brainManager.refresh(config)}
-        val connection=connections[config.id]?.takeIf{it.config==config}
+        LaunchedEffect(config,revision,credentialDraft){
+            while(true){
+                if(!credentialDraft && lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED))runtime.brainManager.refresh(config)
+                delay(30_000) // Metadata expiry only; never background inference.
+            }
+        }
+        val connection=connections[config.id]?.takeIf{it.config==config && !credentialDraft}
         val verified=connection?.status==ProviderConnectionStatus.VERIFIED
         val unavailable=connection?.failure in setOf(ProviderFailureKind.CREDITS,ProviderFailureKind.RATE_LIMIT,ProviderFailureKind.USAGE_UNAVAILABLE)
         Text(if(unavailable)words("Usage Unavailable","Uso no disponible","سهمیه در دسترس نیست") else when(connection?.status){
             ProviderConnectionStatus.VERIFIED->words("AI Connected · actual response verified","IA conectada · respuesta real verificada","اتصال با پاسخ واقعی تأیید شد")
+            ProviderConnectionStatus.PREVIOUSLY_VERIFIED->words("Previously verified · check current access","Verificada anteriormente · comprueba el acceso actual","قبلاً تأیید شده؛ اکنون آزمایش کنید")
             ProviderConnectionStatus.VERIFYING->words("Testing actual inference…","Probando inferencia real…","در حال آزمایش پاسخ واقعی…")
             ProviderConnectionStatus.FAILED->words("Connection failed","Conexión fallida","اتصال ناموفق")
             else->words("Authorization or connection test required","Se requiere autorización o prueba","ورود یا آزمایش لازم است")
@@ -191,27 +201,54 @@ class BrainManagerActivity:PrivateModuleActivity(){
         var model by rememberSaveable{mutableStateOf(runtime.brainManager.configuredModel(provider,ProviderCredentialMode.API_KEY) ?: defaultModel)}
         var key by remember{mutableStateOf("")}
         var models by remember{mutableStateOf<List<String>>(emptyList())}
+        var catalogError by remember{mutableStateOf<String?>(null)}
+        var internet by remember{mutableStateOf("Unknown")}
+        LaunchedEffect(revision,resumeEpoch){
+            internet=runCatching{
+                val connectivity=getSystemService(ConnectivityManager::class.java)
+                val capabilities=connectivity.getNetworkCapabilities(connectivity.activeNetwork)
+                when{capabilities==null->"Unavailable";capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)->"Validated";else->"Unvalidated"}
+            }.getOrDefault("Unknown")
+        }
         val lifecycle=LocalLifecycleOwner.current.lifecycle
-        DisposableEffect(lifecycle){val observer=LifecycleEventObserver{_,event->if(event==Lifecycle.Event.ON_STOP)key=""};lifecycle.addObserver(observer);onDispose{lifecycle.removeObserver(observer);key=""}}
+        DisposableEffect(lifecycle){val observer=LifecycleEventObserver{_,event->if(event==Lifecycle.Event.ON_STOP){key="";models=emptyList();catalogError=null}};lifecycle.addObserver(observer);onDispose{lifecycle.removeObserver(observer);key=""}}
         val config=runCatching{ProviderConfig(provider,model.trim(),ProviderCredentialMode.API_KEY).validated()}.getOrNull()
         val auth by runtime.openAiAuth.state.collectAsStateWithLifecycle()
         providerBox(title){
             Text(if(provider=="anthropic")words("Claude requires supported API access. Signing into claude.ai does not authorize this Android integration. Review your API account and available credits.","Claude requiere acceso API. Iniciar sesión en claude.ai no autoriza esta integración Android. Revisa tu cuenta API y sus créditos.","Claude به دسترسی API نیاز دارد.") else words("Explicit API access is separate from account sign-in and ChatGPT plan usage. It uses the provider API project's quota or billing.","El acceso API es independiente del inicio y del plan ChatGPT. Usa la cuota o facturación del proyecto API.","دسترسی API و سهمیهٔ آن مستقل است."))
             TextButton(enabled=!working,onClick={expanded=!expanded}){Text(words("Configure API Access","Configurar acceso API","تنظیم API"))}
             if(expanded){
-                OutlinedTextField(key,{key=it.take(1000)},label={Text(words("Personal API key · blank keeps saved key","Clave API personal · vacío conserva la guardada","کلید API شخصی"))},visualTransformation=PasswordVisualTransformation(),enabled=!working,modifier=Modifier.fillMaxWidth())
+                OutlinedTextField(key,{key=it.take(1000);models=emptyList();catalogError=null},label={Text(words("Personal API key · blank keeps saved key","Clave API personal · vacío conserva la guardada","کلید API شخصی"))},visualTransformation=PasswordVisualTransformation(),enabled=!working,modifier=Modifier.fillMaxWidth())
                 OutlinedTextField(model,{model=it.take(100)},label={Text(words("Model ID","ID del modelo","شناسهٔ مدل"))},enabled=!working,modifier=Modifier.fillMaxWidth())
-                val connection=config?.let{statusLine(it)}
-                Text(words("Test & Save stores this key in Android Keystore-protected storage and sends one small diagnostic request. Listing models is not a successful inference test.","Probar y guardar almacena la clave protegida por Android Keystore y envía una pequeña petición de prueba. Listar modelos no prueba la inferencia.","آزمایش، کلید را امن ذخیره و یک درخواست کوچک اجرا می‌کند."),style=MaterialTheme.typography.bodySmall)
+                val connection=config?.let{statusLine(it,key.isNotBlank())}
+                var retryReady by remember(connection?.retryAt){mutableStateOf(connection?.retryAllowed(System.currentTimeMillis())!=false)}
+                LaunchedEffect(connection?.retryAt){
+                    val wait=((connection?.retryAt ?: 0L)-System.currentTimeMillis()).coerceAtLeast(0L)
+                    if(wait>0)delay(wait)
+                    retryReady=true
+                }
+                Text(words("Test & Save stores this key in Android Keystore-protected storage and sends one small diagnostic request that may consume API credits. Listing models is not a successful inference test.","Probar y guardar almacena la clave protegida por Android Keystore y envía una pequeña petición de prueba. Listar modelos no prueba la inferencia.","آزمایش، کلید را امن ذخیره و یک درخواست کوچک اجرا می‌کند."),style=MaterialTheme.typography.bodySmall)
                 FlowRow{
-                    Button(enabled=config!=null && !working && !auth.signingIn,onClick={val candidate=key;authorize{manage{runtime.configureBrainApi(config!!,candidate);result(runtime.brainManager.verify(config));key=""}}}){Text(words("Test & Save API Connection","Probar y guardar conexión API","آزمایش و ذخیرهٔ اتصال API"))}
-                    OutlinedButton(enabled=!working,onClick={val candidate=key;manage{models=runtime.brainApiModels(provider,candidate);status=words("Account model list loaded; test the chosen model before selecting it.","Lista cargada; prueba el modelo antes de elegirlo.","فهرست دریافت شد؛ مدل را آزمایش کنید.")}}){Text(words("List account models","Listar modelos de cuenta","فهرست مدل‌های حساب"))}
+                    Button(enabled=config!=null && !working && !auth.signingIn && retryReady,onClick={val candidate=key;authorize{manage{runtime.configureBrainApi(config!!,candidate);key="";result(runtime.brainManager.verify(config))}}}){Text(words("Test / Retry & Save Connection","Probar / reintentar y guardar","آزمایش دوباره و ذخیرهٔ اتصال"))}
+                    OutlinedButton(enabled=!working,onClick={val candidate=key;manage{models=emptyList();catalogError=null;try{models=runtime.brainApiModels(provider,candidate)}catch(e:ProviderException){catalogError="Unable to retrieve available models. ${e.kind}: ${e.message}";throw e};status=words("Account model list loaded; test the chosen model before selecting it.","Lista cargada; prueba el modelo antes de elegirlo.","فهرست دریافت شد؛ مدل را آزمایش کنید.")}}){Text(words("Refresh Models / Retry","Actualizar modelos / reintentar","دریافت دوبارهٔ مدل‌ها"))}
                     Button(enabled=key.isBlank() && connection?.status==ProviderConnectionStatus.VERIFIED && !working,onClick={authorize{manage{runtime.selectBrain(config!!);status="$title · "+words("Primary Brain selected","Cerebro principal elegido","مغز اصلی انتخاب شد")}}}){Text(words("Set as Primary Brain","Elegir cerebro principal","انتخاب مغز اصلی"))}
                 }
-                if(models.isNotEmpty())modelPicker(model,models.map{it to it}){model=it}
+                catalogError?.let{Text(it,color=Color(0xFFFFB3B3))}
+                if(models.isNotEmpty())modelPicker(model,models.map{it to if(provider=="openai")"$it · ${OpenAiModelCatalog.capability(it)}" else it}){model=it}
+                if(provider=="openai"){
+                    Text("Backend: Not required · this personal key connects directly to OpenAI. Android Keystore protects it at rest; a server-held key provides stronger isolation. ChatGPT subscription and API billing are separate.",style=MaterialTheme.typography.bodySmall)
+                    OutlinedButton(enabled=!working && !auth.signingIn,onClick={val candidate=key;authorize{manage{
+                        models=emptyList();catalogError=null
+                        val selected=OpenAiDefaultSelection.connect(
+                            catalog={try{runtime.brainApiModels("openai",candidate).also{models=it}}catch(e:ProviderException){catalogError="Unable to retrieve available models. ${e.kind}: ${e.message}";throw e}},
+                            configure={runtime.configureBrainApi(it,candidate);model=it.model;key=""},verify={runtime.brainManager.verify(it)},select={runtime.selectBrain(it)})
+                        model=selected.first.model;key="";result(selected.second)
+                    }}}){Text("Discover, test & select default")}
+                    Text("This explicit action lists your account's models, tests one listed text model using API credits, and selects it only if actual inference succeeds. No alternate model is silently tried.",style=MaterialTheme.typography.bodySmall)
+                }
                 FlowRow{
                     TextButton(onClick={browser(when(provider){"anthropic"->"https://console.anthropic.com/";"gemini"->"https://aistudio.google.com/";else->"https://platform.openai.com/"})}){Text(words("Open provider console","Abrir consola del proveedor","کنسول ارائه‌دهنده"))}
-                    TextButton(onClick={details="API credential authentication · $provider\nModel: $model\nLast actual inference test: "+(connection?.verifiedAt?.let{java.util.Date(it).toString()} ?: "Not verified")+"\nIdentity sign-in does not replace this API credential."}){Text(words("Connection Details","Detalles de conexión","جزئیات اتصال"))}
+                    TextButton(onClick={details=if(config==null)"Enter an exact model ID or discover available models. Backend: Not required." else ProviderDiagnostics.describe(config,connection,runtime.store.getApiKey(provider).isNotBlank(),internet,System.currentTimeMillis())}){Text(words("Connection Details","Detalles de conexión","جزئیات اتصال"))}
                     OutlinedButton(enabled=config!=null && !working,onClick={authorize{manage{status=runtime.disconnectBrain(config!!);key=""}}}){Text(words("Disconnect API Access","Desconectar acceso API","قطع اتصال API"))}
                 }
             }

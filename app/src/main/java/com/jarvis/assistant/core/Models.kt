@@ -52,7 +52,7 @@ data class AssistantReply(
     val publicSpeechSummary:String?=null,
 )
 
-data class ConnectionCheck(val model: String, val sample: String, val elapsedMs: Long)
+data class ConnectionCheck(val model: String, val sample: String, val elapsedMs: Long,val resolvedModel:String?=null,val requestId:String?=null)
 
 fun AppLanguage.choose(en: String, es: String, fa: String): String = when (this) {
     AppLanguage.EN -> en

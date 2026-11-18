@@ -17,8 +17,8 @@ android {
         applicationId = "com.jarvis.next"
         minSdk = 29
         targetSdk = 35
-        versionCode = 30
-        versionName = "2.11.9-stabilize.1"
+        versionCode = 31
+        versionName = "2.11.9-ai.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
         ndk { abiFilters += providers.gradleProperty("jarvisAbis").getOrElse("arm64-v8a").split(",") }
@@ -129,6 +129,25 @@ dependencies {
     androidTestImplementation("androidx.test:runner:1.6.2")
     androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")
 }
+
+// A replacement debug certificate cannot update an existing Phoenix installation.
+val checkPhoenixSigning by tasks.registering {
+    doLast {
+        val signing = android.signingConfigs.getByName("debug")
+        val existing = signing.storeFile ?: error("The retained Phoenix signing file is not configured.")
+        check(existing.isFile) { "Retained Phoenix signing file is missing. Refusing to generate a replacement certificate." }
+        val password = (signing.storePassword ?: error("Phoenix signing password is unavailable.")).toCharArray()
+        try {
+            val keys = KeyStore.getInstance(existing, password)
+            val certificate = keys.getCertificate(signing.keyAlias) ?: error("Phoenix signing alias is unavailable.")
+            val fingerprint = MessageDigest.getInstance("SHA-256").digest(certificate.encoded).joinToString("") { "%02x".format(it) }
+            check(fingerprint == "f9f13af1f84515b787b89c0f3abc8695f1d0d45e8a647d1192966c4c810964c7") {
+                "Wrong Phoenix signing identity. Refusing to build an incompatible update."
+            }
+        } finally { password.fill('\u0000') }
+    }
+}
+tasks.matching { it.name == "preDebugBuild" || it.name == "validateSigningDebug" }.configureEach { dependsOn(checkPhoenixSigning) }
 
 val checkNextSigning by tasks.registering {
     doLast {

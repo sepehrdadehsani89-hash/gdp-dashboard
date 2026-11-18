@@ -36,6 +36,7 @@ class BrainManagerHttpTest {
     private fun catalog(slug:String="gpt-test-plan")="""{"models":[{"slug":"$slug","display_name":"Plan model","visibility":"list"}]}"""
     private fun sse(vararg events:String)=MockResponse().setHeader("Content-Type","text/event-stream").setBody(events.joinToString(""){"data: $it\n\n"})
     private fun delta(text:String) = JSONObject().put("type","response.output_text.delta").put("delta",text).toString()
+    private fun apiCompleted(text:String)="""{"id":"resp_test","object":"response","model":"gpt-test-plan","status":"completed","output":[{"type":"message","role":"assistant","content":[{"type":"output_text","text":"$text"}]}]}"""
     private fun completed()="""{"type":"response.completed","response":{"status":"completed"}}"""
     private suspend fun planAnswer(client:LlmClient,onChunk:(String)->Unit={}):String=client.answer("Hello",AppLanguage.EN,"",emptyList(),onChunk,planBearer="oauth-plan-secret")
     private suspend fun providerFailure(block:suspend()->Unit):ProviderException {
@@ -208,18 +209,18 @@ class BrainManagerHttpTest {
 
     @Test fun explicitApiConnectionTestCanBeRequestedWithoutChangingPlanSelection()=runBlocking<Unit> {
         MockWebServer().use{server->
-            server.enqueue(MockResponse().setBody("""{"choices":[{"message":{"content":"READY"}}]}"""))
+            server.enqueue(MockResponse().setHeader("Content-Type","application/json").setBody(apiCompleted("READY")))
             assertEquals("READY",client(server,mode=ProviderCredentialMode.CHATGPT_PLAN).testConnection(planSettings,"explicit-api-key",explicitApi=true).sample)
-            val req=request(server);assertEquals("/v1/chat/completions",req.path);assertEquals("Bearer explicit-api-key",req.getHeader("Authorization"))
-            val body=JSONObject(req.body.readUtf8());assertFalse(body.getBoolean("stream"));assertEquals(64,body.getInt("max_tokens"))
+            val req=request(server);assertEquals("/v1/responses",req.path);assertEquals("Bearer explicit-api-key",req.getHeader("Authorization"))
+            val body=JSONObject(req.body.readUtf8());assertFalse(body.getBoolean("stream"));assertEquals(1024,body.getInt("max_output_tokens"));assertFalse(body.has("max_tokens"))
         }
     }
 
     @Test fun explicitApiAnswerOverrideUsesRequestedApiCredential()=runBlocking<Unit> {
         MockWebServer().use{server->
-            server.enqueue(sse("""{"choices":[{"delta":{"content":"API answer"}}]}""","[DONE]"))
+            server.enqueue(sse(delta("API answer"),JSONObject().put("type","response.completed").put("response",JSONObject(apiCompleted("API answer"))).toString()))
             assertEquals("API answer",client(server,mode=ProviderCredentialMode.CHATGPT_PLAN).answer("Hi",AppLanguage.EN,"",emptyList(),{},apiKeyOverride="explicit-api-key"))
-            val req=request(server);assertEquals("/v1/chat/completions",req.path);assertEquals("Bearer explicit-api-key",req.getHeader("Authorization"))
+            val req=request(server);assertEquals("/v1/responses",req.path);assertEquals("Bearer explicit-api-key",req.getHeader("Authorization"))
         }
     }
 
@@ -270,7 +271,7 @@ class BrainManagerHttpTest {
 
     @Test fun explicitApiCatalogRequiresDataIdsAndFiltersUnsafeModelNames()=runBlocking<Unit> {
         MockWebServer().use{server->
-            server.enqueue(MockResponse().setBody("""{"data":[{"id":"gpt-good"},{"id":"../../unsafe"},{"id":"gpt-good"},{"id":"gpt-other"}]}"""))
+            server.enqueue(MockResponse().setHeader("Content-Type","application/json").setBody("""{"data":[{"id":"gpt-good"},{"id":"../../unsafe"},{"id":"gpt-good"},{"id":"gpt-other"}]}"""))
             assertEquals(listOf("gpt-good","gpt-other"),client(server).availableApiModels("openai","personal",AppLanguage.EN))
             assertEquals("Bearer personal",request(server).getHeader("Authorization"))
         }

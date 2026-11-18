@@ -409,6 +409,7 @@ class AssistantRuntime(private val context: Context) {
             }
         }
         scope.launch{voiceDelivery.state.collectLatest{delivery->mutableState.update{it.copy(voiceDelivery=delivery)}}}
+        scope.launch{while(isActive){delay(30_000);brainManager.expireStaleVerifications()}}
         scope.launch{kotlinx.coroutines.flow.combine(brainManager.connections,store.settings){connections,_->val config=brainManager.currentConfig();connections[config.id]?.let{c->c.config==config && c.status==com.jarvis.assistant.brain.ProviderConnectionStatus.VERIFIED}==true}.collectLatest{verified->mutableState.update{it.copy(selectedBrainVerified=verified)}}}
         scope.launch { store.messages.collectLatest { messages -> mutableState.update { it.copy(messages = messages) } } }
         scope.launch { store.memories.collectLatest { memories -> mutableState.update { it.copy(memories = memories, memoryCategories=memories.associate { m -> m.id to categories.getString(m.id.toString(), "Notes").orEmpty() }) } } }
@@ -830,9 +831,10 @@ class AssistantRuntime(private val context: Context) {
     suspend fun configureBrainApi(config:com.jarvis.assistant.brain.ProviderConfig,key:String){
         if(locked())throw ProviderException(unlockMessage())
         require(config.mode==com.jarvis.assistant.brain.ProviderCredentialMode.API_KEY);config.validated()
-        if(key.isNotBlank()){
+        val validatedKey=key.takeIf{it.isNotBlank()}?.let{com.jarvis.assistant.data.BrainProtocol.validateApiKey(it)}
+        if(validatedKey!=null && validatedKey!=store.getApiKey(config.provider)){
             brainManager.configurationChanged(config)
-            withContext(Dispatchers.IO){store.setApiKey(config.provider,key.trim())}
+            withContext(Dispatchers.IO){store.setApiKey(config.provider,validatedKey)}
         }
         brainManager.saveConfiguredModel(config)
     }
@@ -1434,7 +1436,9 @@ class AssistantRuntime(private val context: Context) {
                     screenshot = screen?.jpeg?.takeIf { settings.provider == "gemini" }, includeIdentity = !publicLocked, concise=hud.state.value.settings.sentinel.conciseReplies)}catch(e:CancellationException){throw e}catch(e:Exception){
                     if(!neuralPreferences.state.value.cloudFallbackLocal || !brain.modelReady() || streamed.isNotBlank())throw e
                     mutableState.update{it.copy(neuralStage="Cloud unavailable · using approved local fallback")}
-                    brain.answer(LocalContextBudget.build(text,listOf(selectedText,screenContext,retrieved,rolling).joinToString("\n"),memory),lang,if(generalHistoryAllowed)neural.conversation.history() else emptyList(),onChunk,concise=hud.state.value.settings.sentinel.conciseReplies)
+                    voiceDelivery.request(generation,"local")
+                    val localAnswer=brain.answer(LocalContextBudget.build(text,listOf(selectedText,screenContext,retrieved,rolling).joinToString("\n"),memory),lang,if(generalHistoryAllowed)neural.conversation.history() else emptyList(),onChunk,concise=hud.state.value.settings.sentinel.conciseReplies)
+                    com.jarvis.assistant.voice.AiAnswerProvenance.localFallback(localAnswer,lang)
                 }
             }
 

@@ -11,9 +11,29 @@ data class ProviderConfig(val provider:String,val model:String,val mode:Provider
         return this
     }
 }
-enum class ProviderConnectionStatus { NOT_CONFIGURED, CONFIGURED, VERIFYING, VERIFIED, AUTHORIZATION_REQUIRED, IDENTITY_ONLY, EXPIRED, FAILED }
-enum class ProviderFailureKind { AUTHENTICATION, AUTHORIZATION, RATE_LIMIT, CREDITS, USAGE_UNAVAILABLE, MODEL_UNAVAILABLE, TIMEOUT, NETWORK, INCOMPLETE, NOT_VERIFIED, CANCELLED, UNKNOWN }
-data class ProviderConnection(val config:ProviderConfig,val status:ProviderConnectionStatus,val verifiedAt:Long?=null,val message:String="",val failure:ProviderFailureKind?=null)
+enum class ProviderConnectionStatus { NOT_CONFIGURED, CONFIGURED, VERIFYING, VERIFIED, AUTHORIZATION_REQUIRED, IDENTITY_ONLY, PREVIOUSLY_VERIFIED, EXPIRED, FAILED }
+enum class ProviderFailureKind { AUTHENTICATION, AUTHORIZATION, RATE_LIMIT, CREDITS, USAGE_UNAVAILABLE, MODEL_UNAVAILABLE, TIMEOUT, NETWORK, INCOMPLETE, NOT_VERIFIED, CANCELLED, BAD_REQUEST, BACKEND_UNAVAILABLE, UNKNOWN }
+data class ProviderConnection(val config:ProviderConfig,val status:ProviderConnectionStatus,val verifiedAt:Long?=null,val message:String="",val failure:ProviderFailureKind?=null,val elapsedMs:Long?=null,val httpStatus:Int?=null,val retryAt:Long?=null,val resolvedModel:String?=null) {
+    val diagnosticState:AiConnectionState get()=when(status){
+        ProviderConnectionStatus.NOT_CONFIGURED->AiConnectionState.NOT_CONFIGURED
+        ProviderConnectionStatus.VERIFYING->AiConnectionState.VALIDATING
+        ProviderConnectionStatus.VERIFIED->AiConnectionState.CONNECTED_VERIFIED
+        ProviderConnectionStatus.PREVIOUSLY_VERIFIED->AiConnectionState.PREVIOUSLY_VERIFIED
+        ProviderConnectionStatus.FAILED->when(failure){
+            ProviderFailureKind.AUTHENTICATION->AiConnectionState.AUTHENTICATION_FAILED
+            ProviderFailureKind.CREDITS->AiConnectionState.INSUFFICIENT_QUOTA
+            ProviderFailureKind.RATE_LIMIT->AiConnectionState.RATE_LIMITED
+            ProviderFailureKind.NETWORK->AiConnectionState.NETWORK_UNAVAILABLE
+            ProviderFailureKind.TIMEOUT->AiConnectionState.TIMEOUT
+            ProviderFailureKind.MODEL_UNAVAILABLE->AiConnectionState.MODEL_UNAVAILABLE
+            ProviderFailureKind.BACKEND_UNAVAILABLE->AiConnectionState.BACKEND_UNAVAILABLE
+            else->AiConnectionState.PROVIDER_ERROR
+        }
+        else->AiConnectionState.NOT_VERIFIED
+    }
+    fun retryAllowed(now:Long)=retryAt==null || now>=retryAt
+}
+enum class AiConnectionState { NOT_CONFIGURED, VALIDATING, CONNECTED_VERIFIED, PREVIOUSLY_VERIFIED, NOT_VERIFIED, AUTHENTICATION_FAILED, INSUFFICIENT_QUOTA, RATE_LIMITED, NETWORK_UNAVAILABLE, TIMEOUT, MODEL_UNAVAILABLE, BACKEND_UNAVAILABLE, PROVIDER_ERROR }
 
 /** Bearer material is transient and deliberately absent from toString and persistent proofs. */
 class ChatGptPlanAccess(val bearer:String,val accountId:String,val scopes:Set<String>,val revision:Long) {

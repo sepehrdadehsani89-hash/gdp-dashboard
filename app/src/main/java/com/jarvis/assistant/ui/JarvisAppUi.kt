@@ -571,7 +571,7 @@ private fun SettingsScreen(state: JarvisUiState, actions: JarvisUiActions, senti
                     availableModels = withTimeout(15_000) { actions.onListGeminiModels(enteredKey) }
                     connectionStatus = l.choose("Choose a model below, then test the connection. Live-only models use a different API and are not listed.", "Elige un modelo y prueba la conexión. Los modelos solo Live usan otra API y no aparecen aquí.", "از فهرست مدلی انتخاب و اتصال را آزمایش کنید. مدل‌های مخصوص Live از API دیگری استفاده می‌کنند و اینجا فهرست نمی‌شوند.")
                 } else {
-                    val result = withTimeout(16_000) { actions.onTestProvider(selected, enteredKey) }
+                    val result = withTimeout(if(selected.provider=="openai")46_000L else 16_000L) { actions.onTestProvider(selected, enteredKey) }
                     verifiedConnection = result
                     connectionStatus = "${result.model} · ${result.elapsedMs / 1000.0}s\n${result.sample}"
                     connectionDialog = connectionStatus

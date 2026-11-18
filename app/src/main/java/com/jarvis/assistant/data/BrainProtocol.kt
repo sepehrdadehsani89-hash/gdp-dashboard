@@ -259,9 +259,9 @@ class SseDecoder(private val onData: (String) -> Unit) {
     }
 }
 
-open class ProviderException(message: String,val kind:com.jarvis.assistant.brain.ProviderFailureKind=com.jarvis.assistant.brain.ProviderFailureKind.UNKNOWN,val httpStatus:Int?=null) : Exception(message)
+open class ProviderException(message: String,val kind:com.jarvis.assistant.brain.ProviderFailureKind=com.jarvis.assistant.brain.ProviderFailureKind.UNKNOWN,val httpStatus:Int?=null,val retryAfterMs:Long?=null,val requestId:String?=null) : Exception(message)
 class MissingApiKeyException(language: AppLanguage = AppLanguage.EN) : ProviderException(language.choose(
     "Add an AI provider key in Settings for cloud conversations. News, memory, and phone shortcuts can work without one.",
     "Añade una clave de proveedor en Ajustes para conversar en la nube. Las noticias, la memoria y los accesos del teléfono pueden funcionar sin ella.",
     "برای گفت‌وگوی ابری، کلید هوش مصنوعی را در تنظیمات وارد کن. خبرها، حافظه و میان‌برهای گوشی می‌توانند بدون کلید کار کنند.",
-))
+),com.jarvis.assistant.brain.ProviderFailureKind.AUTHENTICATION)

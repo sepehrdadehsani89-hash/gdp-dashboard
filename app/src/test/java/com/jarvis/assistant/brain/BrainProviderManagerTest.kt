@@ -51,7 +51,7 @@ class BrainProviderManagerTest {
         var receivedIdentity=true
         var receivedConcise=true
         var receivedLanguage=AppLanguage.EN
-        val manager=BrainProviderManager(
+        fun createManager()=BrainProviderManager(
             repository=repository,settings={settings},apiKey={keys[it].orEmpty()},apiRevision={revisions[it] ?: 0L},planAccess={access},
             probe={config,credential,isPlan->probes+=Invocation(config,credential,isPlan);probeAction(config)},
             answerRequest={config,credential,isPlan,text,language,context,history,onChunk,screenshot,identity,concise->
@@ -64,6 +64,7 @@ class BrainProviderManagerTest {
             disconnectPlan={disconnects++;disconnectFailure?.let{throw it};access=null},
             localRevision={localRevision},beforeChange={beforeChanges++},now={clock},
         )
+        val manager=createManager()
         suspend fun answer()=manager.answer("Hello",AppLanguage.EN,"",emptyList(),{})
     }
     private fun Fixture.authorize(account:String="account-one",revision:Long=1L,bearer:String="private-plan-token",grants:Set<String> = scopes){
@@ -156,7 +157,7 @@ class BrainProviderManagerTest {
     @Test fun changedApiKeyInvalidatesMatchingProof()=runBlocking<Unit>{
         val f=Fixture();f.manager.verify(api);f.keys["openai"]="replacement-key"
         expect(ProviderFailureKind.NOT_VERIFIED){f.manager.ensureSelectable(api)}
-        assertEquals(ProviderConnectionStatus.CONFIGURED,f.manager.refresh(api).status)
+        assertEquals(ProviderConnectionStatus.EXPIRED,f.manager.refresh(api).status)
     }
     @Test fun sameApiKeyAfterRemovalAndReadditionRequiresFreshProbe()=runBlocking<Unit>{
         val f=Fixture();f.manager.verify(api);f.revisions["openai"]=2L
@@ -354,4 +355,32 @@ class BrainProviderManagerTest {
             rejectArgument{f.manager.verify(api.copy(model=model))}
         };assertTrue(f.probes.isEmpty())
     }
+    @Test fun actualFailureSurvivesUiRefresh()=runBlocking<Unit>{val f=Fixture();f.probeAction={throw ProviderException("Rejected",ProviderFailureKind.AUTHENTICATION,401)};expect(ProviderFailureKind.AUTHENTICATION){f.manager.verify(api)};val row=f.manager.refresh(api);assertEquals(ProviderConnectionStatus.FAILED,row.status);assertEquals(401,row.httpStatus)}
+    @Test fun creditsFailureSurvivesUiRefresh()=runBlocking<Unit>{val f=Fixture();f.probeAction={throw ProviderException("Credits",ProviderFailureKind.CREDITS,429)};expect(ProviderFailureKind.CREDITS){f.manager.verify(api)};assertEquals(ProviderFailureKind.CREDITS,f.manager.refresh(api).failure)}
+    @Test fun newAppSessionDoesNotRestoreGreenFromCachedProof()=runBlocking<Unit>{val f=Fixture();f.manager.verify(api);assertEquals(ProviderConnectionStatus.PREVIOUSLY_VERIFIED,f.createManager().refresh(api).status)}
+    @Test fun sameSessionRetainsActualResponseEvidence()=runBlocking<Unit>{val f=Fixture();f.manager.verify(api);assertEquals(ProviderConnectionStatus.VERIFIED,f.manager.refresh(api).status)}
+    @Test fun restartRestorationDoesNotSpendApiCredits()=runBlocking<Unit>{val f=Fixture();f.manager.verify(api);val count=f.probes.size;f.createManager().refresh(api);assertEquals(count,f.probes.size)}
+    @Test fun historicalConnectionNeedsFreshResponseForGreen()=runBlocking<Unit>{val f=Fixture();f.manager.verify(api);val next=f.createManager();next.refresh(api);next.verify(api);assertEquals(ProviderConnectionStatus.VERIFIED,next.connections.value[api.id]?.status)}
+    @Test fun historicalConnectionActualQuestionCanRevalidate()=runBlocking<Unit>{val f=Fixture();f.manager.verify(api);val next=f.createManager();next.refresh(api);next.answer("Hi",AppLanguage.EN,"",emptyList(),{});assertEquals(ProviderConnectionStatus.VERIFIED,next.connections.value[api.id]?.status)}
+    @Test fun probeDurationAndResolvedModelAreRetained()=runBlocking<Unit>{val f=Fixture();f.probeAction={ConnectionCheck(it.model,"READY",251,"gpt-test-2025-01-01")};f.manager.verify(api);val row=f.manager.refresh(api);assertEquals(251L,row.elapsedMs);assertEquals("gpt-test-2025-01-01",row.resolvedModel)}
+    @Test fun failureRecordsHttpStatusAndElapsedTime()=runBlocking<Unit>{val f=Fixture();f.probeAction={f.clock+=400;throw ProviderException("limit",ProviderFailureKind.RATE_LIMIT,429,2000)};expect(ProviderFailureKind.RATE_LIMIT){f.manager.verify(api)};val row=f.manager.refresh(api);assertEquals(400L,row.elapsedMs);assertEquals(429,row.httpStatus);assertEquals(f.clock+2000,row.retryAt)}
+    @Test fun earlyExplicitRetryCannotHammerProvider()=runBlocking<Unit>{val f=Fixture();f.probeAction={throw ProviderException("limit",ProviderFailureKind.RATE_LIMIT,429,2000)};expect(ProviderFailureKind.RATE_LIMIT){f.manager.verify(api)};expect(ProviderFailureKind.RATE_LIMIT){f.manager.verify(api)};assertEquals(1,f.probes.size)}
+    @Test fun retryAllowedAfterProviderDelay()=runBlocking<Unit>{val f=Fixture();f.probeAction={throw ProviderException("limit",ProviderFailureKind.RATE_LIMIT,429,2000)};expect(ProviderFailureKind.RATE_LIMIT){f.manager.verify(api)};f.clock+=2000;f.probeAction={ConnectionCheck(it.model,"READY",2)};f.manager.verify(api);assertEquals(2,f.probes.size)}
+    @Test fun replacingCredentialClearsStaleFailure()=runBlocking<Unit>{val f=Fixture();f.probeAction={throw ProviderException("bad key",ProviderFailureKind.AUTHENTICATION)};expect(ProviderFailureKind.AUTHENTICATION){f.manager.verify(api)};f.keys["openai"]="new-key";assertEquals(ProviderConnectionStatus.CONFIGURED,f.manager.refresh(api).status)}
+    @Test fun draftModelRefreshDoesNotDeleteWorkingProof()=runBlocking<Unit>{val f=Fixture();f.manager.verify(api);f.manager.refresh(api.copy(model="gpt-draft"));f.manager.ensureSelectable(api);assertNotNull(f.repository.proof(api.id))}
+    @Test fun metadataRefreshDoesNotEraseInFlightValidation()=runBlocking<Unit>{val f=Fixture();val entered=CompletableDeferred<Unit>();val release=CompletableDeferred<Unit>();f.probeAction={entered.complete(Unit);release.await();ConnectionCheck(it.model,"READY",1)};val job=async{f.manager.verify(api)};entered.await();assertEquals(ProviderConnectionStatus.VERIFYING,f.manager.refresh(api).status);release.complete(Unit);job.await()}
+    @Test fun expiredProofCannotRemainGreen()=runBlocking<Unit>{val f=Fixture();f.manager.verify(api);f.clock+=BrainProviderManager.PROOF_MAX_AGE_MS+1;assertEquals(ProviderConnectionStatus.EXPIRED,f.manager.refresh(api).status)}
+    @Test fun expiredHistoricalProofCannotRestoreGreen()=runBlocking<Unit>{val f=Fixture();f.manager.verify(api);f.clock+=BrainProviderManager.PROOF_MAX_AGE_MS+1;assertEquals(ProviderConnectionStatus.EXPIRED,f.createManager().refresh(api).status)}
+    @Test fun failingQuestionRevokesOldProofAndRetainsFailure()=runBlocking<Unit>{val f=Fixture();f.manager.verify(api);f.answerAction={throw ProviderException("network",ProviderFailureKind.NETWORK)};expect(ProviderFailureKind.NETWORK){f.answer()};assertNull(f.repository.proof(api.id));assertEquals(ProviderFailureKind.NETWORK,f.manager.refresh(api).failure)}
+    @Test fun cancelledTestCannotRestoreOldGreenOnRefresh()=runBlocking<Unit>{val f=Fixture();f.manager.verify(api);f.probeAction={throw CancellationException("cancel")};try{f.manager.verify(api)}catch(_:CancellationException){};assertNotEquals(ProviderConnectionStatus.VERIFIED,f.manager.refresh(api).status)}
+    @Test fun successfulRetryClearsActualFailure()=runBlocking<Unit>{val f=Fixture();f.probeAction={throw ProviderException("network",ProviderFailureKind.NETWORK)};expect(ProviderFailureKind.NETWORK){f.manager.verify(api)};f.probeAction={ConnectionCheck(it.model,"READY",5)};f.manager.verify(api);assertNull(f.manager.refresh(api).failure)}
+    @Test fun failedConnectionNeverChangesUserSelection()=runBlocking<Unit>{val f=Fixture();val before=f.settings;f.probeAction={throw ProviderException("bad",ProviderFailureKind.BAD_REQUEST,400)};expect(ProviderFailureKind.BAD_REQUEST){f.manager.verify(api)};assertEquals(before,f.settings);assertEquals(0,f.beforeChanges)}
+
+    @Test fun closedSettingsCannotKeepExpiredCoreBadgeGreen()=runBlocking<Unit>{val f=Fixture();f.manager.verify(api);f.clock+=BrainProviderManager.PROOF_MAX_AGE_MS+1;f.manager.expireStaleVerifications();assertEquals(ProviderConnectionStatus.EXPIRED,f.manager.connections.value[api.id]?.status);assertNull(f.repository.proof(api.id))}
+    @Test fun expiryMaintenanceDoesNotMakeNetworkProbe()=runBlocking<Unit>{val f=Fixture();f.manager.verify(api);val count=f.probes.size;f.clock+=BrainProviderManager.PROOF_MAX_AGE_MS+1;f.manager.expireStaleVerifications();assertEquals(count,f.probes.size);assertTrue(f.answers.isEmpty())}
+    @Test fun expiryMaintenancePreservesRecentVerifiedResponse()=runBlocking<Unit>{val f=Fixture();f.manager.verify(api);f.clock+=100;f.manager.expireStaleVerifications();assertEquals(ProviderConnectionStatus.VERIFIED,f.manager.connections.value[api.id]?.status)}
+    @Test fun expiryMaintenancePreservesFailureEvidence()=runBlocking<Unit>{val f=Fixture();f.probeAction={throw ProviderException("bad",ProviderFailureKind.CREDITS,429)};expect(ProviderFailureKind.CREDITS){f.manager.verify(api)};f.clock+=BrainProviderManager.PROOF_MAX_AGE_MS+1;f.manager.expireStaleVerifications();assertEquals(ProviderFailureKind.CREDITS,f.manager.connections.value[api.id]?.failure)}
+    @Test fun clockRollbackExpiresCurrentGreenBadge()=runBlocking<Unit>{val f=Fixture();f.manager.verify(api);f.clock--;f.manager.expireStaleVerifications();assertEquals(ProviderConnectionStatus.EXPIRED,f.manager.connections.value[api.id]?.status)}
+    @Test fun expiryMaintenancePreservesPreviousVerificationTime()=runBlocking<Unit>{val f=Fixture();f.manager.verify(api);val time=f.clock;f.clock+=BrainProviderManager.PROOF_MAX_AGE_MS+1;f.manager.expireStaleVerifications();assertEquals(time,f.manager.connections.value[api.id]?.verifiedAt)}
+
 }
