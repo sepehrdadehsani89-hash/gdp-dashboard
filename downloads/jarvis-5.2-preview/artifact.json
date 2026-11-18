@@ -1,0 +1,39 @@
+{
+  "source_commit": "f042c211b0a0da351dc70116dfad01dd9f53553e",
+  "apk": "Jarvis-5.2.0-preview.1-debug-arm64.apk",
+  "bytes": 60514307,
+  "sha256": "cd1a5f9718763e0f2cf6d35402d5f9e503c41b100fa80fb402fb95175c832c76",
+  "package": "com.jarvis.next.phoenix",
+  "version_name": "5.2.0-preview.1-debug",
+  "version_code": 33,
+  "signer_sha256": "f9f13af1f84515b787b89c0f3abc8695f1d0d45e8a647d1192966c4c810964c7",
+  "minimum_sdk": 29,
+  "target_sdk": 35,
+  "abi": "arm64-v8a",
+  "companion": {
+    "archive": "Jarvis-Companion-1.2-source.zip",
+    "agent_version": "1.2",
+    "protocol": 1,
+    "bytes": 53133,
+    "sha256": "2d4014e90d12d0bb5146aab1daa62d94a615dbe36264d99654e4813aa7181a4d",
+    "contents": "Reviewed source, launch scripts, tests, pinned requirements and offline setup guides."
+  },
+  "checks": {
+    "jvm": {
+      "tests": 2570,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    "linux_companion": 103,
+    "apk_checks_passed": 35,
+    "lint_errors": 0,
+    "lint_warnings": 74,
+    "lint_information": 1,
+    "physical_android_executed": 0,
+    "native_windows_executed": 0,
+    "owner_live_api_executed": 0
+  },
+  "previous_preview_commit": "c00e8c9c89c8fea534666dab3781faeece57016a",
+  "compatibility": "Package and signing certificate match the known 4.1 Phoenix APK. Version code increases from 32 to 33. Handset installation and data retention await on-device testing."
+}
