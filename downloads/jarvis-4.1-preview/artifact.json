@@ -1,0 +1,61 @@
+{
+  "artifact": "Jarvis-4.1.0-preview.1-debug-arm64.apk",
+  "source_commit": "f7e384e920508fe291848e7d37ea5b81f116b60b",
+  "baseline_commit": "62d3e8e86146157b6f35d648977acb971d0985d7",
+  "sha256": "361872bb26f569aabb9bb13a686de97c6dbdc97fec839f625f552dd2abc68152",
+  "bytes": 56644226,
+  "package": "com.jarvis.next.phoenix",
+  "version_name": "4.1.0-preview.1-debug",
+  "version_code": 32,
+  "minimum_sdk": 29,
+  "minimum_android": "10",
+  "target_sdk": 35,
+  "architectures": [
+    "arm64-v8a"
+  ],
+  "build_type": "debug preview",
+  "certificate_sha256": "f9f13af1f84515b787b89c0f3abc8695f1d0d45e8a647d1192966c4c810964c7",
+  "certificate_sha1": "64711c61b2ac55d478e5f92280f54061369ee31b",
+  "known_previous_phoenix_certificate_matches": true,
+  "actual_installed_handset_certificate_measured": false,
+  "jvm": {
+    "cases": 2109,
+    "passed": 2108,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 1
+  },
+  "lint": {
+    "errors": 0,
+    "warnings": 56,
+    "information": 1
+  },
+  "companion_tests": {
+    "passed": 36,
+    "failed": 0,
+    "scope": "Linux controlled Chromium + local HTTPS fixture; no native Windows/macOS/Android"
+  },
+  "artifact_checks": {
+    "passed": 30,
+    "failed": 0
+  },
+  "android_instrumented_tests": {
+    "compiled": true,
+    "executed": 0
+  },
+  "physical_update_tested": false,
+  "handset_data_preservation_tested": false,
+  "live_google_tested": false,
+  "live_provider_inference_tested_in_this_change": false,
+  "google_cloud_project_setup_required": true,
+  "production_aab_prepared": false,
+  "verification_evidence": "../../docs/jarvis/TEST_EVIDENCE/JARVIS_4_1/",
+  "limitations": [
+    "Original production signer is different; this cannot update that package.",
+    "Actual Redmi 9 package/signature/update acceptance remains unverified.",
+    "Retained libvosk.so has 4 KB ELF alignment; no 16 KB or Google Play readiness claim.",
+    "Google Cloud Android OAuth client and per-service consent are required.",
+    "Native Windows automation, internet relay and original iPad Safari milestone are not implemented."
+  ],
+  "distribution_state_at_checkpoint": "LOCAL_ARTIFACT_PREPARED; GitHub push requires owner confirmation and subsequent anonymous HTTPS checksum verification"
+}
