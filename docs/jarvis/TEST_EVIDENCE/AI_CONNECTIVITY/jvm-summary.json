@@ -1,0 +1,16 @@
+{
+  "tests": 1516,
+  "passed": 1515,
+  "failed": 0,
+  "skipped": 1,
+  "environment": "Linux cloud JVM tests. Mock provider responses are simulated. No provider credentials or physical audio are involved.",
+  "application_source_unchanged_during_verification": true,
+  "skipped_cases": [
+    {
+      "class": "com.jarvis.assistant.neural.PrivateMemoryBackupTest",
+      "test": "validatesUserExportPrivatelyWhenProvided",
+      "result": "SKIP",
+      "seconds": "0.007"
+    }
+  ]
+}

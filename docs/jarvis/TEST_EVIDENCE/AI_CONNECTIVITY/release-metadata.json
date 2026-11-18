@@ -1,0 +1,41 @@
+{
+  "artifact": "downloads/ai-connectivity-2.11.9-debug/Jarvis-2.11.9-ai.1-debug-arm64.apk",
+  "bytes": 55710259,
+  "sha256": "42f8a693349770b6362174a81dbd4037ecd046bc499b7d530f3cd90eaa084138",
+  "package": "com.jarvis.next.phoenix",
+  "versionName": "2.11.9-ai.1-debug",
+  "versionCode": 31,
+  "minSdk": 29,
+  "targetSdk": 35,
+  "architectures": [
+    "arm64-v8a"
+  ],
+  "certificateSha256": "f9f13af1f84515b787b89c0f3abc8695f1d0d45e8a647d1192966c4c810964c7",
+  "sameCertificateAsPreviousPublishedPhoenix": true,
+  "deviceCertificateInspected": false,
+  "physicalUpdateTested": false,
+  "liveProviderVerification": "LIVE PROVIDER VERIFICATION NOT PERFORMED",
+  "liveModelsVerified": [],
+  "jvm": {
+    "tests": 1516,
+    "passed": 1515,
+    "failed": 0,
+    "skipped": 1,
+    "environment": "Linux cloud JVM tests. Mock provider responses are simulated. No provider credentials or physical audio are involved.",
+    "application_source_unchanged_during_verification": true,
+    "skipped_cases": [
+      {
+        "class": "com.jarvis.assistant.neural.PrivateMemoryBackupTest",
+        "test": "validatesUserExportPrivatelyWhenProvided",
+        "result": "SKIP",
+        "seconds": "0.007"
+      }
+    ]
+  },
+  "artifactChecksPassed": 23,
+  "artifactChecksFailed": 0,
+  "productionAabReady": false,
+  "publicHttpsUrl": null,
+  "publication": "Pending required owner confirmation",
+  "sourceCommit": "00424ba4e91419be64cef9eb8167ee82a98a66bc"
+}

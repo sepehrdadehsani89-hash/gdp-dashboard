@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.core.PhoneRequestParserTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-11-18T01:22:37" hostname="472108d07068" time="0.021">
+  <properties/>
+  <testcase name="ordinaryConversationAndNewsDoNotReadPhoneContext" classname="com.jarvis.assistant.core.PhoneRequestParserTest" time="0.006"/>
+  <testcase name="explicitContactListInThreeLanguages" classname="com.jarvis.assistant.core.PhoneRequestParserTest" time="0.001"/>
+  <testcase name="calendarUsesTodayOrSevenDayWindow" classname="com.jarvis.assistant.core.PhoneRequestParserTest" time="0.003"/>
+  <testcase name="lookupCannotBecomeWildcardOrSqlSyntax" classname="com.jarvis.assistant.core.PhoneRequestParserTest" time="0.003"/>
+  <testcase name="sharingAndMutationRequestsDoNotReadPrivateData" classname="com.jarvis.assistant.core.PhoneRequestParserTest" time="0.001"/>
+  <testcase name="locationRequiresAnExplicitSelfLocationRequest" classname="com.jarvis.assistant.core.PhoneRequestParserTest" time="0.003"/>
+  <testcase name="stripsWakePrefixButDoesNotRequireIt" classname="com.jarvis.assistant.core.PhoneRequestParserTest" time="0.001"/>
+  <testcase name="contactNamesRetainAccentsAndPersianCharacters" classname="com.jarvis.assistant.core.PhoneRequestParserTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

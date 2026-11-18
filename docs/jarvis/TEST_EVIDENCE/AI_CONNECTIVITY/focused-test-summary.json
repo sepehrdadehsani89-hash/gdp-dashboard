@@ -1,0 +1,8 @@
+{
+  "tests": 277,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "passed": 277,
+  "scope": "Focused JVM mocks/contract/lifecycle tests; no live inference or device audio"
+}

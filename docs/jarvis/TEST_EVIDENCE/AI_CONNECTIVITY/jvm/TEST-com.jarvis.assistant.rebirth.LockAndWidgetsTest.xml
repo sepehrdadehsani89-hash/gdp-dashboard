@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.rebirth.LockAndWidgetsTest" tests="12" skipped="0" failures="0" errors="0" timestamp="2026-11-18T01:22:45" hostname="472108d07068" time="0.032">
+  <properties/>
+  <testcase name="widgetResultsBelongToOneRequestAndOneRuntimeSession" classname="com.jarvis.assistant.rebirth.LockAndWidgetsTest" time="0.0"/>
+  <testcase name="widgetsNavigationDoesNotRemoveAnyJarvisModule" classname="com.jarvis.assistant.rebirth.LockAndWidgetsTest" time="0.0"/>
+  <testcase name="savedIdsCannotAdoptAnotherLaunchersWidgetsOrMalformedIds" classname="com.jarvis.assistant.rebirth.LockAndWidgetsTest" time="0.0"/>
+  <testcase name="aNewCommandInvalidatesAnOldCountdownEvenIfItsAudioFinishesLate" classname="com.jarvis.assistant.rebirth.LockAndWidgetsTest" time="0.005"/>
+  <testcase name="revokedReadinessDoesNotAnnounceOrDispatchAnAction" classname="com.jarvis.assistant.rebirth.LockAndWidgetsTest" time="0.003"/>
+  <testcase name="cancellationDuringTheVisualTimerPreventsTheAction" classname="com.jarvis.assistant.rebirth.LockAndWidgetsTest" time="0.006"/>
+  <testcase name="unavailableSpeechUsesThreeRealSecondsBeforeTheLock" classname="com.jarvis.assistant.rebirth.LockAndWidgetsTest" time="0.003"/>
+  <testcase name="lockAnnouncementMatchesTheRequestedEnglishAndSpanishPath" classname="com.jarvis.assistant.rebirth.LockAndWidgetsTest" time="0.001"/>
+  <testcase name="removedOrUnboundProvidersCannotAppearAsApprovedAccess" classname="com.jarvis.assistant.rebirth.LockAndWidgetsTest" time="0.0"/>
+  <testcase name="lockingWaitsForActualSpeechCompletionAndNeverAddsASecondSpokenCountdown" classname="com.jarvis.assistant.rebirth.LockAndWidgetsTest" time="0.009"/>
+  <testcase name="stopWhileSpeechIsPendingPreventsAnyLock" classname="com.jarvis.assistant.rebirth.LockAndWidgetsTest" time="0.003"/>
+  <testcase name="widgetRestorationIsBoundedAndDeterministic" classname="com.jarvis.assistant.rebirth.LockAndWidgetsTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

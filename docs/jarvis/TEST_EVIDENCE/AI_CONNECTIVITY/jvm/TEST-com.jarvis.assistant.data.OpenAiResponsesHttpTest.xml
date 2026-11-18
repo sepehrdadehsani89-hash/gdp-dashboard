@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.data.OpenAiResponsesHttpTest" tests="28" skipped="0" failures="0" errors="0" timestamp="2026-11-18T01:22:40" hostname="472108d07068" time="1.827">
+  <properties/>
+  <testcase name="catalogAuthenticationFailureIsNeverRetried" classname="com.jarvis.assistant.data.OpenAiResponsesHttpTest" time="0.013"/>
+  <testcase name="jsonBodyCannotStandInForEventStream" classname="com.jarvis.assistant.data.OpenAiResponsesHttpTest" time="0.008"/>
+  <testcase name="htmlSuccessPageCannotVerify" classname="com.jarvis.assistant.data.OpenAiResponsesHttpTest" time="0.008"/>
+  <testcase name="connectionProbeUsesNonstreamResponsesAndNoPhoneContext" classname="com.jarvis.assistant.data.OpenAiResponsesHttpTest" time="0.006"/>
+  <testcase name="responseAliasIsRecordedSeparatelyFromRequestedModel" classname="com.jarvis.assistant.data.OpenAiResponsesHttpTest" time="0.009"/>
+  <testcase name="retryAfterAndSafeRequestIdAreRecorded" classname="com.jarvis.assistant.data.OpenAiResponsesHttpTest" time="0.013"/>
+  <testcase name="missingKeyMakesNoNetworkRequest" classname="com.jarvis.assistant.data.OpenAiResponsesHttpTest" time="0.004"/>
+  <testcase name="catalogQuotaFailureNeverRetries" classname="com.jarvis.assistant.data.OpenAiResponsesHttpTest" time="0.005"/>
+  <testcase name="http401RejectsCredential" classname="com.jarvis.assistant.data.OpenAiResponsesHttpTest" time="0.006"/>
+  <testcase name="catalogNeverHammerRetriesBeyondLimit" classname="com.jarvis.assistant.data.OpenAiResponsesHttpTest" time="1.09"/>
+  <testcase name="socketTimeoutHasDistinctCategory" classname="com.jarvis.assistant.data.OpenAiResponsesHttpTest" time="0.006"/>
+  <testcase name="emptyCompletedProbeCannotVerify" classname="com.jarvis.assistant.data.OpenAiResponsesHttpTest" time="0.006"/>
+  <testcase name="modernAnswerUsesResponsesAndBearerOnly" classname="com.jarvis.assistant.data.OpenAiResponsesHttpTest" time="0.009"/>
+  <testcase name="streamFailureAfterDeltaDoesNotReturnPartialAnswer" classname="com.jarvis.assistant.data.OpenAiResponsesHttpTest" time="0.007"/>
+  <testcase name="http429QuotaIsNotRetriedInference" classname="com.jarvis.assistant.data.OpenAiResponsesHttpTest" time="0.005"/>
+  <testcase name="unsafeRequestIdIsNotReflected" classname="com.jarvis.assistant.data.OpenAiResponsesHttpTest" time="0.009"/>
+  <testcase name="catalogUsesOnlyReturnedChatCandidates" classname="com.jarvis.assistant.data.OpenAiResponsesHttpTest" time="0.006"/>
+  <testcase name="http500IsNotRetriedInference" classname="com.jarvis.assistant.data.OpenAiResponsesHttpTest" time="0.007"/>
+  <testcase name="malformedProbeJsonCannotVerify" classname="com.jarvis.assistant.data.OpenAiResponsesHttpTest" time="0.009"/>
+  <testcase name="tlsFailureIsTypedAndRedacted" classname="com.jarvis.assistant.data.OpenAiResponsesHttpTest" time="0.006"/>
+  <testcase name="http429RateLimitIsNotRetriedInference" classname="com.jarvis.assistant.data.OpenAiResponsesHttpTest" time="0.008"/>
+  <testcase name="http400ExplainsRequestCompatibility" classname="com.jarvis.assistant.data.OpenAiResponsesHttpTest" time="0.007"/>
+  <testcase name="http403ExplainsAuthorization" classname="com.jarvis.assistant.data.OpenAiResponsesHttpTest" time="0.009"/>
+  <testcase name="streamEndingAfterDeltasCannotVerify" classname="com.jarvis.assistant.data.OpenAiResponsesHttpTest" time="0.008"/>
+  <testcase name="cancellationAfterFirstDeltaCannotDeliverCompletedReply" classname="com.jarvis.assistant.data.OpenAiResponsesHttpTest" time="0.1"/>
+  <testcase name="catalogRetriesTransientSafeReadOnly" classname="com.jarvis.assistant.data.OpenAiResponsesHttpTest" time="0.413"/>
+  <testcase name="dnsFailureIsNetworkNotFakeTimeout" classname="com.jarvis.assistant.data.OpenAiResponsesHttpTest" time="0.005"/>
+  <testcase name="http404ExplainsUnavailableModel" classname="com.jarvis.assistant.data.OpenAiResponsesHttpTest" time="0.035"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.setup.SetupPolicyTest" tests="20" skipped="0" failures="0" errors="0" timestamp="2026-11-18T01:22:45" hostname="472108d07068" time="0.002">
+  <properties/>
+  <testcase name="nextAtLastNeverOverflows" classname="com.jarvis.assistant.setup.SetupPolicyTest" time="0.001"/>
+  <testcase name="backAtFirstNeverUnderflows" classname="com.jarvis.assistant.setup.SetupPolicyTest" time="0.0"/>
+  <testcase name="userCheckboxWithoutPlaybackNotReady" classname="com.jarvis.assistant.setup.SetupPolicyTest" time="0.0"/>
+  <testcase name="invalidBackRestoredWithinBounds" classname="com.jarvis.assistant.setup.SetupPolicyTest" time="0.0"/>
+  <testcase name="priorReleaseGetsMajorUpdateWizard" classname="com.jarvis.assistant.setup.SetupPolicyTest" time="0.0"/>
+  <testcase name="negativeNextRestoredWithinBounds" classname="com.jarvis.assistant.setup.SetupPolicyTest" time="0.0"/>
+  <testcase name="futureRevisionNotDowngraded" classname="com.jarvis.assistant.setup.SetupPolicyTest" time="0.0"/>
+  <testcase name="missingMicCannotClaimVoiceAssistantReady" classname="com.jarvis.assistant.setup.SetupPolicyTest" time="0.0"/>
+  <testcase name="completeSetupRequiresAllEvidence" classname="com.jarvis.assistant.setup.SetupPolicyTest" time="0.0"/>
+  <testcase name="allIncompleteCombinationsAvoidReadyLabel" classname="com.jarvis.assistant.setup.SetupPolicyTest" time="0.0"/>
+  <testcase name="allThirteenStepsAreNavigable" classname="com.jarvis.assistant.setup.SetupPolicyTest" time="0.0"/>
+  <testcase name="inferenceWithoutVoiceNotReady" classname="com.jarvis.assistant.setup.SetupPolicyTest" time="0.0"/>
+  <testcase name="freshInstallNeedsSetup" classname="com.jarvis.assistant.setup.SetupPolicyTest" time="0.0"/>
+  <testcase name="backCanReachEveryPriorScreen" classname="com.jarvis.assistant.setup.SetupPolicyTest" time="0.0"/>
+  <testcase name="engineCallbackWithoutAudibleConfirmationNotReady" classname="com.jarvis.assistant.setup.SetupPolicyTest" time="0.0"/>
+  <testcase name="incompleteSetupCanBeSavedTruthfully" classname="com.jarvis.assistant.setup.SetupPolicyTest" time="0.001"/>
+  <testcase name="explicitIncompleteStillRuns" classname="com.jarvis.assistant.setup.SetupPolicyTest" time="0.0"/>
+  <testcase name="identityAloneNeverReady" classname="com.jarvis.assistant.setup.SetupPolicyTest" time="0.0"/>
+  <testcase name="completedCurrentRevisionNotRepeated" classname="com.jarvis.assistant.setup.SetupPolicyTest" time="0.0"/>
+  <testcase name="malformedNegativeRevisionNeedsSetup" classname="com.jarvis.assistant.setup.SetupPolicyTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.data.OpenAiModelCatalogTest" tests="28" skipped="0" failures="0" errors="0" timestamp="2026-11-18T01:22:40" hostname="472108d07068" time="0.006">
+  <properties/>
+  <testcase name="retainsOnlyIdsActuallyReturned" classname="com.jarvis.assistant.data.OpenAiModelCatalogTest" time="0.001"/>
+  <testcase name="unreasonablyLongModelIdIsRejected" classname="com.jarvis.assistant.data.OpenAiModelCatalogTest" time="0.0"/>
+  <testcase name="rejectsPathInjection" classname="com.jarvis.assistant.data.OpenAiModelCatalogTest" time="0.0"/>
+  <testcase name="preservesDatedModelsExactly" classname="com.jarvis.assistant.data.OpenAiModelCatalogTest" time="0.001"/>
+  <testcase name="legacyGpt4RetainsWorkingChatRoute" classname="com.jarvis.assistant.data.OpenAiModelCatalogTest" time="0.0"/>
+  <testcase name="deduplicatesWithoutChangingProviderOrder" classname="com.jarvis.assistant.data.OpenAiModelCatalogTest" time="0.001"/>
+  <testcase name="gpt41UsesResponsesRoute" classname="com.jarvis.assistant.data.OpenAiModelCatalogTest" time="0.0"/>
+  <testcase name="malformedCatalogFailsInsteadOfFabricatingChoices" classname="com.jarvis.assistant.data.OpenAiModelCatalogTest" time="0.0"/>
+  <testcase name="catalogDoesNotClaimInferenceIsVerified" classname="com.jarvis.assistant.data.OpenAiModelCatalogTest" time="0.0"/>
+  <testcase name="rejectsNonStringIdsInsteadOfCoercingThem" classname="com.jarvis.assistant.data.OpenAiModelCatalogTest" time="0.001"/>
+  <testcase name="reasoningFamiliesAreCandidatesRequiringInference" classname="com.jarvis.assistant.data.OpenAiModelCatalogTest" time="0.0"/>
+  <testcase name="filtersRealtimeModels" classname="com.jarvis.assistant.data.OpenAiModelCatalogTest" time="0.0"/>
+  <testcase name="filtersSearchSpecificModels" classname="com.jarvis.assistant.data.OpenAiModelCatalogTest" time="0.0"/>
+  <testcase name="filtersAudioOnlyModels" classname="com.jarvis.assistant.data.OpenAiModelCatalogTest" time="0.0"/>
+  <testcase name="preferredModelCanBeSelectedFromActualCatalog" classname="com.jarvis.assistant.data.OpenAiModelCatalogTest" time="0.0"/>
+  <testcase name="filtersImageGenerationModels" classname="com.jarvis.assistant.data.OpenAiModelCatalogTest" time="0.0"/>
+  <testcase name="planCatalogCannotStandInForApiCatalog" classname="com.jarvis.assistant.data.OpenAiModelCatalogTest" time="0.0"/>
+  <testcase name="rejectsControlCharacterInId" classname="com.jarvis.assistant.data.OpenAiModelCatalogTest" time="0.0"/>
+  <testcase name="filtersEmbeddingModels" classname="com.jarvis.assistant.data.OpenAiModelCatalogTest" time="0.0"/>
+  <testcase name="filtersTranscriptionModels" classname="com.jarvis.assistant.data.OpenAiModelCatalogTest" time="0.001"/>
+  <testcase name="filtersSpeechSynthesisModels" classname="com.jarvis.assistant.data.OpenAiModelCatalogTest" time="0.0"/>
+  <testcase name="preferredSmallTextModelMustBeListed" classname="com.jarvis.assistant.data.OpenAiModelCatalogTest" time="0.0"/>
+  <testcase name="allExcludedCatalogHasNoDefault" classname="com.jarvis.assistant.data.OpenAiModelCatalogTest" time="0.0"/>
+  <testcase name="fineTunedModernModelRetainsExactId" classname="com.jarvis.assistant.data.OpenAiModelCatalogTest" time="0.0"/>
+  <testcase name="neverInventsDefaultWhenCatalogEmpty" classname="com.jarvis.assistant.data.OpenAiModelCatalogTest" time="0.0"/>
+  <testcase name="fineTunedLegacyModelRetainsLegacyRoute" classname="com.jarvis.assistant.data.OpenAiModelCatalogTest" time="0.0"/>
+  <testcase name="unknownProviderModelsAreNotOfferedAsOpenAiChat" classname="com.jarvis.assistant.data.OpenAiModelCatalogTest" time="0.0"/>
+  <testcase name="gpt4oUsesResponsesRoute" classname="com.jarvis.assistant.data.OpenAiModelCatalogTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

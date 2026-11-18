@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.companion.CompanionPolicyTest" tests="11" skipped="0" failures="0" errors="0" timestamp="2026-11-18T01:22:37" hostname="472108d07068" time="0.032">
+  <properties/>
+  <testcase name="pairingCredentialsRoundTripWithoutChangingStoredIdentity" classname="com.jarvis.assistant.companion.CompanionPolicyTest" time="0.003"/>
+  <testcase name="acknowledgementAndFailuresAreNeverUpgradedToCompleted" classname="com.jarvis.assistant.companion.CompanionPolicyTest" time="0.006"/>
+  <testcase name="invitationExpiresAndRequiresARealCertificatePin" classname="com.jarvis.assistant.companion.CompanionPolicyTest" time="0.002"/>
+  <testcase name="verifiedReceiptBindsExactRequestAndLoadedPage" classname="com.jarvis.assistant.companion.CompanionPolicyTest" time="0.002"/>
+  <testcase name="desktopTargetIsRequiredSoPhoneAppLaunchingIsPreserved" classname="com.jarvis.assistant.companion.CompanionPolicyTest" time="0.001"/>
+  <testcase name="evenSignedReceiptsCannotSubstituteAnotherSessionDeviceOrCommand" classname="com.jarvis.assistant.companion.CompanionPolicyTest" time="0.008"/>
+  <testcase name="queriesAreDataAndCannotAddOtherDesktopActions" classname="com.jarvis.assistant.companion.CompanionPolicyTest" time="0.001"/>
+  <testcase name="oldSignedReceiptIsRejected" classname="com.jarvis.assistant.companion.CompanionPolicyTest" time="0.001"/>
+  <testcase name="wrongPageOrHttpErrorCannotBeClaimedAsACompletedSearch" classname="com.jarvis.assistant.companion.CompanionPolicyTest" time="0.005"/>
+  <testcase name="modifiedMacCannotReportCompletion" classname="com.jarvis.assistant.companion.CompanionPolicyTest" time="0.001"/>
+  <testcase name="endpointIsHttpsPrivateIpv4WithNoCredentialQueryRedirectOrPublicHost" classname="com.jarvis.assistant.companion.CompanionPolicyTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

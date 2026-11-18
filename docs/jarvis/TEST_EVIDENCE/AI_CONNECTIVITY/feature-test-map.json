@@ -1,0 +1,105 @@
+{
+  "Responses request/final-response/stream validation": {
+    "test_files": [
+      "data/OpenAiResponsesProtocolTest.kt",
+      "data/OpenAiResponsesHttpTest.kt"
+    ],
+    "declared_test_methods": 69,
+    "status": "PASS",
+    "note": "Groups overlap. Counts must not be added to obtain the unique suite total.",
+    "executed_test_cases": 69,
+    "passed": 69,
+    "failed": 0,
+    "skipped": 0
+  },
+  "Credential-bound model discovery": {
+    "test_files": [
+      "data/OpenAiModelCatalogTest.kt",
+      "data/OpenAiResponsesHttpTest.kt"
+    ],
+    "declared_test_methods": 56,
+    "status": "PASS",
+    "note": "Groups overlap. Counts must not be added to obtain the unique suite total.",
+    "executed_test_cases": 56,
+    "passed": 56,
+    "failed": 0,
+    "skipped": 0
+  },
+  "Explicit verified default selection": {
+    "test_files": [
+      "brain/OpenAiDefaultSelectionTest.kt"
+    ],
+    "declared_test_methods": 20,
+    "status": "PASS",
+    "note": "Groups overlap. Counts must not be added to obtain the unique suite total.",
+    "executed_test_cases": 20,
+    "passed": 20,
+    "failed": 0,
+    "skipped": 0
+  },
+  "Connection lifecycle and verification": {
+    "test_files": [
+      "brain/BrainProviderManagerTest.kt"
+    ],
+    "declared_test_methods": 84,
+    "status": "PASS",
+    "note": "Groups overlap. Counts must not be added to obtain the unique suite total.",
+    "executed_test_cases": 84,
+    "passed": 84,
+    "failed": 0,
+    "skipped": 0
+  },
+  "Redacted diagnostics and failure categorization": {
+    "test_files": [
+      "brain/ProviderDiagnosticsTest.kt",
+      "data/ProviderHttpErrorsTest.kt"
+    ],
+    "declared_test_methods": 41,
+    "status": "PASS",
+    "note": "Groups overlap. Counts must not be added to obtain the unique suite total.",
+    "executed_test_cases": 41,
+    "passed": 41,
+    "failed": 0,
+    "skipped": 0
+  },
+  "Bounded safe-read retries and retry-after handling": {
+    "test_files": [
+      "data/ProviderRetryPolicyTest.kt",
+      "data/OpenAiResponsesHttpTest.kt"
+    ],
+    "declared_test_methods": 50,
+    "status": "PASS",
+    "note": "Groups overlap. Counts must not be added to obtain the unique suite total.",
+    "executed_test_cases": 50,
+    "passed": 50,
+    "failed": 0,
+    "skipped": 0
+  },
+  "Honest voice/error delivery and unchanged half-duplex ownership": {
+    "test_files": [
+      "voice/AiAnswerProvenanceTest.kt",
+      "voice/VoiceDeliveryTrackerTest.kt",
+      "voice/HalfDuplexVoiceTest.kt",
+      "voice/VoiceOutputErrorsTest.kt"
+    ],
+    "declared_test_methods": 74,
+    "status": "PASS",
+    "note": "Groups overlap. Counts must not be added to obtain the unique suite total.",
+    "executed_test_cases": 74,
+    "passed": 74,
+    "failed": 0,
+    "skipped": 0
+  },
+  "Legacy Chat Completions preservation and completion validation": {
+    "test_files": [
+      "data/OpenAiLegacyChatProtocolTest.kt"
+    ],
+    "note": "Mock wire fixtures; no live provider or device audio.",
+    "declared_test_methods": 26,
+    "executed_test_cases": 26,
+    "passed": 26,
+    "failed": 0,
+    "skipped": 0,
+    "status": "PASS"
+  }
+}

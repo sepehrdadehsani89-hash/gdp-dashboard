@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.brain.ProviderDiagnosticsTest" tests="20" skipped="0" failures="0" errors="0" timestamp="2026-11-18T01:22:34" hostname="472108d07068" time="0.055">
+  <properties/>
+  <testcase name="dnsFailureIsNetworkUnavailable" classname="com.jarvis.assistant.brain.ProviderDiagnosticsTest" time="0.001"/>
+  <testcase name="directApiDoesNotClaimBackendWasDeployed" classname="com.jarvis.assistant.brain.ProviderDiagnosticsTest" time="0.009"/>
+  <testcase name="diagnosticsCannotBorrowDifferentModelProof" classname="com.jarvis.assistant.brain.ProviderDiagnosticsTest" time="0.0"/>
+  <testcase name="creditsFailureIsInsufficientQuota" classname="com.jarvis.assistant.brain.ProviderDiagnosticsTest" time="0.0"/>
+  <testcase name="inaccessibleModelHasDistinctState" classname="com.jarvis.assistant.brain.ProviderDiagnosticsTest" time="0.0"/>
+  <testcase name="backendFailureCannotPretendProviderIsVerified" classname="com.jarvis.assistant.brain.ProviderDiagnosticsTest" time="0.0"/>
+  <testcase name="timeoutHasDistinctState" classname="com.jarvis.assistant.brain.ProviderDiagnosticsTest" time="0.001"/>
+  <testcase name="completedInferenceIsConnectedVerified" classname="com.jarvis.assistant.brain.ProviderDiagnosticsTest" time="0.0"/>
+  <testcase name="malformedResponseIsProviderError" classname="com.jarvis.assistant.brain.ProviderDiagnosticsTest" time="0.0"/>
+  <testcase name="throttlingIsRateLimited" classname="com.jarvis.assistant.brain.ProviderDiagnosticsTest" time="0.0"/>
+  <testcase name="retryDelayIsActionable" classname="com.jarvis.assistant.brain.ProviderDiagnosticsTest" time="0.036"/>
+  <testcase name="savedCredentialAloneDoesNotMeanVerified" classname="com.jarvis.assistant.brain.ProviderDiagnosticsTest" time="0.0"/>
+  <testcase name="historicalProofIsClearlyHistorical" classname="com.jarvis.assistant.brain.ProviderDiagnosticsTest" time="0.001"/>
+  <testcase name="actualRequestMetadataIsVisible" classname="com.jarvis.assistant.brain.ProviderDiagnosticsTest" time="0.004"/>
+  <testcase name="activeTestIsValidating" classname="com.jarvis.assistant.brain.ProviderDiagnosticsTest" time="0.0"/>
+  <testcase name="notConfiguredStateIsExplicit" classname="com.jarvis.assistant.brain.ProviderDiagnosticsTest" time="0.0"/>
+  <testcase name="absentKeyIsNotConfigured" classname="com.jarvis.assistant.brain.ProviderDiagnosticsTest" time="0.0"/>
+  <testcase name="diagnosticsDoNotReflectProviderMessagesOrConversation" classname="com.jarvis.assistant.brain.ProviderDiagnosticsTest" time="0.0"/>
+  <testcase name="badKeyIsAuthenticationFailed" classname="com.jarvis.assistant.brain.ProviderDiagnosticsTest" time="0.0"/>
+  <testcase name="rejectedKeyIsShownAsRejected" classname="com.jarvis.assistant.brain.ProviderDiagnosticsTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

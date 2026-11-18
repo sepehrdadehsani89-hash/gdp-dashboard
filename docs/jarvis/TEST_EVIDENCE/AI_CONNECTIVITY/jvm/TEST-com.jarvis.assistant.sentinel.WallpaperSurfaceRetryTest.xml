@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.sentinel.WallpaperSurfaceRetryTest" tests="20" skipped="0" failures="0" errors="0" timestamp="2026-11-18T01:22:45" hostname="472108d07068" time="0.001">
+  <properties/>
+  <testcase name="explicitSurfaceRecreationCanRecoverAfterAnExhaustedPostFailure" classname="com.jarvis.assistant.sentinel.WallpaperSurfaceRetryTest" time="0.0"/>
+  <testcase name="invalidBudgetsFailRatherThanEnablingAnUnboundedRetryLoop" classname="com.jarvis.assistant.sentinel.WallpaperSurfaceRetryTest" time="0.001"/>
+  <testcase name="aShorterExplicitBudgetStillStopsAtItsExactLimit" classname="com.jarvis.assistant.sentinel.WallpaperSurfaceRetryTest" time="0.0"/>
+  <testcase name="aDestroyedEngineCannotRecoverEvenWithOtherFlagsStillTrue" classname="com.jarvis.assistant.sentinel.WallpaperSurfaceRetryTest" time="0.0"/>
+  <testcase name="aPersistentlyInvalidSurfaceExhaustsItsRetryBudget" classname="com.jarvis.assistant.sentinel.WallpaperSurfaceRetryTest" time="0.0"/>
+  <testcase name="repeatedInvalidityBacksOffRatherThanSpinningAtZeroDelay" classname="com.jarvis.assistant.sentinel.WallpaperSurfaceRetryTest" time="0.0"/>
+  <testcase name="failedPostsConsumeRecoveryEvenWhenTheSurfaceIsReportedReady" classname="com.jarvis.assistant.sentinel.WallpaperSurfaceRetryTest" time="0.0"/>
+  <testcase name="aSuccessfulPostReplenishesTheNextFailureWindow" classname="com.jarvis.assistant.sentinel.WallpaperSurfaceRetryTest" time="0.0"/>
+  <testcase name="aNewExplicitFrameRequestRestartsExhaustedRecovery" classname="com.jarvis.assistant.sentinel.WallpaperSurfaceRetryTest" time="0.0"/>
+  <testcase name="visibilityLossDoesNotReplenishAnAlreadyExhaustedWindow" classname="com.jarvis.assistant.sentinel.WallpaperSurfaceRetryTest" time="0.0"/>
+  <testcase name="largerBudgetsCannotOverflowTheBackoffShift" classname="com.jarvis.assistant.sentinel.WallpaperSurfaceRetryTest" time="0.0"/>
+  <testcase name="aNoninteractiveScreenCannotKeepARecoveryLoopAlive" classname="com.jarvis.assistant.sentinel.WallpaperSurfaceRetryTest" time="0.0"/>
+  <testcase name="resetIsIdempotentAndCannotStartHiddenRendering" classname="com.jarvis.assistant.sentinel.WallpaperSurfaceRetryTest" time="0.0"/>
+  <testcase name="unsuccessfulDrawingAfterVisibilityLossDoesNotQueueWork" classname="com.jarvis.assistant.sentinel.WallpaperSurfaceRetryTest" time="0.0"/>
+  <testcase name="aDestroyedSurfaceWaitsForTheCreationCallback" classname="com.jarvis.assistant.sentinel.WallpaperSurfaceRetryTest" time="0.0"/>
+  <testcase name="aFailedPostDoesNotResetAnExhaustedBudget" classname="com.jarvis.assistant.sentinel.WallpaperSurfaceRetryTest" time="0.0"/>
+  <testcase name="aSuccessfulStaticFrameDoesNotCreateAnAnimationLoop" classname="com.jarvis.assistant.sentinel.WallpaperSurfaceRetryTest" time="0.0"/>
+  <testcase name="aTransientInvalidVisibleSurfaceRetainsAnotherRenderOpportunity" classname="com.jarvis.assistant.sentinel.WallpaperSurfaceRetryTest" time="0.0"/>
+  <testcase name="hiddenWallpapersNeverQueueRecoveryOrSpendTheBudget" classname="com.jarvis.assistant.sentinel.WallpaperSurfaceRetryTest" time="0.0"/>
+  <testcase name="successfulRenderingResetsAnOldPartialFailureStreak" classname="com.jarvis.assistant.sentinel.WallpaperSurfaceRetryTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

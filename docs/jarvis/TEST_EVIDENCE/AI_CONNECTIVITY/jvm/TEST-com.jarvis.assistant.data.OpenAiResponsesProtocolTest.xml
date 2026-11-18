@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.data.OpenAiResponsesProtocolTest" tests="41" skipped="0" failures="0" errors="0" timestamp="2026-11-18T01:22:42" hostname="472108d07068" time="0.025">
+  <properties/>
+  <testcase name="modernRequestUsesInputAndNoLegacyMessages" classname="com.jarvis.assistant.data.OpenAiResponsesProtocolTest" time="0.0"/>
+  <testcase name="currentUserTurnIsSentOnce" classname="com.jarvis.assistant.data.OpenAiResponsesProtocolTest" time="0.001"/>
+  <testcase name="incompleteTerminalEventFails" classname="com.jarvis.assistant.data.OpenAiResponsesProtocolTest" time="0.0"/>
+  <testcase name="invalidCalendarDateIsNotAcceptedAsAlias" classname="com.jarvis.assistant.data.OpenAiResponsesProtocolTest" time="0.0"/>
+  <testcase name="errorAttachedToCompletedResponseCannotVerify" classname="com.jarvis.assistant.data.OpenAiResponsesProtocolTest" time="0.0"/>
+  <testcase name="wrongObjectCannotVerify" classname="com.jarvis.assistant.data.OpenAiResponsesProtocolTest" time="0.0"/>
+  <testcase name="whitespaceAnswerCannotVerify" classname="com.jarvis.assistant.data.OpenAiResponsesProtocolTest" time="0.001"/>
+  <testcase name="unrelatedModelCannotVerifySelectedModel" classname="com.jarvis.assistant.data.OpenAiResponsesProtocolTest" time="0.0"/>
+  <testcase name="incompleteResponseCannotVerify" classname="com.jarvis.assistant.data.OpenAiResponsesProtocolTest" time="0.0"/>
+  <testcase name="exactRequestedModelIsNeverReplaced" classname="com.jarvis.assistant.data.OpenAiResponsesProtocolTest" time="0.0"/>
+  <testcase name="refusalIsAnHonestCompletedModelResponse" classname="com.jarvis.assistant.data.OpenAiResponsesProtocolTest" time="0.0"/>
+  <testcase name="completedResponseReturnsActualTextAndResolvedModel" classname="com.jarvis.assistant.data.OpenAiResponsesProtocolTest" time="0.0"/>
+  <testcase name="imagesRequireExplicitSelectedBytes" classname="com.jarvis.assistant.data.OpenAiResponsesProtocolTest" time="0.0"/>
+  <testcase name="userEchoCannotCountAsAssistantAnswer" classname="com.jarvis.assistant.data.OpenAiResponsesProtocolTest" time="0.0"/>
+  <testcase name="debugStringNeverContainsReplyText" classname="com.jarvis.assistant.data.OpenAiResponsesProtocolTest" time="0.004"/>
+  <testcase name="documentedDatedAliasCanResolveSameModel" classname="com.jarvis.assistant.data.OpenAiResponsesProtocolTest" time="0.001"/>
+  <testcase name="toolCallAloneCannotCountAsAnswer" classname="com.jarvis.assistant.data.OpenAiResponsesProtocolTest" time="0.0"/>
+  <testcase name="modernRequestOmitsUnsupportedSamplingDefaults" classname="com.jarvis.assistant.data.OpenAiResponsesProtocolTest" time="0.0"/>
+  <testcase name="tooManyImagesAreRejected" classname="com.jarvis.assistant.data.OpenAiResponsesProtocolTest" time="0.0"/>
+  <testcase name="responsesAreExplicitlyNotStored" classname="com.jarvis.assistant.data.OpenAiResponsesProtocolTest" time="0.0"/>
+  <testcase name="terminalResponseCanCompleteWithoutDeltas" classname="com.jarvis.assistant.data.OpenAiResponsesProtocolTest" time="0.0"/>
+  <testcase name="excessiveGenerationBudgetIsRejected" classname="com.jarvis.assistant.data.OpenAiResponsesProtocolTest" time="0.0"/>
+  <testcase name="modernRequestNeverSendsLegacyMaxTokens" classname="com.jarvis.assistant.data.OpenAiResponsesProtocolTest" time="0.0"/>
+  <testcase name="oversizedDeltaCannotReachUi" classname="com.jarvis.assistant.data.OpenAiResponsesProtocolTest" time="0.005"/>
+  <testcase name="prefixCollisionIsNotAnAlias" classname="com.jarvis.assistant.data.OpenAiResponsesProtocolTest" time="0.001"/>
+  <testcase name="finalCompletedTextIsAuthoritative" classname="com.jarvis.assistant.data.OpenAiResponsesProtocolTest" time="0.001"/>
+  <testcase name="oversizedPromptAndContextAreBounded" classname="com.jarvis.assistant.data.OpenAiResponsesProtocolTest" time="0.004"/>
+  <testcase name="queuedResponseCannotVerify" classname="com.jarvis.assistant.data.OpenAiResponsesProtocolTest" time="0.0"/>
+  <testcase name="invalidModelCannotBecomeAnEndpointPath" classname="com.jarvis.assistant.data.OpenAiResponsesProtocolTest" time="0.0"/>
+  <testcase name="historyRetainsChronologyAndRoles" classname="com.jarvis.assistant.data.OpenAiResponsesProtocolTest" time="0.001"/>
+  <testcase name="statusHistoryNeverLeavesDevice" classname="com.jarvis.assistant.data.OpenAiResponsesProtocolTest" time="0.0"/>
+  <testcase name="pinnedSnapshotCannotResolveToDifferentSnapshot" classname="com.jarvis.assistant.data.OpenAiResponsesProtocolTest" time="0.0"/>
+  <testcase name="oversizedImageIsRejected" classname="com.jarvis.assistant.data.OpenAiResponsesProtocolTest" time="0.0"/>
+  <testcase name="oversizedCompletedTextFails" classname="com.jarvis.assistant.data.OpenAiResponsesProtocolTest" time="0.001"/>
+  <testcase name="historyIsBoundedByTurnsAndCharacters" classname="com.jarvis.assistant.data.OpenAiResponsesProtocolTest" time="0.001"/>
+  <testcase name="failedStreamCannotSucceedAfterPartialText" classname="com.jarvis.assistant.data.OpenAiResponsesProtocolTest" time="0.001"/>
+  <testcase name="deltasAreProvisionalUntilCompleted" classname="com.jarvis.assistant.data.OpenAiResponsesProtocolTest" time="0.0"/>
+  <testcase name="doneMarkerWithoutCompletedResponseCannotVerify" classname="com.jarvis.assistant.data.OpenAiResponsesProtocolTest" time="0.001"/>
+  <testcase name="malformedJsonIsTypedAndRedacted" classname="com.jarvis.assistant.data.OpenAiResponsesProtocolTest" time="0.0"/>
+  <testcase name="missingResponseIdentityCannotVerify" classname="com.jarvis.assistant.data.OpenAiResponsesProtocolTest" time="0.0"/>
+  <testcase name="externalContextHasExplicitUntrustedBoundary" classname="com.jarvis.assistant.data.OpenAiResponsesProtocolTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

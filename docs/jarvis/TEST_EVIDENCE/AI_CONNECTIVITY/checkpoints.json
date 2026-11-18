@@ -1,0 +1,21 @@
+{
+  "checkpoint_branches": {
+    "backup/jarvis-recovery-a7f2c83-20261116": "a7f2c83906d7c1f7f23bad6199dda632a94e69c7",
+    "checkpoint/ai-connectivity-start-f718262": "f7182629059dae465f05fe432a9b9423bc43f573",
+    "checkpoint/brain-manager-start-7ac5e33": "7ac5e33efab40bb8dbfd27bacce1cc7ed65c2954",
+    "checkpoint/install-repair-start-83adccd": "83adccdb8cee8d28b9a942438783c229c2188662",
+    "checkpoint/jarvis-next-before-core-repair": "0d5718145cc7ae000433e555f4bf157d4081c26f",
+    "checkpoint/jarvis-next-before-voice-repair": "a7f2c83906d7c1f7f23bad6199dda632a94e69c7",
+    "checkpoint/phoenix-before-package-isolation-1c2e1bb": "1c2e1bb05301cebaa2598c892eb52acf86164494",
+    "checkpoint/phoenix-start-dc06606": "dc06606129a0443fc691aa7deb9aa273a7683a61",
+    "checkpoint/production-stabilization-start-8d7ac1e": "8d7ac1ec35c72bb1628f70a9f7d99ccf7aed5f74",
+    "checkpoint/voice-intelligence-start-b2861b3": "b2861b3739f8cc2e3bc9fc4423cef18a0270ec5a"
+  },
+  "ai_start_checkpoint_correct": true,
+  "remote_fetched_head": "83adccdb8cee8d28b9a942438783c229c2188662",
+  "local_base_head": "f7182629059dae465f05fe432a9b9423bc43f573",
+  "branch": "jarvis-next",
+  "force_push_reset_rebase_branch_deletion_performed": false,
+  "source_checkpoint": "00424ba4e91419be64cef9eb8167ee82a98a66bc",
+  "remote_rechecked_before_source_commit": "83adccdb8cee8d28b9a942438783c229c2188662"
+}

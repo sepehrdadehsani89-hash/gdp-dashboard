@@ -1,0 +1,11 @@
+{
+  "artifact": "app/build/outputs/apk/debug/app-debug.apk",
+  "sha256": "42f8a693349770b6362174a81dbd4037ecd046bc499b7d530f3cd90eaa084138",
+  "bytes": 55710259,
+  "retained_release_sha256": "ed7eddcb66d0a99aac34992098a1e36c47e400276732c286149ddc94f5fddf0a",
+  "previous_phoenix_sha256": "ad796f1920f4853ff855acd710d1360bfa32a1e185ca733d4850c071ab7261ed",
+  "environment": "Linux cloud Android SDK artifact inspection; no Android device or emulator",
+  "physical_device_tests_executed": 0,
+  "passed": 23,
+  "failed": 0
+}

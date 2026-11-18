@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.finishpolish.doctor.DoctorPolicyTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2026-11-18T01:22:42" hostname="472108d07068" time="0.01">
+  <properties/>
+  <testcase name="rapidRetriesAreDeniedButNoAutomaticRetryLoopExists" classname="com.jarvis.assistant.finishpolish.doctor.DoctorPolicyTest" time="0.001"/>
+  <testcase name="timeRollbackCannotClearTheRepairBudget" classname="com.jarvis.assistant.finishpolish.doctor.DoctorPolicyTest" time="0.001"/>
+  <testcase name="verificationRejectsDifferentObservedSettingsAndNeverSetsAcousticPass" classname="com.jarvis.assistant.finishpolish.doctor.DoctorPolicyTest" time="0.001"/>
+  <testcase name="repairRequiresApprovalUnlockedPhoneAndIdlePrivateCapture" classname="com.jarvis.assistant.finishpolish.doctor.DoctorPolicyTest" time="0.001"/>
+  <testcase name="genuineBackendFailureGetsABackendExplanationInsteadOfASpeechNoMatch" classname="com.jarvis.assistant.finishpolish.doctor.DoctorPolicyTest" time="0.004"/>
+  <testcase name="readOnlyHealthyChecksCannotClaimAcousticRecognitionSucceeded" classname="com.jarvis.assistant.finishpolish.doctor.DoctorPolicyTest" time="0.001"/>
+  <testcase name="missingMeasurementsAreUnknownAndDoNotBecomeFailures" classname="com.jarvis.assistant.finishpolish.doctor.DoctorPolicyTest" time="0.0"/>
+  <testcase name="repairProposalHasReversalAndExplicitVerificationBoundary" classname="com.jarvis.assistant.finishpolish.doctor.DoctorPolicyTest" time="0.001"/>
+  <testcase name="repeatedFailedAttemptsOpenCircuitUntilWindowExpires" classname="com.jarvis.assistant.finishpolish.doctor.DoctorPolicyTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

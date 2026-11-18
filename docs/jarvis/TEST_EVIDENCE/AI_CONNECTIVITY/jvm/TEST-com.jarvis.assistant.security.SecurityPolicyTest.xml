@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.security.SecurityPolicyTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2026-11-18T01:22:45" hostname="472108d07068" time="0.005">
+  <properties/>
+  <testcase name="failedOrCancelledFirstChallengeDoesNotAdvance" classname="com.jarvis.assistant.security.SecurityPolicyTest" time="0.001"/>
+  <testcase name="secondStageCancellationErasesPartialProgress" classname="com.jarvis.assistant.security.SecurityPolicyTest" time="0.0"/>
+  <testcase name="thirdStageCancellationErasesPartialProgress" classname="com.jarvis.assistant.security.SecurityPolicyTest" time="0.0"/>
+  <testcase name="compatibilityConfirmationsCannotPretendToBeThreeAndroidAuthentications" classname="com.jarvis.assistant.security.SecurityPolicyTest" time="0.0"/>
+  <testcase name="expiredChallengeAndClockRollbackCannotAuthenticate" classname="com.jarvis.assistant.security.SecurityPolicyTest" time="0.0"/>
+  <testcase name="onlyDirectUserScreenCommandsMatch" classname="com.jarvis.assistant.security.SecurityPolicyTest" time="0.003"/>
+  <testcase name="noSecureLockCannotBeginOrSatisfyVerification" classname="com.jarvis.assistant.security.SecurityPolicyTest" time="0.001"/>
+  <testcase name="processRecreationNeverRestoresPartialAuthorization" classname="com.jarvis.assistant.security.SecurityPolicyTest" time="0.0"/>
+  <testcase name="removingScreenSecurityInvalidatesInFlightChallenge" classname="com.jarvis.assistant.security.SecurityPolicyTest" time="0.0"/>
+  <testcase name="threeGenuineIndependentCallbacksAreRequiredForNormalMode" classname="com.jarvis.assistant.security.SecurityPolicyTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

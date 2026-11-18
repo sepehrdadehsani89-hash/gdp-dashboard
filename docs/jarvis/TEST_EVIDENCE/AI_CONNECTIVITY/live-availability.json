@@ -1,0 +1,15 @@
+{
+  "checked_at_utc": "2026-11-18T01:03:34.831715+00:00",
+  "credential_availability_only": {
+    "OPENAI_API_KEY": false,
+    "JARVIS_OPENAI_API_KEY": false,
+    "JARVIS_AI_BACKEND_URL": false,
+    "JARVIS_AI_BACKEND_TOKEN": false
+  },
+  "live_provider_status": "LIVE PROVIDER VERIFICATION NOT PERFORMED",
+  "reason": "The owner confirms owning an API key and credits. No runtime API credential is available to this task; the key on the owner device is not accessible here.",
+  "live_requests_sent": 0,
+  "live_models_verified": [],
+  "device_tests_executed": 0,
+  "backend": "Not required for existing direct personal API-key integration; no backend deployed."
+}

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.data.ProviderHttpErrorsTest" tests="21" skipped="0" failures="0" errors="0" timestamp="2026-11-18T01:22:42" hostname="472108d07068" time="0.007">
+  <properties/>
+  <testcase name="diagnosticsNeverIncludeRawErrorMessagesOrCredentialStrings" classname="com.jarvis.assistant.data.ProviderHttpErrorsTest" time="0.0"/>
+  <testcase name="forbiddenHttpStatusDoesNotClaimIdentitySignedOut" classname="com.jarvis.assistant.data.ProviderHttpErrorsTest" time="0.0"/>
+  <testcase name="httpTimeoutStatusesAreTyped" classname="com.jarvis.assistant.data.ProviderHttpErrorsTest" time="0.001"/>
+  <testcase name="documentedCodeTakesPrecedenceOverGenericStatus" classname="com.jarvis.assistant.data.ProviderHttpErrorsTest" time="0.0"/>
+  <testcase name="anthropicErrorTypeIsAcceptedWhenCodeIsMissing" classname="com.jarvis.assistant.data.ProviderHttpErrorsTest" time="0.0"/>
+  <testcase name="planUsageUnavailableDoesNotSuggestPaidFallback" classname="com.jarvis.assistant.data.ProviderHttpErrorsTest" time="0.0"/>
+  <testcase name="serverFailuresRemainTemporaryProviderUnavailability" classname="com.jarvis.assistant.data.ProviderHttpErrorsTest" time="0.0"/>
+  <testcase name="modelAccessCodesDoNotMasqueradeAsIdentityFailure" classname="com.jarvis.assistant.data.ProviderHttpErrorsTest" time="0.0"/>
+  <testcase name="geminiRestrictionGuidanceRemainsAvailableWithoutSecretReflection" classname="com.jarvis.assistant.data.ProviderHttpErrorsTest" time="0.0"/>
+  <testcase name="apiCreditCodesAreDistinctFromPlanQuota" classname="com.jarvis.assistant.data.ProviderHttpErrorsTest" time="0.0"/>
+  <testcase name="malformedErrorBodyStillProducesSafeTypedHttpFailure" classname="com.jarvis.assistant.data.ProviderHttpErrorsTest" time="0.001"/>
+  <testcase name="exceptionsRetainHttpStatusForHonestDiagnostics" classname="com.jarvis.assistant.data.ProviderHttpErrorsTest" time="0.0"/>
+  <testcase name="eligibilityAndUnsupportedRouteRequireAuthorization" classname="com.jarvis.assistant.data.ProviderHttpErrorsTest" time="0.0"/>
+  <testcase name="unknownHttpFailureDoesNotFabricateAuthorizationResult" classname="com.jarvis.assistant.data.ProviderHttpErrorsTest" time="0.001"/>
+  <testcase name="http429ReportsUsageLimit" classname="com.jarvis.assistant.data.ProviderHttpErrorsTest" time="0.0"/>
+  <testcase name="http404ReportsUnavailableModel" classname="com.jarvis.assistant.data.ProviderHttpErrorsTest" time="0.0"/>
+  <testcase name="missingStructuredCodeFallsBackToHttp401" classname="com.jarvis.assistant.data.ProviderHttpErrorsTest" time="0.0"/>
+  <testcase name="planUsageLimitMapsToRateLimit" classname="com.jarvis.assistant.data.ProviderHttpErrorsTest" time="0.0"/>
+  <testcase name="invalidSessionCodesRequireReconnect" classname="com.jarvis.assistant.data.ProviderHttpErrorsTest" time="0.001"/>
+  <testcase name="anthropicLowCreditDiagnosticIsCanonicalAndRedacted" classname="com.jarvis.assistant.data.ProviderHttpErrorsTest" time="0.0"/>
+  <testcase name="oversizedErrorBodyCannotReflectSensitiveTail" classname="com.jarvis.assistant.data.ProviderHttpErrorsTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

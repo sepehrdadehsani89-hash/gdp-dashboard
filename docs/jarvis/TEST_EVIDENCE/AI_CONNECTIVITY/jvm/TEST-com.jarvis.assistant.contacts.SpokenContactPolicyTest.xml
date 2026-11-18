@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.contacts.SpokenContactPolicyTest" tests="36" skipped="0" failures="0" errors="0" timestamp="2026-11-18T01:22:37" hostname="472108d07068" time="0.02">
+  <properties/>
+  <testcase name="twoLetterAliasHasSpellingVariant" classname="com.jarvis.assistant.contacts.SpokenContactPolicyTest" time="0.001"/>
+  <testcase name="accentedNameMatch" classname="com.jarvis.assistant.contacts.SpokenContactPolicyTest" time="0.001"/>
+  <testcase name="plainMemoryNotNickname" classname="com.jarvis.assistant.contacts.SpokenContactPolicyTest" time="0.001"/>
+  <testcase name="savedSpellingCollisionsNeverPreferExactText" classname="com.jarvis.assistant.contacts.SpokenContactPolicyTest" time="0.002"/>
+  <testcase name="exactSavedNameStillResolves" classname="com.jarvis.assistant.contacts.SpokenContactPolicyTest" time="0.0"/>
+  <testcase name="oversizedAliasRejected" classname="com.jarvis.assistant.contacts.SpokenContactPolicyTest" time="0.0"/>
+  <testcase name="endingCanDisambiguate" classname="com.jarvis.assistant.contacts.SpokenContactPolicyTest" time="0.001"/>
+  <testcase name="savedMaMatchesSpelledSpeech" classname="com.jarvis.assistant.contacts.SpokenContactPolicyTest" time="0.0"/>
+  <testcase name="differentNumbersAreAmbiguous" classname="com.jarvis.assistant.contacts.SpokenContactPolicyTest" time="0.0"/>
+  <testcase name="multipleVariantsOfOneEntryAreOneMatch" classname="com.jarvis.assistant.contacts.SpokenContactPolicyTest" time="0.0"/>
+  <testcase name="explicitNicknameGrammar" classname="com.jarvis.assistant.contacts.SpokenContactPolicyTest" time="0.0"/>
+  <testcase name="duplicateRowsSamePhoneAreOneChoice" classname="com.jarvis.assistant.contacts.SpokenContactPolicyTest" time="0.0"/>
+  <testcase name="similarNameNotSelected" classname="com.jarvis.assistant.contacts.SpokenContactPolicyTest" time="0.002"/>
+  <testcase name="saveReverseGrammar" classname="com.jarvis.assistant.contacts.SpokenContactPolicyTest" time="0.0"/>
+  <testcase name="noRelationshipInference" classname="com.jarvis.assistant.contacts.SpokenContactPolicyTest" time="0.0"/>
+  <testcase name="newlineInjectionRejected" classname="com.jarvis.assistant.contacts.SpokenContactPolicyTest" time="0.001"/>
+  <testcase name="shortEmergencyNumbersNotApproved" classname="com.jarvis.assistant.contacts.SpokenContactPolicyTest" time="0.0"/>
+  <testcase name="hyphenatedSpelling" classname="com.jarvis.assistant.contacts.SpokenContactPolicyTest" time="0.001"/>
+  <testcase name="emptyAliasRejected" classname="com.jarvis.assistant.contacts.SpokenContactPolicyTest" time="0.0"/>
+  <testcase name="sharedEndingStillAmbiguous" classname="com.jarvis.assistant.contacts.SpokenContactPolicyTest" time="0.001"/>
+  <testcase name="unknownContactNotInvented" classname="com.jarvis.assistant.contacts.SpokenContactPolicyTest" time="0.001"/>
+  <testcase name="wakePrefixAccepted" classname="com.jarvis.assistant.contacts.SpokenContactPolicyTest" time="0.001"/>
+  <testcase name="ussdNeverAccepted" classname="com.jarvis.assistant.contacts.SpokenContactPolicyTest" time="0.0"/>
+  <testcase name="multiwordAliasNotInvented" classname="com.jarvis.assistant.contacts.SpokenContactPolicyTest" time="0.0"/>
+  <testcase name="noSubstringSelection" classname="com.jarvis.assistant.contacts.SpokenContactPolicyTest" time="0.0"/>
+  <testcase name="wrongEndingMatchesNothing" classname="com.jarvis.assistant.contacts.SpokenContactPolicyTest" time="0.0"/>
+  <testcase name="spacedSpelling" classname="com.jarvis.assistant.contacts.SpokenContactPolicyTest" time="0.0"/>
+  <testcase name="arbitraryIntentIsNotAlias" classname="com.jarvis.assistant.contacts.SpokenContactPolicyTest" time="0.001"/>
+  <testcase name="savedAliasCannotHideAConflictingCanonicalNickname" classname="com.jarvis.assistant.contacts.SpokenContactPolicyTest" time="0.0"/>
+  <testcase name="nonLatinNamesPreserved" classname="com.jarvis.assistant.contacts.SpokenContactPolicyTest" time="0.001"/>
+  <testcase name="savedNearNameIsNotSelected" classname="com.jarvis.assistant.contacts.SpokenContactPolicyTest" time="0.0"/>
+  <testcase name="formattedNumberCanonicalized" classname="com.jarvis.assistant.contacts.SpokenContactPolicyTest" time="0.0"/>
+  <testcase name="exactUniqueMatch" classname="com.jarvis.assistant.contacts.SpokenContactPolicyTest" time="0.0"/>
+  <testcase name="caseInsensitiveExact" classname="com.jarvis.assistant.contacts.SpokenContactPolicyTest" time="0.0"/>
+  <testcase name="ordinaryNamesNotCollapsed" classname="com.jarvis.assistant.contacts.SpokenContactPolicyTest" time="0.0"/>
+  <testcase name="explicitRememberMapsMa" classname="com.jarvis.assistant.contacts.SpokenContactPolicyTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

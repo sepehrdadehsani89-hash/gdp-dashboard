@@ -1,0 +1,107 @@
+{
+  "environment": "No authorized Android device or emulator is available to this cloud task.",
+  "executed": 0,
+  "checks": [
+    {
+      "id": "D01",
+      "check": "Update previous Phoenix APK without uninstalling; inspect retained test settings/accounts",
+      "result": "NOT RUN \u2014 requires authorized physical device and, for provider checks, private runtime credentials"
+    },
+    {
+      "id": "D02",
+      "check": "Launch Jarvis and verify existing core in idle state",
+      "result": "NOT RUN \u2014 requires authorized physical device and, for provider checks, private runtime credentials"
+    },
+    {
+      "id": "D03",
+      "check": "Verify microphone permission handling and visible capture",
+      "result": "NOT RUN \u2014 requires authorized physical device and, for provider checks, private runtime credentials"
+    },
+    {
+      "id": "D04",
+      "check": "Speak a normal question; inspect actual recognized text",
+      "result": "NOT RUN \u2014 requires authorized physical device and, for provider checks, private runtime credentials"
+    },
+    {
+      "id": "D05",
+      "check": "Confirm one inference request per accepted utterance",
+      "result": "NOT RUN \u2014 requires authorized physical device and, for provider checks, private runtime credentials"
+    },
+    {
+      "id": "D06",
+      "check": "Load actual API-key model catalog with real credits",
+      "result": "NOT RUN \u2014 requires authorized physical device and, for provider checks, private runtime credentials"
+    },
+    {
+      "id": "D07",
+      "check": "Verify default selection only after completed real inference",
+      "result": "NOT RUN \u2014 requires authorized physical device and, for provider checks, private runtime credentials"
+    },
+    {
+      "id": "D08",
+      "check": "Reject an invalid key without a green badge",
+      "result": "NOT RUN \u2014 requires authorized physical device and, for provider checks, private runtime credentials"
+    },
+    {
+      "id": "D09",
+      "check": "Show actual insufficient-quota error from a controlled project",
+      "result": "NOT RUN \u2014 requires authorized physical device and, for provider checks, private runtime credentials"
+    },
+    {
+      "id": "D10",
+      "check": "Show network failure and leave processing state",
+      "result": "NOT RUN \u2014 requires authorized physical device and, for provider checks, private runtime credentials"
+    },
+    {
+      "id": "D11",
+      "check": "Interrupt a stream and confirm partial output is not spoken as completed",
+      "result": "NOT RUN \u2014 requires authorized physical device and, for provider checks, private runtime credentials"
+    },
+    {
+      "id": "D12",
+      "check": "Hear the actual completed cloud answer through physical TTS",
+      "result": "NOT RUN \u2014 requires authorized physical device and, for provider checks, private runtime credentials"
+    },
+    {
+      "id": "D13",
+      "check": "Stop or switch provider while a request is active; reject stale completion",
+      "result": "NOT RUN \u2014 requires authorized physical device and, for provider checks, private runtime credentials"
+    },
+    {
+      "id": "D14",
+      "check": "Ask a follow-up within allowed ephemeral conversation history",
+      "result": "NOT RUN \u2014 requires authorized physical device and, for provider checks, private runtime credentials"
+    },
+    {
+      "id": "D15",
+      "check": "Keep ChatGPT authorization separate; no automatic paid API fallback",
+      "result": "NOT RUN \u2014 requires authorized physical device and, for provider checks, private runtime credentials"
+    },
+    {
+      "id": "D16",
+      "check": "Restart app: historical verification is not green current-session success",
+      "result": "NOT RUN \u2014 requires authorized physical device and, for provider checks, private runtime credentials"
+    },
+    {
+      "id": "D17",
+      "check": "Retain Reduced Motion behavior",
+      "result": "NOT RUN \u2014 requires authorized physical device and, for provider checks, private runtime credentials"
+    },
+    {
+      "id": "D18",
+      "check": "Retain holographic live wallpaper behavior",
+      "result": "NOT RUN \u2014 requires authorized physical device and, for provider checks, private runtime credentials"
+    },
+    {
+      "id": "D19",
+      "check": "Retain settings, provider configuration and permissions across update",
+      "result": "NOT RUN \u2014 requires authorized physical device and, for provider checks, private runtime credentials"
+    },
+    {
+      "id": "D20",
+      "check": "Opt into Local fallback; hear local-source disclosure only after local inference",
+      "result": "NOT RUN \u2014 requires authorized physical device and, for provider checks, private runtime credentials"
+    }
+  ],
+  "owner_reported_baseline": "The supplied directive reports successful prior APK installation and working holographic core. This is not a result of these tests."
+}

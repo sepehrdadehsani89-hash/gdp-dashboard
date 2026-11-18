@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.contacts.ContactShortcutPolicyTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-11-18T01:22:37" hostname="472108d07068" time="0.017">
+  <properties/>
+  <testcase name="onlyExplicitCurrentUserCallWordingMatches" classname="com.jarvis.assistant.contacts.ContactShortcutPolicyTest" time="0.005"/>
+  <testcase name="spokenAliasesCannotAmbiguouslyResolveToTwoContacts" classname="com.jarvis.assistant.contacts.ContactShortcutPolicyTest" time="0.003"/>
+  <testcase name="fifteenContactsRoundTripAndSixteenthIsRejected" classname="com.jarvis.assistant.contacts.ContactShortcutPolicyTest" time="0.006"/>
+  <testcase name="decliningAContactFollowupNeverPlacesAnotherCall" classname="com.jarvis.assistant.contacts.ContactShortcutPolicyTest" time="0.003"/>
+  <testcase name="emergencyShortCodesUssdAndControlInputsCannotBecomeDialTargets" classname="com.jarvis.assistant.contacts.ContactShortcutPolicyTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.jarvis.assistant.data.OpenAiLegacyChatProtocolTest" tests="26" skipped="0" failures="0" errors="0" timestamp="2026-11-18T01:22:40" hostname="472108d07068" time="0.051">
+  <properties/>
+  <testcase name="contentFilterTerminationCannotVerifyCompletedText" classname="com.jarvis.assistant.data.OpenAiLegacyChatProtocolTest" time="0.003"/>
+  <testcase name="explicitCompletedRefusalIsActualInference" classname="com.jarvis.assistant.data.OpenAiLegacyChatProtocolTest" time="0.0"/>
+  <testcase name="lengthTruncatedAnswerCannotVerify" classname="com.jarvis.assistant.data.OpenAiLegacyChatProtocolTest" time="0.0"/>
+  <testcase name="documentedLegacySnapshotSuffixIsAccepted" classname="com.jarvis.assistant.data.OpenAiLegacyChatProtocolTest" time="0.001"/>
+  <testcase name="userEchoCannotVerifyAssistantResponse" classname="com.jarvis.assistant.data.OpenAiLegacyChatProtocolTest" time="0.0"/>
+  <testcase name="modernDateSuffixCanResolveLegacyTurbo" classname="com.jarvis.assistant.data.OpenAiLegacyChatProtocolTest" time="0.0"/>
+  <testcase name="streamedTextWithoutFinishReasonCannotVerify" classname="com.jarvis.assistant.data.OpenAiLegacyChatProtocolTest" time="0.001"/>
+  <testcase name="toolCallAloneCannotVerifyText" classname="com.jarvis.assistant.data.OpenAiLegacyChatProtocolTest" time="0.001"/>
+  <testcase name="emptyAnswerCannotVerify" classname="com.jarvis.assistant.data.OpenAiLegacyChatProtocolTest" time="0.0"/>
+  <testcase name="documentedTurboPreviewAliasIsRetained" classname="com.jarvis.assistant.data.OpenAiLegacyChatProtocolTest" time="0.0"/>
+  <testcase name="oversizedAnswerCannotVerify" classname="com.jarvis.assistant.data.OpenAiLegacyChatProtocolTest" time="0.004"/>
+  <testcase name="differentModelCannotVerify" classname="com.jarvis.assistant.data.OpenAiLegacyChatProtocolTest" time="0.0"/>
+  <testcase name="explicitStopCompletesAccumulatedText" classname="com.jarvis.assistant.data.OpenAiLegacyChatProtocolTest" time="0.002"/>
+  <testcase name="oversizedDeltaCannotReachUi" classname="com.jarvis.assistant.data.OpenAiLegacyChatProtocolTest" time="0.005"/>
+  <testcase name="legacyInvalidMonthDayCannotResolveAlias" classname="com.jarvis.assistant.data.OpenAiLegacyChatProtocolTest" time="0.002"/>
+  <testcase name="truncatedTerminalEventFails" classname="com.jarvis.assistant.data.OpenAiLegacyChatProtocolTest" time="0.001"/>
+  <testcase name="legacyTransportRejectsStreamWithoutStop" classname="com.jarvis.assistant.data.OpenAiLegacyChatProtocolTest" time="0.01"/>
+  <testcase name="doneMarkerAloneCannotVerify" classname="com.jarvis.assistant.data.OpenAiLegacyChatProtocolTest" time="0.001"/>
+  <testcase name="malformedJsonIsTyped" classname="com.jarvis.assistant.data.OpenAiLegacyChatProtocolTest" time="0.0"/>
+  <testcase name="wrongResponseObjectCannotVerify" classname="com.jarvis.assistant.data.OpenAiLegacyChatProtocolTest" time="0.003"/>
+  <testcase name="legacyProbePreservesChatEndpointAndSupportedParameters" classname="com.jarvis.assistant.data.OpenAiLegacyChatProtocolTest" time="0.005"/>
+  <testcase name="missingResponseIdCannotVerify" classname="com.jarvis.assistant.data.OpenAiLegacyChatProtocolTest" time="0.0"/>
+  <testcase name="completedAssistantTextIsAccepted" classname="com.jarvis.assistant.data.OpenAiLegacyChatProtocolTest" time="0.0"/>
+  <testcase name="emptyStoppedStreamCannotVerify" classname="com.jarvis.assistant.data.OpenAiLegacyChatProtocolTest" time="0.0"/>
+  <testcase name="mixedResponseIdsCannotBeCombined" classname="com.jarvis.assistant.data.OpenAiLegacyChatProtocolTest" time="0.001"/>
+  <testcase name="legacyTransportPreservesWorkingCompletedStream" classname="com.jarvis.assistant.data.OpenAiLegacyChatProtocolTest" time="0.005"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
